@@ -1,4 +1,4 @@
-mport React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 
 const SHOW_MS = 5000;
