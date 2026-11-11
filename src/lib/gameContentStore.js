@@ -126,4 +126,6 @@ export async function hydrateGameContent() {
   }
 }
 
-export function isGameContentHydrat
+export function isGameContentHydrated() {
+  return hydrated;
+}
