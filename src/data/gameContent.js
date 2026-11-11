@@ -272,4 +272,4 @@ export const CRYPT_RIDDLE_TEMPLATES = [
 export const MIDNIGHT_PACT_OFFER = 'Δέξου εθελοντικά 15 λεπτά Hogtie Lock τώρα, για να αποκτήσεις το δικαίωμα να επιβάλεις 2 ποινές της επιλογής σου στον επόμενο γύρο.';
 
 // ===== GRAND JURY REWARDS (Η Τελική Δίκη — DJ Slave Hour) =====
-export const GRAND_JURY_REWARDS = 'Το Μόνο Αγόρι της Villa (τον DJ) τον κά
+export const GRAND_JURY_REWARDS = 'Το Μόνο Αγόρι της Villa (τον DJ) τον κάνουν προσωπικό τους DJ για μία ώρα: οι νικήτριες επιλέγουν τη μουσική, τις αφιερώσεις και τις δοκιμασίες της βραδιάς.';
