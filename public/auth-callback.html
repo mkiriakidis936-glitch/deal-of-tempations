@@ -1,0 +1,10 @@
+<!doctype html>
+<meta charset="utf-8" />
+<title>Signing in…</title>
+<script>
+  // Receives #token=...&returnTo=... from the Google OAuth callback.
+  var p = new URLSearchParams(location.hash.slice(1));
+  try { localStorage.setItem('auth_token', p.get('token') || ''); } catch (e) {}
+  var to = p.get('returnTo') || '/';
+  location.replace(to.charAt(0) === '/' && to.charAt(1) !== '/' ? to : '/');
+</script>
