@@ -3,7 +3,7 @@ import { base44 } from '@/api/base44Client';
 import ComicPanel from '@/components/comic/ComicPanel';
 import ComicButton from '@/components/comic/ComicButton';
 import { DEFAULTS, FILM } from '@/data/brandArt';
-import { IMAGE_SLOTS, PHOTO_SPOTS, GALLERIES } from '@/data/mediaSlots';
+import { IMAGE_SLOTS, PHOTO_SPOTS, PHOTO_SPOT_IDS, GALLERIES } from '@/data/mediaSlots';
 import { MEDIA_KEY, fetchOverrides, uploadMedia, listMedia, deleteMedia, deleteAllMedia } from '@/lib/media';
 
 const IMG_ACCEPT = 'image/*,.jpg,.jpeg,.png,.webp,.gif,.avif,.heic';
@@ -149,6 +149,7 @@ export default function AdminMedia() {
       await deleteAllMedia(kind);
       const next = {
         ...ov,
+        ...(kind === 'video' || kind === 'all' ? { agent: undefined, ...Object.fromEntries(PHOTO_SPOT_IDS.map((id) => [id, undefined])) } : {}),
         ...(kind === 'image' || kind === 'all' ? { clearAllPhotos: true } : {}),
         ...(kind === 'video' || kind === 'all' ? { clearAllVideos: true } : {}),
         ...(kind === 'all' ? { clearAllMedia: true } : {}),
