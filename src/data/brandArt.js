@@ -73,8 +73,8 @@ export function applyMediaOverrides(o = {}) {
   const clearPhotos = !!(o.clearAllPhotos || o.clearAllMedia);
   const clearVideos = !!(o.clearAllVideos || o.clearAllMedia);
   for (const k of Object.keys(ART)) ART[k] = str(o[k]) || (clearPhotos ? '' : DEFAULTS[k]);
-  FILM.agent = str(o.agent) || (clearVideos ? '' : DEFAULTS.agent);
-  for (const id of PHOTO_SPOT_IDS) FILM[id] = clearVideos ? '' : (str(o[id]) || FILM.agent);
+  FILM.agent = str(o.agent) || DEFAULTS.agent;
+  for (const id of PHOTO_SPOT_IDS) FILM[id] = FILM.agent;
   for (const id of PHOTO_SPOT_IDS) {
     const value = str(o[id]);
     PHOTO[id] = value && !/\.(mp4|webm|mov)(?:[?#]|$)/i.test(value) ? value : (clearPhotos ? '' : (id === 'invitation' ? ART.invitationBg : DEFAULTS[id]));
