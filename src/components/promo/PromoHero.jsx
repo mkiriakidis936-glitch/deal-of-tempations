@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FILM } from '@/data/brandArt';
-import VideoFilm from '@/components/shared/VideoFilm';
+import { PHOTO, FILM } from '@/data/brandArt';
+import MediaSpot from '@/components/shared/MediaSpot';
 
 export default function PromoHero({ content }) {
   const navigate = useNavigate();
@@ -9,7 +9,7 @@ export default function PromoHero({ content }) {
   return (
     <section className="relative min-h-[100svh] flex items-center justify-center overflow-hidden">
       <div className="absolute inset-0 z-0">
-        <VideoFilm src={FILM.promo} slot="promo" className="w-full h-full object-cover" />
+        <MediaSpot src={PHOTO.promo || FILM.promo} slot="promo" className="w-full h-full object-cover" />
         <div
           className="absolute inset-0"
           style={{
