@@ -4,7 +4,7 @@ import ComicPanel from '@/components/comic/ComicPanel';
 import ComicButton from '@/components/comic/ComicButton';
 import { DEFAULTS } from '@/data/brandArt';
 import { IMAGE_SLOTS, PHOTO_SPOTS, GALLERIES } from '@/data/mediaSlots';
-import { MEDIA_KEY, fetchOverrides, uploadMedia, listMedia, deleteMedia } from '@/lib/media';
+import { MEDIA_KEY, fetchOverrides, uploadMedia, listMedia, deleteMedia, deleteAllMedia } from '@/lib/media';
 
 const IMG_ACCEPT = 'image/*,.jpg,.jpeg,.png,.webp,.gif,.avif,.heic';
 const VID_ACCEPT = 'video/*,.mp4,.webm,.mov';
@@ -54,7 +54,7 @@ export default function AdminMedia() {
   }, [refreshLibrary]);
 
   const save = async (next) => {
-    const clean = Object.fromEntries(Object.entries(next).filter(([, v]) => (Array.isArray(v) ? v.length : v)));
+    const clean = Object.fromEntries(Object.entries(next).filter(([k, v]) => (k.startsWith('clearAll') ? !!v : (Array.isArray(v) ? v.length : v))));
     if (rec?.id) await base44.entities.AppSetting.update(rec.id, { value: clean });
     else setRec(await base44.entities.AppSetting.create({ key: MEDIA_KEY, value: clean }));
     setOv(clean);
@@ -98,7 +98,7 @@ export default function AdminMedia() {
   };
 
   const reset = (id) => run(id, () => { const { [id]: _, ...rest } = ov; return save(rest); }, 'Επαναφορά στο αρχικό ✓');
-  const listOf = (id) => ov[id] || DEFAULTS[id] || [];
+  const listOf = (id) => Array.isArray(ov[id]) ? ov[id] : ((id === 'siteVideos' && (ov.clearAllVideos || ov.clearAllMedia)) || ((id === 'heistPhotos' || id === 'pajamaPhotos') && (ov.clearAllPhotos || ov.clearAllMedia)) ? [] : (DEFAULTS[id] || []));
   const setList = (id, list) => run(id, () => save({ ...ov, [id]: list }));
   const move = (id, i, d) => {
     const l = [...listOf(id)]; const j = i + d;
@@ -141,6 +141,24 @@ export default function AdminMedia() {
     }, 'Διαγράφηκε ✓');
   };
 
+
+  const clearMedia = (kind) => {
+    const label = kind === 'image' ? 'ΟΛΕΣ ΤΙΣ ΦΩΤΟΓΡΑΦΙΕΣ' : kind === 'video' ? 'ΟΛΑ ΤΑ ΒΙΝΤΕΟ' : 'ΟΛΕΣ ΤΙΣ ΦΩΤΟΓΡΑΦΙΕΣ ΚΑΙ ΤΑ ΒΙΝΤΕΟ';
+    if (!window.confirm(`ΠΡΟΣΟΧΗ: Θα διαγραφούν οριστικά ${label} από τη βιβλιοθήκη του project και θα αφαιρεθούν από όλα τα σημεία εμφάνισης. Συνέχεια;`)) return;
+    run(`clear-${kind}`, async () => {
+      await deleteAllMedia(kind);
+      const next = {
+        ...ov,
+        ...(kind === 'image' || kind === 'all' ? { clearAllPhotos: true } : {}),
+        ...(kind === 'video' || kind === 'all' ? { clearAllVideos: true } : {}),
+        ...(kind === 'all' ? { clearAllMedia: true } : {}),
+        libraryCategories: {},
+      };
+      await save(next);
+      await refreshLibrary();
+    }, `${label}: ολοκληρώθηκε ✓`);
+  };
+
   const Progress = ({ id }) => busy === id ? (
     <div className="h-2 rounded bg-black/40 overflow-hidden mt-2">
       <div className="h-full bg-primary transition-all" style={{ width: `${Math.max(5, progress * 100)}%` }} />
@@ -160,6 +178,11 @@ export default function AdminMedia() {
           Ανέβασε, άλλαξε ή σβήσε ό,τι θες. Τις ίδιες αλλαγές μπορείς να τις κάνεις και απευθείας πάνω στις σελίδες (✏️ κάτω αριστερά, όταν είσαι συνδεδεμένη/ος).
           Οι φωτογραφίες μικραίνουν αυτόματα.
         </p>
+        <div className="flex flex-wrap gap-2 mt-3">
+          <ComicButton size="sm" variant="dark" disabled={!!busy} onClick={() => clearMedia('image')}>🗑 Διαγραφή όλων των φωτογραφιών</ComicButton>
+          <ComicButton size="sm" variant="dark" disabled={!!busy} onClick={() => clearMedia('video')}>🗑 Διαγραφή όλων των βίντεο</ComicButton>
+          <ComicButton size="sm" variant="dark" disabled={!!busy} onClick={() => clearMedia('all')}>🗑 Διαγραφή όλων των πολυμέσων</ComicButton>
+        </div>
         {msg && <div className={`mt-2 text-sm font-bold ${msg.ok ? 'text-green-400' : 'text-red-400'}`}>{msg.text}</div>}
       </ComicPanel>
 
