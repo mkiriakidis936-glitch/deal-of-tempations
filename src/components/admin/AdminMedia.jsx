@@ -21,6 +21,14 @@ export default function AdminMedia() {
   const [rec, setRec] = useState(null);
   const [ov, setOv] = useState({});
   const [library, setLibrary] = useState([]);
+  const [libraryFilter, setLibraryFilter] = useState('all');
+  const LIBRARY_CATEGORIES = [
+    { id: 'heist', label: 'Heist' },
+    { id: 'pajama', label: 'Pajama' },
+    { id: 'branding', label: 'Branding' },
+    { id: 'uncategorized', label: 'Χωρίς κατηγορία' },
+  ];
+  const categoryOf = (url) => ov.libraryCategories?.[url] || 'uncategorized';
   const [busy, setBusy] = useState(null);
   const [progress, setProgress] = useState(0);
   const [msg, setMsg] = useState(null);
@@ -78,7 +86,13 @@ export default function AdminMedia() {
         const l = [...(ov[t.id] || DEFAULTS[t.id] || [])];
         l[t.index] = urls[0];
         await save({ ...ov, [t.id]: l });
-      } else await save({ ...ov, [t.id]: [...(ov[t.id] || DEFAULTS[t.id] || []), ...urls] });
+      } else {
+        const categories = { ...(ov.libraryCategories || {}) };
+        if (t.id === 'heistPhotos' || t.id === 'pajamaPhotos') {
+          for (const url of urls) categories[url] = t.id === 'heistPhotos' ? 'heist' : 'pajama';
+        }
+        await save({ ...ov, [t.id]: [...(ov[t.id] || DEFAULTS[t.id] || []), ...urls], libraryCategories: categories });
+      }
       refreshLibrary();
     }, 'Ανέβηκε και αποθηκεύτηκε ✓');
   };
@@ -94,7 +108,17 @@ export default function AdminMedia() {
   };
   const remove = (id, i) => setList(id, listOf(id).filter((_, k) => k !== i));
 
-  const isUsed = (url) => Object.values(ov).some((v) => (Array.isArray(v) ? v.includes(url) : v === url));
+  const isUsed = (url) => Object.entries(ov).some(([k, v]) => k !== 'libraryCategories' && (Array.isArray(v) ? v.includes(url) : v === url));
+  const setLibraryCategory = (url, category) => run(`category-${url}`, () => save({ ...ov, libraryCategories: { ...(ov.libraryCategories || {}), [url]: category } }), 'Η κατηγορία αποθηκεύτηκε ✓');
+  const assignLibraryImageToSlot = (url, slotId) => run(`slot-${url}`, async () => {
+    await save({ ...ov, [slotId]: url, libraryCategories: { ...(ov.libraryCategories || {}), [url]: 'branding' } });
+  }, 'Η εικόνα ανατέθηκε στο σημείο ✓');
+  const addLibraryImageToGallery = (url, galleryId) => run(`assign-${url}`, async () => {
+    const current = [...(ov[galleryId] || DEFAULTS[galleryId] || [])];
+    if (!current.includes(url)) current.push(url);
+    const category = galleryId === 'heistPhotos' ? 'heist' : 'pajama';
+    await save({ ...ov, [galleryId]: current, libraryCategories: { ...(ov.libraryCategories || {}), [url]: category } });
+  }, 'Η εικόνα προστέθηκε στη γκαλερί ✓');
   const removeFile = (f) => {
     const used = isUsed(f.url);
     const q = used ? `Το «${f.name}» χρησιμοποιείται κάπου. Θα αφαιρεθεί από εκεί (θα επανέλθει το αρχικό) και θα διαγραφεί οριστικά. Συνέχεια;` : `Διαγραφή του «${f.name}» οριστικά;`;
@@ -103,7 +127,11 @@ export default function AdminMedia() {
       if (used) {
         const next = {};
         for (const [k, v] of Object.entries(ov)) {
-          if (Array.isArray(v)) next[k] = v.filter((u) => u !== f.url);
+          if (k === 'libraryCategories') {
+            const categories = { ...v };
+            delete categories[f.url];
+            next[k] = categories;
+          } else if (Array.isArray(v)) next[k] = v.filter((u) => u !== f.url);
           else if (v !== f.url) next[k] = v;
         }
         await save(next);
@@ -208,13 +236,32 @@ export default function AdminMedia() {
 
       <ComicPanel className="bg-card space-y-3">
         <div className="font-heading text-lg">🗂️ ΒΙΒΛΙΟΘΗΚΗ ΑΡΧΕΙΩΝ ({library.length})</div>
-        <p className="text-[11px] text-foreground/60">Όλα όσα έχεις ανεβάσει. Η διαγραφή τα σβήνει οριστικά και τα αφαιρεί από όπου χρησιμοποιούνται.</p>
+        <p className="text-[11px] text-foreground/60">Οργάνωσε τις εικόνες σε Heist, Pajama ή Branding. Από εδώ μπορείς επίσης να προσθέσεις μια εικόνα απευθείας στη σωστή γκαλερί. Η διαγραφή αφαιρεί το αρχείο οριστικά.</p>
+        <div className="flex flex-wrap gap-2">
+          {[{ id: 'all', label: 'Όλα' }, ...LIBRARY_CATEGORIES].map((c) => (
+            <ComicButton key={c.id} size="sm" variant={libraryFilter === c.id ? 'default' : 'dark'} disabled={!!busy} onClick={() => setLibraryFilter(c.id)}>{c.label}</ComicButton>
+          ))}
+        </div>
         {!library.length && <div className="text-xs text-foreground/60">Δεν έχεις ανεβάσει ακόμα αρχεία.</div>}
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2">
-          {library.map((f) => (
+          {library.filter((f) => libraryFilter === 'all' || (f.kind === 'video' ? libraryFilter === 'uncategorized' : categoryOf(f.url) === libraryFilter)).map((f) => (
             <div key={f.name} className="border-2 border-border/40 rounded overflow-hidden bg-secondary/40">
               <Thumb video={f.kind === 'video'} src={f.url} className="w-full aspect-square" />
               <div className="p-1 text-[10px] leading-tight break-all">{f.name.replace(/^[a-z0-9]+-[a-f0-9]{6}-/, '')}<br />{mb(f.size)}{isUsed(f.url) ? ' · σε χρήση' : ''}</div>
+              {f.kind !== 'video' && <div className="p-1 space-y-1">
+                <div className="text-[10px] text-foreground/60">Κατηγορία</div>
+                <select value={categoryOf(f.url)} disabled={!!busy} onChange={(e) => setLibraryCategory(f.url, e.target.value)} className="w-full rounded bg-black/50 border border-border/50 p-1 text-xs">
+                  {LIBRARY_CATEGORIES.map((c) => <option key={c.id} value={c.id}>{c.label}</option>)}
+                </select>
+                <div className="grid grid-cols-2 gap-1">
+                  <button disabled={!!busy} onClick={() => addLibraryImageToGallery(f.url, 'heistPhotos')} className="text-[10px] py-1 rounded bg-black/50 disabled:opacity-30">+ Heist</button>
+                  <button disabled={!!busy} onClick={() => addLibraryImageToGallery(f.url, 'pajamaPhotos')} className="text-[10px] py-1 rounded bg-black/50 disabled:opacity-30">+ Pajama</button>
+                </div>
+                <select defaultValue="" disabled={!!busy} onChange={(e) => { if (e.target.value) assignLibraryImageToSlot(f.url, e.target.value); e.target.value = ''; }} className="w-full rounded bg-black/50 border border-border/50 p-1 text-[10px]">
+                  <option value="">Ανάθεση σε σημείο Site…</option>
+                  {IMAGE_SLOTS.map((slot) => <option key={slot.id} value={slot.id}>{slot.label}</option>)}
+                </select>
+              </div>}
               <button disabled={!!busy} onClick={() => removeFile(f)} className="w-full text-xs py-2.5 bg-black/50 text-red-400 disabled:opacity-30">🗑 Διαγραφή</button>
             </div>
           ))}
