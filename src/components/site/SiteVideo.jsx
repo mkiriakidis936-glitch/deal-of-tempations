@@ -1,5 +1,6 @@
 import React from 'react';
-import { PHOTO, SITE_VIDEOS } from '@/data/brandArt';
+import { FILM, SITE_VIDEOS } from '@/data/brandArt';
+import VideoFilm from '@/components/shared/VideoFilm';
 
 export default function SiteVideo({ c }) {
   const kicker = c?.videoKicker || 'Το τρέιλερ';
