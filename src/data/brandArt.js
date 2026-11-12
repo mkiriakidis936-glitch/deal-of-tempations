@@ -74,7 +74,7 @@ export function applyMediaOverrides(o = {}) {
   FILM.agent = str(o.agent) || DEFAULTS.agent;
   for (const id of PHOTO_SPOT_IDS) {
     const value = str(o[id]);
-    PHOTO[id] = value && !/\.(mp4|webm|mov)(?:[?#]|$)/i.test(value) ? value : DEFAULTS[id];
+    PHOTO[id] = value && !/\.(mp4|webm|mov)(?:[?#]|$)/i.test(value) ? value : (id === 'invitation' ? ART.invitationBg : DEFAULTS[id]);
   }
   const setList = (arr, v, def) => arr.splice(0, arr.length, ...((Array.isArray(v) && v.filter(str).length ? v.filter(str) : def)));
   setList(HEIST_PHOTOS, o.heistPhotos, DEFAULTS.heistPhotos);
