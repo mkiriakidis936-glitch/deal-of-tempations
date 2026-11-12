@@ -8,6 +8,8 @@ import { MEDIA_KEY, fetchOverrides, uploadMedia, listMedia, deleteMedia, deleteA
 
 const IMG_ACCEPT = 'image/*,.jpg,.jpeg,.png,.webp,.gif,.avif,.heic';
 const VID_ACCEPT = 'video/*,.mp4,.webm,.mov';
+const MEDIA_ACCEPT = 'image/*,video/*,.jpg,.jpeg,.png,.webp,.gif,.avif,.heic,.mp4,.webm,.mov';
+const isVideoFile = (url) => /\\.(mp4|webm|mov)(?:[?#]|$)/i.test(url || '');
 const mb = (n) => (n >= 1048576 ? `${(n / 1048576).toFixed(1)} MB` : `${Math.max(1, Math.round(n / 1024))} KB`);
 
 function Thumb({ src, video, className = '' }) {
@@ -37,6 +39,7 @@ export default function AdminMedia() {
   const imgMany = useRef(null);
   const vidOne = useRef(null);
   const vidMany = useRef(null);
+  const mediaOne = useRef(null);
 
   const refreshLibrary = useCallback(async () => {
     try { setLibrary(await listMedia()); } catch (e) { setMsg({ ok: false, text: e.message }); }
@@ -81,7 +84,7 @@ export default function AdminMedia() {
         const r = await uploadMedia(files[i], (p) => setProgress((i + p) / files.length));
         urls.push(r.url);
       }
-      if (t.mode === 'slot') await save({ ...ov, [t.id]: urls[0] });
+      if (t.mode === 'slot') await save({ ...ov, [t.id]: urls[0], emptySlots: (ov.emptySlots || []).filter((id) => id !== t.id) });
       else if (t.mode === 'replace') {
         const l = [...(ov[t.id] || DEFAULTS[t.id] || [])];
         l[t.index] = urls[0];
@@ -97,7 +100,8 @@ export default function AdminMedia() {
     }, 'Ανέβηκε και αποθηκεύτηκε ✓');
   };
 
-  const reset = (id) => run(id, () => { const { [id]: _, ...rest } = ov; return save(rest); }, 'Επαναφορά στο αρχικό ✓');
+  const reset = (id) => run(id, () => { const { [id]: _, ...rest } = ov; if (PHOTO_SPOT_IDS.includes(id)) return save({ ...rest, [id]: DEFAULTS[id], emptySlots: (ov.emptySlots || []).filter((slot) => slot !== id) }); return save(rest); }, 'Επαναφορά στο αρχικό ✓');
+  const clearSlot = (id) => run(id, () => save({ ...ov, [id]: undefined, emptySlots: [...new Set([...(ov.emptySlots || []), id])] }), 'Το σημείο καθαρίστηκε ✓');
   const listOf = (id) => Array.isArray(ov[id]) ? ov[id] : ((id === 'siteVideos' && (ov.clearAllVideos || ov.clearAllMedia)) || ((id === 'heistPhotos' || id === 'pajamaPhotos') && (ov.clearAllPhotos || ov.clearAllMedia)) ? [] : (DEFAULTS[id] || []));
   const setList = (id, list) => run(id, () => save({ ...ov, [id]: list }));
   const move = (id, i, d) => {
@@ -149,10 +153,16 @@ export default function AdminMedia() {
       await deleteAllMedia(kind);
       const next = {
         ...ov,
-        ...(kind === 'video' || kind === 'all' ? { agent: undefined, ...Object.fromEntries(PHOTO_SPOT_IDS.map((id) => [id, undefined])) } : {}),
-        ...(kind === 'image' || kind === 'all' ? { clearAllPhotos: true } : {}),
-        ...(kind === 'video' || kind === 'all' ? { clearAllVideos: true } : {}),
-        ...(kind === 'all' ? { clearAllMedia: true } : {}),
+        ...(kind === 'video' || kind === 'all' ? {
+          agent: undefined,
+          ...Object.fromEntries(PHOTO_SPOT_IDS.map((id) => [id, typeof ov[id] === 'string' && !isVideoFile(ov[id]) && kind === 'video' ? ov[id] : undefined])),
+        } : {}),
+        ...(kind === 'image' ? {
+          ...Object.fromEntries(PHOTO_SPOT_IDS.map((id) => [id, isVideoFile(ov[id]) ? ov[id] : undefined])),
+          clearAllPhotos: true,
+        } : {}),
+        ...(kind === 'all' ? { clearAllPhotos: true, clearAllVideos: true, clearAllMedia: true, emptySlots: PHOTO_SPOT_IDS } : {}),
+        ...(kind === 'video' ? { clearAllVideos: true } : {}),
         libraryCategories: {},
       };
       await save(next);
@@ -188,21 +198,25 @@ export default function AdminMedia() {
       </ComicPanel>
 
       <ComicPanel className="bg-card space-y-3">
-        <div className="font-heading text-lg">🎞️ ΒΙΝΤΕΟ ΑΝΑ ΣΗΜΕΙΟ</div>
-        <p className="text-xs text-foreground/60">Ανέβασε όποιο βίντεο θέλεις σε καθένα από τα έξι σημεία. Μπορείς να τα αφήσεις κενά μετά τη διαγραφή.</p>
+        <div className="font-heading text-lg">🖼️ ΦΩΤΟΓΡΑΦΙΑ Ή ΒΙΝΤΕΟ ΑΝΑ ΣΗΜΕΙΟ</div>
+        <p className="text-xs text-foreground/60">Και τα έξι σημεία είναι προαιρετικά. Σε κάθε σημείο ανεβάζεις εσύ φωτογραφία ή βίντεο, το αλλάζεις ή το διαγράφεις. Δεν απαιτείται να υπάρχει αρχείο σε κανένα σημείο.</p>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {PHOTO_SPOTS.map((s) => (
-            <div key={s.id} className="border-2 border-border/40 rounded-lg p-2 bg-secondary/40">
-              <Thumb src={ov[s.id] || FILM[s.id]} video className="w-full aspect-video rounded" />
-              <div className="font-bold text-sm mt-2">{s.label}</div>
-              <div className="text-[11px] text-foreground/60">{s.where}</div>
-              <div className="flex gap-2 mt-2">
-                <ComicButton size="sm" disabled={!!busy} onClick={() => pick(s.id, 'slot', vidOne)}>⬆️ Ανέβασμα βίντεο</ComicButton>
-                {ov[s.id] && <ComicButton size="sm" variant="dark" disabled={!!busy} onClick={() => reset(s.id)}>↩︎ Αρχική</ComicButton>}
+          {PHOTO_SPOTS.map((s) => {
+            const src = ov[s.id] || (ov.emptySlots?.includes(s.id) || ov.clearAllPhotos || ov.clearAllMedia ? '' : DEFAULTS[s.id]);
+            return (
+              <div key={s.id} className="border-2 border-border/40 rounded-lg p-2 bg-secondary/40">
+                {src ? <Thumb src={src} video={isVideoFile(src)} className="w-full aspect-video rounded" /> : <div className="w-full aspect-video rounded bg-black/40 flex items-center justify-center text-xs text-foreground/50">Κενό σημείο</div>}
+                <div className="font-bold text-sm mt-2">{s.label}</div>
+                <div className="text-[11px] text-foreground/60">{s.where}</div>
+                <div className="flex gap-2 mt-2 flex-wrap">
+                  <ComicButton size="sm" disabled={!!busy} onClick={() => pick(s.id, 'slot', mediaOne)}>⬆️ Ανέβασμα φωτογραφίας/βίντεο</ComicButton>
+                  {src && <ComicButton size="sm" variant="dark" disabled={!!busy} onClick={() => clearSlot(s.id)}>🗑 Διαγραφή</ComicButton>}
+                  <ComicButton size="sm" variant="dark" disabled={!!busy} onClick={() => reset(s.id)}>↩︎ Αρχικό</ComicButton>
+                </div>
+                <Progress id={s.id} />
               </div>
-              <Progress id={s.id} />
-            </div>
-          ))}
+            );
+          })}
         </div>
       </ComicPanel>
 
