@@ -103,3 +103,11 @@ export async function deleteMedia(name) {
   const res = await fetch(`${API_URL}/api/media/${encodeURIComponent(name)}`, { method: 'DELETE', headers: authHeaders() });
   if (!res.ok) throw new Error('Δεν διαγράφηκε.');
 }
+
+
+export async function deleteAllMedia(kind = 'all') {
+  const res = await fetch(`${API_URL}/api/media?kind=${encodeURIComponent(kind)}`, { method: 'DELETE', headers: authHeaders() });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error || 'Δεν διαγράφηκαν τα αρχεία.');
+  return data;
+}
