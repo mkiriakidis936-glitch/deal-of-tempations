@@ -1,28 +1,44 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React from 'react';
+import { cn } from '@/lib/utils';
 
-// Δείχνει περιεχόμενο σχεδιασμένο για 1280x720 μέσα σε μικρότερο κουτί (preview οθόνης TV).
-export default function ScaledFrame({ children, className = '' }) {
-  const ref = useRef(null);
-  const [scale, setScale] = useState(0.3);
+// Χρώμα ανά variant (χρησιμοποιούν τα tarot tokens του tailwind.config.js).
+const VARIANTS = {
+  red: 'bg-tarot-crimson text-foreground',
+  green: 'bg-tarot-forest text-foreground',
+  dark: 'bg-secondary text-foreground',
+  yellow: 'bg-primary text-tarot-dark',
+  magenta: 'bg-tarot-wine text-foreground',
+  white: 'bg-tarot-parchment text-tarot-dark',
+  cyan: 'bg-tarot-teal text-foreground',
+  purple: 'bg-tarot-royal text-foreground',
+};
 
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return undefined;
-    const fit = () => setScale(el.clientWidth / 1280);
-    fit();
-    const ro = new ResizeObserver(fit);
-    ro.observe(el);
-    return () => ro.disconnect();
-  }, []);
+const SIZES = {
+  sm: 'text-xs px-3 py-1.5',
+  md: 'text-sm px-4 py-2.5',
+  lg: 'text-base px-6 py-3.5',
+};
 
+const ComicButton = React.forwardRef(function ComicButton(
+  { children, variant = 'yellow', size = 'md', className, type = 'button', ...props },
+  ref,
+) {
   return (
-    <div ref={ref} className={`relative w-full aspect-video overflow-hidden rounded-lg border-2 border-border bg-background ${className}`}>
-      <div
-        className="absolute top-0 left-0"
-        style={{ transform: `scale(${scale})`, transformOrigin: 'top left', width: 1280, height: 720 }}
-      >
-        {children}
-      </div>
-    </div>
+    <button
+      ref={ref}
+      type={type}
+      className={cn(
+        'comic-boom font-heading inline-flex items-center justify-center gap-2 select-none',
+        'disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none',
+        VARIANTS[variant] || VARIANTS.yellow,
+        SIZES[size] || SIZES.md,
+        className,
+      )}
+      {...props}
+    >
+      {children}
+    </button>
   );
-}
+});
+
+export default ComicButton;
