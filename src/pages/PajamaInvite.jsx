@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import PajamaRSVP from '@/components/pajama/PajamaRSVP';
 import { Image } from '@/components/ui/image';
-import { ART, PHOTO, PAJAMA_PHOTOS } from '@/data/brandArt';
+import { ART, FILM, PAJAMA_PHOTOS } from '@/data/brandArt';
+import VideoFilm from '@/components/shared/VideoFilm';
 import MoodGallery from '@/components/shared/MoodGallery';
 import PhotoFilm from '@/components/shared/PhotoFilm';
 
@@ -50,7 +51,7 @@ export default function PajamaInvite() {
   return (
     <div className="min-h-screen bg-background text-foreground relative overflow-hidden flex flex-col items-center justify-center px-6 py-16">
       <div className="pointer-events-none absolute inset-0">
-        <img src={PHOTO.pajama} data-media="pajama" alt="" className="w-full h-full object-cover opacity-35" />
+        <VideoFilm src={FILM.pajama} slot="pajama" className="w-full h-full object-cover opacity-35" />
         <div className="absolute inset-0 bg-gradient-to-b from-background/85 via-background/75 to-background" />
       </div>
       <div className="pointer-events-none absolute inset-0 opacity-70">
