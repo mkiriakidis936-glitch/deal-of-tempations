@@ -1,5 +1,5 @@
 import React from 'react';
-import { PHOTO, SITE_VIDEOS } from '@/data/brandArt';
+import { PHOTO, FILM, SITE_VIDEOS } from '@/data/brandArt';
 import MediaSpot from '@/components/shared/MediaSpot';
 
 export default function SiteVideo({ c }) {
@@ -13,7 +13,7 @@ export default function SiteVideo({ c }) {
       </div>
       <div className="relative rounded-lg overflow-hidden border-2 border-tarot-gold/40 shadow-[0_0_50px_rgba(201,162,39,0.15)]">
         <MediaSpot
-          src={PHOTO.siteTrailer}
+          src={PHOTO.siteTrailer || FILM.siteTrailer}
           slot="siteTrailer"
           alt=""
           className="w-full aspect-video bg-black object-cover"
