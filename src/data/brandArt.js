@@ -44,7 +44,7 @@ export const FILM = {
   agent: 'https://base44.app/api/apps/6acb505bd92681cd7a001e3f/files/mp/public/6acb505bd92681cd7a001e3f/ef4d1c8f4_agent-film.mp4',
 };
 // κάθε σημείο βίντεο ξεκινά με το κεντρικό· στο Admin μπορεί να αλλάξει ξεχωριστά
-for (const id of PHOTO_SPOT_IDS) FILM[id] = str(o[id]) || FILM.agent;
+for (const id of PHOTO_SPOT_IDS) { const value = str(o[id]); FILM[id] = value && /\.(mp4|webm|mov)(?:[?#]|$)/i.test(value) ? value : FILM.agent; }
 
 export const SITE_VIDEOS = []; // επιπλέον βίντεο για το /site (Admin → Φωτογραφίες & Βίντεο)
 export const PAJAMA_PHOTOS = [ART.photoPediGlam, ART.photoSlippers, ART.photoGame];
