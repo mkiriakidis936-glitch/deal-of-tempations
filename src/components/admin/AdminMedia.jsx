@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import ComicPanel from '@/components/comic/ComicPanel';
 import ComicButton from '@/components/comic/ComicButton';
-import { DEFAULTS } from '@/data/brandArt';
+import { ART, DEFAULTS } from '@/data/brandArt';
 import { IMAGE_SLOTS, PHOTO_SPOTS, PHOTO_SPOT_IDS, GALLERIES } from '@/data/mediaSlots';
 import { MEDIA_KEY, fetchOverrides, uploadMedia, listMedia, deleteMedia, deleteAllMedia } from '@/lib/media';
 
@@ -155,10 +155,14 @@ export default function AdminMedia() {
         ...ov,
         ...(kind === 'video' || kind === 'all' ? {
           agent: undefined,
+          siteVideos: [],
           ...Object.fromEntries(PHOTO_SPOT_IDS.map((id) => [id, typeof ov[id] === 'string' && !isVideoFile(ov[id]) && kind === 'video' ? ov[id] : undefined])),
         } : {}),
-        ...(kind === 'image' ? {
-          ...Object.fromEntries(PHOTO_SPOT_IDS.map((id) => [id, isVideoFile(ov[id]) ? ov[id] : undefined])),
+        ...(kind === 'image' || kind === 'all' ? {
+          ...Object.fromEntries(Object.keys(ART).map((id) => [id, undefined])),
+          heistPhotos: [],
+          pajamaPhotos: [],
+          ...Object.fromEntries(PHOTO_SPOT_IDS.map((id) => [id, kind === 'image' && isVideoFile(ov[id]) ? ov[id] : undefined])),
           clearAllPhotos: true,
         } : {}),
         ...(kind === 'all' ? { clearAllPhotos: true, clearAllVideos: true, clearAllMedia: true, emptySlots: PHOTO_SPOT_IDS } : {}),
