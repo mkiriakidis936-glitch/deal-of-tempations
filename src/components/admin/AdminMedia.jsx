@@ -110,6 +110,9 @@ export default function AdminMedia() {
 
   const isUsed = (url) => Object.entries(ov).some(([k, v]) => k !== 'libraryCategories' && (Array.isArray(v) ? v.includes(url) : v === url));
   const setLibraryCategory = (url, category) => run(`category-${url}`, () => save({ ...ov, libraryCategories: { ...(ov.libraryCategories || {}), [url]: category } }), 'Η κατηγορία αποθηκεύτηκε ✓');
+  const assignLibraryImageToSlot = (url, slotId) => run(`slot-${url}`, async () => {
+    await save({ ...ov, [slotId]: url, libraryCategories: { ...(ov.libraryCategories || {}), [url]: 'branding' } });
+  }, 'Η εικόνα ανατέθηκε στο σημείο ✓');
   const addLibraryImageToGallery = (url, galleryId) => run(`assign-${url}`, async () => {
     const current = [...(ov[galleryId] || DEFAULTS[galleryId] || [])];
     if (!current.includes(url)) current.push(url);
@@ -124,7 +127,11 @@ export default function AdminMedia() {
       if (used) {
         const next = {};
         for (const [k, v] of Object.entries(ov)) {
-          if (Array.isArray(v)) next[k] = v.filter((u) => u !== f.url);
+          if (k === 'libraryCategories') {
+            const categories = { ...v };
+            delete categories[f.url];
+            next[k] = categories;
+          } else if (Array.isArray(v)) next[k] = v.filter((u) => u !== f.url);
           else if (v !== f.url) next[k] = v;
         }
         await save(next);
@@ -250,6 +257,10 @@ export default function AdminMedia() {
                   <button disabled={!!busy} onClick={() => addLibraryImageToGallery(f.url, 'heistPhotos')} className="text-[10px] py-1 rounded bg-black/50 disabled:opacity-30">+ Heist</button>
                   <button disabled={!!busy} onClick={() => addLibraryImageToGallery(f.url, 'pajamaPhotos')} className="text-[10px] py-1 rounded bg-black/50 disabled:opacity-30">+ Pajama</button>
                 </div>
+                <select defaultValue="" disabled={!!busy} onChange={(e) => { if (e.target.value) assignLibraryImageToSlot(f.url, e.target.value); e.target.value = ''; }} className="w-full rounded bg-black/50 border border-border/50 p-1 text-[10px]">
+                  <option value="">Ανάθεση σε σημείο Site…</option>
+                  {IMAGE_SLOTS.map((slot) => <option key={slot.id} value={slot.id}>{slot.label}</option>)}
+                </select>
               </div>}
               <button disabled={!!busy} onClick={() => removeFile(f)} className="w-full text-xs py-2.5 bg-black/50 text-red-400 disabled:opacity-30">🗑 Διαγραφή</button>
             </div>
