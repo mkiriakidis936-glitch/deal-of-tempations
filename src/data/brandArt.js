@@ -1,4 +1,4 @@
-import { VIDEO_SPOT_IDS } from '@/data/mediaSlots';
+import { PHOTO_SPOT_IDS } from '@/data/mediaSlots';
 
 const BASE = 'https://base44.app/api/apps/6acb505bd92681cd7a001e3f/files/mp/public/6acb505bd92681cd7a001e3f/';
 
@@ -31,11 +31,20 @@ export const ART = {
   invitationBg: 'https://media.base44.com/images/public/6acb505bd92681cd7a001e3f/38a7c85ef_DealofTemptation2.jpeg',
 };
 
+export const PHOTO = {
+  siteHero: ART.poster,
+  siteTrailer: ART.poster,
+  tv: ART.scene,
+  promo: ART.poster,
+  invitation: ART.invitationBg,
+  pajama: ART.vault,
+};
+
 export const FILM = {
   agent: 'https://base44.app/api/apps/6acb505bd92681cd7a001e3f/files/mp/public/6acb505bd92681cd7a001e3f/ef4d1c8f4_agent-film.mp4',
 };
 // κάθε σημείο βίντεο ξεκινά με το κεντρικό· στο Admin μπορεί να αλλάξει ξεχωριστά
-for (const id of VIDEO_SPOT_IDS) FILM[id] = FILM.agent;
+for (const id of PHOTO_SPOT_IDS) FILM[id] = FILM.agent;
 
 export const SITE_VIDEOS = []; // επιπλέον βίντεο για το /site (Admin → Φωτογραφίες & Βίντεο)
 export const PAJAMA_PHOTOS = [ART.photoPediGlam, ART.photoSlippers, ART.photoGame];
@@ -55,7 +64,7 @@ export const HEIST_PHOTOS = [
 ];
 
 // Αντίγραφο των αρχικών τιμών (πριν εφαρμοστούν οι αλλαγές από το Admin)
-export const DEFAULTS = { ...ART, ...FILM, heistPhotos: [...HEIST_PHOTOS], pajamaPhotos: [...PAJAMA_PHOTOS], siteVideos: [] };
+export const DEFAULTS = { ...ART, ...FILM, ...PHOTO, heistPhotos: [...HEIST_PHOTOS], pajamaPhotos: [...PAJAMA_PHOTOS], siteVideos: [] };
 
 // Καλείται μία φορά στην εκκίνηση (src/lib/media.js), ΠΡΙΝ φορτωθεί η εφαρμογή.
 // Αλλάζει τα αντικείμενα επιτόπου, ώστε να τα δουν όλα τα components.
@@ -63,7 +72,10 @@ export function applyMediaOverrides(o = {}) {
   const str = (v) => (typeof v === 'string' && v ? v : null);
   for (const k of Object.keys(ART)) ART[k] = str(o[k]) || DEFAULTS[k];
   FILM.agent = str(o.agent) || DEFAULTS.agent;
-  for (const id of VIDEO_SPOT_IDS) FILM[id] = str(o[id]) || FILM.agent;
+  for (const id of PHOTO_SPOT_IDS) {
+    const value = str(o[id]);
+    PHOTO[id] = value && !/\.(mp4|webm|mov)(?:[?#]|$)/i.test(value) ? value : (id === 'invitation' ? ART.invitationBg : DEFAULTS[id]);
+  }
   const setList = (arr, v, def) => arr.splice(0, arr.length, ...((Array.isArray(v) && v.filter(str).length ? v.filter(str) : def)));
   setList(HEIST_PHOTOS, o.heistPhotos, DEFAULTS.heistPhotos);
   setList(PAJAMA_PHOTOS, o.pajamaPhotos, DEFAULTS.pajamaPhotos);

@@ -1,5 +1,5 @@
 import React from 'react';
-import { ART, FILM, SITE_VIDEOS } from '@/data/brandArt';
+import { PHOTO, SITE_VIDEOS } from '@/data/brandArt';
 
 export default function SiteVideo({ c }) {
   const kicker = c?.videoKicker || 'Το τρέιλερ';
@@ -11,14 +11,11 @@ export default function SiteVideo({ c }) {
         <h2 className="font-display text-2xl sm:text-3xl text-tarot-gold tracking-[0.1em]">{title}</h2>
       </div>
       <div className="relative rounded-lg overflow-hidden border-2 border-tarot-gold/40 shadow-[0_0_50px_rgba(201,162,39,0.15)]">
-        <video
-          src={FILM.siteTrailer}
+        <img
+          src={PHOTO.siteTrailer}
           data-media="siteTrailer"
-          poster={ART.poster}
-          controls
-          playsInline
-          preload="metadata"
-          className="w-full aspect-video bg-black"
+          alt=""
+          className="w-full aspect-video bg-black object-cover"
         />
       </div>
       {SITE_VIDEOS.length > 0 && (

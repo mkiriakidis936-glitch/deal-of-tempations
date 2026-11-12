@@ -13,8 +13,7 @@ export const IMAGE_SLOTS = [
   { id: 'invitationBg', label: 'Φόντο πρόσκλησης', where: 'Εικόνα πριν ξεκινήσει το βίντεο στο teaser πρόσκλησης' },
 ];
 
-export const VIDEO_SPOTS = [
-  { id: 'agent', label: 'Κεντρικό βίντεο', where: 'Όλα τα σημεία που δεν έχουν δικό τους βίντεο' },
+export const PHOTO_SPOTS = [
   { id: 'siteHero', label: 'Site — φόντο', where: 'Αρχική σελίδα, φόντο hero' },
   { id: 'siteTrailer', label: 'Site — τρέιλερ', where: 'Αρχική σελίδα, ενότητα τρέιλερ' },
   { id: 'tv', label: 'TV', where: 'Οθόνη TV' },
@@ -22,7 +21,7 @@ export const VIDEO_SPOTS = [
   { id: 'invitation', label: 'Πρόσκληση', where: 'Teaser πρόσκλησης' },
   { id: 'pajama', label: 'Pajama πρόσκληση', where: 'Φόντο στο Pajama invite' },
 ];
-export const VIDEO_SPOT_IDS = VIDEO_SPOTS.filter((v) => v.id !== 'agent').map((v) => v.id);
+export const PHOTO_SPOT_IDS = PHOTO_SPOTS.map((v) => v.id);
 
 export const GALLERIES = [
   { id: 'heistPhotos', label: 'Heist — γκαλερί', where: 'Site (Gallery) και teaser πρόσκλησης' },
