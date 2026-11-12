@@ -10,7 +10,7 @@ export default function SiteVideo() {
       </div>
       <div className="relative rounded-lg overflow-hidden border-2 border-tarot-gold/40 shadow-[0_0_50px_rgba(201,162,39,0.15)]">
         <video
-          src={FILM.agent}
+          src={FILM.siteTrailer}
           poster={ART.poster}
           controls
           playsInline

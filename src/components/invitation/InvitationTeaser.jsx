@@ -14,7 +14,7 @@ const TEASER_LINES = [
 ];
 
 const SEAL_URL = ART.emblem;
-const BG_URL = 'https://media.base44.com/images/public/6acb505bd92681cd7a001e3f/38a7c85ef_DealofTemptation2.jpeg';
+const BG_URL = ART.invitationBg;
 
 function useCountdown(targetDate) {
   const [remaining, setRemaining] = useState(null);
@@ -69,7 +69,7 @@ export default function InvitationTeaser({ onOpen }) {
     >
       <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none">
         <div className="absolute inset-0" style={{ opacity: 0.55 }}>
-          <VideoFilm src={FILM.agent} poster={BG_URL} className="w-full h-full object-cover" />
+          <VideoFilm src={FILM.invitation} poster={BG_URL} className="w-full h-full object-cover" />
         </div>
         <div
           className="absolute inset-0"

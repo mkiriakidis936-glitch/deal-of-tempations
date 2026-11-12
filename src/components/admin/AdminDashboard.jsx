@@ -2,8 +2,9 @@ import React from 'react';
 import ComicPanel from '@/components/comic/ComicPanel';
 import { Image } from '@/components/ui/image';
 import { GAME_MODES, INTENSITY_LEVELS } from '@/data/gameConfig';
+import { ART } from '@/data/brandArt';
 
-const BANNER_URL = 'https://media.base44.com/images/public/6acb505bd92681cd7a001e3f/059bca0c5_Gemini_Generated_Image_hmy5gghmy5gghmy5.jpeg';
+const BANNER_URL = ART.banner;
 
 export default function AdminDashboard({ sessions, loading }) {
   if (loading) {

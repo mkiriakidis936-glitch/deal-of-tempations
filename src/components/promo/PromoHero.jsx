@@ -9,7 +9,7 @@ export default function PromoHero({ content }) {
   return (
     <section className="relative min-h-[100svh] flex items-center justify-center overflow-hidden">
       <div className="absolute inset-0 z-0">
-        <VideoFilm src={FILM.agent} poster={content.heroImage} className="w-full h-full object-cover" />
+        <VideoFilm src={FILM.promo} poster={content.heroImage} className="w-full h-full object-cover" />
         <div
           className="absolute inset-0"
           style={{

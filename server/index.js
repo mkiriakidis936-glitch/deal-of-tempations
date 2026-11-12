@@ -5,6 +5,7 @@ import { migrate, pool } from './db.js';
 import { attachUser, authRoutes } from './auth.js';
 import { entityRoutes } from './entities.js';
 import { functionRoutes } from './functions.js';
+import { mediaRoutes, mediaStatic } from './media.js';
 
 const app = express();
 app.set('trust proxy', 1); // Railway terminates TLS in front of us
@@ -15,6 +16,8 @@ app.get('/api/health', (_req, res) => res.json({ ok: true }));
 authRoutes(app);
 app.use('/api/entities', entityRoutes());
 app.use('/api/functions', functionRoutes());
+app.use('/api/media', mediaRoutes());
+app.use('/media', mediaStatic);
 app.use('/api', (_req, res) => res.status(404).json({ error: 'Not found' }));
 
 // Serve the built React app + SPA fallback (client-side routing: /tv, /play, /admin ...)

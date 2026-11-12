@@ -4,8 +4,9 @@ import ComicPanel from '@/components/comic/ComicPanel';
 import ComicButton from '@/components/comic/ComicButton';
 import { Image } from '@/components/ui/image';
 import { ARREST_HEIST_INTENSITY } from '@/data/gameConfig';
+import { ART } from '@/data/brandArt';
 
-const LOGO_URL = 'https://media.base44.com/images/public/6acb505bd92681cd7a001e3f/ee5e63437_Gemini_Generated_Image_h0aclsh0aclsh0ac.jpeg';
+const LOGO_URL = ART.logo;
 
 const SHOE_OPTIONS = [
   { id: 'boots', label: 'Μπότες / Ψηλά Τακούνια', icon: '👢' },

@@ -192,7 +192,7 @@ export default function TVScreen() {
   return (
     <div className="min-h-screen comic-dots-dark text-foreground flex flex-col">
       <div className="fixed inset-0 -z-10 pointer-events-none opacity-20">
-        <VideoFilm src={FILM.agent} className="w-full h-full object-cover" />
+        <VideoFilm src={FILM.tv} className="w-full h-full object-cover" />
       </div>
       <LiveOverlay />
       <PajamaRevealOverlay />

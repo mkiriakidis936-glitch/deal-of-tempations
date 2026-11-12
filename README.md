@@ -65,3 +65,14 @@ npm run dev                 # frontend στο :5173 (proxy προς το API)
 - **Πρόσβαση:** το tablet (`/`) και το `/admin` θέλουν admin σύνδεση. Τα `/tv`, `/play`, φόρμες και προσκλήσεις μένουν ανοιχτά. Τα ερωτηματολόγια (`PlayerIntake`, `PajamaIntake`, `BacheloretteIntake`) διαβάζονται μόνο από admin· οι ρυθμίσεις/περιεχόμενο αλλάζουν μόνο από admin. Οι κανόνες είναι στο πάνω μέρος του `server/entities.js`.
 - **Control Panel API:** νέο URL `https://<domain>/api/functions/controlPanelApi` (ίδιο header `X-Control-Panel-Key`).
 - Τα links/QR χρησιμοποιούν πλέον το domain που τρέχει η εφαρμογή (δεν είναι hard-coded στο `deal-of-game.base44.app`).
+
+## 5. Δικές σου φωτογραφίες & βίντεο (Admin → 🖼️ Φωτογραφίες & Βίντεο)
+
+Ανεβάζεις αρχεία από το Admin και διαλέγεις πού εμφανίζονται (βίντεο ανά σελίδα, εικόνες, γκαλερί Heist/Pajama). Τα αρχεία σερβίρονται από `/media/...`.
+
+**Στο Railway χρειάζεται Volume, αλλιώς τα αρχεία χάνονται σε κάθε deploy:**
+1. Στο project: **+ New → Volume**, σύνδεσέ το στο service της εφαρμογής, Mount path: `/data`.
+2. Στο service → **Variables**: `UPLOAD_DIR` = `/data/uploads` (προαιρετικά `MAX_UPLOAD_MB`, προεπιλογή 300).
+3. Redeploy.
+
+Τοπικά τα αρχεία πάνε στο `uploads/` (είναι στο `.gitignore`).

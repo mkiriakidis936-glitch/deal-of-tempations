@@ -8,6 +8,6 @@ export default defineConfig({
   server: {
     port: 5173,
     // `npm run dev` (frontend) + `npm run dev:server` (API) in two terminals
-    proxy: { '/api': 'http://localhost:3000' },
+    proxy: { '/api': 'http://localhost:3000', '/media': 'http://localhost:3000' },
   },
 })
