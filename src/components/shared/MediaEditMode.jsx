@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useAuth } from '@/lib/AuthContext';
 import {
-  ART, FILM, HEIST_PHOTOS, PAJAMA_PHOTOS, SITE_VIDEOS, DEFAULTS, applyMediaOverrides,
+  ART, PHOTO, FILM, HEIST_PHOTOS, PAJAMA_PHOTOS, SITE_VIDEOS, DEFAULTS, applyMediaOverrides,
 } from '@/data/brandArt';
 import { IMAGE_SLOTS, PHOTO_SPOT_IDS } from '@/data/mediaSlots';
 import { uploadMedia, patchOverrides } from '@/lib/media';
@@ -17,7 +17,7 @@ function resolve(el) {
   if (!src) return null;
   if (el.tagName === 'VIDEO') {
     const slot = el.dataset.media;
-    if (slot && slot === 'agent') return { kind: 'slot', id: slot };
+    if (slot && (slot === 'agent' || PHOTO_SPOT_IDS.includes(slot))) return { kind: 'slot', id: slot };
     const i = SITE_VIDEOS.indexOf(src);
     return i >= 0 ? { kind: 'list', id: 'siteVideos', index: i } : null;
   }
@@ -108,8 +108,7 @@ export default function MediaEditMode() {
       document.querySelectorAll('img,video').forEach((n) => {
         if (n.tagName === 'VIDEO') {
           const slot = n.dataset.media;
-          const want = target.kind === 'slot' && slot ? FILM[slot] : null;
-          const hit = n === el || (want && n.getAttribute('src') === oldSrc && want === url);
+          const hit = n === el;
           if (hit) { n.setAttribute('src', url); n.load(); n.play?.().catch(() => {}); }
         } else if (el.tagName === 'IMG' && n.getAttribute('src') === oldSrc) {
           n.setAttribute('src', url);
