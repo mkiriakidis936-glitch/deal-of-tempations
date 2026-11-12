@@ -40,11 +40,9 @@ export const PHOTO = {
   pajama: ART.vault,
 };
 
-export const FILM = {
-  agent: 'https://base44.app/api/apps/6acb505bd92681cd7a001e3f/files/mp/public/6acb505bd92681cd7a001e3f/ef4d1c8f4_agent-film.mp4',
-};
-// κάθε σημείο βίντεο ξεκινά με το κεντρικό· στο Admin μπορεί να αλλάξει ξεχωριστά
-for (const id of PHOTO_SPOT_IDS) FILM[id] = FILM.agent;
+// Τα βίντεο είναι προαιρετικά. Δεν υπάρχει πλέον υποχρεωτικό/προεπιλεγμένο βίντεο.
+export const FILM = { agent: '' };
+for (const id of PHOTO_SPOT_IDS) FILM[id] = '';
 
 export const SITE_VIDEOS = []; // επιπλέον βίντεο για το /site (Admin → Φωτογραφίες & Βίντεο)
 export const PAJAMA_PHOTOS = [ART.photoPediGlam, ART.photoSlippers, ART.photoGame];
@@ -70,18 +68,32 @@ export const DEFAULTS = { ...ART, ...PHOTO, ...FILM, heistPhotos: [...HEIST_PHOT
 // Αλλάζει τα αντικείμενα επιτόπου, ώστε να τα δουν όλα τα components.
 export function applyMediaOverrides(o = {}) {
   const str = (v) => (typeof v === 'string' && v ? v : null);
+  const isVideo = (v) => /\\.(mp4|webm|mov)(?:[?#]|$)/i.test(v || '');
   const clearPhotos = !!(o.clearAllPhotos || o.clearAllMedia);
   const clearVideos = !!(o.clearAllVideos || o.clearAllMedia);
+  const emptySlots = Array.isArray(o.emptySlots) ? o.emptySlots : [];
+
   for (const k of Object.keys(ART)) ART[k] = str(o[k]) || (clearPhotos ? '' : DEFAULTS[k]);
-  FILM.agent = clearVideos ? '' : (str(o.agent) || DEFAULTS.agent);
+
+  // Κάθε ένα από τα έξι σημεία δέχεται είτε φωτογραφία είτε βίντεο, ή παραμένει κενό.
+  FILM.agent = clearVideos ? '' : (str(o.agent) || '');
   for (const id of PHOTO_SPOT_IDS) {
     const value = str(o[id]);
-    FILM[id] = clearVideos ? (value || '') : (value && /\.(mp4|webm|mov)(?:[?#]|$)/i.test(value) ? value : FILM.agent);
+    if (emptySlots.includes(id)) {
+      PHOTO[id] = '';
+      FILM[id] = '';
+    } else if (value && isVideo(value)) {
+      PHOTO[id] = '';
+      FILM[id] = value;
+    } else if (value) {
+      PHOTO[id] = value;
+      FILM[id] = '';
+    } else {
+      PHOTO[id] = clearPhotos ? '' : DEFAULTS[id];
+      FILM[id] = '';
+    }
   }
-  for (const id of PHOTO_SPOT_IDS) {
-    const value = str(o[id]);
-    PHOTO[id] = value && !/\.(mp4|webm|mov)(?:[?#]|$)/i.test(value) ? value : (clearPhotos ? '' : (id === 'invitation' ? ART.invitationBg : DEFAULTS[id]));
-  }
+
   const setList = (arr, v, def) => arr.splice(0, arr.length, ...((Array.isArray(v) && v.filter(str).length ? v.filter(str) : def)));
   setList(HEIST_PHOTOS, o.heistPhotos, clearPhotos ? [] : DEFAULTS.heistPhotos);
   setList(PAJAMA_PHOTOS, o.pajamaPhotos, clearPhotos ? [] : DEFAULTS.pajamaPhotos);
