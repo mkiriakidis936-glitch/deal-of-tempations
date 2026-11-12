@@ -26,8 +26,8 @@ import IntroSequenceTV from '@/components/tv/IntroSequenceTV';
 import PajamaRevealOverlay from '@/components/tv/PajamaRevealOverlay';
 import PajamaTV from '@/components/tv/PajamaTV';
 import SyncTimerDisplay from '@/components/shared/SyncTimerDisplay';
-import { FILM } from '@/data/brandArt';
-import VideoFilm from '@/components/shared/VideoFilm';
+import { PHOTO, FILM } from '@/data/brandArt';
+import MediaSpot from '@/components/shared/MediaSpot';
 import { useAudioSync } from '@/hooks/useAudioSync';
 import { calculateMostWanted, getWantedLevel, getTotalLoot } from '@/lib/gameLogic';
 
@@ -192,7 +192,7 @@ export default function TVScreen() {
   return (
     <div className="min-h-screen comic-dots-dark text-foreground flex flex-col">
       <div className="fixed inset-0 -z-10 pointer-events-none opacity-20">
-        <VideoFilm src={FILM.tv} slot="tv" className="w-full h-full object-cover" />
+        <MediaSpot src={PHOTO.tv || FILM.tv} slot="tv" className="w-full h-full object-cover" />
       </div>
       <LiveOverlay />
       <PajamaRevealOverlay />
