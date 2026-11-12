@@ -70,14 +70,16 @@ export const DEFAULTS = { ...ART, ...FILM, ...PHOTO, heistPhotos: [...HEIST_PHOT
 // Αλλάζει τα αντικείμενα επιτόπου, ώστε να τα δουν όλα τα components.
 export function applyMediaOverrides(o = {}) {
   const str = (v) => (typeof v === 'string' && v ? v : null);
-  const clearPhotos = !!(o.clearAllPhotos || o.clearAllMedia);\n  const clearVideos = !!(o.clearAllVideos || o.clearAllMedia);\n  for (const k of Object.keys(ART)) ART[k] = str(o[k]) || (clearPhotos ? '' : DEFAULTS[k]);
+  const clearPhotos = !!(o.clearAllPhotos || o.clearAllMedia);
+  const clearVideos = !!(o.clearAllVideos || o.clearAllMedia);
+  for (const k of Object.keys(ART)) ART[k] = str(o[k]) || (clearPhotos ? '' : DEFAULTS[k]);
   FILM.agent = str(o.agent) || (clearVideos ? '' : DEFAULTS.agent);\n  for (const id of PHOTO_SPOT_IDS) FILM[id] = clearVideos ? '' : (str(o[id]) || FILM.agent);
   for (const id of PHOTO_SPOT_IDS) {
     const value = str(o[id]);
     PHOTO[id] = value && !/\.(mp4|webm|mov)(?:[?#]|$)/i.test(value) ? value : (clearPhotos ? '' : (id === 'invitation' ? ART.invitationBg : DEFAULTS[id]));
   }
   const setList = (arr, v, def) => arr.splice(0, arr.length, ...((Array.isArray(v) && v.filter(str).length ? v.filter(str) : def)));
-  setList(HEIST_PHOTOS, o.heistPhotos, DEFAULTS.heistPhotos);
-  setList(PAJAMA_PHOTOS, o.pajamaPhotos, DEFAULTS.pajamaPhotos);
+  setList(HEIST_PHOTOS, o.heistPhotos, clearPhotos ? [] : DEFAULTS.heistPhotos);
+  setList(PAJAMA_PHOTOS, o.pajamaPhotos, clearPhotos ? [] : DEFAULTS.pajamaPhotos);
   setList(SITE_VIDEOS, o.siteVideos, []);
 }
