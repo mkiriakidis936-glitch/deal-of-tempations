@@ -44,7 +44,7 @@ export const FILM = {
   agent: 'https://base44.app/api/apps/6acb505bd92681cd7a001e3f/files/mp/public/6acb505bd92681cd7a001e3f/ef4d1c8f4_agent-film.mp4',
 };
 // κάθε σημείο βίντεο ξεκινά με το κεντρικό· στο Admin μπορεί να αλλάξει ξεχωριστά
-for (const id of PHOTO_SPOT_IDS) FILM[id] = FILM.agent;
+for (const id of PHOTO_SPOT_IDS) FILM[id] = str(o[id]) || FILM.agent;
 
 export const SITE_VIDEOS = []; // επιπλέον βίντεο για το /site (Admin → Φωτογραφίες & Βίντεο)
 export const PAJAMA_PHOTOS = [ART.photoPediGlam, ART.photoSlippers, ART.photoGame];
@@ -64,7 +64,7 @@ export const HEIST_PHOTOS = [
 ];
 
 // Αντίγραφο των αρχικών τιμών (πριν εφαρμοστούν οι αλλαγές από το Admin)
-export const DEFAULTS = { ...ART, ...FILM, ...PHOTO, heistPhotos: [...HEIST_PHOTOS], pajamaPhotos: [...PAJAMA_PHOTOS], siteVideos: [] };
+export const DEFAULTS = { ...ART, ...PHOTO, ...FILM, heistPhotos: [...HEIST_PHOTOS], pajamaPhotos: [...PAJAMA_PHOTOS], siteVideos: [] };
 
 // Καλείται μία φορά στην εκκίνηση (src/lib/media.js), ΠΡΙΝ φορτωθεί η εφαρμογή.
 // Αλλάζει τα αντικείμενα επιτόπου, ώστε να τα δουν όλα τα components.
