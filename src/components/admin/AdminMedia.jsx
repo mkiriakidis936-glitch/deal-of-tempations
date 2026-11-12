@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import ComicPanel from '@/components/comic/ComicPanel';
 import ComicButton from '@/components/comic/ComicButton';
-import { DEFAULTS } from '@/data/brandArt';
+import { DEFAULTS, FILM } from '@/data/brandArt';
 import { IMAGE_SLOTS, PHOTO_SPOTS, GALLERIES } from '@/data/mediaSlots';
 import { MEDIA_KEY, fetchOverrides, uploadMedia, listMedia, deleteMedia, deleteAllMedia } from '@/lib/media';
 
@@ -187,16 +187,16 @@ export default function AdminMedia() {
       </ComicPanel>
 
       <ComicPanel className="bg-card space-y-3">
-        <div className="font-heading text-lg">📸 ΦΩΤΟΓΡΑΦΙΕΣ ΑΝΑ ΣΗΜΕΙΟ</div>
-        <p className="text-xs text-foreground/60">Ανέβασε ξεχωριστή φωτογραφία για καθένα από τα έξι σημεία. Τα σημεία αυτά χρησιμοποιούν φωτογραφίες και όχι βίντεο.</p>
+        <div className="font-heading text-lg">🎞️ ΚΕΝΤΡΙΚΟ ΒΙΝΤΕΟ ΣΤΑ 6 ΣΗΜΕΙΑ</div>
+        <p className="text-xs text-foreground/60">Και τα έξι σημεία χρησιμοποιούν το κεντρικό βίντεο. Μπορείς να ορίσεις διαφορετικό βίντεο σε συγκεκριμένο σημείο.</p>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {PHOTO_SPOTS.map((s) => (
             <div key={s.id} className="border-2 border-border/40 rounded-lg p-2 bg-secondary/40">
-              <Thumb src={ov[s.id] || DEFAULTS[s.id]} className="w-full aspect-video rounded" />
+              <Thumb src={ov[s.id] || FILM[s.id]} video className="w-full aspect-video rounded" />
               <div className="font-bold text-sm mt-2">{s.label}</div>
               <div className="text-[11px] text-foreground/60">{s.where}</div>
               <div className="flex gap-2 mt-2">
-                <ComicButton size="sm" disabled={!!busy} onClick={() => pick(s.id, 'slot', imgOne)}>⬆️ Ανέβασμα φωτογραφίας</ComicButton>
+                <ComicButton size="sm" disabled={!!busy} onClick={() => pick(s.id, 'slot', vidOne)}>⬆️ Ανέβασμα βίντεο</ComicButton>
                 {ov[s.id] && <ComicButton size="sm" variant="dark" disabled={!!busy} onClick={() => reset(s.id)}>↩︎ Αρχική</ComicButton>}
               </div>
               <Progress id={s.id} />
