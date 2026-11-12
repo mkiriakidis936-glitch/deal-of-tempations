@@ -4,7 +4,7 @@ import { useAuth } from '@/lib/AuthContext';
 import {
   ART, FILM, HEIST_PHOTOS, PAJAMA_PHOTOS, SITE_VIDEOS, DEFAULTS, applyMediaOverrides,
 } from '@/data/brandArt';
-import { IMAGE_SLOTS, VIDEO_SPOT_IDS } from '@/data/mediaSlots';
+import { IMAGE_SLOTS, PHOTO_SPOT_IDS } from '@/data/mediaSlots';
 import { uploadMedia, patchOverrides } from '@/lib/media';
 
 const PAGES = ['/site', '/promo', '/invitation', '/pajama-invite', '/pajama-form', '/tv', '/play', '/gift-unlock', '/intake'];
@@ -17,12 +17,14 @@ function resolve(el) {
   if (!src) return null;
   if (el.tagName === 'VIDEO') {
     const slot = el.dataset.media;
-    if (slot && (slot === 'agent' || VIDEO_SPOT_IDS.includes(slot))) return { kind: 'slot', id: slot };
+    if (slot && slot === 'agent') return { kind: 'slot', id: slot };
     const i = SITE_VIDEOS.indexOf(src);
     return i >= 0 ? { kind: 'list', id: 'siteVideos', index: i } : null;
   }
   const s = IMAGE_SLOTS.find((x) => ART[x.id] === src);
   if (s) return { kind: 'slot', id: s.id };
+  const photoSlot = PHOTO_SPOT_IDS.find((id) => PHOTO[id] === src);
+  if (photoSlot) return { kind: 'slot', id: photoSlot };
   let i = HEIST_PHOTOS.indexOf(src);
   if (i >= 0) return { kind: 'list', id: 'heistPhotos', index: i };
   i = PAJAMA_PHOTOS.indexOf(src);
