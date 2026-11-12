@@ -1,5 +1,6 @@
 import { base44, getToken } from '@/api/base44Client';
 import { applyMediaOverrides } from '@/data/brandArt';
+import { setSiteOverrides } from '@/data/siteContent';
 
 const API_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
 export const MEDIA_KEY = 'media_overrides';
@@ -14,13 +15,31 @@ export async function fetchOverrides() {
 
 // Φορτώνει τις αλλαγές του Admin και τις εφαρμόζει πριν ξεκινήσει το React.
 // Αν ο server αργεί/πέσει, η εφαρμογή ανοίγει κανονικά με τα αρχικά αρχεία.
+export const SITE_KEY = 'site_content';
+
+export async function fetchSiteRecord() {
+  const { items } = await base44.entities.AppSetting.filter({ key: SITE_KEY }, { limit: 1 });
+  return items?.[0] || null;
+}
+
+// Αλλάζει τις ρυθμίσεις φωτογραφιών με ασφάλεια (διαβάζει τα πιο πρόσφατα, εφαρμόζει την αλλαγή, αποθηκεύει).
+export async function patchOverrides(mutator) {
+  const rec = await fetchOverrides();
+  const next = mutator({ ...(rec?.value || {}) });
+  const clean = Object.fromEntries(Object.entries(next).filter(([, v]) => (Array.isArray(v) ? v.length : v)));
+  if (rec?.id) await base44.entities.AppSetting.update(rec.id, { value: clean });
+  else await base44.entities.AppSetting.create({ key: MEDIA_KEY, value: clean });
+  return clean;
+}
+
 export async function loadMedia() {
   try {
-    const rec = await Promise.race([
-      fetchOverrides(),
+    const [rec, site] = await Promise.race([
+      Promise.all([fetchOverrides(), fetchSiteRecord()]),
       new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 3000)),
     ]);
     applyMediaOverrides(rec?.value || {});
+    setSiteOverrides(site?.value || {});
   } catch (e) {
     console.warn('[media] χρήση αρχικών αρχείων:', e.message);
   }

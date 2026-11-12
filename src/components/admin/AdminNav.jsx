@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { cn } from '@/lib/utils';
 
+// Desktop: κάθετο μενού
 export default function AdminNav({ groups, active, onChange }) {
   return (
     <nav className="space-y-3">
@@ -28,5 +29,39 @@ export default function AdminNav({ groups, active, onChange }) {
         </div>
       ))}
     </nav>
+  );
+}
+
+// Κινητό (iPhone): οριζόντια μπάρα που σκρολάρει, κολλημένη στην κορυφή
+export function AdminTabBar({ groups, active, onChange }) {
+  const ref = useRef(null);
+  useEffect(() => {
+    ref.current?.querySelector('[data-active="true"]')?.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'smooth' });
+  }, [active]);
+
+  return (
+    <div ref={ref} className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1.5 px-1.5 snap-x" role="tablist">
+      {groups.flatMap((g) => [
+        <span key={`g-${g.id}`} className="shrink-0 font-heading text-[9px] tracking-[0.18em] text-primary/70 pl-2 pr-0.5">
+          {g.label}
+        </span>,
+        ...g.tabs.map((t) => (
+          <button
+            key={t.id}
+            role="tab"
+            data-active={active === t.id}
+            onClick={() => onChange(t.id)}
+            className={cn(
+              'shrink-0 snap-center whitespace-nowrap min-h-[44px] px-3.5 rounded-full border-2 text-xs font-bold transition-all',
+              active === t.id
+                ? 'bg-primary text-tarot-dark border-primary'
+                : 'bg-card border-border/40'
+            )}
+          >
+            {t.label}
+          </button>
+        )),
+      ])}
+    </div>
   );
 }

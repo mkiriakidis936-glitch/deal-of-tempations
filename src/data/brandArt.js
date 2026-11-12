@@ -37,6 +37,7 @@ export const FILM = {
 // κάθε σημείο βίντεο ξεκινά με το κεντρικό· στο Admin μπορεί να αλλάξει ξεχωριστά
 for (const id of VIDEO_SPOT_IDS) FILM[id] = FILM.agent;
 
+export const SITE_VIDEOS = []; // επιπλέον βίντεο για το /site (Admin → Φωτογραφίες & Βίντεο)
 export const PAJAMA_PHOTOS = [ART.photoPediGlam, ART.photoSlippers, ART.photoGame];
 export const HEIST_PHOTOS = [
   ART.heist1,
@@ -54,7 +55,7 @@ export const HEIST_PHOTOS = [
 ];
 
 // Αντίγραφο των αρχικών τιμών (πριν εφαρμοστούν οι αλλαγές από το Admin)
-export const DEFAULTS = { ...ART, ...FILM, heistPhotos: [...HEIST_PHOTOS], pajamaPhotos: [...PAJAMA_PHOTOS] };
+export const DEFAULTS = { ...ART, ...FILM, heistPhotos: [...HEIST_PHOTOS], pajamaPhotos: [...PAJAMA_PHOTOS], siteVideos: [] };
 
 // Καλείται μία φορά στην εκκίνηση (src/lib/media.js), ΠΡΙΝ φορτωθεί η εφαρμογή.
 // Αλλάζει τα αντικείμενα επιτόπου, ώστε να τα δουν όλα τα components.
@@ -66,4 +67,5 @@ export function applyMediaOverrides(o = {}) {
   const setList = (arr, v, def) => arr.splice(0, arr.length, ...((Array.isArray(v) && v.filter(str).length ? v.filter(str) : def)));
   setList(HEIST_PHOTOS, o.heistPhotos, DEFAULTS.heistPhotos);
   setList(PAJAMA_PHOTOS, o.pajamaPhotos, DEFAULTS.pajamaPhotos);
+  setList(SITE_VIDEOS, o.siteVideos, []);
 }

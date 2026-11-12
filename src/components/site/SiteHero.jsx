@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { base44 } from '@/api/base44Client';
 import { ART, FILM } from '@/data/brandArt';
 import { Image } from '@/components/ui/image';
 import VideoFilm from '@/components/shared/VideoFilm';
@@ -22,27 +21,14 @@ function useCountdown(target) {
   };
 }
 
-export default function SiteHero() {
+export default function SiteHero({ c, ev, eventDate }) {
   const navigate = useNavigate();
-  const [eventDate, setEventDate] = useState('');
   const countdown = useCountdown(eventDate);
-
-  useEffect(() => {
-    async function load() {
-      try {
-        const { items } = await base44.entities.AppSetting.filter({ key: 'event_date' }, { limit: 1 });
-        if (items?.[0]?.value) setEventDate(items[0].value);
-      } catch (e) {
-        /* no date set */
-      }
-    }
-    load();
-  }, []);
 
   return (
     <section id="top" className="relative min-h-[92vh] flex items-center justify-center overflow-hidden px-4 py-20">
       <div className="absolute inset-0 -z-10">
-        <VideoFilm src={FILM.siteHero} poster={ART.poster} className="w-full h-full object-cover opacity-45" />
+        <VideoFilm slot="siteHero" src={FILM.siteHero} poster={ev === 'pajama' ? ART.party1 : ART.poster} className="w-full h-full object-cover opacity-45" />
         <div className="absolute inset-0 bg-gradient-to-b from-background/80 via-background/60 to-background" />
       </div>
 
@@ -57,13 +43,13 @@ export default function SiteHero() {
         </div>
 
         <div className="space-y-3">
-          <div className="text-[11px] tracking-[0.5em] text-tarot-gold/70 uppercase">Heist Night · 18+</div>
+          <div className="text-[11px] tracking-[0.5em] text-tarot-gold/70 uppercase">{c.overline}</div>
           <h1 className="font-display text-4xl sm:text-6xl text-tarot-gold tracking-[0.1em] leading-tight">
-            DEAL OF<br />TEMPTATION
+            {c.titleLines.map((l, i) => (<React.Fragment key={i}>{i > 0 && <br />}{l}</React.Fragment>))}
           </h1>
           <div className="w-24 h-px bg-tarot-gold/40 mx-auto" />
           <p className="text-lg sm:text-xl text-foreground/70 max-w-xl mx-auto">
-            Μια βραδιά με πιτζάμες, παντόφλες και υποχρεώσεις που δεν διάβασες πριν φτάσεις.
+            {c.tagline}
           </p>
         </div>
 
@@ -93,8 +79,8 @@ export default function SiteHero() {
         )}
 
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
-          <button className="cinv-btn w-full sm:w-auto" style={{ animation: 'none' }} onClick={() => navigate('/pajama-form')}>
-            ΚΛΕΙΣΕ ΘΕΣΗ
+          <button className="cinv-btn w-full sm:w-auto" style={{ animation: 'none' }} onClick={() => navigate(c.cta.path)}>
+            {c.cta.label}
           </button>
           <a href="#photos" className="comic-boom px-8 py-4 text-xs tracking-[0.3em] text-tarot-gold inline-flex items-center justify-center">
             ΔΕΣ ΤΟ GALLERY

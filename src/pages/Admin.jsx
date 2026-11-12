@@ -3,7 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import ComicPanel from '@/components/comic/ComicPanel';
 import ComicButton from '@/components/comic/ComicButton';
-import AdminNav from '@/components/admin/AdminNav';
+import AdminNav, { AdminTabBar } from '@/components/admin/AdminNav';
 import AdminSessionBar from '@/components/admin/AdminSessionBar';
 import AdminContentHub from '@/components/admin/AdminContentHub';
 import AdminDashboard from '@/components/admin/AdminDashboard';
@@ -20,6 +20,7 @@ import AdminPajama from '@/components/admin/AdminPajama';
 import AdminLeaderboard from '@/components/admin/AdminLeaderboard';
 import AdminBlitz from '@/components/admin/AdminBlitz';
 import AdminMedia from '@/components/admin/AdminMedia';
+import AdminSite from '@/components/admin/AdminSite';
 import AdminNotifications from '@/components/admin/AdminNotifications';
 import AdminVisits from '@/components/admin/AdminVisits';
 import { setActiveSessionCode } from '@/lib/activeSession';
@@ -43,6 +44,7 @@ const NAV_GROUPS = [
     tabs: [
       { id: 'content', label: '📦 Περιεχόμενο & Κουτιά' },
       { id: 'pajama', label: '🩴 Pajama Mode' },
+      { id: 'site', label: '🌐 Site & Σενάριο' },
       { id: 'media', label: '🖼️ Φωτογραφίες & Βίντεο' },
     ],
   },
@@ -191,6 +193,8 @@ export default function Admin() {
         return <AdminContentHub />;
       case 'pajama':
         return <AdminPajama />;
+      case 'site':
+        return <AdminSite />;
       case 'media':
         return <AdminMedia />;
       case 'notifications':
@@ -215,22 +219,27 @@ export default function Admin() {
   }
 
   return (
-    <div className="min-h-screen comic-dots p-4">
+    <div className="admin-root min-h-[100dvh] comic-dots p-2.5 sm:p-4 pb-[calc(env(safe-area-inset-bottom,0px)+1.5rem)]">
       <div className="max-w-6xl mx-auto space-y-3">
-        <ComicPanel className="bg-secondary flex items-center justify-between flex-wrap gap-2">
-          <div>
-            <div className="font-heading text-3xl comic-text-stroke text-primary">🔧 ADMIN PANEL</div>
-            <div className="text-xs font-bold text-foreground/70 font-body">DEAL OF TEMPTATION — Διαχείριση Παιχνιδιού</div>
+        <ComicPanel className="bg-secondary flex items-center justify-between gap-2">
+          <div className="min-w-0">
+            <div className="font-heading text-2xl sm:text-3xl comic-text-stroke text-primary">🔧 ADMIN PANEL</div>
+            <div className="text-[11px] sm:text-xs font-bold text-foreground/70 font-body truncate">DEAL OF TEMPTATION — Διαχείριση</div>
           </div>
           <ComicButton variant="dark" size="sm" onClick={loadSessions} disabled={loading}>
-            🔄 {loading ? 'ΦΟΡΤΩΣΗ...' : 'ΑΝΑΝΕΩΣΗ'}
+            🔄 <span className="hidden sm:inline">{loading ? 'ΦΟΡΤΩΣΗ...' : 'ΑΝΑΝΕΩΣΗ'}</span>
           </ComicButton>
         </ComicPanel>
+
+        {/* Κινητό: μενού που σκρολάρει οριζόντια, πάντα ορατό */}
+        <div className="lg:hidden sticky z-30 -mx-2.5 px-2.5 py-1 bg-background/90 backdrop-blur border-b border-border/40" style={{ top: 0 }}>
+          <AdminTabBar groups={NAV_GROUPS} active={tab} onChange={setTab} />
+        </div>
 
         <AdminSessionBar sessions={sessions} activeSession={activeSession} onSelect={selectSession} />
 
         <div className="flex flex-col lg:flex-row gap-3 items-start">
-          <div className="w-full lg:w-52 shrink-0 lg:sticky lg:top-3">
+          <div className="hidden lg:block w-52 shrink-0 lg:sticky lg:top-3">
             <ComicPanel className="bg-card p-2">
               <AdminNav groups={NAV_GROUPS} active={tab} onChange={setTab} />
             </ComicPanel>

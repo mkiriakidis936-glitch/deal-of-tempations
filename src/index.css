@@ -569,3 +569,17 @@
     padding-bottom: env(safe-area-inset-bottom);
   }
 }
+
+/* ---- Κινητό / iPhone (402×874): χωρίς οριζόντιο σκρολ, χωρίς αυτόματο zoom στα πεδία ---- */
+html, body { max-width: 100%; overflow-x: clip; -webkit-text-size-adjust: 100%; } /* clip: δεν χαλάει τα sticky headers */
+.no-scrollbar { scrollbar-width: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.admin-root { overflow-x: clip; }
+.admin-root img, .admin-root video, .admin-root canvas { max-width: 100%; }
+.admin-root button, .admin-root select { touch-action: manipulation; }
+@media (max-width: 768px) {
+  input:not([type='checkbox']):not([type='radio']):not([type='range']), select, textarea { font-size: 16px !important; }
+}
+@media (max-width: 480px) {
+  .admin-root .comic-panel { padding: 0.75rem; }
+}

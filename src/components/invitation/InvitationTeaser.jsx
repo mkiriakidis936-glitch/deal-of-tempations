@@ -69,7 +69,7 @@ export default function InvitationTeaser({ onOpen }) {
     >
       <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none">
         <div className="absolute inset-0" style={{ opacity: 0.55 }}>
-          <VideoFilm src={FILM.invitation} poster={BG_URL} className="w-full h-full object-cover" />
+          <VideoFilm slot="invitation" src={FILM.invitation} poster={BG_URL} className="w-full h-full object-cover" />
         </div>
         <div
           className="absolute inset-0"

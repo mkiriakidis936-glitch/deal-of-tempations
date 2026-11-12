@@ -9,8 +9,8 @@ const TABS = [
   { id: 'pajama', label: 'Pajama', photos: PAJAMA_PHOTOS },
 ];
 
-export default function SiteGallery() {
-  const [tab, setTab] = useState('all');
+export default function SiteGallery({ initialTab = 'all' }) {
+  const [tab, setTab] = useState(initialTab);
   const photos = (TABS.find((t) => t.id === tab) || TABS[0]).photos;
 
   return (

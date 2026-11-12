@@ -51,7 +51,7 @@ export default function PajamaInvite() {
   return (
     <div className="min-h-screen bg-background text-foreground relative overflow-hidden flex flex-col items-center justify-center px-6 py-16">
       <div className="pointer-events-none absolute inset-0">
-        <VideoFilm src={FILM.pajama} poster={ART.vault} className="w-full h-full object-cover opacity-35" />
+        <VideoFilm slot="pajama" src={FILM.pajama} poster={ART.vault} className="w-full h-full object-cover opacity-35" />
         <div className="absolute inset-0 bg-gradient-to-b from-background/85 via-background/75 to-background" />
       </div>
       <div className="pointer-events-none absolute inset-0 opacity-70">

@@ -35,13 +35,13 @@ export default function AdminSessionBar({ sessions, activeSession, onSelect }) {
 
   return (
     <ComicPanel className="bg-secondary flex flex-wrap items-center justify-between gap-2 py-2">
-      <div className="flex flex-wrap items-center gap-2 min-w-0">
+      <div className="flex flex-wrap items-center gap-2 min-w-0 w-full">
         <span className="font-heading text-xs text-primary">ΕΝΕΡΓΗ ΣΥΝΕΔΡΙΑ</span>
         {sessions.length > 0 ? (
           <select
             value={activeSession?.id || ''}
             onChange={(e) => onSelect(sessions.find((s) => s.id === e.target.value) || null)}
-            className="px-2 py-1 rounded-lg border-2 border-border bg-background text-foreground font-bold text-xs"
+            className="px-2 py-2 rounded-lg border-2 border-border bg-background text-foreground font-bold text-xs max-w-full w-full sm:w-auto"
           >
             {sessions.map((s) => (
               <option key={s.id} value={s.id}>

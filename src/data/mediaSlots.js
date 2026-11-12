@@ -27,4 +27,5 @@ export const VIDEO_SPOT_IDS = VIDEO_SPOTS.filter((v) => v.id !== 'agent').map((v
 export const GALLERIES = [
   { id: 'heistPhotos', label: 'Heist — γκαλερί', where: 'Site (Gallery) και teaser πρόσκλησης' },
   { id: 'pajamaPhotos', label: 'Pajama — γκαλερί', where: 'Site (Gallery) και Pajama πρόσκληση' },
+  { id: 'siteVideos', kind: 'video', label: 'Site — επιπλέον βίντεο', where: 'Αρχική σελίδα, κάτω από το τρέιλερ (όσα θες)' },
 ];
