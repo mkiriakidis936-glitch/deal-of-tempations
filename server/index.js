@@ -6,6 +6,8 @@ import { attachUser, authRoutes } from './auth.js';
 import { entityRoutes } from './entities.js';
 import { functionRoutes } from './functions.js';
 import { mediaRoutes, mediaStatic } from './media.js';
+import { pushRoutes } from './push.js';
+import { visitRoutes } from './visits.js';
 
 const app = express();
 app.set('trust proxy', 1); // Railway terminates TLS in front of us
@@ -17,13 +19,20 @@ authRoutes(app);
 app.use('/api/entities', entityRoutes());
 app.use('/api/functions', functionRoutes());
 app.use('/api/media', mediaRoutes());
+app.use('/api/push', pushRoutes());
+app.use('/api/visits', visitRoutes());
 app.use('/media', mediaStatic);
 app.use('/api', (_req, res) => res.status(404).json({ error: 'Not found' }));
 
 // Serve the built React app + SPA fallback (client-side routing: /tv, /play, /admin ...)
 const dist = path.resolve(import.meta.dirname, '..', 'dist');
 if (fs.existsSync(dist)) {
-  app.use(express.static(dist, { index: false, maxAge: '1h' }));
+  app.use(express.static(dist, {
+    index: false,
+    maxAge: '1h',
+    // το service worker και το manifest δεν πρέπει να μένουν σε cache, αλλιώς δεν ενημερώνεται η εφαρμογή
+    setHeaders: (res, file) => { if (/(^|[\\/])(sw\.js|manifest\.webmanifest)$/.test(file)) res.setHeader('Cache-Control', 'no-cache'); },
+  }));
   app.use((req, res, next) => {
     if (req.method !== 'GET') return next();
     res.sendFile(path.join(dist, 'index.html'));

@@ -20,6 +20,8 @@ import AdminPajama from '@/components/admin/AdminPajama';
 import AdminLeaderboard from '@/components/admin/AdminLeaderboard';
 import AdminBlitz from '@/components/admin/AdminBlitz';
 import AdminMedia from '@/components/admin/AdminMedia';
+import AdminNotifications from '@/components/admin/AdminNotifications';
+import AdminVisits from '@/components/admin/AdminVisits';
 import { setActiveSessionCode } from '@/lib/activeSession';
 
 const NAV_GROUPS = [
@@ -58,6 +60,8 @@ const NAV_GROUPS = [
     id: 'system',
     label: 'ΣΥΣΤΗΜΑ',
     tabs: [
+      { id: 'notifications', label: '🔔 Ειδοποιήσεις' },
+      { id: 'visits', label: '📈 Επισκέψεις Site' },
       { id: 'guide', label: '📖 Οδηγός' },
       { id: 'meta', label: '🔮 Meta-Game' },
     ],
@@ -189,6 +193,10 @@ export default function Admin() {
         return <AdminPajama />;
       case 'media':
         return <AdminMedia />;
+      case 'notifications':
+        return <AdminNotifications />;
+      case 'visits':
+        return <AdminVisits />;
       case 'intakes':
         return <AdminIntakes />;
       case 'rsvp':

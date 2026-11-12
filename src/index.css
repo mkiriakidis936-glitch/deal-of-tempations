@@ -562,3 +562,10 @@
   50% { transform: scale(1.015); }
 }
 .comic-strobe { animation-duration: 0.9s; }
+/* PWA (εγκατεστημένη εφαρμογή): σεβασμός στο notch / μπάρα συστήματος */
+@media (display-mode: standalone) {
+  body {
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}

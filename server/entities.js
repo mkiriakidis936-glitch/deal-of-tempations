@@ -2,6 +2,7 @@ import crypto from 'node:crypto';
 import express from 'express';
 import { query, pool } from './db.js';
 import { requireAdmin } from './auth.js';
+import { notifyNewSubmission } from './push.js';
 
 // Entities that used to live in base44/entities/*.jsonc
 export const ENTITIES = [
@@ -128,6 +129,7 @@ export function entityRoutes() {
     );
     const rec = toRecord(rows[0]);
     broadcast(req.entity, { type: 'create', id: rec.id, data: rec });
+    notifyNewSubmission(req.entity, rec);
     res.json(rec);
   });
 

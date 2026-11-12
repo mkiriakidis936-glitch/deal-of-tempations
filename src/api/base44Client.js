@@ -13,7 +13,7 @@ const storeToken = (t) => {
   try { t ? localStorage.setItem(TOKEN_KEY, t) : localStorage.removeItem(TOKEN_KEY); } catch { /* ignore */ }
 };
 
-async function request(method, path, body) {
+export async function request(method, path, body) {
   const token = getToken();
   const res = await fetch(`${API_URL}${path}`, {
     method,

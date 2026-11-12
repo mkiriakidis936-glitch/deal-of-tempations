@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import SiteNav from '@/components/site/SiteNav';
 import SiteHero from '@/components/site/SiteHero';
@@ -7,9 +7,11 @@ import SiteGallery from '@/components/site/SiteGallery';
 import SiteSchedule from '@/components/site/SiteSchedule';
 import SiteInfo from '@/components/site/SiteInfo';
 import SiteFaq from '@/components/site/SiteFaq';
+import { trackVisit } from '@/lib/track';
 
 export default function Site() {
   const navigate = useNavigate();
+  useEffect(() => { trackVisit('/site'); }, []);
 
   return (
     <div className="min-h-screen bg-background text-foreground">
