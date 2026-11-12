@@ -77,6 +77,15 @@ export function mediaRoutes() {
     res.json({ items });
   });
 
+  // DELETE /api/media?kind=image|video|all — μαζική διαγραφή, μόνο admin
+  r.delete('/', requireAdmin, async (req, res) => {
+    const kind = String(req.query.kind || 'all');
+    if (!['image', 'video', 'all'].includes(kind)) return res.status(400).json({ error: 'Μη έγκυρος τύπος διαγραφής.' });
+    const names = (await fsp.readdir(UPLOAD_DIR)).filter((n) => !n.startsWith('.') && kindOf(n) && (kind === 'all' || kindOf(n) === kind));
+    const results = await Promise.all(names.map((n) => fsp.rm(path.join(UPLOAD_DIR, n), { force: true })));
+    res.json({ success: true, deleted: names.length, kind });
+  });
+
   // DELETE /api/media/:name
   r.delete('/:name', requireAdmin, async (req, res) => {
     const n = req.params.name;
