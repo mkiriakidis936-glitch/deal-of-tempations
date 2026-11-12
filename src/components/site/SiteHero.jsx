@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ART, PHOTO } from '@/data/brandArt';
+import { ART, FILM } from '@/data/brandArt';
+import VideoFilm from '@/components/shared/VideoFilm';
 import { Image } from '@/components/ui/image';
 
 function useCountdown(target) {
@@ -27,7 +28,7 @@ export default function SiteHero({ c, ev, eventDate }) {
   return (
     <section id="top" className="relative min-h-[92vh] flex items-center justify-center overflow-hidden px-4 py-20">
       <div className="absolute inset-0 -z-10">
-        <img src={PHOTO.siteHero} data-media="siteHero" alt="" className="w-full h-full object-cover opacity-45" />
+        <VideoFilm src={FILM.siteHero} slot="siteHero" className="w-full h-full object-cover opacity-45" />
         <div className="absolute inset-0 bg-gradient-to-b from-background/80 via-background/60 to-background" />
       </div>
 
