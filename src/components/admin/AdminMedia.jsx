@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import ComicPanel from '@/components/comic/ComicPanel';
 import ComicButton from '@/components/comic/ComicButton';
-import { DEFAULTS, FILM } from '@/data/brandArt';
+import { DEFAULTS } from '@/data/brandArt';
 import { IMAGE_SLOTS, PHOTO_SPOTS, PHOTO_SPOT_IDS, GALLERIES } from '@/data/mediaSlots';
 import { MEDIA_KEY, fetchOverrides, uploadMedia, listMedia, deleteMedia, deleteAllMedia } from '@/lib/media';
 
@@ -182,6 +182,7 @@ export default function AdminMedia() {
       <input ref={imgMany} type="file" accept={IMG_ACCEPT} multiple hidden onChange={onFiles} />
       <input ref={vidOne} type="file" accept={VID_ACCEPT} hidden onChange={onFiles} />
       <input ref={vidMany} type="file" accept={VID_ACCEPT} multiple hidden onChange={onFiles} />
+      <input ref={mediaOne} type="file" accept={MEDIA_ACCEPT} hidden onChange={onFiles} />
 
       <ComicPanel className="bg-card">
         <div className="font-heading text-xl text-primary">🖼️ ΦΩΤΟΓΡΑΦΙΕΣ & ΒΙΝΤΕΟ</div>
