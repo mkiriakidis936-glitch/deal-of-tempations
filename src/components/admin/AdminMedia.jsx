@@ -188,8 +188,8 @@ export default function AdminMedia() {
       </ComicPanel>
 
       <ComicPanel className="bg-card space-y-3">
-        <div className="font-heading text-lg">🎞️ ΚΕΝΤΡΙΚΟ ΒΙΝΤΕΟ ΣΤΑ 6 ΣΗΜΕΙΑ</div>
-        <p className="text-xs text-foreground/60">Και τα έξι σημεία χρησιμοποιούν το κεντρικό βίντεο. Μπορείς να ορίσεις διαφορετικό βίντεο σε συγκεκριμένο σημείο.</p>
+        <div className="font-heading text-lg">🎞️ ΒΙΝΤΕΟ ΑΝΑ ΣΗΜΕΙΟ</div>
+        <p className="text-xs text-foreground/60">Ανέβασε όποιο βίντεο θέλεις σε καθένα από τα έξι σημεία. Μπορείς να τα αφήσεις κενά μετά τη διαγραφή.</p>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {PHOTO_SPOTS.map((s) => (
             <div key={s.id} className="border-2 border-border/40 rounded-lg p-2 bg-secondary/40">
