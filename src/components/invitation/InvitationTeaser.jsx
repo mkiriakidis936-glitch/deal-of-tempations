@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Image } from '@/components/ui/image';
-import { ART, FILM, HEIST_PHOTOS } from '@/data/brandArt';
+import { ART, PHOTO, HEIST_PHOTOS } from '@/data/brandArt';
 import MoodGallery from '@/components/shared/MoodGallery';
-import VideoFilm from '@/components/shared/VideoFilm';
 
 const TEASER_LINES = [
   'Κάτι έρχεται.',
@@ -69,7 +68,7 @@ export default function InvitationTeaser({ onOpen }) {
     >
       <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none">
         <div className="absolute inset-0" style={{ opacity: 0.55 }}>
-          <VideoFilm slot="invitation" src={FILM.invitation} poster={BG_URL} className="w-full h-full object-cover" />
+          <img src={PHOTO.invitation} data-media="invitation" alt="" className="w-full h-full object-cover" />
         </div>
         <div
           className="absolute inset-0"

@@ -3,7 +3,7 @@ import { base44 } from '@/api/base44Client';
 import ComicPanel from '@/components/comic/ComicPanel';
 import ComicButton from '@/components/comic/ComicButton';
 import { DEFAULTS } from '@/data/brandArt';
-import { IMAGE_SLOTS, VIDEO_SPOTS, GALLERIES } from '@/data/mediaSlots';
+import { IMAGE_SLOTS, PHOTO_SPOTS, GALLERIES } from '@/data/mediaSlots';
 import { MEDIA_KEY, fetchOverrides, uploadMedia, listMedia, deleteMedia } from '@/lib/media';
 
 const IMG_ACCEPT = 'image/*,.jpg,.jpeg,.png,.webp,.gif,.avif,.heic';
@@ -158,23 +158,23 @@ export default function AdminMedia() {
         <div className="font-heading text-xl text-primary">🖼️ ΦΩΤΟΓΡΑΦΙΕΣ & ΒΙΝΤΕΟ</div>
         <p className="text-xs font-body text-foreground/70 mt-1">
           Ανέβασε, άλλαξε ή σβήσε ό,τι θες. Τις ίδιες αλλαγές μπορείς να τις κάνεις και απευθείας πάνω στις σελίδες (✏️ κάτω αριστερά, όταν είσαι συνδεδεμένη/ος).
-          Οι φωτογραφίες μικραίνουν αυτόματα. Για βίντεο προτίμησε MP4 (H.264).
+          Οι φωτογραφίες μικραίνουν αυτόματα.
         </p>
         {msg && <div className={`mt-2 text-sm font-bold ${msg.ok ? 'text-green-400' : 'text-red-400'}`}>{msg.text}</div>}
       </ComicPanel>
 
       <ComicPanel className="bg-card space-y-3">
-        <div className="font-heading text-lg">🎬 ΒΙΝΤΕΟ ΑΝΑ ΣΗΜΕΙΟ</div>
+        <div className="font-heading text-lg">📸 ΦΩΤΟΓΡΑΦΙΕΣ ΑΝΑ ΣΗΜΕΙΟ</div>
+        <p className="text-xs text-foreground/60">Ανέβασε ξεχωριστή φωτογραφία για καθένα από τα έξι σημεία. Τα σημεία αυτά χρησιμοποιούν φωτογραφίες και όχι βίντεο.</p>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {VIDEO_SPOTS.map((s) => (
+          {PHOTO_SPOTS.map((s) => (
             <div key={s.id} className="border-2 border-border/40 rounded-lg p-2 bg-secondary/40">
-              <Thumb video src={ov[s.id] || (s.id === 'agent' ? DEFAULTS.agent : '')} className="w-full aspect-video rounded" />
+              <Thumb src={ov[s.id] || DEFAULTS[s.id]} className="w-full aspect-video rounded" />
               <div className="font-bold text-sm mt-2">{s.label}</div>
               <div className="text-[11px] text-foreground/60">{s.where}</div>
-              {s.id !== 'agent' && !ov[s.id] && <div className="text-[11px] text-primary/80">Χρησιμοποιεί το κεντρικό βίντεο</div>}
               <div className="flex gap-2 mt-2">
-                <ComicButton size="sm" disabled={!!busy} onClick={() => pick(s.id, 'slot', vidOne)}>⬆️ Ανέβασμα</ComicButton>
-                {ov[s.id] && <ComicButton size="sm" variant="dark" disabled={!!busy} onClick={() => reset(s.id)}>↩︎ Αρχικό</ComicButton>}
+                <ComicButton size="sm" disabled={!!busy} onClick={() => pick(s.id, 'slot', imgOne)}>⬆️ Ανέβασμα φωτογραφίας</ComicButton>
+                {ov[s.id] && <ComicButton size="sm" variant="dark" disabled={!!busy} onClick={() => reset(s.id)}>↩︎ Αρχική</ComicButton>}
               </div>
               <Progress id={s.id} />
             </div>
