@@ -8,7 +8,11 @@ const KEY = 'digital_invitations';
 const TARGETS = [
   { path: '/invitation', label: 'Heist Night — Πρόσκληση' },
   { path: '/pajama-invite', label: 'Pajama Pedi-Glam — Πρόσκληση' },
-  { path: '/modes-form', label: 'Digital Modes — Φόρμα συμμετοχής' },
+  { path: '/modes-form', label: 'Digital Modes — Επιλογή Mode' },
+  { path: '/modes-form?mode=pedi_extended', label: 'Pedi Extended' },
+  { path: '/modes-form?mode=lockdown', label: 'Lockdown' },
+  { path: '/modes-form?mode=beach_bar', label: 'Beach Bar' },
+  { path: '/modes-form?mode=marathon_4h', label: 'Marathon 4H' },
 ];
 const makeId = () => globalThis.crypto?.randomUUID?.() || `${Date.now().toString(36)}${Math.random().toString(36).slice(2)}`;
 
