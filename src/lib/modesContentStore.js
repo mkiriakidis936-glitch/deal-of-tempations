@@ -101,8 +101,15 @@ export function applyScenarioCollections(modeId, selectedIds = []) {
     const target = collection.targetArr || collection.arr;
     if (seen.has(target)) return;
     seen.add(target);
-    snapshots.push({ target, values: JSON.parse(JSON.stringify(target)) });
-    if (!selected.has(collection.id)) target.splice(0, target.length);
+    snapshots.push({ target, values: JSON.parse(JSON.stringify(target)), collection });
+    if (!selected.has(collection.id)) {
+      const defaults = defaultsOf(collection.id);
+      const runtimeDefaults = collection.toRuntime ? collection.toRuntime(defaults) : defaults;
+      target.splice(0, target.length, ...JSON.parse(JSON.stringify(runtimeDefaults)));
+    }
   });
-  return () => snapshots.forEach(({ target, values }) => target.splice(0, target.length, ...values));
+  return () => snapshots.forEach(({ target, values, collection }) => {
+    target.splice(0, target.length, ...values);
+    if (collection.toRuntime) collection.toRuntime(values);
+  });
 }
