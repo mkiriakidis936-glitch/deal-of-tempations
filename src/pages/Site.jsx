@@ -91,8 +91,8 @@ export default function Site() {
           <SiteVideo c={{ videoTitle: 'VIDEO & TRAILERS' }} />
           <SiteGallery initialTab="all" />
           <HomeProgram />
-          <SiteRegistration c={c} onRegister={register} />
-          <SiteContact c={c} onRegister={register} />
+          <SiteRegistration c={pageContent} onRegister={register} />
+          <SiteContact c={pageContent} onRegister={register} isHome />
         </>
       ) : (
         <div key={ev}>
