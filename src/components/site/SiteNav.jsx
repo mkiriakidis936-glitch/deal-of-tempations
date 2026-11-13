@@ -1,5 +1,4 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { SITE_EVENTS, getSiteContent } from '@/data/siteContent';
 
@@ -23,8 +22,7 @@ const DETAIL_LINKS = [
   { href: '#contact', label: 'Contact' },
 ];
 
-export default function SiteNav({ ev, onEvent, c, isHome = false }) {
-  const navigate = useNavigate();
+export default function SiteNav({ ev, onEvent, isHome = false, onRegister }) {
   return (
     <header className="sticky top-0 z-40 border-b border-tarot-gold/25 bg-background/90 backdrop-blur-xl">
       <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between gap-4">
@@ -36,14 +34,14 @@ export default function SiteNav({ ev, onEvent, c, isHome = false }) {
             <a key={l.href} href={l.href} className="hover:text-tarot-gold transition-colors">{l.label}</a>
           ))}
         </nav>
-        <button onClick={() => navigate(c.cta.path)} className="rounded-full border border-tarot-gold/60 px-4 py-2 text-[10px] font-bold tracking-[0.16em] text-tarot-gold transition hover:bg-tarot-gold hover:text-black">
+        <button type="button" onClick={onRegister} className="rounded-full border border-tarot-gold/60 px-4 py-2 text-[10px] font-bold tracking-[0.16em] text-tarot-gold transition hover:bg-tarot-gold hover:text-black">
           ΚΡΑΤΗΣΗ
         </button>
       </div>
       <div className="max-w-7xl mx-auto px-4 pb-2 flex gap-2 overflow-x-auto whitespace-nowrap">
-        <button onClick={() => onEvent('home')} className={cn('min-h-[36px] shrink-0 rounded-full border px-3 text-[9px] uppercase tracking-[0.14em] transition-colors', isHome ? 'border-tarot-gold text-tarot-gold bg-tarot-gold/10' : 'border-foreground/20 text-foreground/50')}>Home</button>
+        <button type="button" onClick={() => onEvent('home')} className={cn('min-h-[36px] shrink-0 rounded-full border px-3 text-[9px] uppercase tracking-[0.14em] transition-colors', isHome ? 'border-tarot-gold text-tarot-gold bg-tarot-gold/10' : 'border-foreground/20 text-foreground/50')}>Home</button>
         {SITE_EVENTS.map((event) => (
-          <button key={event.id} onClick={() => onEvent(event.id)} className={cn(
+          <button type="button" key={event.id} onClick={() => onEvent(event.id)} className={cn(
             'min-h-[36px] shrink-0 rounded-full border px-3 text-[9px] uppercase tracking-[0.14em] transition-colors',
             ev === event.id ? 'border-tarot-gold text-tarot-gold bg-tarot-gold/10' : 'border-foreground/20 text-foreground/50 hover:text-tarot-gold hover:border-tarot-gold/50'
           )}>{getSiteContent(event.id).tab}</button>

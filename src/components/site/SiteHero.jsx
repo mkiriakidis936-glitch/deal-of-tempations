@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { ART, PHOTO, FILM } from '@/data/brandArt';
 import MediaSpot from '@/components/shared/MediaSpot';
 import { Image } from '@/components/ui/image';
@@ -21,8 +20,7 @@ function useCountdown(target) {
   };
 }
 
-export default function SiteHero({ c, ev, eventDate, heroSrc }) {
-  const navigate = useNavigate();
+export default function SiteHero({ c, ev, eventDate, heroSrc, onCta }) {
   const countdown = useCountdown(eventDate);
 
   return (
@@ -79,7 +77,7 @@ export default function SiteHero({ c, ev, eventDate, heroSrc }) {
         )}
 
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
-          <button className="cinv-btn w-full sm:w-auto" style={{ animation: 'none' }} onClick={() => navigate(c.cta.path)}>
+          <button type="button" className="cinv-btn w-full sm:w-auto" style={{ animation: 'none' }} onClick={onCta}>
             {c.cta.label}
           </button>
           <a href="#photos" className="comic-boom px-8 py-4 text-xs tracking-[0.3em] text-tarot-gold inline-flex items-center justify-center">

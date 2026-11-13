@@ -78,14 +78,25 @@ export default function Site() {
     setParams(id === 'home' ? {} : { event: id }, { replace: true });
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
-  const register = () => navigate(pageContent.cta.path);
+
+  const register = () => {
+    if (isHome) {
+      const modes = document.getElementById('modes');
+      if (modes) {
+        const top = modes.getBoundingClientRect().top + window.scrollY - 112;
+        window.scrollTo({ top, behavior: 'smooth' });
+      }
+      return;
+    }
+    navigate(c.cta.path);
+  };
 
   return (
     <div className="min-h-screen overflow-hidden bg-background text-foreground">
-      <SiteNav ev={isHome ? '' : ev} onEvent={setEvent} c={pageContent} isHome={isHome} />
+      <SiteNav ev={isHome ? '' : ev} onEvent={setEvent} c={pageContent} isHome={isHome} onRegister={register} />
       {isHome ? (
         <>
-          <SiteHero c={homeContent} ev="home" eventDate="" heroSrc={PHOTO.siteHero} />
+          <SiteHero c={homeContent} ev="home" eventDate="" heroSrc={PHOTO.siteHero} onCta={register} />
           <SiteAbout />
           <SiteModes onSelect={setEvent} />
           <SiteVideo c={{ videoTitle: 'VIDEO & TRAILERS' }} />
@@ -96,7 +107,7 @@ export default function Site() {
         </>
       ) : (
         <div key={ev}>
-          <SiteHero c={c} ev={ev} eventDate={eventDate} heroSrc={heroSrc} />
+          <SiteHero c={c} ev={ev} eventDate={eventDate} heroSrc={heroSrc} onCta={register} />
           <SiteScenario c={c} />
           <SiteModes onSelect={setEvent} compact />
           <SiteVideo c={c} eventId={ev} />
