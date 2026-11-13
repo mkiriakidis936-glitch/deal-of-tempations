@@ -1,7 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import ComicPanel from '@/components/comic/ComicPanel';
 import ComicButton from '@/components/comic/ComicButton';
-import PlayerCard from '@/components/shared/PlayerCard';
 import SpeakButton from '@/components/comic/VoiceReader';
 import { calculateMostWanted } from '@/lib/gameLogic';
 
