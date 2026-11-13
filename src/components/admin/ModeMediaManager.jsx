@@ -1,6 +1,7 @@
 import React, { useRef, useState } from 'react';
 import { NEW_MODES } from '@/data/modes/modeRegistry';
 import { uploadMedia } from '@/lib/media';
+import { MODE_COVERS } from '@/data/brandArt';
 
 const emptyMode = { hero: '', cover: '', sections: [], gallery: [], cards: [], trailer: '' };
 
@@ -20,7 +21,8 @@ export default function ModeMediaManager({ value = {}, onSave, disabled = false 
   const videoInput = useRef(null);
   const target = useRef(null);
   const mode = NEW_MODES.find((item) => item.id === selected) || NEW_MODES[0];
-  const data = { ...emptyMode, ...(value[selected] || {}) };
+  const data = { ...emptyMode, cover: MODE_COVERS[`modeCover_${selected}`] || '', ...(value[selected] || {}) };
+  if (!data.cover) data.cover = MODE_COVERS[`modeCover_${selected}`] || '';
 
   const persist = async (next) => {
     setBusy(true);
