@@ -229,7 +229,7 @@ function broadcast(entity, event) {
   for (const res of set) res.write(payload);
 }
 // keep proxies (Railway) from closing idle connections
-setInterval(() => { for (const set of streams.values()) for (const res of set) res.write(': ping\n\n'); }, 25000).unref();
+setInterval(() => { for (const set of streams.values()) for (const subscriber of set) subscriber.res.write(': ping\n\n'); }, 25000).unref();
 
 export function entityRoutes() {
   const r = express.Router();
