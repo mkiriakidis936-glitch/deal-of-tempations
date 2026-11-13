@@ -7,14 +7,14 @@ import ActLockdown from '@/components/modes/ActLockdown';
 import ActMorning from '@/components/modes/ActMorning';
 import BeachBarGame from '@/components/modes/BeachBarGame';
 import { modeMeta, ACT_META, MODE_THEMES } from '@/data/modes/modeRegistry';
-import { useModeCtx, fmt, useTick } from '@/lib/modeKit';
+import { useModeCtx, useTick } from '@/lib/modeKit';
 
 // Tablet (game master) για τα 4 νέα modes. Κάθε mode = λίστα από acts.
 export default function ModeGame({ state, updateState, onEnd, onQR }) {
   const [, setContentReady] = useState(false);
   useEffect(() => { loadModesContent().then(() => setContentReady(true)); }, []);
   const ctx = useModeCtx(state, updateState);
-  const { mg, setMg, players, log } = ctx;
+  const { mg, setMg, log } = ctx;
   const meta = modeMeta(state.mode);
   const acts = meta.acts;
   const actIndex = Math.min(mg.actIndex || 0, acts.length - 1);
@@ -58,7 +58,7 @@ export default function ModeGame({ state, updateState, onEnd, onQR }) {
           ))}
         </div>
       )}
-      <div className="text-xs opacity-60 text-right">Στο παιχνίδι: {elapsedLabel} ώρες / 5:00 ώρες</div>
+      <div className="text-xs opacity-60 text-right">Χρόνος παιχνιδιού: {elapsedLabel} / 5:00 ώρες</div>
 
       {act === 'board' && <ActBoard ctx={ctx} onDone={nextAct} />}
       {act === 'midnight' && <ActMidnight ctx={ctx} onDone={nextAct} />}
