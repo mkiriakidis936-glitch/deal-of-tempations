@@ -70,12 +70,14 @@ async function archiveSessionData({ sessionCode, mode, winner, playerNames, stat
       const profile = profiles[0];
       const isWinner = name === winner;
       if (profile) {
-        if (profile.data?.lastSessionCode !== sessionCode) {
+        const processed = Array.isArray(profile.data?.processedSessionCodes) ? profile.data.processedSessionCodes : [];
+        if (!processed.includes(sessionCode) && profile.data?.lastSessionCode !== sessionCode) {
           const next = {
             ...profile.data,
             totalSessions: (profile.data?.totalSessions || 0) + 1,
             totalWins: (profile.data?.totalWins || 0) + (isWinner ? 1 : 0),
             lastSessionCode: sessionCode,
+            processedSessionCodes: [...processed, sessionCode],
           };
           await client.query(
             'UPDATE records SET data = $1::jsonb, updated_date = now() WHERE id = $2',
@@ -84,12 +86,13 @@ async function archiveSessionData({ sessionCode, mode, winner, playerNames, stat
         }
       } else {
         await insertRecord('PlayerProfile', {
-          playerName: name, totalSessions: 1, totalWins: isWinner ? 1 : 0, lastSessionCode: sessionCode,
+          playerName: name, totalSessions: 1, totalWins: isWinner ? 1 : 0, lastSessionCode: sessionCode, processedSessionCodes: [sessionCode],
         });
       }
     }
 
     for (const confession of safeConfessions) {
+      if (!confession || typeof confession !== 'object' || Array.isArray(confession)) continue;
       const entry = {
         playerName: confession.playerName || 'Unknown',
         confession: confession.text || confession.confession || '',
