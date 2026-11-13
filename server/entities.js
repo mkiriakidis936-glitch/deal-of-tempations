@@ -7,7 +7,7 @@ import { notifyNewSubmission } from './push.js';
 // Entities that used to live in base44/entities/*.jsonc
 export const ENTITIES = [
   'Achievement', 'AppSetting', 'BacheloretteIntake', 'BlackmailVault', 'Chronicle', 'GameContent',
-  'GameSession', 'GameSessionSnapshot', 'Haunting', 'InvitationRSVP', 'Memorial', 'PajamaContent', 'PajamaIntake',
+  'GameSession', 'GameSessionEvent', 'GameSessionSnapshot', 'Haunting', 'InvitationRSVP', 'Memorial', 'PajamaContent', 'PajamaIntake',
   'PlayerIntake', 'PlayerProfile', 'PlayerCheckin', 'SessionArchive',
 ];
 
@@ -35,6 +35,7 @@ const rules = {
   // Sessions are created and deleted by the Game Master. Player writes use the
   // session-scoped, validated update path below.
   GameSession:     { create: ADMIN, delete: ADMIN },
+  GameSessionEvent: { read: ADMIN, create: ADMIN, update: ADMIN, delete: ADMIN },
   GameSessionSnapshot: { read: ADMIN, create: ADMIN, update: ADMIN, delete: ADMIN },
 };
 const needsAdmin = (entity, op) => (rules[entity]?.[op] || 'public') === ADMIN;
@@ -381,6 +382,25 @@ function broadcast(entity, event) {
 // keep proxies (Railway) from closing idle connections
 setInterval(() => { for (const set of streams.values()) for (const subscriber of set) subscriber.res.write(': ping\n\n'); }, 25000).unref();
 
+async function insertSessionEvent(client, req, current, nextState, changedFields, actorType) {
+  if (!changedFields.length) return null;
+  const data = {
+    sessionId: current.id,
+    sessionCode: current.sessionCode,
+    mode: nextState?.mode || current.mode || '',
+    stage: Number(nextState?.stage ?? 0),
+    actorType,
+    actorId: actorType === 'player' ? (req.body?.playerId || null) : (req.user?.email || null),
+    changedFields: [...new Set(changedFields)].slice(0, 30),
+    summary: actorType === 'host' ? 'Ενέργεια παρουσιαστή' : 'Ενέργεια παίκτη',
+  };
+  const { rows } = await client.query(
+    'INSERT INTO records (id, entity, data, created_by) VALUES ($1,$2,$3,$4) RETURNING *',
+    [crypto.randomUUID(), 'GameSessionEvent', JSON.stringify(data), req.user?.email || null],
+  );
+  return toRecord(rows[0]);
+}
+
 export function entityRoutes() {
   const r = express.Router();
 
@@ -513,18 +533,26 @@ export function entityRoutes() {
               "UPDATE records SET data = data || $1::jsonb, updated_date = now() WHERE id = $2 AND entity = $3 RETURNING *",
               [JSON.stringify({ state: mergedState }), req.params.id, req.entity],
             );
+            const timelineEvent = await insertSessionEvent(client, req, current, mergedState, Object.keys(statePatch), 'host');
             await client.query('COMMIT');
             const rec = toRecord(rows[0]);
             broadcast(req.entity, { type: 'update', id: rec.id, data: rec });
+            if (timelineEvent) broadcast('GameSessionEvent', { type: 'create', id: timelineEvent.id, data: timelineEvent });
             return res.json(rec);
           }
           const { rows } = await client.query(
             'UPDATE records SET data = data || $1::jsonb, updated_date = now() WHERE id = $2 AND entity = $3 RETURNING *',
             [JSON.stringify(stripBuiltins(req.body)), req.params.id, req.entity],
           );
+          const nextState = isObject(req.body?.state) ? req.body.state : (current.state || {});
+          const changedFields = isObject(req.body?.state)
+            ? Object.keys(nextState).filter((key) => !sameJson(current.state?.[key], nextState[key]))
+            : [];
+          const timelineEvent = await insertSessionEvent(client, req, current, nextState, changedFields, 'host');
           await client.query('COMMIT');
           const rec = toRecord(rows[0]);
           broadcast(req.entity, { type: 'update', id: rec.id, data: rec });
+          if (timelineEvent) broadcast('GameSessionEvent', { type: 'create', id: timelineEvent.id, data: timelineEvent });
           return res.json(rec);
         }
         if (typeof sessionCode !== 'string' || !playerId || !isObject(statePatch) ||
@@ -544,9 +572,11 @@ export function entityRoutes() {
           "UPDATE records SET data = data || $1::jsonb, updated_date = now() WHERE id = $2 AND entity = $3 RETURNING *",
           [JSON.stringify({ state: mergedState }), req.params.id, req.entity],
         );
+        const timelineEvent = await insertSessionEvent(client, req, current, mergedState, Object.keys(safePlayerPatch), 'player');
         await client.query('COMMIT');
         const rec = toRecord(rows[0]);
         broadcast(req.entity, { type: 'update', id: rec.id, data: rec });
+        if (timelineEvent) broadcast('GameSessionEvent', { type: 'create', id: timelineEvent.id, data: timelineEvent });
         return res.json(sanitizePublicSession(rec, playerId));
       } catch (error) {
         await client.query('ROLLBACK').catch(() => {});
