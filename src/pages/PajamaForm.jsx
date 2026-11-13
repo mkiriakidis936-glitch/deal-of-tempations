@@ -136,6 +136,7 @@ export default function PajamaForm() {
             <div className="text-sm text-pink-200 mb-1">Όρια — τι ΔΕΝ θέλεις</div>
             <textarea rows={3} className={FIELD} value={form.boundaries} onChange={(e) => set('boundaries', e.target.value)} />
           </div>
+          <CustomFormQuestions formType="pajama" value={form.customAnswers} onChange={(value) => set('customAnswers', value)} className="space-y-3" />
           <label className="flex items-start gap-2 text-sm text-pink-100/90">
             <input type="checkbox" checked={form.safeWordConfirmed} onChange={(e) => set('safeWordConfirmed', e.target.checked)} className="mt-1 accent-pink-500" />
             <span>Διάβασα τα όρια και συμφωνώ με το STOP / safe word. *</span>
