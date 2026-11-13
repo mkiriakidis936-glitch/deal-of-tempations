@@ -5,7 +5,7 @@ import ComicButton from '@/components/comic/ComicButton';
 import { GAME_MODES, FOOTWEAR_LEVELS, TOENAIL_PERKS } from '@/data/gameConfig';
 import { createInitialState, generateSessionCode } from '@/lib/gameLogic';
 import { isNewMode, modeMeta } from '@/data/modes/modeRegistry';
-import { MODE_COVERS } from '@/data/brandArt';
+import { MODE_COVERS, MODE_MEDIA } from '@/data/brandArt';
 
 const SHOE_TO_LEVEL = { boots: 4, sneakers: 2, sandals: 1, barefoot: 0 };
 
@@ -226,6 +226,51 @@ export default function SetupScreen({ onStart }) {
             ))}
           </div>
         </ComicPanel>
+
+        {newMode && (() => {
+          const media = MODE_MEDIA[mode] || {};
+          const hasMedia = media.hero || media.trailer || media.gallery?.length || media.sections?.some((item) => item.image) || media.cards?.some((item) => item.image);
+          return hasMedia ? (
+            <ComicPanel className="bg-card space-y-3">
+              {media.hero && <img src={media.hero} alt={newMode.name} className="w-full max-h-[360px] aspect-[16/7] object-cover rounded-xl" />}
+              {media.sections?.some((item) => item.image) && (
+                <div className="space-y-2">
+                  <div className="font-heading text-lg text-primary">ΕΝΟΤΗΤΕΣ</div>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                    {media.sections.filter((item) => item.image).map((item) => (
+                      <div key={item.id} className="rounded-lg overflow-hidden bg-secondary">
+                        <img src={item.image} alt={item.label || ''} className="w-full aspect-video object-cover" />
+                        <div className="p-2 text-xs font-bold">{item.label}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {media.cards?.some((item) => item.image) && (
+                <div className="space-y-2">
+                  <div className="font-heading text-lg text-primary">ΚΑΡΤΕΣ MODE</div>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                    {media.cards.filter((item) => item.image).map((item) => (
+                      <div key={item.id} className="rounded-lg overflow-hidden bg-secondary">
+                        <img src={item.image} alt={item.label || ''} className="w-full aspect-[4/5] object-cover" />
+                        <div className="p-2 text-xs font-bold">{item.label}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {media.gallery?.length > 0 && (
+                <div className="space-y-2">
+                  <div className="font-heading text-lg text-primary">GALLERY</div>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                    {media.gallery.map((src, index) => <img key={`${src}-${index}`} src={src} alt="" className="w-full aspect-[4/5] object-cover rounded-lg" />)}
+                  </div>
+                </div>
+              )}
+              {media.trailer && <div className="space-y-2"><div className="font-heading text-lg text-primary">TRAILER</div><video src={media.trailer} controls playsInline className="w-full rounded-xl aspect-video bg-black" /></div>}
+            </ComicPanel>
+          ) : null;
+        })()}
 
         <ComicPanel>
           <div className="flex items-center justify-between mb-3">
