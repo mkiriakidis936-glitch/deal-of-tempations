@@ -34,7 +34,7 @@ export default function AdminPlayerCheckin({ session }) {
     setRecord(rec);
   }, [sessionCode, players]);
 
-  useEffect(() => { load().catch((e) => setMessage(e.message)); }, [load]);
+  useEffect(() => { setRecord(null); setMessage(''); load().catch((e) => setMessage(e.message)); }, [load]);
 
   const checkIn = async (raw) => {
     const parts = String(raw || '').split('|');
