@@ -28,7 +28,7 @@ const homeContent = {
   overline: 'PRIVATE GAME EXPERIENCES · 18+',
   titleLines: ['DEAL OF', 'TEMPTATION'],
   tagline: 'Ανακάλυψε τα δύο αρχικά events και τα διαθέσιμα ψηφιακά Game Modes.',
-  cta: { label: 'ΕΠΙΛΟΓΗ EXPERIENCE', path: '/invitation' },
+  cta: { label: 'ΕΠΙΛΟΓΗ EXPERIENCE', path: '/site#modes' },
 };
 
 function HomeProgram() {
@@ -60,7 +60,7 @@ export default function Site() {
   const ev = isHome ? 'heist' : evParam;
   const c = getSiteContent(ev);
   const [globalDate, setGlobalDate] = useState('');
-  const eventDate = c.date || globalDate;
+  const eventDate = c.date || globalDate;\n  const pageContent = isHome ? { ...c, cta: homeContent.cta } : c;
   const modeId = MODE_IDS[ev];
   const heroSrc = modeId
     ? (MODE_MEDIA[modeId]?.hero || MODE_MEDIA[modeId]?.cover || MODE_COVERS[`modeCover_${modeId}`])
@@ -81,7 +81,7 @@ export default function Site() {
 
   return (
     <div className="min-h-screen overflow-hidden bg-background text-foreground">
-      <SiteNav ev={isHome ? '' : ev} onEvent={setEvent} c={c} isHome={isHome} />
+      <SiteNav ev={isHome ? '' : ev} onEvent={setEvent} c={pageContent} isHome={isHome} />
       {isHome ? (
         <>
           <SiteHero c={homeContent} ev="home" eventDate="" heroSrc={PHOTO.siteHero} />
