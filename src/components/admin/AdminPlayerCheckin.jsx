@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
 import ComicPanel from '@/components/comic/ComicPanel';
 import ComicButton from '@/components/comic/ComicButton';
@@ -18,7 +18,7 @@ export default function AdminPlayerCheckin({ session }) {
     if (!sessionCode) return;
     const { items } = await base44.entities.PlayerCheckin.filter({ sessionCode }, { limit: 1 });
     let rec = items?.[0] || null;
-    const current = rec?.value || {};
+    const current = rec || {};
     const next = { ...current, players: { ...(current.players || {}) } };
     let changed = false;
     players.forEach((player) => {
