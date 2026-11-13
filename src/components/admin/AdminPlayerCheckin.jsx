@@ -13,6 +13,7 @@ export default function AdminPlayerCheckin({ session }) {
   const [message, setMessage] = useState('');
   const players = session?.state?.players || [];
   const sessionCode = session?.sessionCode;
+  const playerIds = players.map((player) => player.id);
 
   const load = useCallback(async () => {
     if (!sessionCode) return;
@@ -21,9 +22,9 @@ export default function AdminPlayerCheckin({ session }) {
     const current = rec || {};
     const next = { ...current, players: { ...(current.players || {}) } };
     let changed = false;
-    players.forEach((player) => {
-      if (!next.players[player.id]) {
-        next.players[player.id] = { token: makeToken(), checkedInAt: null };
+    playerIds.forEach((playerId) => {
+      if (!next.players[playerId]) {
+        next.players[playerId] = { token: makeToken(), checkedInAt: null };
         changed = true;
       }
     });
@@ -32,7 +33,7 @@ export default function AdminPlayerCheckin({ session }) {
       else rec = await base44.entities.PlayerCheckin.create({ sessionCode, players: next.players });
     }
     setRecord(rec);
-  }, [sessionCode, players.map((p) => p.id).join('|')]);
+  }, [sessionCode, playerIds.join('|')]);
 
   useEffect(() => { load().catch((e) => setMessage(e.message)); }, [load]);
 
