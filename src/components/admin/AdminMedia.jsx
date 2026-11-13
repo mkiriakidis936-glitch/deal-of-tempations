@@ -152,7 +152,6 @@ export default function AdminMedia() {
     const label = kind === 'image' ? 'ΟΛΕΣ ΤΙΣ ΦΩΤΟΓΡΑΦΙΕΣ' : kind === 'video' ? 'ΟΛΑ ΤΑ ΒΙΝΤΕΟ' : 'ΟΛΕΣ ΤΙΣ ΦΩΤΟΓΡΑΦΙΕΣ ΚΑΙ ΤΑ ΒΙΝΤΕΟ';
     if (!window.confirm(`ΠΡΟΣΟΧΗ: Θα διαγραφούν οριστικά ${label} από τη βιβλιοθήκη του project και θα αφαιρεθούν από όλα τα σημεία εμφάνισης. Συνέχεια;`)) return;
     run(`clear-${kind}`, async () => {
-      await deleteAllMedia(kind);
       const next = {
         ...ov,
         ...(kind === 'video' || kind === 'all' ? {
@@ -172,6 +171,7 @@ export default function AdminMedia() {
         libraryCategories: {},
       };
       await save(next);
+      await deleteAllMedia(kind);
       await refreshLibrary();
     }, `${label}: ολοκληρώθηκε ✓`);
   };
