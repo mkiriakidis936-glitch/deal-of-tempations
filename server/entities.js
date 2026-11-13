@@ -270,7 +270,7 @@ function sanitizePublicSession(record, playerId = null) {
     let index = 0;
     for (const [key, item] of Object.entries(value)) {
       if (playerId && key === playerId) result[key] = item;
-      else result[`__redacted_${index++}`] = preserveBooleanTally && typeof item === 'boolean' ? item : true;
+      else result[`__redacted_${index++}`] = preserveBooleanTally && (typeof item === 'boolean' || ['guilty', 'innocent'].includes(item)) ? item : true;
     }
     return result;
   };
@@ -296,7 +296,7 @@ function sanitizePublicSession(record, playerId = null) {
       vote?.revealed ? vote : { ...vote, votes: countOnlyMap(vote?.votes) },
     ]));
   }
-  if (state.juryTrial) state.juryTrial = { ...state.juryTrial, votes: countOnlyMap(state.juryTrial.votes) };
+  if (state.juryTrial) state.juryTrial = { ...state.juryTrial, votes: countOnlyMap(state.juryTrial.votes, true) };
   if (state.grandJury) state.grandJury = {
     ...state.grandJury,
     queenVotes: countOnlyMap(state.grandJury.queenVotes),
