@@ -232,11 +232,16 @@ function validatePlayerPatch(current, patch, playerId) {
     const next = patch.players;
     if (!Array.isArray(next) || old.length !== next.length) return false;
     const changed = old.filter((p, i) => !sameJson(p, next[i]));
-    if (changed.length !== 1 || changed[0]?.id !== playerId) return false;
     const before = old.find((p) => p.id === playerId);
     const after = next.find((p) => p.id === playerId);
-    if (!before || !after || !sameExceptKeys(before, after, ['penaltyStep']) ||
-        ![-1, 1].includes((after.penaltyStep || 0) - (before.penaltyStep || 0))) return false;
+    if (!before || !after || !sameExceptKeys(before, after, ['penaltyStep'])) return false;
+    const delta = (after.penaltyStep || 0) - (before.penaltyStep || 0);
+    const doubleDown = patch.history?.[0];
+    const validPenaltyChange =
+      (delta === 1 && doubleDown?.type === 'double_down' && doubleDown.result === 'ποινή') ||
+      (delta === -1 && doubleDown?.type === 'double_down' && doubleDown.result === 'ελευθερία') ||
+      (delta === 0 && (before.penaltyStep || 0) === 0 && doubleDown?.type === 'double_down' && doubleDown.result === 'ελευθερία');
+    if (!validPenaltyChange || (changed.length > 0 && (changed.length !== 1 || changed[0]?.id !== playerId))) return false;
   }
 
   if ('history' in patch) {
