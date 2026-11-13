@@ -28,3 +28,14 @@ export const GALLERIES = [
   { id: 'pajamaPhotos', label: 'Pajama — γκαλερί', where: 'Site (Gallery) και Pajama πρόσκληση' },
   { id: 'siteVideos', kind: 'video', label: 'Site — επιπλέον βίντεο', where: 'Αρχική σελίδα, κάτω από το τρέιλερ (όσα θες)' },
 ];
+
+export const MODE_COVER_SLOTS = [
+  { id: 'modeCover_classic', modeId: 'classic', label: 'Κλασικό' },
+  { id: 'modeCover_marathon', modeId: 'marathon', label: 'Mega Marathon' },
+  { id: 'modeCover_arrest_heist', modeId: 'arrest_heist', label: 'Arrest & Heist' },
+  { id: 'modeCover_pajama', modeId: 'pajama', label: 'Pajama Mode' },
+  { id: 'modeCover_pedi_extended', modeId: 'pedi_extended', label: 'Pedi-Glam Extended' },
+  { id: 'modeCover_lockdown', modeId: 'lockdown', label: 'Pajama Lockdown' },
+  { id: 'modeCover_beach_bar', modeId: 'beach_bar', label: 'Beach Bar Lockdown' },
+  { id: 'modeCover_marathon_4h', modeId: 'marathon_4h', label: '5H Pajama Marathon' },
+];
