@@ -24,6 +24,7 @@ import AdminSite from '@/components/admin/AdminSite';
 import AdminModes from '@/components/admin/AdminModes';
 import AdminNotifications from '@/components/admin/AdminNotifications';
 import AdminVisits from '@/components/admin/AdminVisits';
+import AdminBackup from '@/components/admin/AdminBackup';
 import { setActiveSessionCode } from '@/lib/activeSession';
 
 const NAV_GROUPS = [
@@ -66,6 +67,7 @@ const NAV_GROUPS = [
     tabs: [
       { id: 'notifications', label: '🔔 Ειδοποιήσεις' },
       { id: 'visits', label: '📈 Επισκέψεις Site' },
+      { id: 'backup', label: '💾 Αντίγραφα' },
       { id: 'guide', label: '📖 Οδηγός' },
       { id: 'meta', label: '🔮 Meta-Game' },
     ],
@@ -158,6 +160,8 @@ export default function Admin() {
 
   function renderTab() {
     switch (tab) {
+      case 'backup':
+        return <AdminBackup />;
       case 'sessions':
         return (
           <AdminSessions

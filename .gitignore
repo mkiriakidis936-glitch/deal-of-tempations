@@ -79,3 +79,7 @@ base44/.app.jsonc
 
 # personal data exported from Base44 - NEVER commit
 data-export/
+
+# local backups / uploads (στο Railway ζουν στο Volume)
+/backups
+/uploads

@@ -8,9 +8,12 @@ import { functionRoutes } from './functions.js';
 import { mediaRoutes, mediaStatic } from './media.js';
 import { pushRoutes } from './push.js';
 import { visitRoutes } from './visits.js';
+import { backupRoutes, startAutoBackup } from './backup.js';
 
 const app = express();
 app.set('trust proxy', 1); // Railway terminates TLS in front of us
+// πριν από τον γενικό parser των 2MB: τα αντίγραφα ασφαλείας έχουν δικό τους, μεγαλύτερο όριο
+app.use('/api/backup', attachUser, backupRoutes());
 app.use(express.json({ limit: '2mb' }));
 app.use(attachUser);
 
@@ -48,6 +51,7 @@ app.use((err, _req, res, _next) => {
 const port = Number(process.env.PORT) || 3000;
 await migrate();
 const server = app.listen(port, '0.0.0.0', () => console.log(`Server listening on :${port}`));
+startAutoBackup();
 
 for (const sig of ['SIGTERM', 'SIGINT']) {
   process.on(sig, () => server.close(() => pool.end().then(() => process.exit(0))));
