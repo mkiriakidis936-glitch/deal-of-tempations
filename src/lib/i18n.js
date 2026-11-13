@@ -13,7 +13,7 @@ export function applyTranslationKeys(source, namespace, dictionary, language) {
     const path = key.slice(prefix.length).split('.');
     let target = result;
     for (const part of path.slice(0, -1)) {
-      const index = /^\\d+$/.test(part) ? Number(part) : part;
+      const index = /^\d+$/.test(part) ? Number(part) : part;
       if (target == null || target[index] == null) return;
       target = target[index];
     }
