@@ -13,8 +13,6 @@ export default function AdminPlayerCheckin({ session }) {
   const [message, setMessage] = useState('');
   const players = session?.state?.players || [];
   const sessionCode = session?.sessionCode;
-  const playerIds = players.map((player) => player.id);
-
   const load = useCallback(async () => {
     if (!sessionCode) return;
     const { items } = await base44.entities.PlayerCheckin.filter({ sessionCode }, { limit: 1 });
@@ -22,7 +20,8 @@ export default function AdminPlayerCheckin({ session }) {
     const current = rec || {};
     const next = { ...current, players: { ...(current.players || {}) } };
     let changed = false;
-    playerIds.forEach((playerId) => {
+    players.forEach((player) => {
+      const playerId = player.id;
       if (!next.players[playerId]) {
         next.players[playerId] = { token: makeToken(), checkedInAt: null };
         changed = true;
