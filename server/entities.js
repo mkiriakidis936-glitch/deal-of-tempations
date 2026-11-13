@@ -175,6 +175,7 @@ function validatePlayerPatch(current, patch, playerId) {
     if (!allowedHistory) return false;
     const entry = patch.history[0];
     if (!entry || !['snitch_vote', 'double_down', 'last_wish'].includes(entry.type)) return false;
+    if (!sameJson(patch.history.slice(1), (current.history || []).slice(0, 49))) return false;
     if (entry.type === 'snitch_vote' && entry.voter !== player.name) return false;
     if (entry.type === 'double_down' && entry.player !== player.name) return false;
   }
