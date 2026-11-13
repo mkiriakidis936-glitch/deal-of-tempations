@@ -85,6 +85,16 @@ export default function AdminFormsBuilder() {
         <div className="flex gap-2"><ComicButton size="sm" variant="dark" onClick={() => setEditing({ ...question })}>ΕΠΕΞΕΡΓΑΣΙΑ</ComicButton><ComicButton size="sm" variant="red" disabled={busy} onClick={() => remove(question.id)}>ΔΙΑΓΡΑΦΗ</ComicButton></div>
       </ComicPanel>)}
     </div>
+    {editing && <ComicPanel className="bg-card space-y-2">
+      <div className="font-heading text-sm text-primary">LIVE PREVIEW · FORM QUESTION</div>
+      {editing.image && <img src={editing.image} alt="" className="max-h-40 w-full rounded-lg object-cover" />}
+      <div className="font-bold">{editing.label || 'Η ερώτηση θα εμφανιστεί εδώ'} {editing.required ? '*' : ''}</div>
+      {editing.type === 'select'
+        ? <div className="space-y-1">{(editing.options || []).filter(Boolean).map((option, index) => <div key={index} className="rounded border border-border/50 p-2 text-sm">○ {option}</div>)}</div>
+        : editing.type === 'textarea'
+          ? <div className="min-h-20 rounded border border-border/50 p-2 text-xs text-foreground/50">Μεγάλο πεδίο κειμένου</div>
+          : <div className="rounded border border-border/50 p-2 text-xs text-foreground/50">Σύντομη απάντηση</div>}
+    </ComicPanel>}
     <AdminSettingVersionHistory settingKey={KEY} onRestore={(value) => setForms({ modes: [], pajama: [], heist: [], invitation: [], ...(value?.forms || {}) })} />
   </div>;
 }
