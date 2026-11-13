@@ -25,6 +25,7 @@ import AdminBlitz from '@/components/admin/AdminBlitz';
 import AdminMedia from '@/components/admin/AdminMedia';
 import AdminSite from '@/components/admin/AdminSite';
 import AdminCustomScenarios from '@/components/admin/AdminCustomScenarios';
+import AdminFormsBuilder from '@/components/admin/AdminFormsBuilder';
 import AdminNotifications from '@/components/admin/AdminNotifications';
 import AdminVisits from '@/components/admin/AdminVisits';
 import { setActiveSessionCode } from '@/lib/activeSession';
