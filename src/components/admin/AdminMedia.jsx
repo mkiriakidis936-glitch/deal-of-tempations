@@ -10,10 +10,11 @@ import { NEW_MODES } from '@/data/modes/modeRegistry';
 import ModeMediaManager from '@/components/admin/ModeMediaManager';
 import { MEDIA_KEY, fetchOverrides, uploadMedia, listMedia, deleteMedia, deleteAllMedia } from '@/lib/media';
 
-const IMG_ACCEPT = 'image/*,.jpg,.jpeg,.png,.webp,.gif,.avif,.heic';
+const IMG_ACCEPT = 'image/*,.jpg,.jpeg,.png,.webp,.gif,.avif,.heic,.svg';
 const VID_ACCEPT = 'video/*,.mp4,.webm,.mov';
-const MEDIA_ACCEPT = 'image/*,video/*,.jpg,.jpeg,.png,.webp,.gif,.avif,.heic,.mp4,.webm,.mov';
+const MEDIA_ACCEPT = 'image/*,video/*,audio/*,.jpg,.jpeg,.png,.webp,.gif,.avif,.heic,.svg,.mp4,.webm,.mov,.mp3,.wav,.ogg,.m4a,.aac';
 const isVideoFile = (url) => /\.(mp4|webm|mov)(?:[?#]|$)/i.test(url || '');
+const isAudioFile = (url) => /\.(mp3|wav|ogg|m4a|aac)(?:[?#]|$)/i.test(url || '');
 const containsUrl = (value, url) => typeof value === 'string'
   ? value === url
   : Array.isArray(value)
@@ -29,11 +30,12 @@ const removeUrl = (value, url) => {
 };
 const mb = (n) => (n >= 1048576 ? `${(n / 1048576).toFixed(1)} MB` : `${Math.max(1, Math.round(n / 1024))} KB`);
 
-function Thumb({ src, video, className = '' }) {
+function Thumb({ src, video, audio, className = '' }) {
   if (!src) return <div className={`bg-black/40 ${className}`} />;
+  if (audio) return <div className={`bg-black/30 flex items-center justify-center p-2 ${className}`}><audio src={src} controls preload="metadata" className="w-full" /></div>;
   return video
     ? <video src={src} controls muted playsInline preload="metadata" className={`bg-black object-cover ${className}`} />
-    : <img src={src} alt="" loading="lazy" className={`object-cover ${className}`} />;
+    : <img src={src} alt="" loading="lazy" className={`object-contain ${className}`} />;
 }
 
 export default function AdminMedia() {
@@ -41,6 +43,7 @@ export default function AdminMedia() {
   const [ov, setOv] = useState({});
   const [library, setLibrary] = useState([]);
   const [libraryFilter, setLibraryFilter] = useState('all');
+  const [librarySearch, setLibrarySearch] = useState('');
   const LIBRARY_CATEGORIES = [
     { id: 'heist', label: 'Heist' },
     { id: 'pajama', label: 'Pajama' },
@@ -222,10 +225,9 @@ export default function AdminMedia() {
       <input ref={mediaOne} type="file" accept={MEDIA_ACCEPT} hidden onChange={onFiles} />
 
       <ComicPanel className="bg-card">
-        <div className="font-heading text-xl text-primary">🖼️ ΦΩΤΟΓΡΑΦΙΕΣ & ΒΙΝΤΕΟ</div>
+        <div className="font-heading text-xl text-primary">🗂️ MEDIA LIBRARY 2.0</div>
         <p className="text-xs font-body text-foreground/70 mt-1">
-          Ανέβασε, άλλαξε ή σβήσε ό,τι θες. Τις ίδιες αλλαγές μπορείς να τις κάνεις και απευθείας πάνω στις σελίδες (✏️ κάτω αριστερά, όταν είσαι συνδεδεμένη/ος).
-          Οι φωτογραφίες μικραίνουν αυτόματα.
+          Διαχείριση φωτογραφιών, γραφικών SVG, βίντεο και ήχων με κατηγορίες, αναζήτηση και προεπισκόπηση. Οι φωτογραφίες μικραίνουν αυτόματα.
         </p>
         <div className="flex flex-wrap gap-2 mt-3">
           <ComicButton size="sm" variant="dark" disabled={!!busy} onClick={() => clearMedia('image')}>🗑 Διαγραφή όλων των φωτογραφιών</ComicButton>
@@ -342,6 +344,7 @@ export default function AdminMedia() {
 
       <ComicPanel className="bg-card space-y-3">
         <div className="font-heading text-lg">🗂️ ΒΙΒΛΙΟΘΗΚΗ ΑΡΧΕΙΩΝ ({library.length})</div>
+        <input type="search" value={librarySearch} onChange={(e) => setLibrarySearch(e.target.value)} placeholder="Αναζήτηση αρχείων…" className="w-full rounded-lg border-2 border-border bg-background px-3 py-2 text-sm" />
         <p className="text-[11px] text-foreground/60">Οργάνωσε τις εικόνες σε Heist, Pajama ή Branding. Από εδώ μπορείς επίσης να προσθέσεις μια εικόνα απευθείας στη σωστή γκαλερί. Η διαγραφή αφαιρεί το αρχείο οριστικά.</p>
         <div className="flex flex-wrap gap-2">
           {[{ id: 'all', label: 'Όλα' }, ...LIBRARY_CATEGORIES].map((c) => (
@@ -350,11 +353,11 @@ export default function AdminMedia() {
         </div>
         {!library.length && <div className="text-xs text-foreground/60">Δεν έχεις ανεβάσει ακόμα αρχεία.</div>}
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2">
-          {library.filter((f) => libraryFilter === 'all' || (f.kind === 'video' ? libraryFilter === 'uncategorized' : categoryOf(f.url) === libraryFilter)).map((f) => (
+          {library.filter((f) => (libraryFilter === 'all' || categoryOf(f.url) === libraryFilter) && f.name.toLowerCase().includes(librarySearch.toLowerCase())).map((f) => (
             <div key={f.name} className="border-2 border-border/40 rounded overflow-hidden bg-secondary/40">
-              <Thumb video={f.kind === 'video'} src={f.url} className="w-full aspect-square" />
+              <Thumb video={f.kind === 'video'} audio={f.kind === 'audio'} src={f.url} className="w-full aspect-square" />
               <div className="p-1 text-[10px] leading-tight break-all">{f.name.replace(/^[a-z0-9]+-[a-f0-9]{6}-/, '')}<br />{mb(f.size)}{isUsed(f.url) ? ' · σε χρήση' : ''}</div>
-              {f.kind !== 'video' && <div className="p-1 space-y-1">
+              {(f.kind === 'image' || f.kind === 'graphic') && <div className="p-1 space-y-1">
                 <div className="text-[10px] text-foreground/60">Κατηγορία</div>
                 <select value={categoryOf(f.url)} disabled={!!busy} onChange={(e) => setLibraryCategory(f.url, e.target.value)} className="w-full rounded bg-black/50 border border-border/50 p-1 text-xs">
                   {LIBRARY_CATEGORIES.map((c) => <option key={c.id} value={c.id}>{c.label}</option>)}
