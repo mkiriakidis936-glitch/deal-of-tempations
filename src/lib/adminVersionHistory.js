@@ -4,6 +4,9 @@ export async function saveAdminSettingVersion(settingKey, fallbackValue) {
   const key = `admin_setting_versions_${settingKey}`;
   const result = await base44.entities.AppSetting.filter({ key }, { limit: 1 });
   const record = result.items?.[0] || null;
+  const current = await base44.entities.AppSetting.filter({ key: settingKey }, { limit: 1 });
+  const currentValue = current.items?.[0]?.value ?? fallbackValue;
+  if (currentValue === undefined) return;
   const snapshot = {
     id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
     createdAt: new Date().toISOString(),
