@@ -52,15 +52,16 @@ const onlyOwnMapEntryChanged = (before, after, playerId) => {
     key === playerId || key.startsWith('__redacted_') || (Object.prototype.hasOwnProperty.call(before, key) && sameJson(before[key], value))
   );
 };
-const deepMerge = (target, patch, field = '') => {
+const deepMerge = (target, patch, field = '', allowClear = false) => {
   if (Array.isArray(target) && Array.isArray(patch)) {
+    if (patch.length === 0 && allowClear) return [];
     if (field === 'players' || field === 'confessions') {
       const key = field === 'players' ? 'id' : 'playerId';
       const merged = new Map(target.map((item) => [item?.[key], item]));
       for (const item of patch) {
         const id = item?.[key];
         if (id == null) continue;
-        merged.set(id, merged.has(id) ? deepMerge(merged.get(id), item) : item);
+        merged.set(id, merged.has(id) ? deepMerge(merged.get(id), item, '', allowClear) : item);
       }
       return [...merged.values()];
     }
@@ -85,7 +86,7 @@ const deepMerge = (target, patch, field = '') => {
   const merged = { ...target };
   for (const [key, value] of Object.entries(patch)) {
     if (key.startsWith('__redacted_')) continue;
-    merged[key] = deepMerge(target[key], value, key);
+    merged[key] = deepMerge(target[key], value, key, allowClear);
   }
   return merged;
 };
@@ -217,7 +218,7 @@ function validatePlayerPatch(current, patch, playerId) {
         key === 'playerId' || sameJson(previous[key], value)
       );
     });
-    if (!otherEntriesUnchanged || (own && (typeof own.text !== 'string' || own.text.length > 1000))) return false;
+    if (!otherEntriesUnchanged || (before.length > 0 && after.length === 0) || (own && (typeof own.text !== 'string' || own.text.length > 1000))) return false;
   }
 
   if ('mg' in patch) {
@@ -494,7 +495,7 @@ export function entityRoutes() {
         const current = toRecord(found[0]);
         if (isAdmin(req)) {
           if (isObject(statePatch)) {
-            const mergedState = deepMerge(current.state || {}, statePatch);
+            const mergedState = deepMerge(current.state || {}, statePatch, '', true);
             const { rows } = await client.query(
               "UPDATE records SET data = data || $1::jsonb, updated_date = now() WHERE id = $2 AND entity = $3 RETURNING *",
               [JSON.stringify({ state: mergedState }), req.params.id, req.entity],
