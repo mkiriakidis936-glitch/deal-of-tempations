@@ -68,7 +68,7 @@ export const DEFAULTS = { ...ART, ...PHOTO, ...FILM, heistPhotos: [...HEIST_PHOT
 // Αλλάζει τα αντικείμενα επιτόπου, ώστε να τα δουν όλα τα components.
 export function applyMediaOverrides(o = {}) {
   const str = (v) => (typeof v === 'string' && v ? v : null);
-  const isVideo = (v) => /\\.(mp4|webm|mov)(?:[?#]|$)/i.test(v || '');
+  const isVideo = (v) => /\.(mp4|webm|mov)(?:[?#]|$)/i.test(v || '');
   const clearPhotos = !!(o.clearAllPhotos || o.clearAllMedia);
   const clearVideos = !!(o.clearAllVideos || o.clearAllMedia);
   const emptySlots = Array.isArray(o.emptySlots) ? o.emptySlots : [];
@@ -94,7 +94,7 @@ export function applyMediaOverrides(o = {}) {
     }
   }
 
-  const setList = (arr, v, def) => arr.splice(0, arr.length, ...((Array.isArray(v) && v.filter(str).length ? v.filter(str) : def)));
+  const setList = (arr, v, def) => arr.splice(0, arr.length, ...(Array.isArray(v) ? v.filter(str) : def));
   setList(HEIST_PHOTOS, o.heistPhotos, clearPhotos ? [] : DEFAULTS.heistPhotos);
   setList(PAJAMA_PHOTOS, o.pajamaPhotos, clearPhotos ? [] : DEFAULTS.pajamaPhotos);
   setList(SITE_VIDEOS, o.siteVideos, []);
