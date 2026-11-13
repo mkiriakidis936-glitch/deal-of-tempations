@@ -38,14 +38,14 @@ export default function ModeForm() {
   const [step, setStep] = useState(0);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState('');\n  const [customQuestionsValid, setCustomQuestionsValid] = useState(true);
 
   const set = (k, v) => setForm((f) => ({ ...f, [k]: v }));
   const toggleMode = (id) => set('modes', form.modes.includes(id) ? form.modes.filter((m) => m !== id) : [...form.modes, id]);
   const has = (...ids) => form.modes.some((m) => ids.includes(m));
   const pajamaish = has('pedi_extended', 'lockdown', 'marathon_4h');
   const beachish = has('beach_bar');
-  const canSend = form.name.trim() && form.modes.length > 0 && form.adult && form.safeWordConfirmed && !saving;
+  const canSend = form.name.trim() && form.modes.length > 0 && form.adult && form.safeWordConfirmed && customQuestionsValid && !saving;
 
   async function submit() {
     if (!canSend) return;
@@ -210,7 +210,7 @@ export default function ModeForm() {
             <textarea rows={3} className={FIELD} value={form.boundaries} onChange={(e) => set('boundaries', e.target.value)} />
           </div>
 
-          <CustomFormQuestions formType="modes" value={form.customAnswers} onChange={(value) => set('customAnswers', value)} className="space-y-3" />
+          <CustomFormQuestions formType="modes" value={form.customAnswers} onChange={(value) => set('customAnswers', value)} onValidityChange={setCustomQuestionsValid} className="space-y-3" />
 
           <label className="flex items-start gap-2 text-sm text-pink-100/90">
             <input type="checkbox" checked={form.adult} onChange={(e) => set('adult', e.target.checked)} className="mt-1 accent-pink-500" />
