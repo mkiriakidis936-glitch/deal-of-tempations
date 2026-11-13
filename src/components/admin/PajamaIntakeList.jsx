@@ -2,10 +2,12 @@ import React, { useEffect, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import ComicPanel from '@/components/comic/ComicPanel';
 import ComicButton from '@/components/comic/ComicButton';
+import { NEW_MODES } from '@/data/modes/modeRegistry';
 
 export default function PajamaIntakeList() {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [modeFilter, setModeFilter] = useState('all');
 
   async function load() {
     setLoading(true);
@@ -54,6 +56,10 @@ export default function PajamaIntakeList() {
     } catch (e) { console.error('Delete error', e); }
   }
 
+  const shown = modeFilter === 'all' ? items : items.filter((i) => (i.preferredModes || []).includes(modeFilter));
+  const modeName = (id) => NEW_MODES.find((m) => m.id === id);
+  const LEVEL = { none: 'χωρίς δεσίματα', light: 'ελαφριά δεσίματα', full: 'και hogtie' };
+
   if (loading) return <div className="text-center font-heading text-xl comic-pulse">ΦΟΡΤΩΣΗ...</div>;
 
   if (items.length === 0) {
@@ -74,9 +80,15 @@ export default function PajamaIntakeList() {
           {' · '}
           <span className="text-tarot-sienna">{items.filter((i) => i.bringsOwnSlippers === false).length} θέλουν παντόφλες</span>
         </div>
-        <ComicButton variant="dark" size="sm" onClick={load}>🔄 ΑΝΑΝΕΩΣΗ</ComicButton>
+        <div className="flex items-center gap-2">
+          <select value={modeFilter} onChange={(e) => setModeFilter(e.target.value)} className="px-2 py-1.5 rounded border-2 border-border bg-background text-sm">
+            <option value="all">Όλα τα modes</option>
+            {NEW_MODES.map((m) => <option key={m.id} value={m.id}>{m.icon} {m.name}</option>)}
+          </select>
+          <ComicButton variant="dark" size="sm" onClick={load}>🔄 ΑΝΑΝΕΩΣΗ</ComicButton>
+        </div>
       </div>
-      {items.map((i) => (
+      {shown.map((i) => (
         <ComicPanel key={i.id} className="bg-card p-3">
           <div className="flex items-start justify-between gap-2">
             <div className="flex-1 space-y-1">
@@ -94,6 +106,19 @@ export default function PajamaIntakeList() {
                 <span>🦶 Ευαισθησία: {'●'.repeat(i.footSensitivity || 0)}{'○'.repeat(5 - (i.footSensitivity || 0))}</span>
                 <span>🍃 Γαργαλητό: {'●'.repeat(i.ticklish || 0)}{'○'.repeat(5 - (i.ticklish || 0))}</span>
               </div>
+              {(i.preferredModes || []).length > 0 && (
+                <div className="flex gap-1 flex-wrap">
+                  {i.preferredModes.map((id) => <span key={id} className="text-xs bg-primary/20 border border-primary/40 px-2 py-0.5 rounded font-bold">{modeName(id)?.icon} {modeName(id)?.name || id}</span>)}
+                </div>
+              )}
+              {i.formType === 'modes' && (
+                <div className="flex gap-2 flex-wrap text-xs font-bold">
+                  {i.restraintLevel && <span>🎀 {LEVEL[i.restraintLevel] || i.restraintLevel}</span>}
+                  {i.blindfoldOk === false && <span>🙈 ΧΩΡΙΣ μάσκα</span>}
+                  {i.alcohol === 'free' && <span>🧃 χωρίς αλκοόλ</span>}
+                  {i.hasFlipFlops === false && <span>🩴 χρειάζεται σαγιονάρες</span>}
+                </div>
+              )}
               {i.pajamaStyle && <div className="text-xs">🛏️ {i.pajamaStyle}</div>}
               {i.boundaries && <div className="text-xs bg-secondary p-1.5 rounded border border-border/20">🚧 {i.boundaries}</div>}
             </div>

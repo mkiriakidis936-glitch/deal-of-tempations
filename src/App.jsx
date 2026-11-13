@@ -17,6 +17,7 @@ import Invitation from '@/pages/Invitation';
 import Promo from '@/pages/Promo';
 import GiftUnlock from '@/pages/GiftUnlock';
 import PajamaForm from '@/pages/PajamaForm';
+import ModeForm from '@/pages/ModeForm';
 import PajamaInvite from '@/pages/PajamaInvite';
 import Site from '@/pages/Site';
 import Login from '@/pages/Login';
@@ -64,6 +65,7 @@ const AuthenticatedApp = () => {
       <Route path="/invitation" element={<Invitation />} />
       <Route path="/welcome" element={<Navigate to="/invitation" replace />} />
       <Route path="/pajama-form" element={<PajamaForm />} />
+      <Route path="/modes-form" element={<ModeForm />} />
       <Route path="/gift-unlock" element={<GiftUnlock />} />
       <Route path="/pajama-invite" element={<PajamaInvite />} />
       <Route path="/site" element={<Site />} />

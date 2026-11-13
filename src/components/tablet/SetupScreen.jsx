@@ -119,6 +119,19 @@ export default function SetupScreen({ onStart }) {
       setPlayers(players.slice(0, 6));
     } else if (isNewMode(m.id)) {
       const meta = modeMeta(m.id);
+      const wanted = pajamaApproved
+        .filter((i) => Array.isArray(i.preferredModes) && i.preferredModes.includes(m.id))
+        .map((i) => i.name.trim());
+      if (wanted.length > 0) {
+        const byName = Object.fromEntries(pajamaApproved.map((i) => [i.name.trim(), i]));
+        const next = [...new Set(wanted)].slice(0, meta.max).map((n, idx) => ({
+          name: n, footwearLevel: 2, toenailPerk: TOENAIL_PERKS[idx % TOENAIL_PERKS.length].id,
+          slipperType: byName[n]?.slipperType || '', nailColor: byName[n]?.nailColor || 'Pink',
+        }));
+        while (next.length < meta.min) next.push({ name: '', footwearLevel: 2, toenailPerk: 'pink' });
+        setPlayers(next);
+        return;
+      }
       if (players.length < meta.min) setPlayers([...players, ...Array.from({ length: meta.min - players.length }, () => ({ name: '', footwearLevel: 2, toenailPerk: 'pink' }))]);
       else if (players.length > meta.max) setPlayers(players.slice(0, meta.max));
     }
@@ -128,6 +141,9 @@ export default function SetupScreen({ onStart }) {
     const valid = players.filter((p) => p.name.trim());
     if (valid.length < minPlayers) return;
     const state = { ...createInitialState(mode, 'standard', valid), testMode };
+    if (mode === 'beach_bar' && valid.some((p) => pajamaApproved.some((i) => (i.name || '').trim() === p.name.trim() && i.alcohol === 'free'))) {
+      state.mg = { ...state.mg, alcoholFree: true };
+    }
     onStart({
       sessionCode: generateSessionCode(),
       mode,

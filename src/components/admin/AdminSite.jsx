@@ -97,7 +97,7 @@ export default function AdminSite() {
           {SITE_EVENTS.map((e) => (
             <ComicButton key={e.id} size="sm" variant={ev === e.id ? 'yellow' : 'dark'} onClick={() => setEv(e.id)}>{e.label}</ComicButton>
           ))}
-          <a href={`/site${ev === 'pajama' ? '?event=pajama' : ''}`} target="_blank" rel="noreferrer" className="inline-flex items-center px-3 text-xs font-bold underline">👁️ Δες το site</a>
+          <a href={`/site${ev === 'heist' ? '' : `?event=${ev}`}`} target="_blank" rel="noreferrer" className="inline-flex items-center px-3 text-xs font-bold underline">👁️ Δες το site</a>
         </div>
         {msg && <div className={`text-sm font-bold ${msg.ok ? 'text-green-400' : 'text-red-400'}`}>{msg.text}</div>}
       </ComicPanel>
@@ -121,6 +121,11 @@ export default function AdminSite() {
             <option value="/invitation">/invitation (ερωτηματολόγιο Heist)</option>
             <option value="/pajama-form">/pajama-form (φόρμα Pajama)</option>
             <option value="/pajama-invite">/pajama-invite (κράτηση θέσης)</option>
+            <option value="/modes-form">/modes-form (φόρμα με επιλογή mode)</option>
+            <option value="/modes-form?mode=pedi_extended">/modes-form → Pedi-Glam Extended</option>
+            <option value="/modes-form?mode=lockdown">/modes-form → Pajama Lockdown</option>
+            <option value="/modes-form?mode=beach_bar">/modes-form → Beach Bar Lockdown</option>
+            <option value="/modes-form?mode=marathon_4h">/modes-form → 4H Marathon</option>
           </select>
         </Field>
         <Field label="Ημερομηνία & ώρα αυτού του event" hint="Αν το αφήσεις κενό, χρησιμοποιείται η γενική ημερομηνία από τα Πρακτικά.">

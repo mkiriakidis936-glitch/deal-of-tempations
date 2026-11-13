@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { loadModesContent } from '@/lib/modesContentStore';
 import ModeShell, { Panel, Btn } from '@/components/modes/ModeShell';
 import ActBoard from '@/components/modes/ActBoard';
 import ActMidnight from '@/components/modes/ActMidnight';
@@ -10,6 +11,8 @@ import { useModeCtx, fmt, useTick } from '@/lib/modeKit';
 
 // Tablet (game master) για τα 4 νέα modes. Κάθε mode = λίστα από acts.
 export default function ModeGame({ state, updateState, onEnd, onQR }) {
+  const [, setContentReady] = useState(false);
+  useEffect(() => { loadModesContent().then(() => setContentReady(true)); }, []);
   const ctx = useModeCtx(state, updateState);
   const { mg, setMg, players, log } = ctx;
   const meta = modeMeta(state.mode);

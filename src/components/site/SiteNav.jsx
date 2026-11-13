@@ -33,7 +33,7 @@ export default function SiteNav({ ev, onEvent, c }) {
           ΚΡΑΤΗΣΗ
         </button>
       </div>
-      <div className="max-w-6xl mx-auto px-4 pb-2 flex justify-center gap-2">
+      <div className="max-w-6xl mx-auto px-4 pb-2 flex flex-wrap justify-center gap-2">
         {SITE_EVENTS.map((e) => (
           <button
             key={e.id}

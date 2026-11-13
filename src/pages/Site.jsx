@@ -9,13 +9,14 @@ import SiteGallery from '@/components/site/SiteGallery';
 import SiteSchedule from '@/components/site/SiteSchedule';
 import SiteInfo from '@/components/site/SiteInfo';
 import SiteFaq from '@/components/site/SiteFaq';
-import { getSiteContent } from '@/data/siteContent';
+import { getSiteContent, SITE_EVENTS } from '@/data/siteContent';
 import { trackVisit } from '@/lib/track';
 
 export default function Site() {
   const navigate = useNavigate();
   const [params, setParams] = useSearchParams();
-  const ev = params.get('event') === 'pajama' ? 'pajama' : 'heist';
+  const evParam = params.get('event');
+  const ev = SITE_EVENTS.some((e) => e.id === evParam) ? evParam : 'heist';
   const c = getSiteContent(ev);
   const [globalDate, setGlobalDate] = useState('');
   const eventDate = c.date || globalDate;
@@ -36,7 +37,7 @@ export default function Site() {
         <SiteHero c={c} ev={ev} eventDate={eventDate} />
         <SiteScenario c={c} />
         <SiteVideo c={c} />
-        <SiteGallery initialTab={ev} />
+        <SiteGallery initialTab={['heist', 'pajama'].includes(ev) ? ev : 'all'} />
         <div className="h-px max-w-4xl mx-auto bg-tarot-gold/20" />
         <SiteSchedule c={c} />
         <div className="h-px max-w-4xl mx-auto bg-tarot-gold/20" />

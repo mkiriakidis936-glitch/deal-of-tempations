@@ -100,3 +100,9 @@ npm run dev                 # frontend στο :5173 (proxy προς το API)
 - UI: `src/components/modes/` (`ModeGame` για tablet, `ModeTV`, `ModeMobile`).
 - Ασφάλεια: κουμπί ΣΤΟΠ σε tablet και κινητά, υπενθύμιση σε κάρτες με δέσιμο, επιλογή «χωρίς αλκοόλ» στο Beach Bar.
 - Οι μυστικές αποστολές φτάνουν στο κινητό μέσω του live state (/play) με δόνηση και τοπική ειδοποίηση όσο η σελίδα είναι ανοιχτή.
+
+### Φόρμα, Site & Admin για τα νέα modes
+- `/modes-form` (και `/modes-form?mode=lockdown`…): φόρμα όπου η καλεσμένη διαλέγει ένα ή περισσότερα modes. Αποθηκεύεται στο `PajamaIntake` (`formType: 'modes'`) και εγκρίνεται από Admin → Ερωτηματολόγια → Pajama (με φίλτρο ανά mode).
+- `/site?event=extended|lockdown|beachbar|marathon4h`: οι 4 νέες καρτέλες του site. Τα κείμενα αλλάζουν από Admin → 🌐 Site & Σενάριο.
+- Admin → 🎮 Νέα Modes: επεξεργασία καρτών, ερωτήσεων και αποστολών (αποθήκευση στο AppSetting `modes_content`).
+- Στο Setup του tablet, όταν διαλέξεις νέο mode, προ-συμπληρώνονται οι εγκεκριμένες που το ζήτησαν.

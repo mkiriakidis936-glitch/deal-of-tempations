@@ -21,6 +21,7 @@ import AdminLeaderboard from '@/components/admin/AdminLeaderboard';
 import AdminBlitz from '@/components/admin/AdminBlitz';
 import AdminMedia from '@/components/admin/AdminMedia';
 import AdminSite from '@/components/admin/AdminSite';
+import AdminModes from '@/components/admin/AdminModes';
 import AdminNotifications from '@/components/admin/AdminNotifications';
 import AdminVisits from '@/components/admin/AdminVisits';
 import { setActiveSessionCode } from '@/lib/activeSession';
@@ -44,6 +45,7 @@ const NAV_GROUPS = [
     tabs: [
       { id: 'content', label: '📦 Περιεχόμενο & Κουτιά' },
       { id: 'pajama', label: '🩴 Pajama Mode' },
+      { id: 'modes', label: '🎮 Νέα Modes' },
       { id: 'site', label: '🌐 Site & Σενάριο' },
       { id: 'media', label: '🖼️ Φωτογραφίες & Βίντεο' },
     ],
@@ -193,6 +195,8 @@ export default function Admin() {
         return <AdminContentHub />;
       case 'pajama':
         return <AdminPajama />;
+      case 'modes':
+        return <AdminModes />;
       case 'site':
         return <AdminSite />;
       case 'media':

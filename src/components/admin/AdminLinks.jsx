@@ -16,6 +16,7 @@ const GUEST_LINKS = [
   { id: 'teaser', label: '🕯️ Πρόσκληση + Φόρμα', path: '/invitation', desc: 'Ένα link: teaser με countdown, μετά η φόρμα συμμετοχής.' },
   { id: 'pajama-invite', label: '🩴 Πρόσκληση Pajama', path: '/pajama-invite', desc: 'Το μυστηριώδες link που στέλνεις — οδηγεί στη φόρμα.' },
   { id: 'pajama', label: '🩴 Φόρμα Pajama', path: '/pajama-form', desc: 'Η φόρμα που συμπληρώνουν — μετά την εγκρίνεις στο Admin → Intakes.' },
+  { id: 'modes-form', label: '🎮 Φόρμα Νέων Modes', path: '/modes-form', desc: 'Η φόρμα όπου η καλεσμένη διαλέγει ένα ή περισσότερα modes (Pedi-Glam Extended, Lockdown, Beach Bar, 4H Marathon). Τις εγκρίνεις στο Admin → Ερωτηματολόγια.' },
 ];
 
 const OPTIONAL_LINKS = [
