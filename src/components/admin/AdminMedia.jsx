@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import ComicPanel from '@/components/comic/ComicPanel';
 import ComicButton from '@/components/comic/ComicButton';
-import { ART, DEFAULTS } from '@/data/brandArt';
+import { ART, DEFAULTS, applyMediaOverrides } from '@/data/brandArt';
 import { IMAGE_SLOTS, PHOTO_SPOTS, PHOTO_SPOT_IDS, GALLERIES } from '@/data/mediaSlots';
 import { MEDIA_KEY, fetchOverrides, uploadMedia, listMedia, deleteMedia, deleteAllMedia } from '@/lib/media';
 
@@ -60,6 +60,7 @@ export default function AdminMedia() {
     const clean = Object.fromEntries(Object.entries(next).filter(([k, v]) => (k.startsWith('clearAll') ? !!v : (Array.isArray(v) ? v.length : v))));
     if (rec?.id) await base44.entities.AppSetting.update(rec.id, { value: clean });
     else setRec(await base44.entities.AppSetting.create({ key: MEDIA_KEY, value: clean }));
+    applyMediaOverrides(clean);
     setOv(clean);
   };
 
