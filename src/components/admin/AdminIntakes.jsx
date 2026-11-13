@@ -17,6 +17,7 @@ export default function AdminIntakes() {
   const [loading, setLoading] = useState(true);
   const [subtab, setSubtab] = useState('players');
   const [bachEnabled, setBachEnabled] = useState(null);
+  const [msg, setMsg] = useState(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -31,6 +32,7 @@ export default function AdminIntakes() {
       setBachEnabled(enabled);
     } catch (e) {
       console.error('Intake load error', e);
+      setMsg({ ok: false, text: e.message || 'Δεν φορτώθηκαν τα ερωτηματολόγια.' });
     } finally {
       setLoading(false);
     }
@@ -41,21 +43,29 @@ export default function AdminIntakes() {
   async function toggleBach() {
     const next = !bachEnabled;
     setBachEnabled(next);
-    await setIntakeEnabled(next);
+    try {
+      await setIntakeEnabled(next);
+      setMsg({ ok: true, text: next ? 'Η φόρμα ενεργοποιήθηκε.' : 'Η φόρμα απενεργοποιήθηκε.' });
+    } catch (e) {
+      setBachEnabled(!next);
+      setMsg({ ok: false, text: e.message || 'Δεν άλλαξε η κατάσταση της φόρμας.' });
+    }
   }
 
   async function handleDelete(id) {
     try {
       await base44.entities.PlayerIntake.delete(id);
       setIntakes((prev) => prev.filter((i) => i.id !== id));
-    } catch (e) { console.error('Delete error', e); }
+      setMsg({ ok: true, text: 'Το ερωτηματολόγιο διαγράφηκε.' });
+    } catch (e) { console.error('Delete error', e); setMsg({ ok: false, text: e.message || 'Η διαγραφή απέτυχε.' }); }
   }
 
   async function handleDeleteBach(id) {
     try {
       await base44.entities.BacheloretteIntake.delete(id);
       setBachIntakes((prev) => prev.filter((i) => i.id !== id));
-    } catch (e) { console.error('Delete error', e); }
+      setMsg({ ok: true, text: 'Το intake διαγράφηκε.' });
+    } catch (e) { console.error('Delete error', e); setMsg({ ok: false, text: e.message || 'Η διαγραφή απέτυχε.' }); }
   }
 
   // Compact summary
@@ -73,6 +83,8 @@ export default function AdminIntakes() {
 
   return (
     <div className="space-y-3">
+      {msg && <ComicPanel className={msg.ok ? 'bg-tarot-forest' : 'bg-tarot-crimson'}><div className="text-sm font-bold">{msg.text}</div></ComicPanel>}
+
       {/* Compact counter strip */}
       <ComicPanel className="bg-primary/20 p-3">
         <div className="flex items-center justify-between flex-wrap gap-2">
