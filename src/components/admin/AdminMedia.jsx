@@ -12,6 +12,19 @@ const IMG_ACCEPT = 'image/*,.jpg,.jpeg,.png,.webp,.gif,.avif,.heic';
 const VID_ACCEPT = 'video/*,.mp4,.webm,.mov';
 const MEDIA_ACCEPT = 'image/*,video/*,.jpg,.jpeg,.png,.webp,.gif,.avif,.heic,.mp4,.webm,.mov';
 const isVideoFile = (url) => /\.(mp4|webm|mov)(?:[?#]|$)/i.test(url || '');
+const containsUrl = (value, url) => typeof value === 'string'
+  ? value === url
+  : Array.isArray(value)
+    ? value.some((item) => containsUrl(item, url))
+    : !!value && typeof value === 'object'
+      ? Object.values(value).some((item) => containsUrl(item, url))
+      : false;
+const removeUrl = (value, url) => {
+  if (typeof value === 'string') return value === url ? undefined : value;
+  if (Array.isArray(value)) return value.map((item) => removeUrl(item, url)).filter((item) => item !== undefined);
+  if (value && typeof value === 'object') return Object.fromEntries(Object.entries(value).map(([key, item]) => [key, removeUrl(item, url)]).filter(([, item]) => item !== undefined));
+  return value;
+};
 const mb = (n) => (n >= 1048576 ? `${(n / 1048576).toFixed(1)} MB` : `${Math.max(1, Math.round(n / 1024))} KB`);
 
 function Thumb({ src, video, className = '' }) {
