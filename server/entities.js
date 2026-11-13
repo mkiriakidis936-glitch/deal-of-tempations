@@ -209,8 +209,13 @@ function validatePlayerPatch(current, patch, playerId) {
     const beforeOther = before.filter((item) => item.playerId !== playerId);
     const afterOther = after.filter((item) => item.playerId !== playerId);
     const own = after.find((item) => item.playerId === playerId);
-    if (!afterOther.every((item) => beforeOther.some((oldItem) => sameJson(oldItem, item))) ||
-        (own && (typeof own.text !== 'string' || own.text.length > 1000))) return false;
+    const otherEntriesUnchanged = afterOther.every((item) => {
+      const previous = beforeOther.find((oldItem) => oldItem.playerId === item.playerId);
+      return previous && Object.entries(item).every(([key, value]) =>
+        key === 'playerId' || sameJson(previous[key], value)
+      );
+    });
+    if (!otherEntriesUnchanged || (own && (typeof own.text !== 'string' || own.text.length > 1000))) return false;
   }
 
   if ('mg' in patch) {
