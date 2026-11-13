@@ -5,7 +5,7 @@ import ComicButton from '@/components/comic/ComicButton';
 import { ACHIEVEMENTS, ACHIEVEMENTS_SETTING_KEY } from '@/data/achievements';
 
 export default function AdminAchievementDefinitions() {
-  const [items, setItems] = useState(ACHIEVEMENTS);
+  const [items, setItems] = useState(ACHIEVEMENTS.map((item) => ({ ...item, reward: '' })));
   const [record, setRecord] = useState(null);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState('');
@@ -16,7 +16,7 @@ export default function AdminAchievementDefinitions() {
         const found = rows?.[0] || null;
         setRecord(found);
         if (Array.isArray(found?.value?.items)) {
-          setItems(ACHIEVEMENTS.map((base) => found.value.items.find((item) => item.id === base.id) || base));
+          setItems(ACHIEVEMENTS.map((base) => ({ reward: '', ...base, ...(found.value.items.find((item) => item.id === base.id) || {}) })));
         }
       })
       .catch((error) => setMessage(error.message || 'Δεν φορτώθηκαν οι ορισμοί.'));
@@ -28,7 +28,7 @@ export default function AdminAchievementDefinitions() {
     setBusy(true);
     setMessage('');
     try {
-      const value = { items: items.map(({ id, name, icon, desc }) => ({ id, name, icon, desc })) };
+      const value = { items: items.map(({ id, name, icon, desc, reward }) => ({ id, name, icon, desc, reward: reward || '' })) };
       if (record?.id) await base44.entities.AppSetting.update(record.id, { value });
       else setRecord(await base44.entities.AppSetting.create({ key: ACHIEVEMENTS_SETTING_KEY, value }));
       setMessage('Οι ορισμοί αποθηκεύτηκαν.');
@@ -47,6 +47,7 @@ export default function AdminAchievementDefinitions() {
           <label className="block text-xs font-bold">Εικονίδιο<input className="mt-1 w-full rounded border bg-background p-2" value={item.icon} onChange={(e) => update(item.id, 'icon', e.target.value)} /></label>
           <label className="block text-xs font-bold">Τίτλος<input className="mt-1 w-full rounded border bg-background p-2" value={item.name} onChange={(e) => update(item.id, 'name', e.target.value)} /></label>
           <label className="block text-xs font-bold">Περιγραφή / υφιστάμενος κανόνας<textarea rows={2} className="mt-1 w-full rounded border bg-background p-2" value={item.desc} onChange={(e) => update(item.id, 'desc', e.target.value)} /></label>
+          <label className="block text-xs font-bold">Ανταμοιβή / unlock description (προαιρετικό)<input className="mt-1 w-full rounded border bg-background p-2" value={item.reward || ''} onChange={(e) => update(item.id, 'reward', e.target.value)} placeholder="Περιγραφή ανταμοιβής — χωρίς αλλαγή στους κανόνες απονομής" /></label>
         </div>
       ))}
       {message && <div className="text-xs font-bold">{message}</div>}
