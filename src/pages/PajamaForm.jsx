@@ -22,7 +22,7 @@ export default function PajamaForm() {
     customAnswers: {},
   });
   const [saving, setSaving] = useState(false);
-  const [saved, setSaved] = useState(false);
+  const [saved, setSaved] = useState(false);\n  const [customQuestionsValid, setCustomQuestionsValid] = useState(true);
 
   const progress = Math.round(([form.name.trim(), form.safeWordConfirmed].filter(Boolean).length / 2) * 100);
 
@@ -31,7 +31,7 @@ export default function PajamaForm() {
   }
 
   async function handleSubmit() {
-    if (!form.name.trim() || !form.safeWordConfirmed) return;
+    if (!form.name.trim() || !form.safeWordConfirmed || !customQuestionsValid) return;
     setSaving(true);
     try {
       await base44.entities.PajamaIntake.create({
@@ -136,7 +136,7 @@ export default function PajamaForm() {
             <div className="text-sm text-pink-200 mb-1">Όρια — τι ΔΕΝ θέλεις</div>
             <textarea rows={3} className={FIELD} value={form.boundaries} onChange={(e) => set('boundaries', e.target.value)} />
           </div>
-          <CustomFormQuestions formType="pajama" value={form.customAnswers} onChange={(value) => set('customAnswers', value)} className="space-y-3" />
+          <CustomFormQuestions formType="pajama" value={form.customAnswers} onChange={(value) => set('customAnswers', value)} onValidityChange={setCustomQuestionsValid} className="space-y-3" />
           <label className="flex items-start gap-2 text-sm text-pink-100/90">
             <input type="checkbox" checked={form.safeWordConfirmed} onChange={(e) => set('safeWordConfirmed', e.target.checked)} className="mt-1 accent-pink-500" />
             <span>Διάβασα τα όρια και συμφωνώ με το STOP / safe word. *</span>
@@ -145,7 +145,7 @@ export default function PajamaForm() {
 
         <button
           onClick={handleSubmit}
-          disabled={saving || !form.name.trim() || !form.safeWordConfirmed}
+          disabled={saving || !form.name.trim() || !form.safeWordConfirmed || !customQuestionsValid}
           className="w-full py-3 rounded-xl font-heading text-xl bg-pink-600 hover:bg-pink-500 text-white disabled:opacity-40"
         >
           {saving ? 'ΑΠΟΣΤΟΛΗ...' : 'ΑΠΟΣΤΟΛΗ'}
