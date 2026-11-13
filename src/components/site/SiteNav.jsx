@@ -3,50 +3,50 @@ import { useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { SITE_EVENTS, getSiteContent } from '@/data/siteContent';
 
-const LINKS = [
-  { href: '#scenario', label: 'Το παιχνίδι' },
-  { href: '#photos', label: 'Φωτογραφίες' },
-  { href: '#program', label: 'Πρόγραμμα' },
-  { href: '#info', label: 'Πληροφορίες' },
-  { href: '#faq', label: 'Ερωτήσεις' },
+const HOME_LINKS = [
+  { href: '#about', label: 'About' },
+  { href: '#modes', label: 'Game Modes' },
+  { href: '#photos', label: 'Gallery' },
+  { href: '#program', label: 'Program' },
+  { href: '#faq', label: 'FAQ' },
+  { href: '#registration', label: 'Registration' },
+  { href: '#contact', label: 'Contact' },
+];
+const DETAIL_LINKS = [
+  { href: '#scenario', label: 'Experience' },
+  { href: '#modes', label: 'Game Modes' },
+  { href: '#photos', label: 'Gallery' },
+  { href: '#program', label: 'Program' },
+  { href: '#info', label: 'Info' },
+  { href: '#faq', label: 'FAQ' },
+  { href: '#registration', label: 'Registration' },
+  { href: '#contact', label: 'Contact' },
 ];
 
 export default function SiteNav({ ev, onEvent, c, isHome = false }) {
   const navigate = useNavigate();
   return (
-    <header className="sticky top-0 z-40 border-b border-tarot-gold/25 bg-background/85 backdrop-blur">
-      <div className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between gap-4">
-        <a href="#top" className="font-display text-tarot-gold tracking-[0.22em] text-[11px] sm:text-sm">
+    <header className="sticky top-0 z-40 border-b border-tarot-gold/25 bg-background/90 backdrop-blur-xl">
+      <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between gap-4">
+        <a href="/site" onClick={(e) => { e.preventDefault(); onEvent('home'); }} className="font-display text-tarot-gold tracking-[0.2em] text-[10px] sm:text-sm shrink-0">
           DEAL OF TEMPTATION
         </a>
-        <nav className="hidden md:flex items-center gap-6 text-[11px] tracking-[0.28em] uppercase text-foreground/60">
-          {LINKS.map((l) => (
-            <a key={l.href} href={l.href} className="hover:text-tarot-gold transition-colors">
-              {l.label}
-            </a>
+        <nav className="hidden xl:flex items-center gap-4 text-[10px] tracking-[0.16em] uppercase text-foreground/60">
+          {(isHome ? HOME_LINKS : DETAIL_LINKS).map((l) => (
+            <a key={l.href} href={l.href} className="hover:text-tarot-gold transition-colors">{l.label}</a>
           ))}
         </nav>
-        <button
-          onClick={() => navigate(c.cta.path)}
-          className="comic-boom px-4 py-2 text-[11px] tracking-[0.22em] text-tarot-gold"
-        >
+        <button onClick={() => navigate(c.cta.path)} className="rounded-full border border-tarot-gold/60 px-4 py-2 text-[10px] font-bold tracking-[0.16em] text-tarot-gold transition hover:bg-tarot-gold hover:text-black">
           ΚΡΑΤΗΣΗ
         </button>
       </div>
-      <div className="max-w-6xl mx-auto px-4 pb-2 flex gap-2 overflow-x-auto whitespace-nowrap scrollbar-hide">
-        {SITE_EVENTS.map((e) => (
-          <button
-            key={e.id}
-            onClick={() => onEvent(e.id)}
-            className={cn(
-              'min-h-[38px] shrink-0 px-3 sm:px-4 text-[9px] sm:text-[10px] tracking-[0.14em] uppercase rounded-full border transition-colors',
-              ev === e.id
-                ? 'border-tarot-gold text-tarot-gold bg-tarot-gold/10'
-                : 'border-foreground/20 text-foreground/50 hover:text-tarot-gold hover:border-tarot-gold/50'
-            )}
-          >
-            {getSiteContent(e.id).tab}
-          </button>
+      <div className="max-w-7xl mx-auto px-4 pb-2 flex gap-2 overflow-x-auto whitespace-nowrap">
+        <button onClick={() => onEvent('home')} className={cn('min-h-[36px] shrink-0 rounded-full border px-3 text-[9px] uppercase tracking-[0.14em] transition-colors', isHome ? 'border-tarot-gold text-tarot-gold bg-tarot-gold/10' : 'border-foreground/20 text-foreground/50')}>Home</button>
+        {SITE_EVENTS.map((event) => (
+          <button key={event.id} onClick={() => onEvent(event.id)} className={cn(
+            'min-h-[36px] shrink-0 rounded-full border px-3 text-[9px] uppercase tracking-[0.14em] transition-colors',
+            ev === event.id ? 'border-tarot-gold text-tarot-gold bg-tarot-gold/10' : 'border-foreground/20 text-foreground/50 hover:text-tarot-gold hover:border-tarot-gold/50'
+          )}>{getSiteContent(event.id).tab}</button>
         ))}
       </div>
     </header>
