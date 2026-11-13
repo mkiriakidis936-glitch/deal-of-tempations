@@ -1,13 +1,20 @@
 // Pajama Lockdown: 18+ Girls-Only Escape Room (Master Specification).
 
-export const LOCKDOWN_SECONDS = 60 * 60;
-export const EXIT_CODE = '6969';
+export const LOCKDOWN_SECONDS = 5 * 60 * 60;
+export const MARATHON_LOCKDOWN_SECONDS = 75 * 60;
+export let EXIT_CODE = '6969';
 export const WRONG_ANSWER_PENALTY = 120; // +2 λεπτά
 export const SURGE_BELOW = 10 * 60;
 export const SURGE_BONUS = 5 * 60;
 
-export const LOCKDOWN_MESSAGE =
+export let LOCKDOWN_MESSAGE =
   'The Pajama Lockdown Has Begun. Only the sharpest minds and most fearless girls will escape. Fail, and face the ultimate tickle penalty.';
+
+export const getLockdownSettings = () => ({ exitCode: EXIT_CODE, message: LOCKDOWN_MESSAGE });
+export function applyLockdownSettings(settings = {}) {
+  if (typeof settings.exitCode === 'string' && /^\d{4}$/.test(settings.exitCode)) EXIT_CODE = settings.exitCode;
+  if (typeof settings.message === 'string' && settings.message.trim()) LOCKDOWN_MESSAGE = settings.message.trim();
+}
 
 export const BINDING_OPTIONS = [
   'Hogtie με σατέν ζώνες (χέρια & πόδια πίσω) + μάσκα ύπνου',

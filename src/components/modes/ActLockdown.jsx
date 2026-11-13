@@ -4,7 +4,7 @@ import { Panel, Btn, RestraintNote } from '@/components/modes/ModeShell';
 import LockdownMiniGames from '@/components/modes/LockdownMiniGames';
 import { VIP_VAULT } from '@/data/modes/extendedContent';
 import {
-  LOCKDOWN_SECONDS, EXIT_CODE, WRONG_ANSWER_PENALTY, SURGE_BELOW, SURGE_BONUS, LOCKDOWN_MESSAGE,
+  LOCKDOWN_SECONDS, MARATHON_LOCKDOWN_SECONDS, EXIT_CODE, WRONG_ANSWER_PENALTY, SURGE_BELOW, SURGE_BONUS, LOCKDOWN_MESSAGE,
   BINDING_OPTIONS, HOSTAGE_QUESTIONS, HOSTAGE_NEEDED, CONFESSION_LOCK, SPICY_WHEEL,
   WHEEL_DECISION_SECONDS, WHEEL_PENALTY_SECONDS, FOOT_ID, WHISPER_CLUES, SOCK_HEIST_SECONDS,
 } from '@/data/modes/lockdownContent';
@@ -56,8 +56,9 @@ export default function ActLockdown({ ctx, onDone, standalone }) {
 
   function start() {
     sfx.alarm();
-    setMg({ timer: timerStart(LOCKDOWN_SECONDS), ld: { ...ld, stage: 'l1', revealed: [false, false, false, false], correct: 0, wrong: 0, qOrder: shuffle(HOSTAGE_QUESTIONS.map((_, i) => i)), qi: 0 } });
-    log('🚨 THE PAJAMA LOCKDOWN HAS BEGUN — 60′');
+    const durationSeconds = standalone ? LOCKDOWN_SECONDS : MARATHON_LOCKDOWN_SECONDS;
+    setMg({ timer: timerStart(durationSeconds), ld: { ...ld, stage: 'l1', revealed: [false, false, false, false], correct: 0, wrong: 0, qOrder: shuffle(HOSTAGE_QUESTIONS.map((_, i) => i)), qi: 0 } });
+    log(`🚨 THE PAJAMA LOCKDOWN HAS BEGUN — ${standalone ? '5 ώρες' : '75′'}`);
   }
 
   const revealed = ld.revealed || [false, false, false, false];
@@ -66,7 +67,7 @@ export default function ActLockdown({ ctx, onDone, standalone }) {
   const hostage = players[ld.hostageIdx ?? hostageIdx];
 
   if (ld.stage === 'init') {
-    return <Init onStart={start} />;
+    return <Init onStart={start} durationLabel={standalone ? '5 ώρες' : '75′'} />;
   }
 
   if (ld.stage === 'won') {
@@ -132,7 +133,7 @@ export default function ActLockdown({ ctx, onDone, standalone }) {
   );
 }
 
-function Init({ onStart }) {
+function Init({ onStart, durationLabel }) {
   const [v, setV] = useState(0);
   useEffect(() => {
     sfx.alarm();
@@ -150,7 +151,7 @@ function Init({ onStart }) {
           onPointerUp={() => setV(0)}
           className="w-full" style={{ accentColor: RED }}
         />
-        <div className="text-xs opacity-70">Σύρε μέχρι το τέλος για να ξεκινήσει το Lockdown (60′)</div>
+        <div className="text-xs opacity-70">Σύρε μέχρι το τέλος για να ξεκινήσει το Lockdown ({durationLabel})</div>
       </div>
     </div>
   );

@@ -50,7 +50,11 @@ export default function AdminModes() {
     } catch (e) { setMsg({ ok: false, text: e.message }); }
     setBusy(false);
   }
-  const save = () => persist({ ...saved, [sel]: list }, 'Αποθηκεύτηκε ✓ — ισχύει στο επόμενο φόρτωμα του tablet.');
+  const save = () => {
+    const validation = col?.validate?.(list);
+    if (validation) { setMsg({ ok: false, text: validation }); return; }
+    persist({ ...saved, [sel]: list }, 'Αποθηκεύτηκε ✓ — ισχύει στο επόμενο φόρτωμα του tablet.');
+  };
   const reset = () => {
     if (!window.confirm('Επαναφορά αυτής της λίστας στα αρχικά του PDF;')) return;
     const { [sel]: _drop, ...rest } = saved;
@@ -74,7 +78,7 @@ export default function AdminModes() {
         {f.type === 'number' && <input type="number" className={inp} value={v ?? ''} onChange={(e) => onChange({ ...item, [f.key]: e.target.value === '' ? undefined : Number(e.target.value) })} />}
         {f.type === 'select' && (
           <select className={inp} value={v ?? ''} onChange={(e) => onChange({ ...item, [f.key]: e.target.value })}>
-            {f.options.map(([val, label]) => <option key={val} value={val}>{label}</option>)}
+            {(typeof f.options === 'function' ? f.options() : f.options).map(([val, label]) => <option key={val} value={val}>{label}</option>)}
           </select>
         )}
       </label>
@@ -129,11 +133,11 @@ export default function AdminModes() {
               <div className="flex gap-2">
                 <ComicButton size="sm" variant="dark" disabled={i === 0} onClick={() => move(i, -1)}>▲</ComicButton>
                 <ComicButton size="sm" variant="dark" disabled={i === list.length - 1} onClick={() => move(i, 1)}>▼</ComicButton>
-                <ComicButton size="sm" variant="red" onClick={() => setList((l) => l.filter((_, k) => k !== i))}>🗑 Διαγραφή</ComicButton>
+                {!col.fixedItems && <ComicButton size="sm" variant="red" onClick={() => setList((l) => l.filter((_, k) => k !== i))}>🗑 Διαγραφή</ComicButton>}
               </div>
             </div>
           ))}
-          <ComicButton size="sm" onClick={() => setList((l) => [...l, col.strings ? '' : { ...col.blank }])}>➕ Νέο στοιχείο</ComicButton>
+          {!col.fixedItems && <ComicButton size="sm" onClick={() => setList((l) => [...l, col.strings ? '' : { ...col.blank }])}>➕ Νέο στοιχείο</ComicButton>}
           <div className="flex gap-2 flex-wrap sticky bottom-2">
             <ComicButton variant="green" disabled={busy || list.length === 0} onClick={save}>💾 ΑΠΟΘΗΚΕΥΣΗ</ComicButton>
             <ComicButton variant="dark" disabled={busy} onClick={reset}>↩ Επαναφορά αρχικών</ComicButton>
