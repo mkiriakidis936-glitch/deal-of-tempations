@@ -4,6 +4,8 @@ import ComicPanel from '@/components/comic/ComicPanel';
 import ComicButton from '@/components/comic/ComicButton';
 import { ART, DEFAULTS, applyMediaOverrides } from '@/data/brandArt';
 import { IMAGE_SLOTS, PHOTO_SPOTS, PHOTO_SPOT_IDS, MODE_COVER_SLOTS, GALLERIES } from '@/data/mediaSlots';
+import { NEW_MODES } from '@/data/modes/modeRegistry';
+import ModeMediaManager from '@/components/admin/ModeMediaManager';
 import { MEDIA_KEY, fetchOverrides, uploadMedia, listMedia, deleteMedia, deleteAllMedia } from '@/lib/media';
 
 const IMG_ACCEPT = 'image/*,.jpg,.jpeg,.png,.webp,.gif,.avif,.heic';
@@ -114,7 +116,7 @@ export default function AdminMedia() {
   };
   const remove = (id, i) => setList(id, listOf(id).filter((_, k) => k !== i));
 
-  const isUsed = (url) => Object.entries(ov).some(([k, v]) => k !== 'libraryCategories' && (Array.isArray(v) ? v.includes(url) : v === url));
+  const isUsed = (url) => Object.entries(ov).some(([k, v]) => k !== 'libraryCategories' && containsUrl(v, url));
   const setLibraryCategory = (url, category) => run(`category-${url}`, () => save({ ...ov, libraryCategories: { ...(ov.libraryCategories || {}), [url]: category } }), 'Η κατηγορία αποθηκεύτηκε ✓');
   const assignLibraryImageToSlot = (url, slotId) => run(`slot-${url}`, async () => {
     await save({ ...ov, [slotId]: url, libraryCategories: { ...(ov.libraryCategories || {}), [url]: 'branding' } });
@@ -131,14 +133,11 @@ export default function AdminMedia() {
     if (!window.confirm(q)) return;
     run(f.name, async () => {
       if (used) {
-        const next = {};
-        for (const [k, v] of Object.entries(ov)) {
-          if (k === 'libraryCategories') {
-            const categories = { ...v };
-            delete categories[f.url];
-            next[k] = categories;
-          } else if (Array.isArray(v)) next[k] = v.filter((u) => u !== f.url);
-          else if (v !== f.url) next[k] = v;
+        const next = removeUrl(ov, f.url) || {};
+        if (next.libraryCategories) {
+          const categories = { ...next.libraryCategories };
+          delete categories[f.url];
+          next.libraryCategories = categories;
         }
         await save(next);
       }
@@ -152,8 +151,20 @@ export default function AdminMedia() {
     const label = kind === 'image' ? 'ΟΛΕΣ ΤΙΣ ΦΩΤΟΓΡΑΦΙΕΣ' : kind === 'video' ? 'ΟΛΑ ΤΑ ΒΙΝΤΕΟ' : 'ΟΛΕΣ ΤΙΣ ΦΩΤΟΓΡΑΦΙΕΣ ΚΑΙ ΤΑ ΒΙΝΤΕΟ';
     if (!window.confirm(`ΠΡΟΣΟΧΗ: Θα διαγραφούν οριστικά ${label} από τη βιβλιοθήκη του project και θα αφαιρεθούν από όλα τα σημεία εμφάνισης. Συνέχεια;`)) return;
     run(`clear-${kind}`, async () => {
+      const nextModeMedia = Object.fromEntries(Object.entries(ov.modeMedia || {}).map(([modeId, media]) => [modeId, {
+        ...media,
+        ...(kind === 'image' || kind === 'all' ? {
+          hero: '',
+          cover: '',
+          sections: (media.sections || []).map((item) => ({ ...item, image: '' })),
+          gallery: [],
+          cards: (media.cards || []).map((item) => ({ ...item, image: '' })),
+        } : {}),
+        ...(kind === 'video' || kind === 'all' ? { trailer: '' } : {}),
+      }]));
       const next = {
         ...ov,
+        modeMedia: nextModeMedia,
         ...(kind === 'video' || kind === 'all' ? {
           agent: undefined,
           siteVideos: [],
@@ -233,7 +244,7 @@ export default function AdminMedia() {
         <div className="font-heading text-lg">🎮 ΕΞΩΦΥΛΛΟ ΦΩΤΟΓΡΑΦΙΑΣ ΑΝΑ MODE</div>
         <p className="text-xs text-foreground/60">Οι φωτογραφίες εμφανίζονται στις κάρτες επιλογής Mode στην οθόνη έναρξης του Tablet. Κάθε Mode έχει ξεχωριστή εικόνα.</p>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {MODE_COVER_SLOTS.map((s) => {
+          {MODE_COVER_SLOTS.filter((s) => !NEW_MODES.some((mode) => mode.id === s.modeId)).map((s) => {
             const src = ov[s.id] || (ov.emptyModeCovers?.includes(s.id) || ov.clearAllPhotos || ov.clearAllMedia ? '' : DEFAULTS[s.id]);
             return (
               <div key={s.id} className="border-2 border-border/40 rounded-lg p-2 bg-secondary/40">
@@ -249,6 +260,16 @@ export default function AdminMedia() {
           })}
         </div>
       </ComicPanel>
+      <ComicPanel className="bg-card space-y-3">
+        <div className="font-heading text-lg">🎮 MODE MEDIA CENTER</div>
+        <p className="text-xs text-foreground/60">Ανεξάρτητη φωτογραφική ταυτότητα για τα τέσσερα νέα Modes.</p>
+        <ModeMediaManager
+          value={ov.modeMedia || {}}
+          disabled={!!busy}
+          onSave={(modeMedia) => run('mode-media', () => save({ ...ov, modeMedia }), 'Το Mode Media αποθηκεύτηκε ✓')}
+        />
+      </ComicPanel>
+
       <ComicPanel className="bg-card space-y-3">
         <div className="font-heading text-lg">🖼️ ΕΙΚΟΝΕΣ ΑΝΑ ΣΗΜΕΙΟ</div>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
