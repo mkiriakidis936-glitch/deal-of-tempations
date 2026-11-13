@@ -4,8 +4,9 @@ import { setSiteOverrides } from '@/data/siteContent';
 
 const API_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
 export const MEDIA_KEY = 'media_overrides';
-const IMG_EXT = /\.(jpe?g|png|webp|gif|avif)$/i;
+const IMG_EXT = /\.(jpe?g|png|webp|gif|avif|svg)$/i;
 const VID_EXT = /\.(mp4|webm|mov)$/i;
+const AUDIO_EXT = /\.(mp3|wav|ogg|m4a|aac)$/i;
 const HEIC = /\.(heic|heif)$/i;
 
 export async function fetchOverrides() {
@@ -69,10 +70,10 @@ async function prepareImage(file) {
 }
 
 export async function uploadMedia(file, onProgress) {
-  if (!IMG_EXT.test(file.name) && !VID_EXT.test(file.name) && !HEIC.test(file.name)) {
-    throw new Error(`«${file.name}»: μη υποστηριζόμενος τύπος (JPG, PNG, WEBP, MP4, WEBM, MOV).`);
+  if (!IMG_EXT.test(file.name) && !VID_EXT.test(file.name) && !AUDIO_EXT.test(file.name) && !HEIC.test(file.name)) {
+    throw new Error(`«${file.name}»: μη υποστηριζόμενος τύπος (JPG, PNG, SVG, MP4, WEBM, MOV, MP3, WAV, OGG, M4A, AAC).`);
   }
-  const f = HEIC.test(file.name) || IMG_EXT.test(file.name) ? await prepareImage(file) : file;
+  const f = (HEIC.test(file.name) || IMG_EXT.test(file.name)) && !/\.svg$/i.test(file.name) ? await prepareImage(file) : file;
   return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest();
     xhr.open('POST', `${API_URL}/api/media/upload?name=${encodeURIComponent(f.name)}`);
