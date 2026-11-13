@@ -7,7 +7,7 @@ import { notifyNewSubmission } from './push.js';
 // Entities that used to live in base44/entities/*.jsonc
 export const ENTITIES = [
   'Achievement', 'AppSetting', 'BacheloretteIntake', 'BlackmailVault', 'Chronicle', 'GameContent',
-  'GameSession', 'Haunting', 'InvitationRSVP', 'Memorial', 'PajamaContent', 'PajamaIntake',
+  'GameSession', 'GameSessionSnapshot', 'Haunting', 'InvitationRSVP', 'Memorial', 'PajamaContent', 'PajamaIntake',
   'PlayerIntake', 'PlayerProfile', 'SessionArchive',
 ];
 
@@ -34,6 +34,7 @@ const rules = {
   // Sessions are created and deleted by the Game Master. Player writes use the
   // session-scoped, validated update path below.
   GameSession:     { create: ADMIN, delete: ADMIN },
+  GameSessionSnapshot: { read: ADMIN, create: ADMIN, update: ADMIN, delete: ADMIN },
 };
 const needsAdmin = (entity, op) => (rules[entity]?.[op] || 'public') === ADMIN;
 const isAdmin = (req) => req.user?.role === 'admin';
