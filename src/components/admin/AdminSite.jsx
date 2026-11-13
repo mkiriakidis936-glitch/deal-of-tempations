@@ -5,6 +5,7 @@ import ComicButton from '@/components/comic/ComicButton';
 import { SITE_EVENTS, DEFAULT_SITE, getSiteContent } from '@/data/siteContent';
 import { SITE_KEY, fetchSiteRecord } from '@/lib/media';
 import AdminSiteVersions, { saveSiteVersion } from '@/components/admin/AdminSiteVersions';
+import AdminSitePreview from '@/components/admin/AdminSitePreview';
 
 const inp = 'w-full px-3 py-2.5 rounded-lg border-2 border-border bg-background text-foreground font-body';
 
@@ -210,7 +211,8 @@ export default function AdminSite({ focusScenario = false }) {
       </>
       )}
 
-      <AdminSiteVersions eventId={ev} currentValue={d} onRestore={(value) => setD(value)} />
+      <AdminSitePreview content={d} />
+      <AdminSiteVersions eventId={ev} onRestore={(value) => setD(value)} />
 
       <div className="sticky bottom-0 z-20 -mx-2.5 px-2.5 py-2 bg-background/90 backdrop-blur border-t border-border/40 flex gap-2" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 8px)' }}>
         <ComicButton className="flex-1" disabled={busy} onClick={save}>💾 {busy ? 'ΑΠΟΘΗΚΕΥΣΗ…' : 'ΑΠΟΘΗΚΕΥΣΗ'}</ComicButton>
