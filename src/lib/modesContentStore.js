@@ -26,7 +26,7 @@ export const COLLECTIONS = [
   { id: 'binding_options', group: '🚨 Pajama Lockdown', label: 'Επιλογές δεσίματος', arr: LD.BINDING_OPTIONS, strings: true },
   { id: 'whisper_clues', group: '🚨 Pajama Lockdown', label: 'Audio Whisper clues', arr: LD.WHISPER_CLUES, blank: { say: '', keyword: '' }, fields: [T('say', 'Φράση ψιθύρου'), T('keyword', 'Λέξη-κλειδί')] },
   { id: 'mini_games', group: '🚨 Pajama Lockdown', label: 'Mini-games (κείμενα & ποινές)', arr: LD.MINI_GAMES, fixedItems: true, blank: {}, fields: [T('icon', 'Εικονίδιο'), T('name', 'Όνομα'), A('desc', 'Περιγραφή'), A('fail', 'Κείμενο αποτυχίας'), N('failSecs', 'Ποινή (δευτ.)'), C('wheel', 'Άνοιγμα Spicy Truth Wheel')] },
-  { id: 'true_false', group: '🚨 Pajama Lockdown', label: 'True / False ερωτήσεις', arr: LD.TRUE_FALSE.map(([question, answer], i) => ({ id: `tf${i + 1}`, question, answer })), toRuntime: (items) => items.map((item) => [item.question, !!item.answer]), blank: { question: '', answer: true }, fields: [A('question', 'Ερώτηση'), C('answer', 'Σωστή απάντηση: TRUE')] },
+  { id: 'true_false', group: '🚨 Pajama Lockdown', label: 'True / False ερωτήσεις', arr: LD.TRUE_FALSE.map(([question, answer], i) => ({ id: `tf${i + 1}`, question, answer })), targetArr: LD.TRUE_FALSE, toRuntime: (items) => items.map((item) => [item.question, !!item.answer]), blank: { question: '', answer: true }, fields: [A('question', 'Ερώτηση'), C('answer', 'Σωστή απάντηση: TRUE')] },
   { id: 'hostage_questions', group: '🚨 Pajama Lockdown', label: 'Level 1 · ερωτήσεις Hostage', arr: LD.HOSTAGE_QUESTIONS, strings: true },
   { id: 'confession_lock', group: '🚨 Pajama Lockdown', label: 'Secret Confession Lock', arr: LD.CONFESSION_LOCK, strings: true },
   { id: 'spicy_wheel', group: '🚨 Pajama Lockdown', label: 'Spicy Truth Wheel', arr: LD.SPICY_WHEEL, strings: true },
@@ -55,7 +55,9 @@ export function applyModesContent(overrides = {}) {
   COLLECTIONS.forEach((c) => {
     const next = clean(c, overrides[c.id]) || DEFAULTS[c.id];
     const runtimeNext = c.toRuntime ? c.toRuntime(next) : next;
-    c.arr.splice(0, c.arr.length, ...JSON.parse(JSON.stringify(runtimeNext)));
+    const target = c.targetArr || c.arr;
+    target.splice(0, target.length, ...JSON.parse(JSON.stringify(runtimeNext)));
+    if (c.toRuntime) c.arr.splice(0, c.arr.length, ...JSON.parse(JSON.stringify(next));
   });
 }
 
