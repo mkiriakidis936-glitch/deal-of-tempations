@@ -66,7 +66,7 @@ export default function AdminPlayerCheckin({ session }) {
       <ComicPanel className="bg-card">
         <div className="font-heading text-xl text-primary">QR PLAYER CHECK-IN</div>
         <div className="text-xs mt-1">{sessionCode} · {checked}/{players.length} παρόντες</div>
-        <div className="mt-3"><ComicButton variant="cyan" onClick={() => setScanOpen((v) => !v)}>{scanOpen ? 'ΚΛΕΙΣΙΜΟ SCANNER' : 'ΣΑΡΩΣΗ QR ΠΑΙΚΤΗ'}</ComicButton></div>
+        <div className="mt-3"><ComicButton variant="cyan" disabled={!record} onClick={() => setScanOpen((v) => !v)}>{scanOpen ? 'ΚΛΕΙΣΙΜΟ SCANNER' : 'ΣΑΡΩΣΗ QR ΠΑΙΚΤΗ'}</ComicButton></div>
         {scanOpen && <div className="mt-3"><QRScanner label="ΣΑΡΩΣΕ ΤΟ ΠΡΟΣΩΠΙΚΟ QR ΤΟΥ ΠΑΙΚΤΗ" onScan={(value) => { checkIn(value).catch((e) => setMessage(e.message)); setScanOpen(false); }} /></div>}
         {message && <div className="text-xs font-bold mt-3">{message}</div>}
       </ComicPanel>
