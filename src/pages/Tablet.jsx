@@ -101,18 +101,18 @@ export default function Tablet() {
     if (state.mode === 'pajama') {
       const scores = state.pajama?.scores || {};
       const top = [...roster].sort((a, b) => (scores[b.id] || 0) - (scores[a.id] || 0))[0];
-      if (top) awards.push({ achievementId: 'pedi_glam_queen', playerName: top.name });
+      if (top) awards.push({ conditionId: 'pajama_top_score', playerName: top.name });
       const saboteur = roster.find((p) => p.id === state.pajama?.saboteurId);
-      if (saboteur) awards.push({ achievementId: 'saboteur_ghost', playerName: saboteur.name });
+      if (saboteur) awards.push({ conditionId: 'pajama_saboteur', playerName: saboteur.name });
     } else if (state.mode === 'classic') {
       const top = [...roster].sort((a, b) => (b.bounty || 0) - (a.bounty || 0))[0];
-      if (top) awards.push({ achievementId: 'most_wanted', playerName: top.name });
+      if (top) awards.push({ conditionId: 'classic_highest_bounty', playerName: top.name });
     } else {
       const winningTeam = state.mode === 'marathon'
         ? ((state.teamAlpha?.loot || 0) >= (state.teamBeta?.loot || 0) ? 'alpha' : 'beta')
         : ((state.teamA?.points || 0) >= (state.teamB?.points || 0) ? 'A' : 'B');
       roster.filter((p) => p.team === winningTeam)
-        .forEach((p) => awards.push({ achievementId: 'crew_legend', playerName: p.name }));
+        .forEach((p) => awards.push({ conditionId: 'winning_team', playerName: p.name }));
     }
     return awards;
   }
