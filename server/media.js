@@ -14,8 +14,9 @@ export const UPLOAD_DIR = path.resolve(process.env.UPLOAD_DIR || defaultUploadDi
 const MAX_MB = Number(process.env.MAX_UPLOAD_MB) || 300;
 const MAX_BYTES = MAX_MB * 1024 * 1024;
 const KINDS = {
-  '.jpg': 'image', '.jpeg': 'image', '.png': 'image', '.webp': 'image', '.gif': 'image', '.avif': 'image',
+  '.jpg': 'image', '.jpeg': 'image', '.png': 'image', '.webp': 'image', '.gif': 'image', '.avif': 'image', '.svg': 'graphic',
   '.mp4': 'video', '.webm': 'video', '.mov': 'video',
+  '.mp3': 'audio', '.wav': 'audio', '.ogg': 'audio', '.m4a': 'audio', '.aac': 'audio',
 };
 fs.mkdirSync(UPLOAD_DIR, { recursive: true });
 
@@ -42,7 +43,7 @@ export function mediaRoutes() {
     const original = path.basename(String(req.query.name || ''));
     const ext = path.extname(original).toLowerCase();
     const kind = KINDS[ext];
-    if (!kind) return res.status(415).json({ error: 'Μη υποστηριζόμενος τύπος. Επιτρέπονται: JPG, PNG, WEBP, GIF, AVIF, MP4, WEBM, MOV.' });
+    if (!kind) return res.status(415).json({ error: 'Μη υποστηριζόμενος τύπος. Επιτρέπονται: JPG, PNG, WEBP, GIF, AVIF, SVG, MP4, WEBM, MOV, MP3, WAV, OGG, M4A, AAC.' });
     if (Number(req.headers['content-length'] || 0) > MAX_BYTES) return res.status(413).json({ error: `Το αρχείο ξεπερνά τα ${MAX_MB}MB.` });
 
     const name = `${Date.now().toString(36)}-${crypto.randomBytes(3).toString('hex')}-${slugOf(path.basename(original, ext))}${ext}`;
@@ -82,7 +83,7 @@ export function mediaRoutes() {
   // DELETE /api/media?kind=image|video|all — μαζική διαγραφή, μόνο admin
   r.delete('/', requireAdmin, async (req, res) => {
     const kind = String(req.query.kind || 'all');
-    if (!['image', 'video', 'all'].includes(kind)) return res.status(400).json({ error: 'Μη έγκυρος τύπος διαγραφής.' });
+    if (!['image', 'video', 'audio', 'graphic', 'all'].includes(kind)) return res.status(400).json({ error: 'Μη έγκυρος τύπος διαγραφής.' });
     const names = (await fsp.readdir(UPLOAD_DIR)).filter((n) => !n.startsWith('.') && kindOf(n) && (kind === 'all' || kindOf(n) === kind));
     const results = await Promise.all(names.map((n) => fsp.rm(path.join(UPLOAD_DIR, n), { force: true })));
     res.json({ success: true, deleted: names.length, kind });
