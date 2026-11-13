@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import ComicPanel from '@/components/comic/ComicPanel';
 import ComicButton from '@/components/comic/ComicButton';
+import AdminSettingVersionHistory from '@/components/admin/AdminSettingVersionHistory';
+import { saveAdminSettingVersion } from '@/lib/adminVersionHistory';
 
 const KEY = 'admin_form_questions';
 const FORM_TYPES = [{ id: 'modes', label: 'Επιλογή Modes' }, { id: 'pajama', label: 'Pajama Form' }, { id: 'heist', label: 'Arrest & Heist Intake' }, { id: 'invitation', label: 'Invitation Form' }];
@@ -34,6 +36,7 @@ export default function AdminFormsBuilder() {
       const question = { ...editing, label: editing.label.trim(), options: (editing.options || []).map((x) => x.trim()).filter(Boolean) };
       const nextList = list.some((item) => item.id === question.id) ? list.map((item) => item.id === question.id ? question : item) : [...list, question];
       const nextForms = { ...forms, [formType]: nextList };
+      if (record?.id) await saveAdminSettingVersion(KEY, { forms });
       const value = { forms: nextForms };
       let saved;
       if (record?.id) saved = await base44.entities.AppSetting.update(record.id, { value });
@@ -48,6 +51,7 @@ export default function AdminFormsBuilder() {
     const nextForms = { ...forms, [formType]: list.filter((item) => item.id !== id) };
     setBusy(true);
     try {
+      if (record?.id) await saveAdminSettingVersion(KEY, { forms });
       if (record?.id) await base44.entities.AppSetting.update(record.id, { value: { forms: nextForms } });
       setForms(nextForms); if (editing?.id === id) setEditing(null); setMessage('Η ερώτηση διαγράφηκε.');
     } catch (error) { setMessage(error.message || 'Αποτυχία διαγραφής.'); }
@@ -81,5 +85,6 @@ export default function AdminFormsBuilder() {
         <div className="flex gap-2"><ComicButton size="sm" variant="dark" onClick={() => setEditing({ ...question })}>ΕΠΕΞΕΡΓΑΣΙΑ</ComicButton><ComicButton size="sm" variant="red" disabled={busy} onClick={() => remove(question.id)}>ΔΙΑΓΡΑΦΗ</ComicButton></div>
       </ComicPanel>)}
     </div>
+    <AdminSettingVersionHistory settingKey={KEY} onRestore={(value) => setForms({ modes: [], pajama: [], heist: [], invitation: [], ...(value?.forms || {}) })} />
   </div>;
 }
