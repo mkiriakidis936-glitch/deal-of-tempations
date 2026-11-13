@@ -105,10 +105,30 @@ function validatePlayerPatch(current, patch, playerId) {
   for (const key of ownMaps) {
     if (key in patch && !onlyOwnMapEntryChanged(current[key] || {}, patch[key] || {}, playerId)) return false;
   }
+  const playerIds = new Set((current.players || []).map((item) => item.id));
+  const validTarget = (value) => typeof value === 'string' && playerIds.has(value) && value !== playerId;
+  for (const key of ['mobileVotes', 'electricChairVotes', 'miniGameVotes', 'snitchVotes']) {
+    if (key in patch && patch[key]?.[playerId] !== undefined && !validTarget(patch[key][playerId])) return false;
+  }
+  if ('miniGameVolunteers' in patch && patch.miniGameVolunteers?.[playerId] !== true) return false;
+  if ('miniGameRatings' in patch && patch.miniGameRatings?.[playerId] !== undefined &&
+      (!Number.isInteger(patch.miniGameRatings[playerId]) || patch.miniGameRatings[playerId] < 1 || patch.miniGameRatings[playerId] > 5)) return false;
+  if ('timeCapsule' in patch) {
+    const before = current.timeCapsule?.[playerId];
+    const after = patch.timeCapsule?.[playerId];
+    if (before?.submitted && !sameJson(before, after)) return false;
+    if (after !== undefined) {
+      if (!isObject(after) || ['firstArrest', 'finalist', 'traitor'].some((key) =>
+        after[key] && !playerIds.has((current.players || []).find((item) => item.name === after[key])?.id)
+      )) return false;
+    }
+  }
 
   if ('juryTrial' in patch) {
     if (!isObject(patch.juryTrial) || !noChangesOutsideKeys(current.juryTrial, patch.juryTrial, ['votes']) ||
         !onlyOwnMapEntryChanged(current.juryTrial?.votes || {}, patch.juryTrial.votes || {}, playerId)) return false;
+    const vote = patch.juryTrial.votes?.[playerId];
+    if (vote !== undefined && !['guilty', 'innocent'].includes(vote)) return false;
   }
 
   if ('grandJury' in patch) {
@@ -117,6 +137,9 @@ function validatePlayerPatch(current, patch, playerId) {
     if (!isObject(next) || !noChangesOutsideKeys(old, next, ['queenVotes', 'championVotes']) ||
         !onlyOwnMapEntryChanged(old.queenVotes || {}, next.queenVotes || {}, playerId) ||
         !onlyOwnMapEntryChanged(old.championVotes || {}, next.championVotes || {}, playerId)) return false;
+    for (const key of ['queenVotes', 'championVotes']) {
+      if (next[key]?.[playerId] !== undefined && !validTarget(next[key][playerId])) return false;
+    }
   }
 
   if ('privateMessages' in patch) {
@@ -141,6 +164,8 @@ function validatePlayerPatch(current, patch, playerId) {
     for (const id of Object.keys(next)) {
       if (!isObject(next[id]) || !noChangesOutsideKeys(old[id], next[id], ['votes']) ||
           !onlyOwnMapEntryChanged(old[id]?.votes || {}, next[id]?.votes || {}, playerId)) return false;
+      const selected = next[id]?.votes?.[playerId];
+      if (selected !== undefined && !(old[id]?.options || []).some((option) => option.id === selected)) return false;
     }
   }
 
@@ -149,6 +174,7 @@ function validatePlayerPatch(current, patch, playerId) {
     const next = patch.midnightPact;
     if (!isObject(next) || !noChangesOutsideKeys(old, next, ['offers']) ||
         !onlyOwnMapEntryChanged(old.offers || {}, next.offers || {}, playerId)) return false;
+    if (next.offers?.[playerId] !== undefined && typeof next.offers[playerId] !== 'boolean') return false;
   }
 
   if ('lastWish' in patch) {
@@ -169,6 +195,7 @@ function validatePlayerPatch(current, patch, playerId) {
         const no = Object.values(next.votes).filter((v) => v === false).length;
         if (next.accepted !== (yes > no)) return false;
       } else if (next.phase !== old.phase) return false;
+      if (next.votes?.[playerId] !== undefined && typeof next.votes[playerId] !== 'boolean') return false;
     } else return false;
   }
 
