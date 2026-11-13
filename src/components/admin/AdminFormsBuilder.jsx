@@ -4,6 +4,7 @@ import ComicPanel from '@/components/comic/ComicPanel';
 import ComicButton from '@/components/comic/ComicButton';
 import AdminSettingVersionHistory from '@/components/admin/AdminSettingVersionHistory';
 import { saveAdminSettingVersion } from '@/lib/adminVersionHistory';
+import { listMedia } from '@/lib/media';
 
 const KEY = 'admin_form_questions';
 const FORM_TYPES = [{ id: 'modes', label: 'Επιλογή Modes' }, { id: 'pajama', label: 'Pajama Form' }, { id: 'heist', label: 'Arrest & Heist Intake' }, { id: 'invitation', label: 'Invitation Form' }];
@@ -16,6 +17,11 @@ export default function AdminFormsBuilder() {
   const [editing, setEditing] = useState(null);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState('');
+  const [mediaItems, setMediaItems] = useState([]);
+
+  useEffect(() => {
+    listMedia().then(setMediaItems).catch(() => setMediaItems([]));
+  }, []);
 
   useEffect(() => {
     base44.entities.AppSetting.filter({ key: KEY }, { limit: 1 }).then(({ items }) => {
@@ -71,7 +77,8 @@ export default function AdminFormsBuilder() {
       <label className="block text-xs font-bold">Ερώτηση / τίτλος<input className="mt-1 w-full rounded border border-border bg-background p-2" value={editing.label} onChange={(e) => update({ label: e.target.value })} /></label>
       <label className="block text-xs font-bold">Τύπος απάντησης<select className="mt-1 w-full rounded border border-border bg-background p-2" value={editing.type} onChange={(e) => update({ type: e.target.value })}><option value="text">Σύντομο κείμενο</option><option value="textarea">Μεγάλο κείμενο</option><option value="select">Επιλογή από λίστα</option></select></label>
       {editing.type === 'select' && <label className="block text-xs font-bold">Επιλογές (μία ανά γραμμή)<textarea rows={4} className="mt-1 w-full rounded border border-border bg-background p-2" value={(editing.options || []).join('\n')} onChange={(e) => update({ options: e.target.value.split('\n') })} /></label>}
-      <label className="block text-xs font-bold">URL εικόνας (προαιρετικό)<input className="mt-1 w-full rounded border border-border bg-background p-2" value={editing.image || ''} onChange={(e) => update({ image: e.target.value })} placeholder="https://..." /></label>
+      <label className="block text-xs font-bold">Εικόνα από Media Library<select className="mt-1 w-full rounded border border-border bg-background p-2" value={editing.image || ''} onChange={(e) => update({ image: e.target.value })}><option value="">Χωρίς εικόνα</option>{mediaItems.filter((media) => media.kind === 'image').map((media) => <option key={media.url} value={media.url}>{media.name}</option>)}</select></label>
+      <label className="block text-xs font-bold">Ή URL εικόνας<input className="mt-1 w-full rounded border border-border bg-background p-2" value={editing.image || ''} onChange={(e) => update({ image: e.target.value })} placeholder="https://..." /></label>
       {editing.image && <img src={editing.image} alt="" className="max-h-36 rounded-lg object-cover" />}
       <label className="flex items-center gap-2 text-xs"><input type="checkbox" checked={!!editing.required} onChange={(e) => update({ required: e.target.checked })} /> Υποχρεωτική ερώτηση</label>
       <div className="flex gap-2"><ComicButton variant="green" disabled={busy} onClick={save}>ΑΠΟΘΗΚΕΥΣΗ</ComicButton><ComicButton variant="dark" onClick={() => setEditing(null)}>ΑΚΥΡΟ</ComicButton></div>
