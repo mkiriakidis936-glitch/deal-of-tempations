@@ -53,7 +53,7 @@ function replaceUrls(value, mapping) {
 const pool = process.env.DATABASE_URL
   ? new Pool({
       connectionString: process.env.DATABASE_URL,
-      ssl: /railway\.internal|localhost|127\.0\.1/.test(process.env.DATABASE_URL) ? false : { rejectUnauthorized: false },
+      ssl: /railway\.internal|localhost|127\.0\.0\.1/.test(process.env.DATABASE_URL) ? false : { rejectUnauthorized: false },
     })
   : null;
 
