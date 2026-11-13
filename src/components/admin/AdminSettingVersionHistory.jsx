@@ -17,7 +17,8 @@ export default function AdminSettingVersionHistory({ settingKey, onRestore }) {
     if (!window.confirm('Να επανέλθει αυτή η προηγούμενη έκδοση; Θα αντικατασταθούν οι τρέχουσες ρυθμίσεις.')) return;
     setBusy(true); setMessage('');
     try {
-      await saveAdminSettingVersion(settingKey);\n      const value = await restoreAdminSettingVersion(settingKey, snapshot);
+      await saveAdminSettingVersion(settingKey);
+      const value = await restoreAdminSettingVersion(settingKey, snapshot);
       onRestore?.(value);
       await load();
       setMessage('Η προηγούμενη έκδοση επανήλθε.');
