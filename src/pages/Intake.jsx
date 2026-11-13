@@ -24,7 +24,7 @@ export default function Intake() {
   });
   const [saved, setSaved] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [enabled, setEnabled] = useState(null);
+  const [enabled, setEnabled] = useState(null);\n  const [customQuestionsValid, setCustomQuestionsValid] = useState(true);
 
   useEffect(() => {
     isIntakeEnabled().then(setEnabled);
@@ -51,7 +51,7 @@ export default function Intake() {
   }
 
   async function handleSubmit() {
-    if (!form.leaderName.trim() || !form.accommodation || !form.safeWordConfirmed || form.sessionCode.trim().length !== 4) return;
+    if (!form.leaderName.trim() || !form.accommodation || !form.safeWordConfirmed || form.sessionCode.trim().length !== 4 || !customQuestionsValid) return;
     setSaving(true);
     try {
       await base44.entities.BacheloretteIntake.create({ ...form, customAnswers: form.customAnswers, sessionCode: form.sessionCode.trim().toUpperCase() });
@@ -149,7 +149,7 @@ export default function Intake() {
                 ))}
               </div>
             </div>
-            <CustomFormQuestions formType="heist" value={form.customAnswers} onChange={(value) => setForm({ ...form, customAnswers: value })} className="space-y-3" />\n            <div className="comic-panel-sm p-3 bg-destructive/20">
+            <CustomFormQuestions formType="heist" value={form.customAnswers} onChange={(value) => setForm({ ...form, customAnswers: value })} onValidityChange={setCustomQuestionsValid} className="space-y-3" />\n            <div className="comic-panel-sm p-3 bg-destructive/20">
               <label className="flex items-center gap-2 cursor-pointer">
                 <input type="checkbox" checked={form.safeWordConfirmed} onChange={(e) => setForm({ ...form, safeWordConfirmed: e.target.checked })} className="w-5 h-5" />
                 <span className="text-sm font-bold">Επιβεβαιώνω ότι γνωρίζω το Safe Word: "MAYDAY"</span>
@@ -159,7 +159,7 @@ export default function Intake() {
         </ComicPanel>
 
         <div className="text-center">
-          <ComicButton variant="magenta" size="lg" onClick={handleSubmit} disabled={!form.leaderName.trim() || !form.accommodation || !form.safeWordConfirmed || form.sessionCode.trim().length !== 4 || saving}>
+          <ComicButton variant="magenta" size="lg" onClick={handleSubmit} disabled={!form.leaderName.trim() || !form.accommodation || !form.safeWordConfirmed || form.sessionCode.trim().length !== 4 || !customQuestionsValid || saving}>
             {saving ? 'ΑΠΟΘΗΚΕΥΣΗ...' : '✅ ΥΠΟΒΟΛΗ'}
           </ComicButton>
         </div>
