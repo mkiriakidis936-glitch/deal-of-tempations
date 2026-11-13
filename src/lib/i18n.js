@@ -18,7 +18,7 @@ export function applyTranslationKeys(source, namespace, dictionary, language) {
       target = target[index];
     }
     const last = path[path.length - 1];
-    const finalKey = /^\\d+$/.test(last) ? Number(last) : last;
+    const finalKey = /^\d+$/.test(last) ? Number(last) : last;
     if (target != null && Object.prototype.hasOwnProperty.call(target, finalKey)) {
       target[finalKey] = values[language];
     }
