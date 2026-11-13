@@ -47,6 +47,7 @@ import TriviaKnowMe from '@/components/tablet/TriviaKnowMe';
 import FinalDeal from '@/components/tablet/FinalDeal';
 import ControlRoom from '@/components/tablet/ControlRoom';
 import BlackmailMarket from '@/components/tablet/BlackmailMarket';
+import NightDirectorHost from '@/components/night/NightDirectorHost';
 import { useSyncTimerAutoFire } from '@/hooks/useSyncTimerAutoFire';
 import { calculateMostWanted, getWantedLevel } from '@/lib/gameLogic';
 import { base44 } from '@/api/base44Client';
@@ -206,6 +207,7 @@ export default function Tablet() {
     return (
       <>
         <ModeGame state={displayState} updateState={trackedUpdate} onEnd={archiveAndDelete} onQR={() => setShowQR(true)} />
+        <NightDirectorHost state={displayState} updateState={trackedUpdate} />
         {renderQR()}
       </>
     );
@@ -215,6 +217,7 @@ export default function Tablet() {
     return (
       <>
         <PajamaGame state={displayState} updateState={trackedUpdate} onEnd={archiveAndDelete} />
+        <NightDirectorHost state={displayState} updateState={trackedUpdate} />
         <PajamaTVPreview players={state.players || []} pj={state.pajama || {}} />
         <PajamaForcePhase pj={state.pajama || {}} updateState={trackedUpdate} />
         <PajamaMiniBar
@@ -428,6 +431,7 @@ export default function Tablet() {
           <FinalePresentation state={displayState} updateState={trackedUpdate} onEnd={() => { setOverlay(null); archiveAndDelete(); }} />
         </div>
       )}
+      <NightDirectorHost state={displayState} updateState={trackedUpdate} />
       <MobileVotePanel state={displayState} updateState={trackedUpdate} />
       <FlashbangOverlay state={displayState} updateState={trackedUpdate} />
       {renderQR()}

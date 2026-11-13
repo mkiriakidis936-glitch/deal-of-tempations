@@ -1,6 +1,6 @@
 import { PHOTO_SPOT_IDS } from '@/data/mediaSlots';
 
-const BASE = 'https://base44.app/api/apps/6acb505bd92681cd7a001e3f/files/mp/public/6acb505bd92681cd7a001e3f/';
+const BASE = '/assets/';
 
 export const ART = {
   emblem: `${BASE}b53d2d438_kse5udkse5udkse5.jpeg`,
@@ -26,9 +26,9 @@ export const ART = {
   heist8: `${BASE}e012b807a_heist-h8.jpeg`,
   heist9: `${BASE}64ab52272_heist-h9.jpeg`,
   heist10: `${BASE}c0901d88c_heist-h10.jpeg`,
-  banner: 'https://media.base44.com/images/public/6acb505bd92681cd7a001e3f/059bca0c5_Gemini_Generated_Image_hmy5gghmy5gghmy5.jpeg',
-  logo: 'https://media.base44.com/images/public/6acb505bd92681cd7a001e3f/ee5e63437_Gemini_Generated_Image_h0aclsh0aclsh0ac.jpeg',
-  invitationBg: 'https://media.base44.com/images/public/6acb505bd92681cd7a001e3f/38a7c85ef_DealofTemptation2.jpeg',
+  banner: '/assets/059bca0c5_Gemini_Generated_Image_hmy5gghmy5gghmy5.jpeg',
+  logo: '/assets/ee5e63437_Gemini_Generated_Image_h0aclsh0aclsh0ac.jpeg',
+  invitationBg: '/assets/38a7c85ef_DealofTemptation2.jpeg',
 };
 
 export const PHOTO = {

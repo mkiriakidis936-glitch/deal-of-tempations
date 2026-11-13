@@ -30,6 +30,7 @@ import PajamaTV from '@/components/tv/PajamaTV';
 import SyncTimerDisplay from '@/components/shared/SyncTimerDisplay';
 import { PHOTO, FILM } from '@/data/brandArt';
 import MediaSpot from '@/components/shared/MediaSpot';
+import NightTV from '@/components/night/NightTV';
 import { useAudioSync } from '@/hooks/useAudioSync';
 import { calculateMostWanted, getWantedLevel, getTotalLoot } from '@/lib/gameLogic';
 
@@ -200,6 +201,7 @@ export default function TVScreen() {
       <LiveOverlay />
       <PajamaRevealOverlay />
       <IntroSequenceTV state={state} />
+      <NightTV state={state} />
       <WantedStrobePanic wantedLevel={wantedLevel} playerName={mostWanted?.name} />
       <ShowModeTV state={state} />
       <SpecialEventsTV state={state} />
