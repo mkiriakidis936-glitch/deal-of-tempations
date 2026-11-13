@@ -2,6 +2,8 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import ComicPanel from '@/components/comic/ComicPanel';
 import ComicButton from '@/components/comic/ComicButton';
+import AdminSettingVersionHistory from '@/components/admin/AdminSettingVersionHistory';
+import { saveAdminSettingVersion } from '@/lib/adminVersionHistory';
 import { ART, DEFAULTS, applyMediaOverrides } from '@/data/brandArt';
 import { IMAGE_SLOTS, PHOTO_SPOTS, PHOTO_SPOT_IDS, MODE_COVER_SLOTS, GALLERIES } from '@/data/mediaSlots';
 import { NEW_MODES } from '@/data/modes/modeRegistry';
@@ -74,7 +76,10 @@ export default function AdminMedia() {
   const save = async (next) => {
     const galleryIds = ['heistPhotos', 'pajamaPhotos', 'siteVideos'];
     const clean = Object.fromEntries(Object.entries(next).filter(([k, v]) => (k.startsWith('clearAll') ? !!v : (Array.isArray(v) ? (v.length > 0 || galleryIds.includes(k)) : v))));
-    if (rec?.id) await base44.entities.AppSetting.update(rec.id, { value: clean });
+    if (rec?.id) {
+      await saveAdminSettingVersion(MEDIA_KEY, ov);
+      await base44.entities.AppSetting.update(rec.id, { value: clean });
+    }
     else setRec(await base44.entities.AppSetting.create({ key: MEDIA_KEY, value: clean }));
     applyMediaOverrides(clean);
     setOv(clean);
@@ -368,6 +373,7 @@ export default function AdminMedia() {
           ))}
         </div>
       </ComicPanel>
+      <AdminSettingVersionHistory settingKey={MEDIA_KEY} onRestore={(value) => { applyMediaOverrides(value || {}); setOv(value || {}); }} />
     </div>
   );
 }
