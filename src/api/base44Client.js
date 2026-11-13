@@ -37,11 +37,15 @@ export async function request(method, path, body) {
 // ---------- realtime (Server-Sent Events, one shared connection per entity) ----------
 const streams = new Map(); // entity -> { es, listeners:Set }
 
-function subscribeEntity(name, callback) {
+function subscribeEntity(name, callback, options = {}) {
   let s = streams.get(name);
   if (!s) {
     const token = getToken();
-    const url = `${API_URL}/api/entities/${name}/stream${token ? `?token=${encodeURIComponent(token)}` : ''}`;
+    const params = new URLSearchParams();
+    if (token) params.set('token', token);
+    if (options.sessionCode) params.set('sessionCode', options.sessionCode);
+    const query = params.toString();
+    const url = `${API_URL}/api/entities/${name}/stream${query ? `?${query}` : ''}`;
     const es = new EventSource(url);
     s = { es, listeners: new Set() };
     es.onmessage = (msg) => {
@@ -72,7 +76,7 @@ function makeEntity(name) {
     delete: (id) => request('DELETE', `${base}/${id}`),
     deleteMany: (query = {}) => request('POST', `${base}/delete-many`, { query }),
     count: async (query = {}) => (await request('POST', `${base}/count`, { query })).count,
-    subscribe: (cb) => subscribeEntity(name, cb),
+    subscribe: (cb, options) => subscribeEntity(name, cb, options),
   };
 }
 
