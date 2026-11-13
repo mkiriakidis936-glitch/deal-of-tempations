@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import ComicPanel from '@/components/comic/ComicPanel';
 import ComicButton from '@/components/comic/ComicButton';
+import AdminSettingVersionHistory from '@/components/admin/AdminSettingVersionHistory';
+import { saveAdminSettingVersion } from '@/lib/adminVersionHistory';
 import { ACHIEVEMENTS, ACHIEVEMENTS_SETTING_KEY } from '@/data/achievements';
 
 export default function AdminAchievementDefinitions() {
@@ -29,6 +31,7 @@ export default function AdminAchievementDefinitions() {
     setMessage('');
     try {
       const value = { items: items.map(({ id, name, icon, desc, reward }) => ({ id, name, icon, desc, reward: reward || '' })) };
+      if (record?.id) await saveAdminSettingVersion(ACHIEVEMENTS_SETTING_KEY, record.value || { items: ACHIEVEMENTS });
       if (record?.id) await base44.entities.AppSetting.update(record.id, { value });
       else setRecord(await base44.entities.AppSetting.create({ key: ACHIEVEMENTS_SETTING_KEY, value }));
       setMessage('Οι ορισμοί αποθηκεύτηκαν.');
@@ -52,6 +55,7 @@ export default function AdminAchievementDefinitions() {
       ))}
       {message && <div className="text-xs font-bold">{message}</div>}
       <ComicButton variant="green" disabled={busy} onClick={save}>{busy ? 'ΑΠΟΘΗΚΕΥΣΗ…' : 'ΑΠΟΘΗΚΕΥΣΗ ΟΡΙΣΜΩΝ'}</ComicButton>
+      <AdminSettingVersionHistory settingKey={ACHIEVEMENTS_SETTING_KEY} onRestore={(value) => setItems(ACHIEVEMENTS.map((base) => ({ reward: '', ...base, ...(value?.items || []).find((item) => item.id === base.id) }))) } />
     </ComicPanel>
   );
 }
