@@ -5,7 +5,6 @@ import ComicButton from '@/components/comic/ComicButton';
 import QRScanner from '@/components/play/QRScanner';
 import { base44 } from '@/api/base44Client';
 
-const keyFor = (code) => `player_checkin_${code}`;
 const makeToken = () => globalThis.crypto?.randomUUID?.() || `${Date.now().toString(36)}${Math.random().toString(36).slice(2)}`;
 
 export default function AdminPlayerCheckin({ session }) {
@@ -17,7 +16,7 @@ export default function AdminPlayerCheckin({ session }) {
 
   const load = useCallback(async () => {
     if (!sessionCode) return;
-    const { items } = await base44.entities.AppSetting.filter({ key: keyFor(sessionCode) }, { limit: 1 });
+    const { items } = await base44.entities.PlayerCheckin.filter({ sessionCode }, { limit: 1 });
     let rec = items?.[0] || null;
     const current = rec?.value || {};
     const next = { ...current, players: { ...(current.players || {}) } };
@@ -29,8 +28,8 @@ export default function AdminPlayerCheckin({ session }) {
       }
     });
     if (changed || !rec) {
-      if (rec?.id) rec = await base44.entities.AppSetting.update(rec.id, { value: next });
-      else rec = await base44.entities.AppSetting.create({ key: keyFor(sessionCode), value: next });
+      if (rec?.id) rec = await base44.entities.PlayerCheckin.update(rec.id, { players: next.players });
+      else rec = await base44.entities.PlayerCheckin.create({ sessionCode, players: next.players });
     }
     setRecord(rec);
   }, [sessionCode, players.map((p) => p.id).join('|')]);
@@ -44,7 +43,7 @@ export default function AdminPlayerCheckin({ session }) {
       return;
     }
     const [, , playerId, token] = parts;
-    const current = record?.value || {};
+    const current = record || {};
     const entry = current.players?.[playerId];
     if (!entry || entry.token !== token) {
       setMessage('Μη έγκυρο ή άγνωστο QR παίκτη.');
@@ -55,13 +54,13 @@ export default function AdminPlayerCheckin({ session }) {
       return;
     }
     const value = { ...current, players: { ...current.players, [playerId]: { ...entry, checkedInAt: new Date().toISOString() } } };
-    const updated = await base44.entities.AppSetting.update(record.id, { value });
+    const updated = await base44.entities.PlayerCheckin.update(record.id, { players: value.players });
     setRecord(updated);
     setMessage(`Παρουσία καταχωρίστηκε: ${players.find((p) => p.id === playerId)?.name || playerId}`);
   };
 
   if (!session) return <ComicPanel className="bg-card">Επίλεξε συνεδρία για να διαχειριστείς το check-in.</ComicPanel>;
-  const checked = Object.values(record?.value?.players || {}).filter((p) => p.checkedInAt).length;
+  const checked = Object.values(record?.players || {}).filter((p) => p.checkedInAt).length;
   return (
     <div className="space-y-3">
       <ComicPanel className="bg-card">
@@ -72,7 +71,7 @@ export default function AdminPlayerCheckin({ session }) {
         {message && <div className="text-xs font-bold mt-3">{message}</div>}
       </ComicPanel>
       {players.map((player) => {
-        const entry = record?.value?.players?.[player.id];
+        const entry = record?.players?.[player.id];
         const value = entry ? `DOT-CHECKIN|${sessionCode}|${player.id}|${entry.token}` : '';
         return <ComicPanel key={player.id} className="bg-card">
           <div className="flex items-center justify-between gap-3 flex-wrap">
