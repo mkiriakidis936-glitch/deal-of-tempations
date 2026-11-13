@@ -74,7 +74,8 @@ try {
       const refs = [...source.matchAll(/\$\{BASE\}([^\x60'"\s]+)/g)].map((match) => ({ template: match[0], url: base[1] + match[1] }));
       dynamicReferences.set(file, refs);
       refs.forEach(({ url }) => urls.add(url));
-    }  }
+    }
+  }
 
   let dbRows = [];
   if (pool) {
