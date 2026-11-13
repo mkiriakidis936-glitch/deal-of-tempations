@@ -1,7 +1,6 @@
 import React from 'react';
 import ComicPanel from '@/components/comic/ComicPanel';
 import ComicButton from '@/components/comic/ComicButton';
-import RecapExport from '@/components/tablet/RecapExport';
 
 const ACTIONS = [
   { key: 'trial', label: 'Δίκη' },
