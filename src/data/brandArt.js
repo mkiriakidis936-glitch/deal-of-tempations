@@ -100,7 +100,7 @@ export function applyMediaOverrides(o = {}) {
     const saved = modeMediaOverrides[id] && typeof modeMediaOverrides[id] === 'object' ? modeMediaOverrides[id] : {};
     const coverId = `modeCover_${id}`;
     const hasSavedCover = Object.prototype.hasOwnProperty.call(saved, 'cover');
-    const cover = hasSavedCover ? (str(saved.cover) || '') : (MODE_COVERS[coverId] || '');
+    const cover = str(saved.cover) || str(o[coverId]) || (clearPhotos ? '' : DEFAULTS[coverId]);
     MODE_MEDIA[id] = {
       hero: clearPhotos ? '' : (str(saved.hero) || ''),
       cover,
