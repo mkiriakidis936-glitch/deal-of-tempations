@@ -24,7 +24,8 @@ export default function Intake() {
   });
   const [saved, setSaved] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [enabled, setEnabled] = useState(null);\n  const [customQuestionsValid, setCustomQuestionsValid] = useState(true);
+  const [enabled, setEnabled] = useState(null);
+  const [customQuestionsValid, setCustomQuestionsValid] = useState(true);
 
   useEffect(() => {
     isIntakeEnabled().then(setEnabled);
@@ -149,7 +150,8 @@ export default function Intake() {
                 ))}
               </div>
             </div>
-            <CustomFormQuestions formType="heist" value={form.customAnswers} onChange={(value) => setForm({ ...form, customAnswers: value })} onValidityChange={setCustomQuestionsValid} className="space-y-3" />\n            <div className="comic-panel-sm p-3 bg-destructive/20">
+            <CustomFormQuestions formType="heist" value={form.customAnswers} onChange={(value) => setForm({ ...form, customAnswers: value })} onValidityChange={setCustomQuestionsValid} className="space-y-3" />
+            <div className="comic-panel-sm p-3 bg-destructive/20">
               <label className="flex items-center gap-2 cursor-pointer">
                 <input type="checkbox" checked={form.safeWordConfirmed} onChange={(e) => setForm({ ...form, safeWordConfirmed: e.target.checked })} className="w-5 h-5" />
                 <span className="text-sm font-bold">Επιβεβαιώνω ότι γνωρίζω το Safe Word: "MAYDAY"</span>
