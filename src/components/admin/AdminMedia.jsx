@@ -2,14 +2,14 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import ComicPanel from '@/components/comic/ComicPanel';
 import ComicButton from '@/components/comic/ComicButton';
-import { ART, DEFAULTS } from '@/data/brandArt';
-import { IMAGE_SLOTS, PHOTO_SPOTS, PHOTO_SPOT_IDS, GALLERIES } from '@/data/mediaSlots';
+import { ART, DEFAULTS, applyMediaOverrides } from '@/data/brandArt';
+import { IMAGE_SLOTS, PHOTO_SPOTS, PHOTO_SPOT_IDS, MODE_COVER_SLOTS, GALLERIES } from '@/data/mediaSlots';
 import { MEDIA_KEY, fetchOverrides, uploadMedia, listMedia, deleteMedia, deleteAllMedia } from '@/lib/media';
 
 const IMG_ACCEPT = 'image/*,.jpg,.jpeg,.png,.webp,.gif,.avif,.heic';
 const VID_ACCEPT = 'video/*,.mp4,.webm,.mov';
 const MEDIA_ACCEPT = 'image/*,video/*,.jpg,.jpeg,.png,.webp,.gif,.avif,.heic,.mp4,.webm,.mov';
-const isVideoFile = (url) => /\\.(mp4|webm|mov)(?:[?#]|$)/i.test(url || '');
+const isVideoFile = (url) => /\.(mp4|webm|mov)(?:[?#]|$)/i.test(url || '');
 const mb = (n) => (n >= 1048576 ? `${(n / 1048576).toFixed(1)} MB` : `${Math.max(1, Math.round(n / 1024))} KB`);
 
 function Thumb({ src, video, className = '' }) {
@@ -57,9 +57,11 @@ export default function AdminMedia() {
   }, [refreshLibrary]);
 
   const save = async (next) => {
-    const clean = Object.fromEntries(Object.entries(next).filter(([k, v]) => (k.startsWith('clearAll') ? !!v : (Array.isArray(v) ? v.length : v))));
+    const galleryIds = ['heistPhotos', 'pajamaPhotos', 'siteVideos'];
+    const clean = Object.fromEntries(Object.entries(next).filter(([k, v]) => (k.startsWith('clearAll') ? !!v : (Array.isArray(v) ? (v.length > 0 || galleryIds.includes(k)) : v))));
     if (rec?.id) await base44.entities.AppSetting.update(rec.id, { value: clean });
     else setRec(await base44.entities.AppSetting.create({ key: MEDIA_KEY, value: clean }));
+    applyMediaOverrides(clean);
     setOv(clean);
   };
 
@@ -84,7 +86,7 @@ export default function AdminMedia() {
         const r = await uploadMedia(files[i], (p) => setProgress((i + p) / files.length));
         urls.push(r.url);
       }
-      if (t.mode === 'slot') await save({ ...ov, [t.id]: urls[0], emptySlots: (ov.emptySlots || []).filter((id) => id !== t.id) });
+      if (t.mode === 'slot') await save({ ...ov, [t.id]: urls[0], emptySlots: (ov.emptySlots || []).filter((id) => id !== t.id), emptyModeCovers: (ov.emptyModeCovers || []).filter((id) => id !== t.id) });
       else if (t.mode === 'replace') {
         const l = [...(ov[t.id] || DEFAULTS[t.id] || [])];
         l[t.index] = urls[0];
@@ -100,7 +102,7 @@ export default function AdminMedia() {
     }, 'Ανέβηκε και αποθηκεύτηκε ✓');
   };
 
-  const reset = (id) => run(id, () => { const { [id]: _, ...rest } = ov; if (PHOTO_SPOT_IDS.includes(id)) return save({ ...rest, [id]: DEFAULTS[id], emptySlots: (ov.emptySlots || []).filter((slot) => slot !== id) }); return save(rest); }, 'Επαναφορά στο αρχικό ✓');
+  const reset = (id) => run(id, () => { const { [id]: _, ...rest } = ov; if (PHOTO_SPOT_IDS.includes(id)) return save({ ...rest, [id]: DEFAULTS[id], emptySlots: (ov.emptySlots || []).filter((slot) => slot !== id) }); if (MODE_COVER_SLOTS.some((slot) => slot.id === id)) return save({ ...rest, [id]: DEFAULTS[id], emptyModeCovers: (ov.emptyModeCovers || []).filter((slot) => slot !== id) }); return save(rest); }, 'Επαναφορά στο αρχικό ✓');
   const clearSlot = (id) => run(id, () => save({ ...ov, [id]: undefined, emptySlots: [...new Set([...(ov.emptySlots || []), id])] }), 'Το σημείο καθαρίστηκε ✓');
   const listOf = (id) => Array.isArray(ov[id]) ? ov[id] : ((id === 'siteVideos' && (ov.clearAllVideos || ov.clearAllMedia)) || ((id === 'heistPhotos' || id === 'pajamaPhotos') && (ov.clearAllPhotos || ov.clearAllMedia)) ? [] : (DEFAULTS[id] || []));
   const setList = (id, list) => run(id, () => save({ ...ov, [id]: list }));
@@ -150,7 +152,6 @@ export default function AdminMedia() {
     const label = kind === 'image' ? 'ΟΛΕΣ ΤΙΣ ΦΩΤΟΓΡΑΦΙΕΣ' : kind === 'video' ? 'ΟΛΑ ΤΑ ΒΙΝΤΕΟ' : 'ΟΛΕΣ ΤΙΣ ΦΩΤΟΓΡΑΦΙΕΣ ΚΑΙ ΤΑ ΒΙΝΤΕΟ';
     if (!window.confirm(`ΠΡΟΣΟΧΗ: Θα διαγραφούν οριστικά ${label} από τη βιβλιοθήκη του project και θα αφαιρεθούν από όλα τα σημεία εμφάνισης. Συνέχεια;`)) return;
     run(`clear-${kind}`, async () => {
-      await deleteAllMedia(kind);
       const next = {
         ...ov,
         ...(kind === 'video' || kind === 'all' ? {
@@ -160,6 +161,8 @@ export default function AdminMedia() {
         } : {}),
         ...(kind === 'image' || kind === 'all' ? {
           ...Object.fromEntries(Object.keys(ART).map((id) => [id, undefined])),
+          ...Object.fromEntries(MODE_COVER_SLOTS.map(({ id }) => [id, undefined])),
+          emptyModeCovers: MODE_COVER_SLOTS.map(({ id }) => id),
           heistPhotos: [],
           pajamaPhotos: [],
           ...Object.fromEntries(PHOTO_SPOT_IDS.map((id) => [id, kind === 'image' && isVideoFile(ov[id]) ? ov[id] : undefined])),
@@ -170,6 +173,7 @@ export default function AdminMedia() {
         libraryCategories: {},
       };
       await save(next);
+      await deleteAllMedia(kind);
       await refreshLibrary();
     }, `${label}: ολοκληρώθηκε ✓`);
   };
@@ -225,6 +229,26 @@ export default function AdminMedia() {
         </div>
       </ComicPanel>
 
+      <ComicPanel className="bg-card space-y-3">
+        <div className="font-heading text-lg">🎮 ΕΞΩΦΥΛΛΟ ΦΩΤΟΓΡΑΦΙΑΣ ΑΝΑ MODE</div>
+        <p className="text-xs text-foreground/60">Οι φωτογραφίες εμφανίζονται στις κάρτες επιλογής Mode στην οθόνη έναρξης του Tablet. Κάθε Mode έχει ξεχωριστή εικόνα.</p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {MODE_COVER_SLOTS.map((s) => {
+            const src = ov[s.id] || (ov.emptyModeCovers?.includes(s.id) || ov.clearAllPhotos || ov.clearAllMedia ? '' : DEFAULTS[s.id]);
+            return (
+              <div key={s.id} className="border-2 border-border/40 rounded-lg p-2 bg-secondary/40">
+                {src ? <Thumb src={src} className="w-full aspect-video rounded" /> : <div className="w-full aspect-video rounded bg-black/40 flex items-center justify-center text-xs text-foreground/50">Χωρίς φωτογραφία</div>}
+                <div className="font-bold text-sm mt-2">{s.label}</div>
+                <div className="flex gap-2 mt-2 flex-wrap">
+                  <ComicButton size="sm" disabled={!!busy} onClick={() => pick(s.id, 'slot', imgOne)}>⬆️ Ανέβασμα / Αλλαγή</ComicButton>
+                  <ComicButton size="sm" variant="dark" disabled={!!busy} onClick={() => reset(s.id)}>↩︎ Αρχική φωτογραφία</ComicButton>
+                </div>
+                <Progress id={s.id} />
+              </div>
+            );
+          })}
+        </div>
+      </ComicPanel>
       <ComicPanel className="bg-card space-y-3">
         <div className="font-heading text-lg">🖼️ ΕΙΚΟΝΕΣ ΑΝΑ ΣΗΜΕΙΟ</div>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3">

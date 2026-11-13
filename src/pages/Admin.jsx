@@ -16,12 +16,10 @@ import AdminRSVP from '@/components/admin/AdminRSVP';
 import AdminEventInfo from '@/components/admin/AdminEventInfo';
 import AdminGrandJury from '@/components/admin/AdminGrandJury';
 import AdminMeta from '@/components/admin/AdminMeta';
-import AdminPajama from '@/components/admin/AdminPajama';
 import AdminLeaderboard from '@/components/admin/AdminLeaderboard';
 import AdminBlitz from '@/components/admin/AdminBlitz';
 import AdminMedia from '@/components/admin/AdminMedia';
 import AdminSite from '@/components/admin/AdminSite';
-import AdminModes from '@/components/admin/AdminModes';
 import AdminNotifications from '@/components/admin/AdminNotifications';
 import AdminVisits from '@/components/admin/AdminVisits';
 import AdminBackup from '@/components/admin/AdminBackup';
@@ -44,9 +42,7 @@ const NAV_GROUPS = [
     id: 'content',
     label: 'ΠΕΡΙΕΧΟΜΕΝΟ',
     tabs: [
-      { id: 'content', label: '📦 Περιεχόμενο & Κουτιά' },
-      { id: 'pajama', label: '🩴 Pajama Mode' },
-      { id: 'modes', label: '🎮 Νέα Modes' },
+      { id: 'content', label: '🎮 Modes & Περιεχόμενο' },
       { id: 'site', label: '🌐 Site & Σενάριο' },
       { id: 'media', label: '🖼️ Φωτογραφίες & Βίντεο' },
     ],
@@ -75,6 +71,8 @@ const NAV_GROUPS = [
 ];
 
 const LEGACY_TABS = {
+  modes: 'content',
+  pajama: 'content',
   board: 'content',
   cards: 'content',
   classic: 'content',
@@ -197,10 +195,6 @@ export default function Admin() {
         return <AdminLeaderboard />;
       case 'content':
         return <AdminContentHub />;
-      case 'pajama':
-        return <AdminPajama />;
-      case 'modes':
-        return <AdminModes />;
       case 'site':
         return <AdminSite />;
       case 'media':

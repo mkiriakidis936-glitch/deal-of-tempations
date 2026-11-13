@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import AdminContent from '@/components/admin/AdminContent';
 import AdminBoardSquares from '@/components/admin/AdminBoardSquares';
 import AdminCards from '@/components/admin/AdminCards';
+import AdminModes from '@/components/admin/AdminModes';
+import AdminPajama from '@/components/admin/AdminPajama';
 
 const SUB_TABS = [
   { id: 'classic', label: '🎲 Κλασικό' },
@@ -10,6 +12,8 @@ const SUB_TABS = [
   { id: 'special', label: '🎭 Special & Bomb' },
   { id: 'board', label: '🗺️ Κουτιά 1–24' },
   { id: 'cards', label: '🃏 Κάρτες' },
+  { id: 'pajama', label: '🩴 Pajama Mode' },
+  { id: 'new_modes', label: '✨ Νέα Modes' },
 ];
 
 export default function AdminContentHub() {
@@ -33,6 +37,8 @@ export default function AdminContentHub() {
 
       {sub === 'board' && <AdminBoardSquares />}
       {sub === 'cards' && <AdminCards />}
+      {sub === 'pajama' && <AdminPajama />}
+      {sub === 'new_modes' && <AdminModes />}
       {['classic', 'marathon', 'arrest_heist', 'special'].includes(sub) && (
         <AdminContent key={sub} modeFilter={sub} />
       )}

@@ -7,6 +7,7 @@ export default function AdminRSVP() {
   const [rsvps, setRsvps] = useState([]);
   const [count, setCount] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [msg, setMsg] = useState(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -19,6 +20,7 @@ export default function AdminRSVP() {
       setRsvps(items || []);
     } catch (e) {
       console.error('RSVP load error', e);
+      setMsg({ ok: false, text: e.message || 'Δεν φορτώθηκαν οι επιβεβαιώσεις.' });
     } finally {
       setLoading(false);
     }
@@ -31,8 +33,10 @@ export default function AdminRSVP() {
       await base44.entities.InvitationRSVP.delete(id);
       setRsvps((prev) => prev.filter((r) => r.id !== id));
       setCount((c) => Math.max(0, c - 1));
+      setMsg({ ok: true, text: 'Η επιβεβαίωση διαγράφηκε.' });
     } catch (e) {
       console.error('RSVP delete error', e);
+      setMsg({ ok: false, text: e.message || 'Η διαγραφή της επιβεβαίωσης απέτυχε.' });
     }
   }
 
@@ -47,6 +51,8 @@ export default function AdminRSVP() {
           🔄 {loading ? 'ΦΟΡΤΩΣΗ...' : 'ΑΝΑΝΕΩΣΗ'}
         </ComicButton>
       </ComicPanel>
+
+      {msg && <ComicPanel className={msg.ok ? 'bg-tarot-forest' : 'bg-tarot-crimson'}><div className="text-sm font-bold">{msg.text}</div></ComicPanel>}
 
       <ComicPanel className="bg-tarot-wine/30 text-center">
         <div className="font-heading text-5xl text-tarot-wine">{count}</div>

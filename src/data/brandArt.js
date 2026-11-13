@@ -1,4 +1,4 @@
-import { PHOTO_SPOT_IDS } from '@/data/mediaSlots';
+import { PHOTO_SPOT_IDS, MODE_COVER_SLOTS } from '@/data/mediaSlots';
 
 const BASE = '/assets/';
 
@@ -29,6 +29,17 @@ export const ART = {
   banner: '/assets/059bca0c5_Gemini_Generated_Image_hmy5gghmy5gghmy5.jpeg',
   logo: '/assets/ee5e63437_Gemini_Generated_Image_h0aclsh0aclsh0ac.jpeg',
   invitationBg: '/assets/38a7c85ef_DealofTemptation2.jpeg',
+};
+
+export const MODE_COVERS = {
+  modeCover_classic: ART.poster,
+  modeCover_marathon: ART.heistNight,
+  modeCover_arrest_heist: ART.photoHeistRoom,
+  modeCover_pajama: ART.party1,
+  modeCover_pedi_extended: ART.photoPediGlam,
+  modeCover_lockdown: ART.vault,
+  modeCover_beach_bar: ART.photoSlippers,
+  modeCover_marathon_4h: ART.party2,
 };
 
 export const PHOTO = {
@@ -62,18 +73,21 @@ export const HEIST_PHOTOS = [
 ];
 
 // Αντίγραφο των αρχικών τιμών (πριν εφαρμοστούν οι αλλαγές από το Admin)
-export const DEFAULTS = { ...ART, ...PHOTO, ...FILM, heistPhotos: [...HEIST_PHOTOS], pajamaPhotos: [...PAJAMA_PHOTOS], siteVideos: [] };
+export const DEFAULTS = { ...ART, ...PHOTO, ...FILM, ...MODE_COVERS, heistPhotos: [...HEIST_PHOTOS], pajamaPhotos: [...PAJAMA_PHOTOS], siteVideos: [] };
 
 // Καλείται μία φορά στην εκκίνηση (src/lib/media.js), ΠΡΙΝ φορτωθεί η εφαρμογή.
 // Αλλάζει τα αντικείμενα επιτόπου, ώστε να τα δουν όλα τα components.
 export function applyMediaOverrides(o = {}) {
   const str = (v) => (typeof v === 'string' && v ? v : null);
-  const isVideo = (v) => /\\.(mp4|webm|mov)(?:[?#]|$)/i.test(v || '');
+  const isVideo = (v) => /\.(mp4|webm|mov)(?:[?#]|$)/i.test(v || '');
   const clearPhotos = !!(o.clearAllPhotos || o.clearAllMedia);
   const clearVideos = !!(o.clearAllVideos || o.clearAllMedia);
   const emptySlots = Array.isArray(o.emptySlots) ? o.emptySlots : [];
 
   for (const k of Object.keys(ART)) ART[k] = str(o[k]) || (clearPhotos ? '' : DEFAULTS[k]);
+
+  const emptyModeCovers = Array.isArray(o.emptyModeCovers) ? o.emptyModeCovers : [];
+  for (const { id } of MODE_COVER_SLOTS) MODE_COVERS[id] = emptyModeCovers.includes(id) ? '' : (str(o[id]) || (clearPhotos ? '' : DEFAULTS[id]));
 
   // Κάθε ένα από τα έξι σημεία δέχεται είτε φωτογραφία είτε βίντεο, ή παραμένει κενό.
   FILM.agent = clearVideos ? '' : (str(o.agent) || '');
@@ -94,7 +108,7 @@ export function applyMediaOverrides(o = {}) {
     }
   }
 
-  const setList = (arr, v, def) => arr.splice(0, arr.length, ...((Array.isArray(v) && v.filter(str).length ? v.filter(str) : def)));
+  const setList = (arr, v, def) => arr.splice(0, arr.length, ...(Array.isArray(v) ? v.filter(str) : def));
   setList(HEIST_PHOTOS, o.heistPhotos, clearPhotos ? [] : DEFAULTS.heistPhotos);
   setList(PAJAMA_PHOTOS, o.pajamaPhotos, clearPhotos ? [] : DEFAULTS.pajamaPhotos);
   setList(SITE_VIDEOS, o.siteVideos, []);
