@@ -8,12 +8,21 @@ import ActMorning from '@/components/modes/ActMorning';
 import BeachBarGame from '@/components/modes/BeachBarGame';
 import { modeMeta, ACT_META, MODE_THEMES } from '@/data/modes/modeRegistry';
 import { useModeCtx, useTick } from '@/lib/modeKit';
-import { COLLECTIONS } from '@/lib/modesContentStore';
+import { COLLECTIONS, applyScenarioCollections } from '@/lib/modesContentStore';
 
 // Tablet (game master) για τα 4 νέα modes. Κάθε mode = λίστα από acts.
 export default function ModeGame({ state, updateState, onEnd, onQR }) {
   const [, setContentReady] = useState(false);
-  useEffect(() => { loadModesContent().then(() => setContentReady(true)); }, []);
+  useEffect(() => {
+    let active = true;
+    let restoreScenario = null;
+    loadModesContent().then(() => {
+      if (!active) return;
+      if (state.customScenario) restoreScenario = applyScenarioCollections(state.mode, state.customScenario.collections || []);
+      setContentReady(true);
+    });
+    return () => { active = false; restoreScenario?.(); };
+  }, [state.mode, state.customScenario?.id]);
   const ctx = useModeCtx(state, updateState);
   const { mg, setMg, log } = ctx;
   const meta = modeMeta(state.mode);
