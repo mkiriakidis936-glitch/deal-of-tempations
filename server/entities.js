@@ -49,7 +49,7 @@ const noChangesOutsideKeys = (before, after, keys) => {
 const onlyOwnMapEntryChanged = (before, after, playerId) => {
   if (!isObject(before) || !isObject(after)) return false;
   return Object.entries(after).every(([key, value]) =>
-    key === playerId || (Object.prototype.hasOwnProperty.call(before, key) && sameJson(before[key], value))
+    key === playerId || key.startsWith('__redacted_') || (Object.prototype.hasOwnProperty.call(before, key) && sameJson(before[key], value))
   );
 };
 const deepMerge = (target, patch, field = '') => {
@@ -84,6 +84,7 @@ const deepMerge = (target, patch, field = '') => {
   if (!isObject(target) || !isObject(patch)) return patch;
   const merged = { ...target };
   for (const [key, value] of Object.entries(patch)) {
+    if (key.startsWith('__redacted_')) continue;
     merged[key] = deepMerge(target[key], value, key);
   }
   return merged;
@@ -190,9 +191,10 @@ function validatePlayerPatch(current, patch, playerId) {
           !onlyOwnMapEntryChanged(old.votes || {}, next.votes || {}, playerId)) return false;
       if (next.phase === 'result') {
         const voters = (current.players || []).filter((p) => p.id !== old.playerId);
-        if (!voters.every((p) => next.votes?.[p.id] !== undefined)) return false;
-        const yes = Object.values(next.votes).filter(Boolean).length;
-        const no = Object.values(next.votes).filter((v) => v === false).length;
+        const actualVotes = old.votes || {};
+        if (!voters.every((p) => actualVotes[p.id] !== undefined)) return false;
+        const yes = Object.values(actualVotes).filter(Boolean).length;
+        const no = Object.values(actualVotes).filter((v) => v === false).length;
         if (next.accepted !== (yes > no)) return false;
       } else if (next.phase !== old.phase) return false;
       if (next.votes?.[playerId] !== undefined && typeof next.votes[playerId] !== 'boolean') return false;
@@ -262,6 +264,16 @@ function sanitizePublicSession(record, playerId = null) {
     if (!playerId || !isObject(value) || value[playerId] === undefined) return {};
     return { [playerId]: value[playerId] };
   };
+  const countOnlyMap = (value, preserveBooleanTally = false) => {
+    if (!isObject(value)) return {};
+    const result = {};
+    let index = 0;
+    for (const [key, item] of Object.entries(value)) {
+      if (playerId && key === playerId) result[key] = item;
+      else result[`__redacted_${index++}`] = preserveBooleanTally && typeof item === 'boolean' ? item : true;
+    }
+    return result;
+  };
 
   if ('privateMessages' in state) state.privateMessages = ownMap(state.privateMessages);
   if (state.pajama && Array.isArray(state.pajama.confessions)) {
@@ -274,24 +286,24 @@ function sanitizePublicSession(record, playerId = null) {
   }
   if (state.mg && isObject(state.mg)) {
     const mg = { ...state.mg, missions: ownMap(state.mg.missions), chaosCards: ownMap(state.mg.chaosCards) };
-    if (mg.card && mg.card.playerId !== playerId) mg.card = null;
+    if (mg.card && (!playerId || mg.card.playerId !== playerId)) mg.card = null;
     if (mg.branch !== playerId) mg.branch = null;
     state.mg = mg;
   }
   if (state.sealedVotes && isObject(state.sealedVotes)) {
     state.sealedVotes = Object.fromEntries(Object.entries(state.sealedVotes).map(([id, vote]) => [
       id,
-      vote?.revealed ? vote : { ...vote, votes: ownMap(vote?.votes) },
+      vote?.revealed ? vote : { ...vote, votes: countOnlyMap(vote?.votes) },
     ]));
   }
-  if (state.juryTrial) state.juryTrial = { ...state.juryTrial, votes: ownMap(state.juryTrial.votes) };
+  if (state.juryTrial) state.juryTrial = { ...state.juryTrial, votes: countOnlyMap(state.juryTrial.votes) };
   if (state.grandJury) state.grandJury = {
     ...state.grandJury,
-    queenVotes: ownMap(state.grandJury.queenVotes),
-    championVotes: ownMap(state.grandJury.championVotes),
+    queenVotes: countOnlyMap(state.grandJury.queenVotes),
+    championVotes: countOnlyMap(state.grandJury.championVotes),
   };
-  if (state.midnightPact) state.midnightPact = { ...state.midnightPact, offers: ownMap(state.midnightPact.offers) };
-  if (state.lastWish) state.lastWish = { ...state.lastWish, votes: ownMap(state.lastWish.votes) };
+  if (state.midnightPact) state.midnightPact = { ...state.midnightPact, offers: countOnlyMap(state.midnightPact.offers) };
+  if (state.lastWish) state.lastWish = { ...state.lastWish, votes: countOnlyMap(state.lastWish.votes, true) };
   if (state.timeCapsule) state.timeCapsule = ownMap(state.timeCapsule);
 
   return { ...record, state };
