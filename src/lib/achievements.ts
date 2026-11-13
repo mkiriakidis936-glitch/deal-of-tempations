@@ -29,6 +29,7 @@ export async function awardAchievements(sessionCode, awards) {
         achievementId: a.achievementId,
         achievementName: meta?.name || a.achievementId,
         icon: meta?.icon || '🏅',
+        reward: meta?.reward || '',
         playerName: a.playerName,
         sessionCode,
       };
