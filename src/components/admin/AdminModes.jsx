@@ -74,7 +74,7 @@ export default function AdminModes() {
         {f.type === 'number' && <input type="number" className={inp} value={v ?? ''} onChange={(e) => onChange({ ...item, [f.key]: e.target.value === '' ? undefined : Number(e.target.value) })} />}
         {f.type === 'select' && (
           <select className={inp} value={v ?? ''} onChange={(e) => onChange({ ...item, [f.key]: e.target.value })}>
-            {f.options.map(([val, label]) => <option key={val} value={val}>{label}</option>)}
+            {(typeof f.options === 'function' ? f.options() : f.options).map(([val, label]) => <option key={val} value={val}>{label}</option>)}
           </select>
         )}
       </label>
