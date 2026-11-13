@@ -60,6 +60,7 @@ const pool = process.env.DATABASE_URL
 try {
   const files = [...await walk(path.join(ROOT, 'src')), path.join(ROOT, 'index.html')];
   const contents = new Map();
+  const dynamicReferences = new Map();
   const urls = new Set();
 
   for (const file of files) {
