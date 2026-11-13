@@ -71,11 +71,10 @@ try {
     // brandArt.js builds URLs as `${BASE}file.jpeg`.
     const base = source.match(/const BASE = '(https?:\/\/[^']+\/)'/);
     if (base) {
-      for (const match of source.matchAll(/\$\{BASE\}([^\x60'"\s]+)/g)) {
-        urls.add(base[1] + match[1]);
-      }
-    }
-  }
+      const refs = [...source.matchAll(/\$\{BASE\}([^\x60'"\s]+)/g)].map((match) => ({ template: match[0], url: base[1] + match[1] }));
+      dynamicReferences.set(file, refs);
+      refs.forEach(({ url }) => urls.add(url));
+    }  }
 
   let dbRows = [];
   if (pool) {
@@ -156,7 +155,11 @@ try {
     for (const [file, original] of contents) {
       let source = original;
       for (const [url, local] of ordered) source = source.split(url).join(local);
-      source = source.replace(/const BASE = 'https?:\/\/[^']+\//, "const BASE = '/assets/");
+      for (const ref of dynamicReferences.get(file) || []) {
+        const local = mapping.get(ref.url);
+        if (local) source = source.split(ref.template).join(local);
+      }
+      if (!source.includes('\${BASE}')) source = source.replace(/const BASE = 'https?:\/\/[^']+';?\s*\n/, '');
       if (source !== original) {
         await fs.writeFile(file, source);
         console.log('rewrote', path.relative(ROOT, file));
