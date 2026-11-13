@@ -1,4 +1,5 @@
 import { PHOTO_SPOT_IDS, MODE_COVER_SLOTS } from '@/data/mediaSlots';
+import { NEW_MODES } from '@/data/modes/modeRegistry';
 
 const BASE = '/assets/';
 
@@ -41,6 +42,11 @@ export const MODE_COVERS = {
   modeCover_beach_bar: ART.photoSlippers,
   modeCover_marathon_4h: ART.party2,
 };
+
+// Ανεξάρτητη φωτογραφική ταυτότητα για καθένα από τα τέσσερα νέα Modes.
+export const MODE_MEDIA = Object.fromEntries(NEW_MODES.map(({ id }) => [id, {
+  hero: '', cover: MODE_COVERS[`modeCover_${id}`] || '', sections: [], gallery: [], cards: [], trailer: '',
+}]));
 
 export const PHOTO = {
   siteHero: ART.poster,
@@ -88,6 +94,23 @@ export function applyMediaOverrides(o = {}) {
 
   const emptyModeCovers = Array.isArray(o.emptyModeCovers) ? o.emptyModeCovers : [];
   for (const { id } of MODE_COVER_SLOTS) MODE_COVERS[id] = emptyModeCovers.includes(id) ? '' : (str(o[id]) || (clearPhotos ? '' : DEFAULTS[id]));
+
+  const modeMediaOverrides = o.modeMedia && typeof o.modeMedia === 'object' ? o.modeMedia : {};
+  for (const { id } of NEW_MODES) {
+    const saved = modeMediaOverrides[id] && typeof modeMediaOverrides[id] === 'object' ? modeMediaOverrides[id] : {};
+    const coverId = `modeCover_${id}`;
+    const hasSavedCover = Object.prototype.hasOwnProperty.call(saved, 'cover');
+    const cover = hasSavedCover ? (str(saved.cover) || '') : (MODE_COVERS[coverId] || '');
+    MODE_MEDIA[id] = {
+      hero: clearPhotos ? '' : (str(saved.hero) || ''),
+      cover,
+      sections: clearPhotos ? (Array.isArray(saved.sections) ? saved.sections.map((item) => ({ ...item, image: '' })) : []) : (Array.isArray(saved.sections) ? saved.sections : []),
+      gallery: clearPhotos ? [] : (Array.isArray(saved.gallery) ? saved.gallery.filter(str) : []),
+      cards: clearPhotos ? (Array.isArray(saved.cards) ? saved.cards.map((item) => ({ ...item, image: '' })) : []) : (Array.isArray(saved.cards) ? saved.cards : []),
+      trailer: clearVideos ? '' : (str(saved.trailer) || ''),
+    };
+    MODE_COVERS[coverId] = cover;
+  }
 
   // Κάθε ένα από τα έξι σημεία δέχεται είτε φωτογραφία είτε βίντεο, ή παραμένει κενό.
   FILM.agent = clearVideos ? '' : (str(o.agent) || '');
