@@ -5,6 +5,7 @@ export function useGameSession({ autoLoad = true } = {}) {
   const [session, setSession] = useState(null);
   const [state, setState] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [viewerPlayerId, setViewerPlayerId] = useState(null);
   const stateRef = useRef(null);
   const sessionRef = useRef(null);
 
@@ -43,9 +44,9 @@ export function useGameSession({ autoLoad = true } = {}) {
       stateRef.current = updated.state || {};
       setSession(updated);
       setState(updated.state || {});
-    }, { sessionCode: session.sessionCode });
+    }, { sessionCode: session.sessionCode, playerId: viewerPlayerId });
     return unsub;
-  }, [session?.id, session?.sessionCode]);
+  }, [session?.id, session?.sessionCode, viewerPlayerId]);
 
   const updateState = useCallback(async (newState, { playerId } = {}) => {
     if (!sessionRef.current) return;
@@ -83,6 +84,7 @@ export function useGameSession({ autoLoad = true } = {}) {
     const id = sessionRef.current?.id;
     sessionRef.current = null;
     stateRef.current = null;
+    setViewerPlayerId(null);
     setSession(null);
     setState(null);
     if (!id) return;
@@ -107,10 +109,12 @@ export function useGameSession({ autoLoad = true } = {}) {
     }
   }, []);
 
-  const joinByCode = useCallback(async (code) => {
+  const joinByCode = useCallback(async (code, playerId = null) => {
     setLoading(true);
+    setViewerPlayerId(playerId || null);
     try {
-      const { items } = await base44.entities.GameSession.filter({ sessionCode: code }, { sort: '-created_date', limit: 1 });
+      const query = { sessionCode: code, ...(playerId ? { playerId } : {}) };
+      const { items } = await base44.entities.GameSession.filter(query, { sort: '-created_date', limit: 1 });
       if (items && items.length > 0) {
         sessionRef.current = items[0];
         stateRef.current = items[0].state || {};
