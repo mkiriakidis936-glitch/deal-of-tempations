@@ -78,7 +78,7 @@ export default function Site() {
     setParams(id === 'home' ? {} : { event: id }, { replace: true });
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
-  const register = () => navigate(c.cta.path);
+  const register = () => navigate(pageContent.cta.path);
 
   return (
     <div className="min-h-screen overflow-hidden bg-background text-foreground">
