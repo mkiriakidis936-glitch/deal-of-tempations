@@ -22,7 +22,8 @@ export default function PajamaForm() {
     customAnswers: {},
   });
   const [saving, setSaving] = useState(false);
-  const [saved, setSaved] = useState(false);\n  const [customQuestionsValid, setCustomQuestionsValid] = useState(true);
+  const [saved, setSaved] = useState(false);
+  const [customQuestionsValid, setCustomQuestionsValid] = useState(true);
 
   const progress = Math.round(([form.name.trim(), form.safeWordConfirmed].filter(Boolean).length / 2) * 100);
 
