@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import ComicPanel from '@/components/comic/ComicPanel';
 import ComicButton from '@/components/comic/ComicButton';
-import { loadAdminSettingVersions, restoreAdminSettingVersion } from '@/lib/adminVersionHistory';
+import { loadAdminSettingVersions, restoreAdminSettingVersion, saveAdminSettingVersion } from '@/lib/adminVersionHistory';
 
 export default function AdminSettingVersionHistory({ settingKey, onRestore }) {
   const [items, setItems] = useState([]);
@@ -17,7 +17,7 @@ export default function AdminSettingVersionHistory({ settingKey, onRestore }) {
     if (!window.confirm('Να επανέλθει αυτή η προηγούμενη έκδοση; Θα αντικατασταθούν οι τρέχουσες ρυθμίσεις.')) return;
     setBusy(true); setMessage('');
     try {
-      const value = await restoreAdminSettingVersion(settingKey, snapshot);
+      await saveAdminSettingVersion(settingKey);\n      const value = await restoreAdminSettingVersion(settingKey, snapshot);
       onRestore?.(value);
       await load();
       setMessage('Η προηγούμενη έκδοση επανήλθε.');
