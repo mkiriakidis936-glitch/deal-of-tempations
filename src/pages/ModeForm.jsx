@@ -38,7 +38,8 @@ export default function ModeForm() {
   const [step, setStep] = useState(0);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
-  const [error, setError] = useState('');\n  const [customQuestionsValid, setCustomQuestionsValid] = useState(true);
+  const [error, setError] = useState('');
+  const [customQuestionsValid, setCustomQuestionsValid] = useState(true);
 
   const set = (k, v) => setForm((f) => ({ ...f, [k]: v }));
   const toggleMode = (id) => set('modes', form.modes.includes(id) ? form.modes.filter((m) => m !== id) : [...form.modes, id]);
