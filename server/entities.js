@@ -257,7 +257,7 @@ export function entityRoutes() {
     }
     res.set({ 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache, no-transform', Connection: 'keep-alive', 'X-Accel-Buffering': 'no' });
     res.flushHeaders();
-    res.write('retry: 2000\\n\\n');
+    res.write('retry: 2000\n\n');
     if (!streams.has(req.entity)) streams.set(req.entity, new Set());
     const subscriber = { res, sessionCode };
     streams.get(req.entity).add(subscriber);
