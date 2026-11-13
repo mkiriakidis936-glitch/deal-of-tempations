@@ -241,8 +241,8 @@ export default function Admin() {
       <div className="max-w-6xl mx-auto space-y-3">
         <ComicPanel className="bg-secondary flex items-center justify-between gap-2">
           <div className="min-w-0">
-            <div className="font-heading text-2xl sm:text-3xl comic-text-stroke text-primary">🔧 ADMIN PANEL</div>
-            <div className="text-[11px] sm:text-xs font-bold text-foreground/70 font-body truncate">DEAL OF TEMPTATION — Διαχείριση</div>
+            <div className="font-heading text-2xl sm:text-3xl comic-text-stroke text-primary">🔧 CONTROL CENTER</div>
+            <div className="text-[11px] sm:text-xs font-bold text-foreground/70 font-body truncate">DEAL OF TEMPTATION — Κεντρική διαχείριση εφαρμογής</div>
           </div>
           <ComicButton variant="dark" size="sm" onClick={loadSessions} disabled={loading}>
             🔄 <span className="hidden sm:inline">{loading ? 'ΦΟΡΤΩΣΗ...' : 'ΑΝΑΝΕΩΣΗ'}</span>
