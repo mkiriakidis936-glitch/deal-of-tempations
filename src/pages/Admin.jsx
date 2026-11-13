@@ -16,7 +16,6 @@ import AdminRSVP from '@/components/admin/AdminRSVP';
 import AdminEventInfo from '@/components/admin/AdminEventInfo';
 import AdminGrandJury from '@/components/admin/AdminGrandJury';
 import AdminMeta from '@/components/admin/AdminMeta';
-import AdminPajama from '@/components/admin/AdminPajama';
 import AdminLeaderboard from '@/components/admin/AdminLeaderboard';
 import AdminBlitz from '@/components/admin/AdminBlitz';
 import AdminMedia from '@/components/admin/AdminMedia';
@@ -45,7 +44,6 @@ const NAV_GROUPS = [
     label: 'ΠΕΡΙΕΧΟΜΕΝΟ',
     tabs: [
       { id: 'content', label: '🎮 Modes & Περιεχόμενο' },
-      { id: 'pajama', label: '🩴 Pajama Mode' },
       { id: 'site', label: '🌐 Site & Σενάριο' },
       { id: 'media', label: '🖼️ Φωτογραφίες & Βίντεο' },
     ],
@@ -75,6 +73,7 @@ const NAV_GROUPS = [
 
 const LEGACY_TABS = {
   modes: 'content',
+  pajama: 'content',
   board: 'content',
   cards: 'content',
   classic: 'content',
@@ -197,8 +196,6 @@ export default function Admin() {
         return <AdminLeaderboard />;
       case 'content':
         return <AdminContentHub />;
-      case 'pajama':
-        return <AdminPajama />;
       case 'site':
         return <AdminSite />;
       case 'media':
