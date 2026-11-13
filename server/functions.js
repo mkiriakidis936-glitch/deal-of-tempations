@@ -71,12 +71,13 @@ async function archiveSessionData({ sessionCode, mode, winner, playerNames, stat
       const isWinner = name === winner;
       if (profile) {
         const processed = Array.isArray(profile.data?.processedSessionCodes) ? profile.data.processedSessionCodes : [];
-        if (!processed.includes(sessionCode) && profile.data?.lastSessionCode !== sessionCode) {
+        if (!processed.includes(sessionCode)) {
+          const alreadyCounted = profile.data?.lastSessionCode === sessionCode;
           const next = {
             ...profile.data,
-            totalSessions: (profile.data?.totalSessions || 0) + 1,
-            totalWins: (profile.data?.totalWins || 0) + (isWinner ? 1 : 0),
-            lastSessionCode: sessionCode,
+            totalSessions: (profile.data?.totalSessions || 0) + (alreadyCounted ? 0 : 1),
+            totalWins: (profile.data?.totalWins || 0) + (!alreadyCounted && isWinner ? 1 : 0),
+            lastSessionCode: alreadyCounted ? profile.data.lastSessionCode : sessionCode,
             processedSessionCodes: [...processed, sessionCode],
           };
           await client.query(
