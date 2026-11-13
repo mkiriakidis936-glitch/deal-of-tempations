@@ -359,19 +359,21 @@ export default function AdminMedia() {
             <div key={f.name} className="border-2 border-border/40 rounded overflow-hidden bg-secondary/40">
               <Thumb video={f.kind === 'video'} audio={f.kind === 'audio'} src={f.url} className="w-full aspect-square" />
               <div className="p-1 text-[10px] leading-tight break-all">{f.name.replace(/^[a-z0-9]+-[a-f0-9]{6}-/, '')}<br />{mb(f.size)}{isUsed(f.url) ? ' · σε χρήση' : ''}</div>
-              {(f.kind === 'image' || f.kind === 'graphic') && <div className="p-1 space-y-1">
+              {<div className="p-1 space-y-1">
                 <div className="text-[10px] text-foreground/60">Κατηγορία</div>
                 <select value={categoryOf(f.url)} disabled={!!busy} onChange={(e) => setLibraryCategory(f.url, e.target.value)} className="w-full rounded bg-black/50 border border-border/50 p-1 text-xs">
                   {LIBRARY_CATEGORIES.map((c) => <option key={c.id} value={c.id}>{c.label}</option>)}
                 </select>
-                <div className="grid grid-cols-2 gap-1">
-                  <button disabled={!!busy} onClick={() => addLibraryImageToGallery(f.url, 'heistPhotos')} className="text-[10px] py-1 rounded bg-black/50 disabled:opacity-30">+ Heist</button>
-                  <button disabled={!!busy} onClick={() => addLibraryImageToGallery(f.url, 'pajamaPhotos')} className="text-[10px] py-1 rounded bg-black/50 disabled:opacity-30">+ Pajama</button>
-                </div>
-                <select defaultValue="" disabled={!!busy} onChange={(e) => { if (e.target.value) assignLibraryImageToSlot(f.url, e.target.value); e.target.value = ''; }} className="w-full rounded bg-black/50 border border-border/50 p-1 text-[10px]">
-                  <option value="">Ανάθεση σε σημείο Site…</option>
-                  {IMAGE_SLOTS.map((slot) => <option key={slot.id} value={slot.id}>{slot.label}</option>)}
-                </select>
+                {(f.kind === 'image' || f.kind === 'graphic') && <>
+                  <div className="grid grid-cols-2 gap-1">
+                    <button disabled={!!busy} onClick={() => addLibraryImageToGallery(f.url, 'heistPhotos')} className="text-[10px] py-1 rounded bg-black/50 disabled:opacity-30">+ Heist</button>
+                    <button disabled={!!busy} onClick={() => addLibraryImageToGallery(f.url, 'pajamaPhotos')} className="text-[10px] py-1 rounded bg-black/50 disabled:opacity-30">+ Pajama</button>
+                  </div>
+                  <select defaultValue="" disabled={!!busy} onChange={(e) => { if (e.target.value) assignLibraryImageToSlot(f.url, e.target.value); e.target.value = ''; }} className="w-full rounded bg-black/50 border border-border/50 p-1 text-[10px]">
+                    <option value="">Ανάθεση σε σημείο Site…</option>
+                    {IMAGE_SLOTS.map((slot) => <option key={slot.id} value={slot.id}>{slot.label}</option>)}
+                  </select>
+                </>}
               </div>}
               <button disabled={!!busy} onClick={() => removeFile(f)} className="w-full text-xs py-2.5 bg-black/50 text-red-400 disabled:opacity-30">🗑 Διαγραφή</button>
             </div>
