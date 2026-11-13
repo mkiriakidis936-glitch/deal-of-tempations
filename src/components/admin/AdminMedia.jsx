@@ -102,7 +102,7 @@ export default function AdminMedia() {
     }, 'Ανέβηκε και αποθηκεύτηκε ✓');
   };
 
-  const reset = (id) => run(id, () => { const { [id]: _, ...rest } = ov; if (PHOTO_SPOT_IDS.includes(id)) return save({ ...rest, [id]: DEFAULTS[id], emptySlots: (ov.emptySlots || []).filter((slot) => slot !== id) }); if (MODE_COVER_SLOTS.some((slot) => slot.id === id)) return save({ ...rest, emptyModeCovers: (ov.emptyModeCovers || []).filter((slot) => slot !== id) }); return save(rest); }, 'Επαναφορά στο αρχικό ✓');
+  const reset = (id) => run(id, () => { const { [id]: _, ...rest } = ov; if (PHOTO_SPOT_IDS.includes(id)) return save({ ...rest, [id]: DEFAULTS[id], emptySlots: (ov.emptySlots || []).filter((slot) => slot !== id) }); if (MODE_COVER_SLOTS.some((slot) => slot.id === id)) return save({ ...rest, [id]: DEFAULTS[id], emptyModeCovers: (ov.emptyModeCovers || []).filter((slot) => slot !== id) }); return save(rest); }, 'Επαναφορά στο αρχικό ✓');
   const clearSlot = (id) => run(id, () => save({ ...ov, [id]: undefined, emptySlots: [...new Set([...(ov.emptySlots || []), id])] }), 'Το σημείο καθαρίστηκε ✓');
   const listOf = (id) => Array.isArray(ov[id]) ? ov[id] : ((id === 'siteVideos' && (ov.clearAllVideos || ov.clearAllMedia)) || ((id === 'heistPhotos' || id === 'pajamaPhotos') && (ov.clearAllPhotos || ov.clearAllMedia)) ? [] : (DEFAULTS[id] || []));
   const setList = (id, list) => run(id, () => save({ ...ov, [id]: list }));
