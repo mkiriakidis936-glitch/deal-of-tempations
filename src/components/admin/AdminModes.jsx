@@ -1,6 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import ComicPanel from '@/components/comic/ComicPanel';
 import ComicButton from '@/components/comic/ComicButton';
+import AdminSettingVersionHistory from '@/components/admin/AdminSettingVersionHistory';
+import { saveAdminSettingVersion } from '@/lib/adminVersionHistory';
 import { NEW_MODES } from '@/data/modes/modeRegistry';
 import { COLLECTIONS, defaultsOf, fetchModesRecord, saveModesContent } from '@/lib/modesContentStore';
 
@@ -44,6 +46,7 @@ export default function AdminModes() {
     setBusy(true);
     setMsg(null);
     try {
+      await saveAdminSettingVersion('modes_content', saved);
       await saveModesContent(nextAll);
       setSaved(nextAll);
       setMsg({ ok: true, text: okText });
@@ -144,6 +147,23 @@ export default function AdminModes() {
           </div>
         </ComicPanel>
       )}
+      <ComicPanel className="bg-card space-y-2">
+        <div className="font-heading text-sm text-primary">LIVE PREVIEW · GAME CONTENT</div>
+        <div className="text-[10px] text-foreground/50">Προεπισκόπηση της λίστας όπως είναι τώρα στον editor — οι αλλαγές εμφανίζονται πριν από την αποθήκευση.</div>
+        <div className="text-xs font-bold">{col?.label || 'Περιεχόμενο'} · {list.length} στοιχεία</div>
+        <div className="grid sm:grid-cols-2 gap-2">
+          {list.map((item, index) => {
+            const title = typeof item === 'string' ? item : (item.title || item.name || item.say || item.app || item.label || item.question || ('Στοιχείο ' + (index + 1)));
+            const body = typeof item === 'string' ? '' : (item.text || item.desc || item.where || item.hint || item.question || '');
+            return <div key={item.id || index} className="rounded-lg border border-primary/30 bg-secondary/40 p-3 space-y-1">
+              <div className="text-[10px] text-primary/70">#{index + 1}</div>
+              <div className="font-heading">{title}</div>
+              {body && <div className="text-xs text-foreground/70 whitespace-pre-wrap">{body}</div>}
+            </div>;
+          })}
+        </div>
+      </ComicPanel>
+      <AdminSettingVersionHistory settingKey="modes_content" onRestore={(value) => { setSaved(value || {}); setList(value?.[sel] || defaultsOf(sel)); }} />
     </div>
   );
 }

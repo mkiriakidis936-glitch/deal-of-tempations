@@ -84,3 +84,32 @@ export async function saveModesContent(next) {
   applyModesContent(next);
   loading = null;
 }
+
+// Applies a scenario's selected existing content collections only for the active game session.
+export function applyScenarioCollections(modeId, selectedIds = []) {
+  const selected = new Set(selectedIds);
+  const relevant = COLLECTIONS.filter((collection) => {
+    if (modeId === 'pedi_extended' || modeId === 'marathon_4h') return /Pedi-Glam|Act 1|Act 2|Act 4|Marathon/i.test(collection.group);
+    if (modeId === 'lockdown') return /Pajama Lockdown/i.test(collection.group);
+    if (modeId === 'beach_bar') return /Beach Bar/i.test(collection.group);
+    return false;
+  });
+  const snapshots = [];
+  const seen = new Set();
+  relevant.forEach((collection) => {
+    const target = collection.targetArr || collection.arr;
+    if (seen.has(target)) return;
+    seen.add(target);
+    snapshots.push({ target, values: JSON.parse(JSON.stringify(collection.targetArr ? collection.arr : target)), collection });
+    if (!selected.has(collection.id)) {
+      const defaults = defaultsOf(collection.id);
+      const runtimeDefaults = collection.toRuntime ? collection.toRuntime(defaults) : defaults;
+      target.splice(0, target.length, ...JSON.parse(JSON.stringify(runtimeDefaults)));
+    }
+  });
+  return () => snapshots.forEach(({ target, values, collection }) => {
+    const restored = collection.targetArr && collection.toRuntime ? collection.toRuntime(values) : values;
+    target.splice(0, target.length, ...restored);
+    if (!collection.targetArr && collection.toRuntime) collection.toRuntime(values);
+  });
+}

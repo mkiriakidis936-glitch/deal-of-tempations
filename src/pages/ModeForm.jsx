@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { NEW_MODES } from '@/data/modes/modeRegistry';
 import { MODE_COVERS } from '@/data/brandArt';
+import CustomFormQuestions from '@/components/forms/CustomFormQuestions';
 
 const NAIL_COLORS = ['Red', 'Pink', 'White', 'Black', 'Nude', 'French', 'Blue', 'Purple', 'Green', 'Orange', 'Gold', 'Silver', 'None'];
 const FIELD = 'w-full px-3 py-2 rounded-lg bg-slate-950/60 border border-pink-500/40 text-pink-50 focus:outline-none focus:ring-2 focus:ring-pink-400';
@@ -32,18 +33,20 @@ export default function ModeForm() {
     blindfoldOk: true,
     boundaries: '',
     safeWordConfirmed: false,
+    customAnswers: {},
   });
   const [step, setStep] = useState(0);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState('');
+  const [customQuestionsValid, setCustomQuestionsValid] = useState(true);
 
   const set = (k, v) => setForm((f) => ({ ...f, [k]: v }));
   const toggleMode = (id) => set('modes', form.modes.includes(id) ? form.modes.filter((m) => m !== id) : [...form.modes, id]);
   const has = (...ids) => form.modes.some((m) => ids.includes(m));
   const pajamaish = has('pedi_extended', 'lockdown', 'marathon_4h');
   const beachish = has('beach_bar');
-  const canSend = form.name.trim() && form.modes.length > 0 && form.adult && form.safeWordConfirmed && !saving;
+  const canSend = form.name.trim() && form.modes.length > 0 && form.adult && form.safeWordConfirmed && customQuestionsValid && !saving;
 
   async function submit() {
     if (!canSend) return;
@@ -67,6 +70,7 @@ export default function ModeForm() {
         blindfoldOk: form.blindfoldOk,
         boundaries: form.boundaries,
         safeWordConfirmed: true,
+        customAnswers: form.customAnswers,
         approved: false,
       });
       setSaved(true);
@@ -206,6 +210,8 @@ export default function ModeForm() {
             <div className="text-sm text-pink-200 mb-1">Όρια: τι ΔΕΝ θέλεις</div>
             <textarea rows={3} className={FIELD} value={form.boundaries} onChange={(e) => set('boundaries', e.target.value)} />
           </div>
+
+          <CustomFormQuestions formType="modes" value={form.customAnswers} onChange={(value) => set('customAnswers', value)} onValidityChange={setCustomQuestionsValid} className="space-y-3" />
 
           <label className="flex items-start gap-2 text-sm text-pink-100/90">
             <input type="checkbox" checked={form.adult} onChange={(e) => set('adult', e.target.checked)} className="mt-1 accent-pink-500" />

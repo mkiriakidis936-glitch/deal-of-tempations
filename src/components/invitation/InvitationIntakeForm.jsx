@@ -5,6 +5,7 @@ import ComicButton from '@/components/comic/ComicButton';
 import { Image } from '@/components/ui/image';
 import { ARREST_HEIST_INTENSITY } from '@/data/gameConfig';
 import { ART } from '@/data/brandArt';
+import CustomFormQuestions from '@/components/forms/CustomFormQuestions';
 
 const LOGO_URL = ART.logo;
 
@@ -56,12 +57,14 @@ const INITIAL_FORM = {
   allergies: '',
   dressCode: '',
   safeWordConfirmed: false,
+  customAnswers: {},
 };
 
 export default function InvitationIntakeForm({ onDone }) {
   const [step, setStep] = useState(0);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState(INITIAL_FORM);
+  const [customQuestionsValid, setCustomQuestionsValid] = useState(true);
 
   function update(field, value) {
     setForm((f) => ({ ...f, [field]: value }));
@@ -70,7 +73,7 @@ export default function InvitationIntakeForm({ onDone }) {
   async function handleSubmit() {
     setSaving(true);
     try {
-      await base44.entities.PlayerIntake.create(form);
+      await base44.entities.PlayerIntake.create({ ...form, customAnswers: form.customAnswers });
       await base44.entities.InvitationRSVP.create({ name: form.name.trim(), confirmed: true });
       onDone();
     } catch (e) {
@@ -81,7 +84,7 @@ export default function InvitationIntakeForm({ onDone }) {
     }
   }
 
-  const canNext = step === 0 ? form.name.trim().length > 0 && form.accommodation : step === 3 ? form.safeWordConfirmed : true;
+  const canNext = step === 0 ? form.name.trim().length > 0 && form.accommodation : step === 3 ? form.safeWordConfirmed && customQuestionsValid : true;
 
   return (
     <div className="min-h-screen" style={{ background: '#0a0a0a' }}>
@@ -281,6 +284,7 @@ export default function InvitationIntakeForm({ onDone }) {
             <div className="text-sm text-foreground font-body">
               Υπάρχει ένας <strong className="text-primary">κωδικός ασφαλείας</strong>. Εάν χρησιμοποιηθεί, τα πάντα σταματούν αμέσως.
             </div>
+            <CustomFormQuestions formType="invitation" value={form.customAnswers} onChange={(value) => update('customAnswers', value)} onValidityChange={setCustomQuestionsValid} className="space-y-3" />
             <label className="flex items-start gap-2 cursor-pointer">
               <input
                 type="checkbox"

@@ -24,6 +24,8 @@ import AdminLeaderboard from '@/components/admin/AdminLeaderboard';
 import AdminBlitz from '@/components/admin/AdminBlitz';
 import AdminMedia from '@/components/admin/AdminMedia';
 import AdminSite from '@/components/admin/AdminSite';
+import AdminCustomScenarios from '@/components/admin/AdminCustomScenarios';
+import AdminFormsBuilder from '@/components/admin/AdminFormsBuilder';
 import AdminNotifications from '@/components/admin/AdminNotifications';
 import AdminVisits from '@/components/admin/AdminVisits';
 import { setActiveSessionCode } from '@/lib/activeSession';
@@ -180,7 +182,7 @@ export default function Admin() {
       case 'achievements':
         return <AdminMeta initialTab="achievements" />;
       case 'scenarios':
-        return <AdminSite focusScenario />;
+        return <AdminCustomScenarios />;
       case 'website':
         return <AdminSite />;
       case 'media':
@@ -188,6 +190,7 @@ export default function Admin() {
       case 'forms':
         return (
           <div className="space-y-6">
+            <AdminFormsBuilder />
             <AdminIntakes />
             <AdminRSVP />
           </div>

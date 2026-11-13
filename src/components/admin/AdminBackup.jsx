@@ -28,6 +28,7 @@ export default function AdminBackup() {
   const [msg, setMsg] = useState(null);
   const [picked, setPicked] = useState(null); // { name, data }
   const fileRef = useRef(null);
+  const mediaFileRef = useRef(null);
 
   const load = useCallback(async () => {
     try { setItems((await request('GET', '/api/backup/list')).items || []); } catch (e) { setMsg({ ok: false, text: e.message }); }
@@ -44,6 +45,33 @@ export default function AdminBackup() {
 
   const downloadNow = () => run(() => download('/api/backup/export', `deal-of-temptation-backup-${new Date().toISOString().slice(0, 10)}.json`), 'Το αντίγραφο κατέβηκε στον υπολογιστή σου.');
   const saveNow = () => run(() => request('POST', '/api/backup/now'), 'Αποθηκεύτηκε αντίγραφο στον server.');
+
+  const downloadMediaNow = () => run(
+    () => download('/api/backup/media/export', 'deal-of-temptation-media-' + new Date().toISOString().slice(0, 10) + '.tar.gz'),
+    'Το αρχείο φωτογραφιών και βίντεο κατέβηκε.',
+  );
+
+  async function onMediaRestorePick(event) {
+    const file = event.target.files?.[0];
+    event.target.value = '';
+    if (!file) return;
+    if (!file.name.toLowerCase().endsWith('.tar.gz')) {
+      setMsg({ ok: false, text: 'Επίλεξε αρχείο .tar.gz από το Media Backup.' });
+      return;
+    }
+    if (!window.confirm('Να γίνει επαναφορά των φωτογραφιών και βίντεο από αυτό το αρχείο; Τα ίδια ονόματα αρχείων θα αντικατασταθούν. Θα κρατηθεί πρώτα αντίγραφο των τωρινών media στον server.')) return;
+    await run(async () => {
+      const token = getToken();
+      const response = await fetch('/api/backup/media/restore', {
+        method: 'POST',
+        headers: token ? { Authorization: 'Bearer ' + token } : {},
+        body: file,
+      });
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(result.error || 'Αποτυχία επαναφοράς αρχείων.');
+      return result;
+    }, 'Η επαναφορά αρχείων ολοκληρώθηκε. Κάνε ανανέωση της σελίδας.');
+  }
 
   function askMode(label) {
     const replace = window.confirm(
@@ -99,7 +127,17 @@ export default function AdminBackup() {
           <ComicButton variant="dark" size="md" disabled={busy} onClick={saveNow}>💾 ΑΠΟΘΗΚΕΥΣΗ ΣΤΟΝ SERVER</ComicButton>
         </div>
         <div className="text-xs text-foreground/60 font-body">
-          Ο server κρατά μόνος του αντίγραφο κάθε μέρα (τα 14 τελευταία), μέσα στο Volume. Οι φωτογραφίες και τα βίντεο δεν μπαίνουν στο αρχείο: μένουν στο Volume και στο φάκελο «SORTED» που έχεις.
+          Ο server κρατά μόνος του αντίγραφο κάθε μέρα (τα 14 τελευταία), μέσα στο Volume. Το JSON περιλαμβάνει τα δεδομένα της εφαρμογής. Φωτογραφίες και βίντεο διαχειρίζονται ξεχωριστά από το Media Backup παρακάτω.
+        </div>
+      </ComicPanel>
+
+      <ComicPanel className="bg-card space-y-3">
+        <div className="font-heading text-lg text-primary">MEDIA BACKUP — ΦΩΤΟΓΡΑΦΙΕΣ & ΒΙΝΤΕΟ</div>
+        <div className="text-xs text-foreground/60 font-body">Δημιουργεί συμπιεσμένο αρχείο .tar.gz με όλα τα ανεβασμένα αρχεία του Media Library. Η επαναφορά κρατά πρώτα αντίγραφο των τωρινών αρχείων στον server και επαναφέρει τα αρχεία με τα αρχικά τους ονόματα.</div>
+        <div className="flex flex-wrap gap-2">
+          <ComicButton variant="yellow" size="md" disabled={busy} onClick={downloadMediaNow}>⬇ ΚΑΤΕΒΑΣΜΑ MEDIA BACKUP</ComicButton>
+          <input ref={mediaFileRef} type="file" accept=".tar.gz,application/gzip" className="hidden" onChange={onMediaRestorePick} />
+          <ComicButton variant="dark" size="md" disabled={busy} onClick={() => mediaFileRef.current?.click()}>📂 ΕΠΑΝΑΦΟΡΑ MEDIA BACKUP</ComicButton>
         </div>
       </ComicPanel>
 

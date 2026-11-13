@@ -6,6 +6,7 @@ import { GAME_MODES, FOOTWEAR_LEVELS, TOENAIL_PERKS } from '@/data/gameConfig';
 import { createInitialState, generateSessionCode } from '@/lib/gameLogic';
 import { isNewMode, modeMeta } from '@/data/modes/modeRegistry';
 import { MODE_COVERS, MODE_MEDIA } from '@/data/brandArt';
+import { COLLECTIONS } from '@/lib/modesContentStore';
 
 const SHOE_TO_LEVEL = { boots: 4, sneakers: 2, sandals: 1, barefoot: 0 };
 
@@ -27,6 +28,8 @@ export default function SetupScreen({ onStart }) {
   const [pajamaApproved, setPajamaApproved] = useState([]);
   const [intakesLoaded, setIntakesLoaded] = useState(false);
   const [testMode, setTestMode] = useState(false);
+  const [customScenarios, setCustomScenarios] = useState([]);
+  const [selectedScenarioId, setSelectedScenarioId] = useState('');
 
   const applyNames = (names, shoeByName, pjByName = {}) => {
     if (!names.length) return;
@@ -86,6 +89,14 @@ export default function SetupScreen({ onStart }) {
 
   useEffect(() => { loadIntakes(); }, []);
 
+  useEffect(() => {
+    let active = true;
+    base44.entities.AppSetting.filter({ key: 'admin_custom_scenarios' }, { limit: 1 })
+      .then(({ items }) => { if (active) setCustomScenarios(Array.isArray(items?.[0]?.value?.items) ? items[0].value.items : []); })
+      .catch((error) => console.warn('Custom scenarios load failed', error));
+    return () => { active = false; };
+  }, []);
+
   const newMode = isNewMode(mode) ? modeMeta(mode) : null;
   const maxPlayers = newMode ? newMode.max : mode === 'marathon' ? 10 : mode === 'arrest_heist' ? 10 : 6;
   const minPlayers = newMode ? newMode.min : mode === 'marathon' ? 8 : mode === 'arrest_heist' ? 4 : 2;
@@ -141,7 +152,10 @@ export default function SetupScreen({ onStart }) {
   function handleStart() {
     const valid = players.filter((p) => p.name.trim());
     if (valid.length < minPlayers) return;
-    const state = { ...createInitialState(mode, 'standard', valid), testMode };
+    const selectedScenario = customScenarios.find((scenario) => scenario.id === selectedScenarioId && scenario.modeId === mode);
+    const state = { ...createInitialState(mode, 'standard', valid), testMode,
+      ...(selectedScenario ? { customScenario: { id: selectedScenario.id, name: selectedScenario.name, description: selectedScenario.description, collections: selectedScenario.collections || [] } } : {})
+    };
     if (mode === 'beach_bar' && valid.some((p) => pajamaApproved.some((i) => (i.name || '').trim() === p.name.trim() && i.alcohol === 'free'))) {
       state.mg = { ...state.mg, alcoholFree: true };
     }
@@ -271,6 +285,19 @@ export default function SetupScreen({ onStart }) {
             </ComicPanel>
           ) : null;
         })()}
+
+        {customScenarios.some((scenario) => scenario.modeId === mode) && (
+          <ComicPanel className="bg-card space-y-2">
+            <h2 className="font-heading text-xl text-primary">ΠΡΟΑΙΡΕΤΙΚΟ CUSTOM SCENARIO</h2>
+            <p className="text-xs text-foreground/60">Επίλεξε αποθηκευμένο σενάριο για το συγκεκριμένο Mode. Η επιλογή καταγράφεται στη συνεδρία.</p>
+            <select value={selectedScenarioId} onChange={(e) => setSelectedScenarioId(e.target.value)} className="w-full rounded border border-border bg-background p-2 text-sm">
+              <option value="">Χωρίς custom scenario</option>
+              {customScenarios.filter((scenario) => scenario.modeId === mode).map((scenario) => <option key={scenario.id} value={scenario.id}>{scenario.name}</option>)}
+            </select>
+            {customScenarios.find((scenario) => scenario.id === selectedScenarioId && scenario.modeId === mode)?.description && <p className="text-sm">{customScenarios.find((scenario) => scenario.id === selectedScenarioId && scenario.modeId === mode).description}</p>}
+            {selectedScenarioId && customScenarios.find((scenario) => scenario.id === selectedScenarioId && scenario.modeId === mode) && <div className="text-xs text-foreground/60">Περιεχόμενο σεναρίου: {(customScenarios.find((scenario) => scenario.id === selectedScenarioId && scenario.modeId === mode).collections || []).map((id) => COLLECTIONS.find((collection) => collection.id === id)?.label || id).join(' · ') || 'Δεν επιλέχθηκαν κατηγορίες'}</div>}
+          </ComicPanel>
+        )}
 
         <ComicPanel>
           <div className="flex items-center justify-between mb-3">

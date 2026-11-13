@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { base44 } from '@/api/base44Client';
 import ComicPanel from '@/components/comic/ComicPanel';
 import ComicButton from '@/components/comic/ComicButton';
+import AdminAchievementDefinitions from '@/components/admin/AdminAchievementDefinitions';
 
 const SUB_TABS = [
   { id: 'chronicle', label: '📜 Chronicle' },
@@ -226,6 +227,8 @@ export default function AdminMeta({ initialTab = 'chronicle' }) {
       )}
 
       {!loading && subTab === 'achievements' && (
+        <div className="space-y-3">
+        <AdminAchievementDefinitions />
         <div className="space-y-2">
           {data.length === 0 && <EmptyState icon="🏅" text="Κανένα achievement ακόμα" />}
           {data.map((a) => (
@@ -234,12 +237,14 @@ export default function AdminMeta({ initialTab = 'chronicle' }) {
                 <div className="flex-1 min-w-0">
                   <div className="font-heading text-lg">{a.icon} {a.achievementName}</div>
                   <div className="text-sm text-foreground/70">{a.playerName}</div>
+                  {a.reward && <div className="text-xs text-primary mt-1">Ανταμοιβή: {a.reward}</div>}
                   <div className="text-xs text-foreground/40">{a.sessionCode}</div>
                 </div>
                 <ComicButton variant="red" size="sm" onClick={() => handleDelete(a.id)}>🗑️</ComicButton>
               </div>
             </ComicPanel>
           ))}
+        </div>
         </div>
       )}
 
