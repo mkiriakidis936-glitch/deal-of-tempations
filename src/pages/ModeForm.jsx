@@ -210,6 +210,8 @@ export default function ModeForm() {
             <textarea rows={3} className={FIELD} value={form.boundaries} onChange={(e) => set('boundaries', e.target.value)} />
           </div>
 
+          <CustomFormQuestions formType="modes" value={form.customAnswers} onChange={(value) => set('customAnswers', value)} className="space-y-3" />
+
           <label className="flex items-start gap-2 text-sm text-pink-100/90">
             <input type="checkbox" checked={form.adult} onChange={(e) => set('adult', e.target.checked)} className="mt-1 accent-pink-500" />
             <span>Είμαι 18 ετών ή μεγαλύτερη και συμμετέχω με τη θέλησή μου. *</span>
