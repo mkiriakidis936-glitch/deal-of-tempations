@@ -20,7 +20,8 @@ const rules = {
   PlayerIntake:       { read: ADMIN, update: ADMIN, delete: ADMIN },
   PajamaIntake:       { read: ADMIN, update: ADMIN, delete: ADMIN },
   BacheloretteIntake: { read: ADMIN, update: ADMIN, delete: ADMIN },
-  InvitationRSVP:     { update: ADMIN, delete: ADMIN },
+  InvitationRSVP:     { read: ADMIN, update: ADMIN, delete: ADMIN },
+  Achievement:        { create: ADMIN, update: ADMIN, delete: ADMIN },
   // configuration / content: everybody reads, only admins change
   AppSetting:     { create: ADMIN, update: ADMIN, delete: ADMIN },
   GameContent:    { create: ADMIN, update: ADMIN, delete: ADMIN },
