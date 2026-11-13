@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { PAJAMA_BOARD, PAJAMA_NIGHT_LENGTH, SQUARE_META } from '@/data/pajamaBoard';
+import { PAJAMA_BOARD, SQUARE_META } from '@/data/pajamaBoard';
 import { PAJAMA_ACTS } from '@/data/pajamaProgram';
 import PediPassport from '@/components/play/PediPassport';
 
