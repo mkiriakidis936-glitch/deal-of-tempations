@@ -1,6 +1,6 @@
 import { base44 } from '@/api/base44Client';
 
-export async function saveAdminSettingVersion(settingKey, currentValue) {
+export async function saveAdminSettingVersion(settingKey, fallbackValue) {
   const key = `admin_setting_versions_${settingKey}`;
   const result = await base44.entities.AppSetting.filter({ key }, { limit: 1 });
   const record = result.items?.[0] || null;
