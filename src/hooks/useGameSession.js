@@ -30,13 +30,19 @@ export function useGameSession({ autoLoad = true } = {}) {
   useEffect(() => {
     if (!session) return;
     const unsub = base44.entities.GameSession.subscribe((event) => {
-      if (event.id === sessionRef.current?.id) {
-        const updated = { ...sessionRef.current, ...event.data };
-        sessionRef.current = updated;
-        stateRef.current = updated.state || {};
-        setSession(updated);
-        setState(updated.state || {});
+      if (event.id !== sessionRef.current?.id) return;
+      if (event.type === 'delete') {
+        sessionRef.current = null;
+        stateRef.current = null;
+        setSession(null);
+        setState(null);
+        return;
       }
+      const updated = { ...sessionRef.current, ...event.data };
+      sessionRef.current = updated;
+      stateRef.current = updated.state || {};
+      setSession(updated);
+      setState(updated.state || {});
     }, { sessionCode: session.sessionCode });
     return unsub;
   }, [session?.id, session?.sessionCode]);
