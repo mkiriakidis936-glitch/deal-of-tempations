@@ -12,7 +12,7 @@ export let LOCKDOWN_MESSAGE =
 
 export const getLockdownSettings = () => ({ exitCode: EXIT_CODE, message: LOCKDOWN_MESSAGE });
 export function applyLockdownSettings(settings = {}) {
-  if (typeof settings.exitCode === 'string' && /^\\d{4}$/.test(settings.exitCode)) EXIT_CODE = settings.exitCode;
+  if (typeof settings.exitCode === 'string' && /^\d{4}$/.test(settings.exitCode)) EXIT_CODE = settings.exitCode;
   if (typeof settings.message === 'string' && settings.message.trim()) LOCKDOWN_MESSAGE = settings.message.trim();
 }
 
