@@ -33,7 +33,7 @@ export default function AdminPlayerCheckin({ session }) {
       else rec = await base44.entities.PlayerCheckin.create({ sessionCode, players: next.players });
     }
     setRecord(rec);
-  }, [sessionCode, playerIds.join('|')]);
+  }, [sessionCode, players]);
 
   useEffect(() => { load().catch((e) => setMessage(e.message)); }, [load]);
 
