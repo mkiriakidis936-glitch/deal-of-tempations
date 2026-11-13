@@ -33,6 +33,7 @@ export default function AdminPajama() {
   const [tab, setTab] = useState('live');
   const [loading, setLoading] = useState(true);
   const [newSecret, setNewSecret] = useState('');
+  const [msg, setMsg] = useState(null);
 
   async function load() {
     setLoading(true);
@@ -40,6 +41,7 @@ export default function AdminPajama() {
       setRows(await listPajamaRows());
     } catch (e) {
       console.error('Pajama content load error', e);
+      setMsg({ ok: false, text: e.message || 'Δεν φορτώθηκε το περιεχόμενο Pajama.' });
     }
     setLoading(false);
   }
@@ -50,14 +52,16 @@ export default function AdminPajama() {
     try {
       await updatePajamaRow(id, data);
       setRows((r) => r.map((x) => (x.id === id ? { ...x, ...data } : x)));
-    } catch (e) { console.error('save error', e); }
+      setMsg({ ok: true, text: 'Η κάρτα αποθηκεύτηκε.' });
+    } catch (e) { console.error('save error', e); setMsg({ ok: false, text: e.message || 'Η αποθήκευση της κάρτας απέτυχε.' }); }
   }
 
   async function removeRow(id) {
     try {
       await deletePajamaRow(id);
       setRows((r) => r.filter((x) => x.id !== id));
-    } catch (e) { console.error('delete error', e); }
+      setMsg({ ok: true, text: 'Το στοιχείο διαγράφηκε.' });
+    } catch (e) { console.error('delete error', e); setMsg({ ok: false, text: e.message || 'Η διαγραφή απέτυχε.' }); }
   }
 
   async function addCard(catId) {
@@ -74,7 +78,8 @@ export default function AdminPajama() {
         order: rows.filter((r) => r.categoryId === catId).length,
       });
       setRows((r) => [...r, created]);
-    } catch (e) { console.error('create error', e); }
+      setMsg({ ok: true, text: 'Η νέα κάρτα προστέθηκε.' });
+    } catch (e) { console.error('create error', e); setMsg({ ok: false, text: e.message || 'Η δημιουργία κάρτας απέτυχε.' }); }
   }
 
   async function addSecret() {
@@ -88,14 +93,16 @@ export default function AdminPajama() {
       });
       setRows((r) => [...r, created]);
       setNewSecret('');
-    } catch (e) { console.error('create secret error', e); }
+      setMsg({ ok: true, text: 'Το μυστικό προστέθηκε.' });
+    } catch (e) { console.error('create secret error', e); setMsg({ ok: false, text: e.message || 'Η δημιουργία μυστικού απέτυχε.' }); }
   }
 
   async function saveSecret(id, text) {
     try {
       await updatePajamaRow(id, { text });
       setRows((r) => r.map((x) => (x.id === id ? { ...x, text } : x)));
-    } catch (e) { console.error('save secret error', e); }
+      setMsg({ ok: true, text: 'Το μυστικό αποθηκεύτηκε.' });
+    } catch (e) { console.error('save secret error', e); setMsg({ ok: false, text: e.message || 'Η αποθήκευση μυστικού απέτυχε.' }); }
   }
 
   if (loading) return <div className="text-center font-heading text-xl comic-pulse">ΦΟΡΤΩΣΗ...</div>;
@@ -110,6 +117,7 @@ export default function AdminPajama() {
         <div className="text-xs text-foreground/60 mt-1">
           Επεξεργάσου κάρτες και μυστικά. Οι αλλαγές περνούν αμέσως στο παιχνίδι (Splash → Dashboard → Confessions).
         </div>
+        {msg && <div className={`text-xs font-bold mt-2 ${msg.ok ? 'text-green-400' : 'text-red-400'}`}>{msg.text}</div>}
         <div className="flex gap-2 flex-wrap mt-2">
           {TABS.map((t) => (
             <ComicButton key={t.id} variant={tab === t.id ? 'magenta' : 'white'} size="sm" onClick={() => setTab(t.id)}>
