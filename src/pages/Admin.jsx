@@ -190,6 +190,7 @@ export default function Admin() {
       case 'forms':
         return (
           <div className="space-y-6">
+            <AdminFormsBuilder />
             <AdminIntakes />
             <AdminRSVP />
           </div>
