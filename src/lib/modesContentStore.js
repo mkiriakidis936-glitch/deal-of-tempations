@@ -57,7 +57,7 @@ export function applyModesContent(overrides = {}) {
     const runtimeNext = c.toRuntime ? c.toRuntime(next) : next;
     const target = c.targetArr || c.arr;
     target.splice(0, target.length, ...JSON.parse(JSON.stringify(runtimeNext)));
-    if (c.toRuntime) c.arr.splice(0, c.arr.length, ...JSON.parse(JSON.stringify(next));
+    if (c.toRuntime) c.arr.splice(0, c.arr.length, ...JSON.parse(JSON.stringify(next)));
   });
 }
 
