@@ -279,6 +279,8 @@ function sanitizePublicSession(record, playerId = null) {
   if (state.pajama && Array.isArray(state.pajama.confessions)) {
     state.pajama = {
       ...state.pajama,
+      saboteurId: undefined,
+      sabotages: (state.pajama.sabotages || []).map(() => ({})),
       confessions: state.pajama.confessions.map((item) =>
         item.playerId === playerId ? item : { playerId: item.playerId }
       ),
@@ -286,8 +288,8 @@ function sanitizePublicSession(record, playerId = null) {
   }
   if (state.mg && isObject(state.mg)) {
     const mg = { ...state.mg, missions: ownMap(state.mg.missions), chaosCards: ownMap(state.mg.chaosCards) };
-    if (mg.card && (!playerId || mg.card.playerId !== playerId)) mg.card = null;
-    if (mg.branch !== playerId) mg.branch = null;
+    if (playerId && mg.card && mg.card.playerId !== playerId) mg.card = null;
+    if (playerId && mg.branch !== playerId) mg.branch = null;
     state.mg = mg;
   }
   if (state.sealedVotes && isObject(state.sealedVotes)) {
