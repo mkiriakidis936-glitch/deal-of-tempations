@@ -7,8 +7,10 @@ import { pipeline } from 'node:stream/promises';
 import express from 'express';
 import { requireAdmin } from './auth.js';
 
-// Στο Railway: Volume στο /data και UPLOAD_DIR=/data/uploads (αλλιώς τα αρχεία χάνονται σε κάθε deploy).
-export const UPLOAD_DIR = path.resolve(process.env.UPLOAD_DIR || path.join(import.meta.dirname, '..', 'uploads'));
+// Railway: prefer the mounted Volume path so uploads survive deployments.
+const volumeRoot = process.env.RAILWAY_VOLUME_MOUNT_PATH;
+const defaultUploadDir = volumeRoot ? path.join(volumeRoot, 'uploads') : path.join(import.meta.dirname, '..', 'uploads');
+export const UPLOAD_DIR = path.resolve(process.env.UPLOAD_DIR || defaultUploadDir);
 const MAX_MB = Number(process.env.MAX_UPLOAD_MB) || 300;
 const MAX_BYTES = MAX_MB * 1024 * 1024;
 const KINDS = {
