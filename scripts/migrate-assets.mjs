@@ -10,7 +10,7 @@ import pg from 'pg';
 const { Pool } = pg;
 const ROOT = path.resolve(import.meta.dirname, '..');
 const OUT = path.join(ROOT, 'public', 'assets');
-const HOSTS = /https?:\\/\\/(?:base44\\.app|media\\.base44\\.com)\\/[^'"\x60\\s)<>]+/g;
+const HOSTS = /https?:\/\/(?:base44\.app|media\.base44\.com)\/[^'"\x60\s)<>]+/g;
 const CONTENT_EXT = {
   'image/jpeg': '.jpg', 'image/png': '.png', 'image/webp': '.webp',
   'image/gif': '.gif', 'image/avif': '.avif', 'video/mp4': '.mp4',
@@ -22,7 +22,7 @@ async function walk(dir) {
   for (const e of await fs.readdir(dir, { withFileTypes: true })) {
     const p = path.join(dir, e.name);
     if (e.isDirectory()) out.push(...await walk(p));
-    else if (/\\.(jsx?|tsx?|html|css)$/.test(e.name)) out.push(p);
+    else if (/\.(jsx?|tsx?|html|css)$/.test(e.name)) out.push(p);
   }
   return out;
 }
@@ -53,7 +53,7 @@ function replaceUrls(value, mapping) {
 const pool = process.env.DATABASE_URL
   ? new Pool({
       connectionString: process.env.DATABASE_URL,
-      ssl: /railway\\.internal|localhost|127\\.0\\.1/.test(process.env.DATABASE_URL) ? false : { rejectUnauthorized: false },
+      ssl: /railway\.internal|localhost|127\.0\.1/.test(process.env.DATABASE_URL) ? false : { rejectUnauthorized: false },
     })
   : null;
 
@@ -68,9 +68,9 @@ try {
     collectUrls(source, urls);
 
     // brandArt.js builds URLs as `${BASE}file.jpeg`.
-    const base = source.match(/const BASE = '(https?:\\/\\/[^']+\\/)'/);
+    const base = source.match(/const BASE = '(https?:\/\/[^']+\/)'/);
     if (base) {
-      for (const match of source.matchAll(/\\$\\{BASE\\}([^\x60'"\\s]+)/g)) {
+      for (const match of source.matchAll(/\$\{BASE\}([^\x60'"\s]+)/g)) {
         urls.add(base[1] + match[1]);
       }
     }
@@ -155,7 +155,7 @@ try {
     for (const [file, original] of contents) {
       let source = original;
       for (const [url, local] of ordered) source = source.split(url).join(local);
-      source = source.replace(/const BASE = 'https?:\\/\\/[^']+\\//, "const BASE = '/assets/");
+      source = source.replace(/const BASE = 'https?:\/\/[^']+\//, "const BASE = '/assets/");
       if (source !== original) {
         await fs.writeFile(file, source);
         console.log('rewrote', path.relative(ROOT, file));
