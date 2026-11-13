@@ -37,17 +37,28 @@ export function useGameSession({ autoLoad = true } = {}) {
         setSession(updated);
         setState(updated.state || {});
       }
-    });
+    }, { sessionCode: session.sessionCode });
     return unsub;
-  }, [session?.id]);
+  }, [session?.id, session?.sessionCode]);
 
-  const updateState = useCallback(async (newState) => {
+  const updateState = useCallback(async (newState, { playerId } = {}) => {
     if (!sessionRef.current) return;
     const merged = { ...stateRef.current, ...newState };
     stateRef.current = merged;
     setState(merged);
+    const payload = { statePatch: newState };
+    if (playerId) {
+      payload.sessionCode = sessionRef.current.sessionCode;
+      payload.playerId = playerId;
+    }
     try {
-      await base44.entities.GameSession.update(sessionRef.current.id, { state: merged });
+      const updated = await base44.entities.GameSession.update(sessionRef.current.id, payload);
+      if (updated?.state) {
+        sessionRef.current = updated;
+        stateRef.current = updated.state;
+        setSession(updated);
+        setState(updated.state);
+      }
     } catch (e) {
       console.error('Failed to update state', e);
     }
