@@ -11,7 +11,12 @@ export default function CustomFormQuestions({ formType, value = {}, onChange, on
     return () => { active = false; };
   }, [formType]);
 
-  useEffect(() => {\n    const valid = questions.every((question) => !question.required || String(value[question.id] || '').trim().length > 0);\n    onValidityChange?.(valid);\n  }, [questions, value, onValidityChange]);\n\n  if (!questions.length) return null;
+  useEffect(() => {
+    const valid = questions.every((question) => !question.required || String(value[question.id] || '').trim().length > 0);
+    onValidityChange?.(valid);
+  }, [questions, value, onValidityChange]);
+
+  if (!questions.length) return null;
   const setAnswer = (id, answer) => onChange({ ...value, [id]: answer });
   return <div className={className}>
     {questions.map((question) => <div key={question.id} className="space-y-2">
