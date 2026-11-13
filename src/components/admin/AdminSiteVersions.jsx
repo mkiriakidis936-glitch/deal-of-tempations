@@ -27,7 +27,7 @@ export async function saveSiteVersion(allContent, eventId) {
   else await base44.entities.AppSetting.create({ key: VERSION_KEY, value });
 }
 
-export default function AdminSiteVersions({ eventId, currentValue, onRestore }) {
+export default function AdminSiteVersions({ eventId, onRestore }) {
   const [versions, setVersions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
