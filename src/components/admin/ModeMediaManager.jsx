@@ -51,7 +51,13 @@ export default function ModeMediaManager({ value = {}, onSave, disabled = false 
       for (const file of files) urls.push((await uploadMedia(file)).url);
       const next = { ...data };
       if (field === 'gallery') next.gallery = [...(data.gallery || []), ...urls];
-      else next[field] = urls[0];
+      else if (field.startsWith('section:')) {
+        const id = field.slice('section:'.length);
+        next.sections = (data.sections || []).map((item) => item.id === id ? { ...item, image: urls[0] } : item);
+      } else if (field.startsWith('card:')) {
+        const id = field.slice('card:'.length);
+        next.cards = (data.cards || []).map((item) => item.id === id ? { ...item, image: urls[0] } : item);
+      } else next[field] = urls[0];
       await onSave({ ...value, [selected]: next });
     } catch (e) {
       setError(e?.message || 'Δεν ανέβηκε το αρχείο.');
@@ -123,7 +129,7 @@ export default function ModeMediaManager({ value = {}, onSave, disabled = false 
           </div>
           {(data.sections || []).map((item) => (
             <div key={item.id} className="grid sm:grid-cols-[1fr_160px_auto] gap-2 items-center rounded-lg bg-secondary/40 p-2">
-              <input value={item.label || ''} disabled={disabled || busy} onChange={(e) => updateLabel('sections', item.id, e.target.value)} className="min-w-0 rounded-lg border border-border bg-background px-3 py-2 text-sm" aria-label="Τίτλος ενότητας" />
+              <input defaultValue={item.label || ''} disabled={disabled || busy} onBlur={(e) => { if (e.target.value !== (item.label || '')) updateLabel('sections', item.id, e.target.value); }} className="min-w-0 rounded-lg border border-border bg-background px-3 py-2 text-sm" aria-label="Τίτλος ενότητας" />
               <Thumb src={item.image} className="aspect-video w-full" />
               <div className="flex gap-1">
                 <button type="button" disabled={disabled || busy} onClick={() => { target.current = { field: `section:${item.id}` }; imageInput.current?.click(); }} className="rounded-lg bg-primary px-2 py-2 text-xs text-white">Εικόνα</button>
@@ -141,7 +147,7 @@ export default function ModeMediaManager({ value = {}, onSave, disabled = false 
           </div>
           {(data.cards || []).map((item) => (
             <div key={item.id} className="grid sm:grid-cols-[1fr_160px_auto] gap-2 items-center rounded-lg bg-secondary/40 p-2">
-              <input value={item.label || ''} disabled={disabled || busy} onChange={(e) => updateLabel('cards', item.id, e.target.value)} className="min-w-0 rounded-lg border border-border bg-background px-3 py-2 text-sm" aria-label="Τίτλος κάρτας" />
+              <input defaultValue={item.label || ''} disabled={disabled || busy} onBlur={(e) => { if (e.target.value !== (item.label || '')) updateLabel('cards', item.id, e.target.value); }} className="min-w-0 rounded-lg border border-border bg-background px-3 py-2 text-sm" aria-label="Τίτλος κάρτας" />
               <Thumb src={item.image} className="aspect-video w-full" />
               <div className="flex gap-1">
                 <button type="button" disabled={disabled || busy} onClick={() => { target.current = { field: `card:${item.id}` }; imageInput.current?.click(); }} className="rounded-lg bg-primary px-2 py-2 text-xs text-white">Εικόνα</button>
