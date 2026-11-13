@@ -1,6 +1,7 @@
 // Migrate Base44-hosted media in source files AND PostgreSQL records.
 // Run with DATABASE_URL set to include stored profile/gallery/event URLs:
 //   DATABASE_URL="..." node scripts/migrate-assets.mjs
+//   DATABASE_URL="..." node scripts/migrate-assets.mjs --apply-database
 // Assets are content-addressed to prevent basename collisions.
 import fs from 'node:fs/promises';
 import path from 'node:path';
@@ -50,6 +51,7 @@ function replaceUrls(value, mapping) {
   return value;
 }
 
+const APPLY_DATABASE = process.argv.includes('--apply-database');
 const pool = process.env.DATABASE_URL
   ? new Pool({
       connectionString: process.env.DATABASE_URL,
@@ -129,7 +131,7 @@ try {
     }
 
     // Update JSONB records atomically after every asset has been downloaded.
-    if (pool && dbRows.length) {
+    if (pool && dbRows.length && APPLY_DATABASE) {
       const updates = dbRows
         .map((row) => ({ id: row.id, data: replaceUrls(row.data, mapping) }))
         .filter((row, index) => JSON.stringify(row.data) !== JSON.stringify(dbRows[index].data));
@@ -149,9 +151,11 @@ try {
         }
         console.log(`Updated ${updates.length} database record(s).`);
       }
+    } else if (pool && dbRows.length) {
+      console.log(`Prepared ${mapping.size} media file(s). Database URLs were left unchanged; rerun with --apply-database after deploying the assets.`);
     }
 
-    // Rewrite source files only after all downloads and database updates succeed.
+    // Rewrite source files only after all downloads succeed.
     const ordered = [...mapping.entries()].sort((a, b) => b[0].length - a[0].length);
     for (const [file, original] of contents) {
       let source = original;
