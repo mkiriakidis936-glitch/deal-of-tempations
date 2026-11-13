@@ -129,11 +129,11 @@ export default function AdminModes() {
               <div className="flex gap-2">
                 <ComicButton size="sm" variant="dark" disabled={i === 0} onClick={() => move(i, -1)}>▲</ComicButton>
                 <ComicButton size="sm" variant="dark" disabled={i === list.length - 1} onClick={() => move(i, 1)}>▼</ComicButton>
-                <ComicButton size="sm" variant="red" onClick={() => setList((l) => l.filter((_, k) => k !== i))}>🗑 Διαγραφή</ComicButton>
+                {!col.fixedItems && <ComicButton size="sm" variant="red" onClick={() => setList((l) => l.filter((_, k) => k !== i))}>🗑 Διαγραφή</ComicButton>}
               </div>
             </div>
           ))}
-          <ComicButton size="sm" onClick={() => setList((l) => [...l, col.strings ? '' : { ...col.blank }])}>➕ Νέο στοιχείο</ComicButton>
+          {!col.fixedItems && <ComicButton size="sm" onClick={() => setList((l) => [...l, col.strings ? '' : { ...col.blank }])}>➕ Νέο στοιχείο</ComicButton>}
           <div className="flex gap-2 flex-wrap sticky bottom-2">
             <ComicButton variant="green" disabled={busy || list.length === 0} onClick={save}>💾 ΑΠΟΘΗΚΕΥΣΗ</ComicButton>
             <ComicButton variant="dark" disabled={busy} onClick={reset}>↩ Επαναφορά αρχικών</ComicButton>
