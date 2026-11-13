@@ -27,7 +27,6 @@ export default function AdminBackup() {
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState(null);
   const [picked, setPicked] = useState(null); // { name, data }
-  const [libraryRefreshNeeded, setLibraryRefreshNeeded] = useState(false);
   const fileRef = useRef(null);
   const mediaFileRef = useRef(null);
 
@@ -35,7 +34,6 @@ export default function AdminBackup() {
     try { setItems((await request('GET', '/api/backup/list')).items || []); } catch (e) { setMsg({ ok: false, text: e.message }); }
   }, []);
   useEffect(() => { load(); }, [load]);
-  useEffect(() => { if (libraryRefreshNeeded) setLibraryRefreshNeeded(false); }, [libraryRefreshNeeded]);
 
   async function run(fn, okText) {
     setBusy(true);
@@ -71,7 +69,6 @@ export default function AdminBackup() {
       });
       const result = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(result.error || 'Αποτυχία επαναφοράς αρχείων.');
-      setLibraryRefreshNeeded(true);
       return result;
     }, 'Η επαναφορά αρχείων ολοκληρώθηκε. Κάνε ανανέωση της σελίδας.');
   }
