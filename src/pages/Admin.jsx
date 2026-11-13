@@ -8,6 +8,8 @@ import AdminSessionBar from '@/components/admin/AdminSessionBar';
 import AdminContentHub from '@/components/admin/AdminContentHub';
 import AdminContent from '@/components/admin/AdminContent';
 import AdminDashboard from '@/components/admin/AdminDashboard';
+import AdminOverview from '@/components/admin/AdminOverview';
+import AdminSettings from '@/components/admin/AdminSettings';
 import AdminSessions from '@/components/admin/AdminSessions';
 import AdminPlayers from '@/components/admin/AdminPlayers';
 import AdminGuide from '@/components/admin/AdminGuide';
@@ -23,7 +25,6 @@ import AdminMedia from '@/components/admin/AdminMedia';
 import AdminSite from '@/components/admin/AdminSite';
 import AdminNotifications from '@/components/admin/AdminNotifications';
 import AdminVisits from '@/components/admin/AdminVisits';
-import AdminBackup from '@/components/admin/AdminBackup';
 import { setActiveSessionCode } from '@/lib/activeSession';
 
 const NAV_GROUPS = [
@@ -174,14 +175,7 @@ export default function Admin() {
           </div>
         );
       case 'settings':
-        return (
-          <div className="space-y-6">
-            <AdminEventInfo />
-            <AdminNotifications />
-            <AdminBackup />
-            <AdminGuide />
-          </div>
-        );
+        return <AdminSettings />;
       case 'sessions':
         return (
           <AdminSessions
@@ -232,7 +226,7 @@ export default function Admin() {
       case 'meta':
         return <AdminMeta />;
       default:
-        return <AdminDashboard sessions={sessions} loading={loading} />;
+        return <AdminOverview sessions={sessions} loading={loading} />;
     }
   }
 
