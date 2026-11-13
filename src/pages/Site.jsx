@@ -60,7 +60,8 @@ export default function Site() {
   const ev = isHome ? 'heist' : evParam;
   const c = getSiteContent(ev);
   const [globalDate, setGlobalDate] = useState('');
-  const eventDate = c.date || globalDate;\n  const pageContent = isHome ? { ...c, cta: homeContent.cta } : c;
+  const eventDate = c.date || globalDate;
+  const pageContent = isHome ? { ...c, cta: homeContent.cta } : c;
   const modeId = MODE_IDS[ev];
   const heroSrc = modeId
     ? (MODE_MEDIA[modeId]?.hero || MODE_MEDIA[modeId]?.cover || MODE_COVERS[`modeCover_${modeId}`])
