@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { NEW_MODES } from '@/data/modes/modeRegistry';
+import { MODE_COVERS } from '@/data/brandArt';
 
 const NAIL_COLORS = ['Red', 'Pink', 'White', 'Black', 'Nude', 'French', 'Blue', 'Purple', 'Green', 'Orange', 'Gold', 'Silver', 'None'];
 const FIELD = 'w-full px-3 py-2 rounded-lg bg-slate-950/60 border border-pink-500/40 text-pink-50 focus:outline-none focus:ring-2 focus:ring-pink-400';
@@ -32,6 +33,7 @@ export default function ModeForm() {
     boundaries: '',
     safeWordConfirmed: false,
   });
+  const [step, setStep] = useState(0);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState('');
@@ -99,16 +101,20 @@ export default function ModeForm() {
     >{children}</button>
   );
 
+  const progress = step === 0 ? 50 : 100;
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-purple-950 via-pink-950 to-slate-950 text-pink-50 p-4 pb-16">
       <div className="max-w-xl mx-auto space-y-3">
-        <div className="text-center pt-4">
+        <div className="text-center pt-4 rounded-2xl border border-pink-400/30 bg-black/30 p-5 shadow-2xl">
           <div className="text-5xl">🎮🩴💅🍹</div>
-          <h1 className="font-heading text-2xl sm:text-3xl text-pink-100 drop-shadow-[0_0_18px_rgba(255,105,180,0.85)] mt-1">Deal of Temptation · 18+</h1>
-          <p className="text-sm text-pink-300 mt-1">Διάλεξε τι θέλεις να παίξεις και συμπλήρωσε τα στοιχεία σου.</p>
+          <h1 className="font-heading text-2xl sm:text-3xl text-pink-100 drop-shadow-[0_0_18px_rgba(255,105,180,0.85)] mt-2">Deal of Temptation · 18+</h1>
+          <p className="text-sm text-pink-300 mt-2">Φόρμα συμμετοχής — επίλεξε τα Modes και συμπλήρωσε τα στοιχεία σου.</p>
+          <div className="mt-5 flex items-center justify-between text-xs text-pink-200"><span>ΒΗΜΑ {step + 1} ΑΠΟ 2</span><span>{progress}%</span></div>
+          <div className="mt-2 h-2 rounded-full bg-slate-800 overflow-hidden"><div className="h-full rounded-full bg-gradient-to-r from-pink-500 to-fuchsia-300 transition-all" style={{ width: `${progress}%` }} /></div>
         </div>
 
-        <div className="rounded-xl border border-pink-500/40 bg-pink-950/50 p-3 space-y-2">
+        {step === 0 && <div className="rounded-xl border border-pink-500/40 bg-pink-950/50 p-3 space-y-2">
           <div className="text-sm text-pink-200">Ποιο mode θέλεις; * <span className="opacity-60">(μπορείς πολλά)</span></div>
           <div className="grid gap-2">
             {NEW_MODES.map((m) => {
@@ -120,15 +126,17 @@ export default function ModeForm() {
                   onClick={() => toggleMode(m.id)}
                   className={`text-left rounded-lg border p-3 ${on ? 'bg-pink-700/60 border-pink-300' : 'bg-slate-950/60 border-pink-500/40'}`}
                 >
-                  <div className="font-heading text-lg">{on ? '✅' : '⬜'} {m.icon} {m.name}</div>
-                  <div className="text-xs text-pink-200/80">{m.desc}</div>
+                  <div className="flex items-start gap-3">
+                    {MODE_COVERS[`modeCover_${m.id}`] && <img src={MODE_COVERS[`modeCover_${m.id}`]} alt={m.name} loading="lazy" className="w-24 h-20 sm:w-28 sm:h-24 rounded-lg object-cover shrink-0 border border-pink-300/30" />}
+                    <div className="min-w-0"><div className="font-heading text-lg">{on ? '✅' : '⬜'} {m.icon} {m.name}</div><div className="text-xs text-pink-200/80 mt-1">{m.desc}</div></div>
+                  </div>
                 </button>
               );
             })}
           </div>
-        </div>
+        </div>}
 
-        <div className="rounded-xl border border-pink-500/40 bg-pink-950/50 p-3 space-y-3">
+        {step === 1 && <div className="rounded-xl border border-pink-500/40 bg-pink-950/50 p-3 space-y-3">
           <div>
             <div className="text-sm text-pink-200 mb-1">Όνομα *</div>
             <input className={FIELD} value={form.name} onChange={(e) => set('name', e.target.value)} />
@@ -207,12 +215,12 @@ export default function ModeForm() {
             <input type="checkbox" checked={form.safeWordConfirmed} onChange={(e) => set('safeWordConfirmed', e.target.checked)} className="mt-1 accent-pink-500" />
             <span>Κατάλαβα ότι μπορώ να πω ΣΤΟΠ οποιαδήποτε στιγμή και όλα σταματούν. *</span>
           </label>
-        </div>
+        </div>}
 
         {error && <div className="text-sm text-red-300 text-center">{error}</div>}
-        <button onClick={submit} disabled={!canSend} className="w-full py-3 rounded-xl font-heading text-xl bg-pink-600 hover:bg-pink-500 text-white disabled:opacity-40">
+        {step === 0 ? <button type="button" onClick={() => setStep(1)} disabled={!form.modes.length} className="w-full py-3 rounded-xl font-heading text-xl bg-pink-600 hover:bg-pink-500 text-white disabled:opacity-40">ΣΥΝΕΧΕΙΑ ΣΤΑ ΣΤΟΙΧΕΙΑ →</button> : <div className="flex gap-2"><button type="button" onClick={() => setStep(0)} className="px-5 py-3 rounded-xl font-bold border border-pink-400/40 text-pink-100">← ΠΙΣΩ</button><button onClick={submit} disabled={!canSend} className="w-full py-3 rounded-xl font-heading text-xl bg-pink-600 hover:bg-pink-500 text-white disabled:opacity-40">
           {saving ? 'ΑΠΟΣΤΟΛΗ...' : 'ΑΠΟΣΤΟΛΗ'}
-        </button>
+        </button></div>}
       </div>
     </div>
   );
