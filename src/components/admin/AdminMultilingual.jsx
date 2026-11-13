@@ -45,10 +45,10 @@ export default function AdminMultilingual() {
   return <div className="space-y-3">
     <ComicPanel className="bg-card space-y-3">
       <div className="font-heading text-xl text-primary">MULTILINGUAL MANAGEMENT</div>
-      <p className="text-xs text-foreground/65">Κεντρικό λεξικό μεταφράσεων για περιεχόμενο Website και Admin. Υποστηριζόμενες γλώσσες: Ελληνικά, Αγγλικά, Βουλγαρικά και Τουρκικά.</p>
+      <p className="text-xs text-foreground/65">Κεντρικό λεξικό για το Website και τις ετικέτες πλοήγησης του Admin. Κλειδιά Website: heist.tagline, pajama.scenarioTitle, home.tagline. Κλειδιά Admin: admin.nav.dashboard, admin.nav.host. Υποστηρίζονται Ελληνικά, Αγγλικά, Βουλγαρικά και Τουρκικά.</p>
       <div className="grid sm:grid-cols-2 gap-2">
         <select value={language} onChange={(e) => setLanguage(e.target.value)} className="rounded-lg border-2 border-border bg-background px-3 py-2 text-sm">{LANGS.map((l) => <option key={l.id} value={l.id}>{l.label}</option>)}</select>
-        <input value={keyName} onChange={(e) => setKeyName(e.target.value)} placeholder="Κλειδί κειμένου (π.χ. site.hero.title)" className="rounded-lg border-2 border-border bg-background px-3 py-2 text-sm" />
+        <input value={keyName} onChange={(e) => setKeyName(e.target.value)} placeholder="Κλειδί (π.χ. heist.tagline ή admin.nav.dashboard)" className="rounded-lg border-2 border-border bg-background px-3 py-2 text-sm" />
       </div>
       <textarea value={draft} onChange={(e) => setDraft(e.target.value)} placeholder="Μετάφραση για την επιλεγμένη γλώσσα" rows={3} className="w-full rounded-lg border-2 border-border bg-background px-3 py-2 text-sm" />
       <ComicButton disabled={busy || !keyName.trim()} onClick={addOrUpdate}>ΑΠΟΘΗΚΕΥΣΗ ΜΕΤΑΦΡΑΣΗΣ</ComicButton>
