@@ -1,6 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import ComicPanel from '@/components/comic/ComicPanel';
 import ComicButton from '@/components/comic/ComicButton';
+import AdminSettingVersionHistory from '@/components/admin/AdminSettingVersionHistory';
+import { saveAdminSettingVersion } from '@/lib/adminVersionHistory';
 import { NEW_MODES } from '@/data/modes/modeRegistry';
 import { COLLECTIONS, defaultsOf, fetchModesRecord, saveModesContent } from '@/lib/modesContentStore';
 
@@ -44,6 +46,7 @@ export default function AdminModes() {
     setBusy(true);
     setMsg(null);
     try {
+      await saveAdminSettingVersion('modes_content', saved);
       await saveModesContent(nextAll);
       setSaved(nextAll);
       setMsg({ ok: true, text: okText });
@@ -144,6 +147,7 @@ export default function AdminModes() {
           </div>
         </ComicPanel>
       )}
+      <AdminSettingVersionHistory settingKey="modes_content" onRestore={(value) => { setSaved(value || {}); setList(value?.[sel] || defaultsOf(sel)); }} />
     </div>
   );
 }
