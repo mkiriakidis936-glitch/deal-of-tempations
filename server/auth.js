@@ -70,15 +70,15 @@ function authRateLimit({ limit, windowMs }) {
     const now = Date.now();
     const key = `${req.path}:${req.ip || req.socket.remoteAddress || 'unknown'}`;
     let bucket = authRateBuckets.get(key);
-    if (!bucket || now - bucket.startedAt >= windowMs) {
-      bucket = { startedAt: now, count: 0 };
+    if (!bucket || now - bucket.startedAt >= bucket.windowMs) {
+      bucket = { startedAt: now, count: 0, windowMs };
       authRateBuckets.set(key, bucket);
     }
     if (bucket.count >= limit) return res.status(429).json({ error: 'Too many attempts. Try again later.' });
     bucket.count += 1;
     if (authRateBuckets.size > 5000) {
       for (const [entry, value] of authRateBuckets) {
-        if (now - value.startedAt >= windowMs) authRateBuckets.delete(entry);
+        if (now - value.startedAt >= value.windowMs) authRateBuckets.delete(entry);
       }
     }
     next();
@@ -171,7 +171,7 @@ export function authRoutes(app) {
       if (!verifyRes.ok || claims.aud !== process.env.GOOGLE_CLIENT_ID ||
           !['accounts.google.com', 'https://accounts.google.com'].includes(claims.iss) ||
           Number(claims.exp) <= Math.floor(Date.now() / 1000) ||
-          !claims.email || claims.email_verified !== 'true') {
+          !claims.sub || !claims.email || claims.email_verified !== 'true') {
         throw new Error('Google ID token validation failed');
       }
       const email = String(claims.email).toLowerCase();
