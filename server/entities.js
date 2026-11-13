@@ -77,7 +77,7 @@ const deepMerge = (target, patch, field = '', allowClear = false) => {
     }
     if (target.every((item) => isObject(item) && item.id) && patch.every((item) => isObject(item) && item.id)) {
       const merged = new Map(target.map((item) => [item.id, item]));
-      for (const item of patch) merged.set(item.id, merged.has(item.id) ? deepMerge(merged.get(item.id), item) : item);
+      for (const item of patch) merged.set(item.id, merged.has(item.id) ? deepMerge(merged.get(item.id), item, '', allowClear) : item);
       return [...merged.values()];
     }
     return patch;
