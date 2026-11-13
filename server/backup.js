@@ -93,11 +93,12 @@ async function restoreMediaArchive(req) {
         const sizeText = header.subarray(124, 136).toString('ascii').replace(/\0.*$/, '').trim();
         const size = Number.parseInt(sizeText || '0', 8);
         const type = String.fromCharCode(header[156] || 48);
-        if (!mediaNameIsSafe(name) || !Number.isSafeInteger(size) || size < 0 || size > MEDIA_MAX_FILE || (type !== '0' && type !== '\0')) {
+        if (!mediaNameIsSafe(name) || !Number.isSafeInteger(size) || size <= 0 || size > MEDIA_MAX_FILE || (type !== '0' && type !== '\0')) {
           throw Object.assign(new Error('Το αρχείο περιέχει μη έγκυρη εγγραφή πολυμέσου. Δεν έγινε επαναφορά.'), { status: 400 });
         }
         const dataOffset = offset + 512;
         if (dataOffset + size > stat.size) throw Object.assign(new Error('Το αρχείο πολυμέσων είναι κατεστραμμένο.'), { status: 400 });
+        if (entries.length >= 20000) throw Object.assign(new Error('Το αρχείο περιέχει υπερβολικά πολλά αρχεία.'), { status: 400 });
         entries.push({ name, size, dataOffset });
         offset = dataOffset + Math.ceil(size / 512) * 512;
       }
