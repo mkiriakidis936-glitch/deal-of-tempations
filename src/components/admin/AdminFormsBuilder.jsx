@@ -4,12 +4,12 @@ import ComicPanel from '@/components/comic/ComicPanel';
 import ComicButton from '@/components/comic/ComicButton';
 
 const KEY = 'admin_form_questions';
-const FORM_TYPES = [{ id: 'modes', label: 'Επιλογή Modes' }, { id: 'pajama', label: 'Pajama Form' }, { id: 'heist', label: 'Arrest & Heist Intake' }];
+const FORM_TYPES = [{ id: 'modes', label: 'Επιλογή Modes' }, { id: 'pajama', label: 'Pajama Form' }, { id: 'heist', label: 'Arrest & Heist Intake' }, { id: 'invitation', label: 'Invitation Form' }];
 const blank = () => ({ id: `q-${Date.now()}-${Math.random().toString(36).slice(2,6)}`, label: '', type: 'text', options: [], required: false, image: '' });
 
 export default function AdminFormsBuilder() {
   const [formType, setFormType] = useState('modes');
-  const [forms, setForms] = useState({ modes: [], pajama: [], heist: [] });
+  const [forms, setForms] = useState({ modes: [], pajama: [], heist: [], invitation: [] });
   const [record, setRecord] = useState(null);
   const [editing, setEditing] = useState(null);
   const [busy, setBusy] = useState(false);
@@ -19,7 +19,7 @@ export default function AdminFormsBuilder() {
     base44.entities.AppSetting.filter({ key: KEY }, { limit: 1 }).then(({ items }) => {
       const found = items?.[0] || null;
       setRecord(found);
-      if (found?.value?.forms) setForms({ modes: [], pajama: [], heist: [], ...found.value.forms });
+      if (found?.value?.forms) setForms({ modes: [], pajama: [], heist: [], invitation: [], ...found.value.forms });
     }).catch((error) => setMessage(error.message || 'Δεν φορτώθηκαν οι ερωτήσεις.'));
   }, []);
 
