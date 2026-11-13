@@ -86,7 +86,7 @@ export default function Site() {
   const setLanguage = (next) => setParams((current) => { const p = new URLSearchParams(current); p.set('lang', next); return p; }, { replace: true });
 
   const setEvent = (id) => {
-    setParams(id === 'home' ? {} : { event: id }, { replace: true });
+    setParams(id === 'home' ? (language === 'el' ? {} : { lang: language }) : { event: id, ...(language === 'el' ? {} : { lang: language }) }, { replace: true });
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
