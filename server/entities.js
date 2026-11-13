@@ -271,6 +271,7 @@ function validatePlayerPatch(current, patch, playerId) {
 function sanitizePublicSession(record, playerId = null) {
   if (!record?.state || !isObject(record.state)) return record;
   const state = { ...record.state };
+  if (Array.isArray(state.history)) state.history = state.history.filter((event) => !['truth', 'dare', 'confession'].includes(event?.type));
   const ownMap = (value) => {
     if (!playerId || !isObject(value) || value[playerId] === undefined) return {};
     return { [playerId]: value[playerId] };
