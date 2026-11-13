@@ -62,6 +62,8 @@ export default function ContentCrudTab({ category }) {
   const [saving, setSaving] = useState(false);
   const [editing, setEditing] = useState(null); // { id?, data }
   const [error, setError] = useState('');
+  const [versions, setVersions] = useState([]);
+  const [versionRecord, setVersionRecord] = useState(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -80,6 +82,59 @@ export default function ContentCrudTab({ category }) {
   }, [id]);
 
   useEffect(() => { load(); }, [load]);
+
+  const versionKey = `admin_content_versions_${id}`;
+  const loadVersions = useCallback(async () => {
+    try {
+      const result = await base44.entities.AppSetting.filter({ key: versionKey }, { limit: 1 });
+      const found = result.items?.[0] || null;
+      setVersionRecord(found);
+      setVersions(found?.value?.items || []);
+    } catch (e) {
+      setError('Ιστορικό εκδόσεων: ' + (e.message || 'σφάλμα'));
+    }
+  }, [versionKey]);
+
+  useEffect(() => { loadVersions(); }, [loadVersions]);
+
+  async function saveVersion(rec) {
+    if (!rec?.data) return;
+    const snapshot = {
+      id: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+      itemId: rec.itemId,
+      recordId: rec.id,
+      createdAt: new Date().toISOString(),
+      data: JSON.parse(JSON.stringify(rec.data)),
+    };
+    const next = [snapshot, ...versions].slice(0, 30);
+    const value = { items: next };
+    if (versionRecord?.id) await base44.entities.AppSetting.update(versionRecord.id, { value });
+    else setVersionRecord(await base44.entities.AppSetting.create({ key: versionKey, value }));
+    setVersions(next);
+  }
+
+  async function restoreVersion(version) {
+    if (!window.confirm(`Επαναφορά της προηγούμενης έκδοσης «${version.itemId}»;`)) return;
+    setSaving(true);
+    setError('');
+    try {
+      const current = records.find((item) => item.id === version.recordId)
+        || records.find((item) => item.itemId === version.itemId);
+      if (current) {
+        await saveVersion(current);
+        await base44.entities.GameContent.update(current.id, { data: version.data });
+      } else {
+        await base44.entities.GameContent.create({
+          category: id, itemId: String(version.itemId || `restored-${Date.now()}`),
+          data: version.data, order: records.length,
+        });
+      }
+      await load();
+      setError('Η προηγούμενη έκδοση επανήλθε.');
+    } catch (e) {
+      setError('Επαναφορά: ' + (e.message || 'σφάλμα'));
+    } finally { setSaving(false); }
+  }
 
   function startAdd() {
     if (shape === 'json') {
@@ -110,6 +165,8 @@ export default function ContentCrudTab({ category }) {
         }
       }
       if (editing.id) {
+        const previous = records.find((rec) => rec.id === editing.id);
+        if (previous) await saveVersion(previous);
         await base44.entities.GameContent.update(editing.id, { data: payload });
       } else {
         const order = shape === 'list' || shape === 'stringList' ? records.length : 0;
@@ -132,6 +189,7 @@ export default function ContentCrudTab({ category }) {
   async function remove(rec) {
     if (!confirm('Διαγραφή;')) return;
     try {
+      await saveVersion(rec);
       await base44.entities.GameContent.delete(rec.id);
       await load();
     } catch (e) {
@@ -154,6 +212,17 @@ export default function ContentCrudTab({ category }) {
       </div>
 
       {error && <div className="text-xs text-destructive font-bold">{error}</div>}
+      <ComicPanel className="bg-card space-y-2">
+        <div className="font-heading text-base">🕘 ΙΣΤΟΡΙΚΟ ΕΚΔΟΣΕΩΝ — {label}</div>
+        <p className="text-xs text-foreground/60">Αποθηκεύονται έως 30 προηγούμενες εκδόσεις στοιχείων αυτής της κατηγορίας.</p>
+        {versions.length === 0 ? <div className="text-xs text-foreground/50">Δεν υπάρχουν προηγούμενες εκδόσεις.</div> : versions.map((version) => (
+          <div key={version.id} className="flex flex-wrap items-center justify-between gap-2 rounded border border-border/40 p-2">
+            <div className="text-xs">{new Date(version.createdAt).toLocaleString('el-GR')} · {version.itemId}</div>
+            <ComicButton size="sm" variant="dark" disabled={saving} onClick={() => restoreVersion(version)}>Επαναφορά</ComicButton>
+          </div>
+        ))}
+      </ComicPanel>
+
 
       {loading ? (
         <div className="text-sm">Φόρτωση…</div>
