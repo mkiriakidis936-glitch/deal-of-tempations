@@ -382,7 +382,7 @@ function broadcast(entity, event) {
 // keep proxies (Railway) from closing idle connections
 setInterval(() => { for (const set of streams.values()) for (const subscriber of set) subscriber.res.write(': ping\n\n'); }, 25000).unref();
 
-async function insertSessionEvent(client, req, current, nextState, changedFields, actorType) {
+async function insertSessionEvent(req, current, nextState, changedFields, actorType) {
   if (!changedFields.length) return null;
   const data = {
     sessionId: current.id,
@@ -394,11 +394,16 @@ async function insertSessionEvent(client, req, current, nextState, changedFields
     changedFields: [...new Set(changedFields)].slice(0, 30),
     summary: actorType === 'host' ? 'Ενέργεια παρουσιαστή' : 'Ενέργεια παίκτη',
   };
-  const { rows } = await client.query(
-    'INSERT INTO records (id, entity, data, created_by) VALUES ($1,$2,$3,$4) RETURNING *',
-    [crypto.randomUUID(), 'GameSessionEvent', JSON.stringify(data), req.user?.email || null],
-  );
-  return toRecord(rows[0]);
+  try {
+    const { rows } = await query(
+      'INSERT INTO records (id, entity, data, created_by) VALUES ($1,$2,$3,$4) RETURNING *',
+      [crypto.randomUUID(), 'GameSessionEvent', JSON.stringify(data), req.user?.email || null],
+    );
+    return toRecord(rows[0]);
+  } catch (error) {
+    console.error('[timeline] failed to record session event:', error.message);
+    return null;
+  }
 }
 
 export function entityRoutes() {
@@ -533,8 +538,8 @@ export function entityRoutes() {
               "UPDATE records SET data = data || $1::jsonb, updated_date = now() WHERE id = $2 AND entity = $3 RETURNING *",
               [JSON.stringify({ state: mergedState }), req.params.id, req.entity],
             );
-            const timelineEvent = await insertSessionEvent(client, req, current, mergedState, Object.keys(statePatch), 'host');
             await client.query('COMMIT');
+            const timelineEvent = await insertSessionEvent(req, current, mergedState, Object.keys(statePatch), 'host');
             const rec = toRecord(rows[0]);
             broadcast(req.entity, { type: 'update', id: rec.id, data: rec });
             if (timelineEvent) broadcast('GameSessionEvent', { type: 'create', id: timelineEvent.id, data: timelineEvent });
@@ -548,8 +553,8 @@ export function entityRoutes() {
           const changedFields = isObject(req.body?.state)
             ? Object.keys(nextState).filter((key) => !sameJson(current.state?.[key], nextState[key]))
             : [];
-          const timelineEvent = await insertSessionEvent(client, req, current, nextState, changedFields, 'host');
           await client.query('COMMIT');
+          const timelineEvent = await insertSessionEvent(req, current, nextState, changedFields, 'host');
           const rec = toRecord(rows[0]);
           broadcast(req.entity, { type: 'update', id: rec.id, data: rec });
           if (timelineEvent) broadcast('GameSessionEvent', { type: 'create', id: timelineEvent.id, data: timelineEvent });
@@ -572,8 +577,8 @@ export function entityRoutes() {
           "UPDATE records SET data = data || $1::jsonb, updated_date = now() WHERE id = $2 AND entity = $3 RETURNING *",
           [JSON.stringify({ state: mergedState }), req.params.id, req.entity],
         );
-        const timelineEvent = await insertSessionEvent(client, req, current, mergedState, Object.keys(safePlayerPatch), 'player');
         await client.query('COMMIT');
+        const timelineEvent = await insertSessionEvent(req, current, mergedState, Object.keys(safePlayerPatch), 'player');
         const rec = toRecord(rows[0]);
         broadcast(req.entity, { type: 'update', id: rec.id, data: rec });
         if (timelineEvent) broadcast('GameSessionEvent', { type: 'create', id: timelineEvent.id, data: timelineEvent });
