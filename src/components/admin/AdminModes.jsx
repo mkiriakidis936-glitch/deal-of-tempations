@@ -50,7 +50,11 @@ export default function AdminModes() {
     } catch (e) { setMsg({ ok: false, text: e.message }); }
     setBusy(false);
   }
-  const save = () => persist({ ...saved, [sel]: list }, 'Αποθηκεύτηκε ✓ — ισχύει στο επόμενο φόρτωμα του tablet.');
+  const save = () => {
+    const validation = col?.validate?.(list);
+    if (validation) { setMsg({ ok: false, text: validation }); return; }
+    persist({ ...saved, [sel]: list }, 'Αποθηκεύτηκε ✓ — ισχύει στο επόμενο φόρτωμα του tablet.');
+  };
   const reset = () => {
     if (!window.confirm('Επαναφορά αυτής της λίστας στα αρχικά του PDF;')) return;
     const { [sel]: _drop, ...rest } = saved;
