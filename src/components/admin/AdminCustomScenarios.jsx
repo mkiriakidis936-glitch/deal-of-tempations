@@ -74,7 +74,7 @@ export default function AdminCustomScenarios() {
     <div className="space-y-3">
       <ComicPanel className="bg-card space-y-2">
         <div className="font-heading text-xl text-primary">CUSTOM GAME SCENARIOS</div>
-        <p className="text-xs text-foreground/60">Δημιούργησε αποθηκευμένα presets χρησιμοποιώντας αποκλειστικά υπάρχοντα Modes και κατηγορίες Game Content. Δεν προστίθενται νέοι κανόνες ή μηχανισμοί στο παιχνίδι.</p>
+        <p className="text-xs text-foreground/60">Δημιούργησε αποθηκευμένα presets χρησιμοποιώντας αποκλειστικά υπάρχοντα Modes και κατηγορίες Game Content. Οι επιλεγμένες κατηγορίες χρησιμοποιούν το περιεχόμενο που έχεις διαμορφώσει στο Game Editor. Οι υπόλοιπες παραμένουν στο αρχικό περιεχόμενο. Δεν προστίθενται νέοι κανόνες ή μηχανισμοί.</p>
         <ComicButton onClick={() => setEditing(empty())}>＋ ΝΕΟ ΣΕΝΑΡΙΟ</ComicButton>
       </ComicPanel>
 
@@ -86,7 +86,7 @@ export default function AdminCustomScenarios() {
         <label className="block text-xs font-bold">Περιγραφή<textarea rows={3} className="mt-1 w-full rounded border border-border bg-background p-2" value={editing.description} onChange={(e) => change('description', e.target.value)} /></label>
         <label className="block text-xs font-bold">Υφιστάμενο Mode<select className="mt-1 w-full rounded border border-border bg-background p-2" value={editing.modeId} onChange={(e) => change('modeId', e.target.value)}>{NEW_MODES.map((mode) => <option key={mode.id} value={mode.id}>{mode.name}</option>)}</select></label>
         <div className="space-y-2">
-          <div className="text-xs font-bold">Περιεχόμενο που θα περιλαμβάνει (υφιστάμενες κατηγορίες)</div>
+          <div className="text-xs font-bold">Κατηγορίες που θα χρησιμοποιούν το περιεχόμενο του Game Editor</div>
           {groups.map((group) => <label key={group.id} className="flex items-center gap-2 rounded border border-border/50 p-2 text-xs"><input type="checkbox" checked={(editing.collections || []).includes(group.id)} onChange={(e) => change('collections', e.target.checked ? [...(editing.collections || []), group.id] : (editing.collections || []).filter((id) => id !== group.id))} /><span>{group.label}</span></label>)}
         </div>
         <div className="flex flex-wrap gap-2"><ComicButton variant="green" disabled={busy} onClick={save}>ΑΠΟΘΗΚΕΥΣΗ</ComicButton><ComicButton variant="dark" disabled={busy} onClick={() => setEditing(null)}>ΑΚΥΡΟ</ComicButton></div>
