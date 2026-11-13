@@ -27,8 +27,9 @@ import WaitingRoom from '@/components/play/WaitingRoom';
 import PajamaMobile from '@/components/play/PajamaMobile';
 
 export default function Play() {
-  const { session, state, loading, updateState, joinByCode } = useGameSession({ autoLoad: false });
+  const { session, state, loading, updateState: saveState, joinByCode } = useGameSession({ autoLoad: false });
   const [selectedPlayerId, setSelectedPlayerId] = useState(null);
+  const updateState = React.useCallback((patch) => saveState(patch, { playerId: selectedPlayerId }), [saveState, selectedPlayerId]);
   const [scannedCode, setScannedCode] = useState(null);
   const [autoJoinTried, setAutoJoinTried] = useState(false);
   const [activeTab, setActiveTab] = useState('status');
