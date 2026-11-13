@@ -240,7 +240,10 @@ function validatePlayerPatch(current, patch, playerId) {
     if (!entry || !['snitch_vote', 'double_down', 'last_wish'].includes(entry.type)) return false;
     const existingHistory = current.history || [];
     if (!patch.history.slice(1).every((item) => existingHistory.some((oldItem) => sameJson(oldItem, item)))) return false;
-    if (entry.type === 'snitch_vote' && entry.voter !== player.name) return false;
+    if (entry.type === 'snitch_vote') {
+      const target = (current.players || []).find((item) => item.id === patch.snitchVotes?.[playerId]);
+      if (entry.voter !== player.name || !target || target.id === playerId || entry.target !== target.name) return false;
+    }
     if (entry.type === 'double_down' && entry.player !== player.name) return false;
   }
 
@@ -532,8 +535,11 @@ export function entityRoutes() {
   r.post('/:entity/delete-many', guard('delete'), async (req, res) => {
     const params = [];
     const where = buildWhere(req.entity, req.body?.query, params);
-    const { rows } = await query(`DELETE FROM records WHERE ${where} RETURNING id`, params);
-    rows.forEach(({ id }) => broadcast(req.entity, { type: 'delete', id, data: { id } }));
+    const { rows } = await query(`DELETE FROM records WHERE ${where} RETURNING id, data`, params);
+    rows.forEach(({ id, data }) => broadcast(req.entity, {
+      type: 'delete', id,
+      data: { id, ...(req.entity === 'GameSession' ? { sessionCode: data?.sessionCode } : {}) },
+    }));
     res.json({ deleted: rows.length, has_more: false });
   });
 
