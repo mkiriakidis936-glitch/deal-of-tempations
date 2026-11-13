@@ -2,52 +2,118 @@ import crypto from 'node:crypto';
 import express from 'express';
 import { requireAdmin } from './auth.js';
 import { entityApi } from './entities.js';
+import { pool } from './db.js';
 
 // ---- port of base44/shared/archiveLogic.ts ----
 async function archiveSessionData({ sessionCode, mode, winner, playerNames, stats, confessions, highlights }) {
   const eventDate = new Date().toISOString().split('T')[0];
-  const names = playerNames || [];
+  const names = [...new Set((Array.isArray(playerNames) ? playerNames : []).filter((name) => typeof name === 'string' && name.trim()).map((name) => name.trim()))];
+  const safeStats = stats && typeof stats === 'object' && !Array.isArray(stats) ? stats : {};
+  const safeConfessions = Array.isArray(confessions) ? confessions : [];
+  const safeHighlights = Array.isArray(highlights) ? highlights : [];
+  const client = await pool.connect();
 
-  const archive = await entityApi.create('SessionArchive', {
-    sessionCode, mode, winner: winner || '', playerNames: names, stats: stats || {},
-    confessions: confessions || [], highlights: highlights || [], eventDate, volume: 1,
-  });
+  try {
+    await client.query('BEGIN');
+    // Serialize retries for the same session and chapter numbering across sessions.
+    await client.query('SELECT pg_advisory_xact_lock(hashtext($1)::bigint)', [sessionCode]);
+    await client.query('SELECT pg_advisory_xact_lock(11235813)');
 
-  const title = `Κεφάλαιο ${sessionCode}`;
-  const chronicleText = [
-    `Το τραπέζι στήθηκε για «${mode}».`,
-    winner ? `Νικήτρια της βραδιάς: ${winner}.` : '',
-    names.length ? `Στο τραπέζι κάθισαν: ${names.join(', ')}.` : '',
-    (highlights || []).length ? `Έμειναν: ${highlights.join(' · ')}.` : '',
-    (confessions || []).length ? `Καταγράφηκαν ${confessions.length} εξομολογήσεις στο Vault.` : '',
-  ].filter(Boolean).join(' ');
+    const insertRecord = async (entity, data) => {
+      const id = crypto.randomUUID();
+      await client.query(
+        'INSERT INTO records (id, entity, data) VALUES ($1, $2, $3::jsonb)',
+        [id, entity, JSON.stringify(data)],
+      );
+      return id;
+    };
 
-  const [last] = await entityApi.filter('Chronicle', { volume: 1 }, { sort: '-chapter', limit: 1 });
-  const nextChapter = (last?.chapter || 0) + 1;
-  await entityApi.create('Chronicle', { volume: 1, chapter: nextChapter, sessionCode, title, content: chronicleText, characters: names, eventDate });
+    const { rows: archives } = await client.query(
+      "SELECT id, data FROM records WHERE entity = 'SessionArchive' AND data->>'sessionCode' = $1 ORDER BY created_date DESC LIMIT 1",
+      [sessionCode],
+    );
+    const archiveId = archives[0]?.id || await insertRecord('SessionArchive', {
+      sessionCode, mode, winner: winner || '', playerNames: names, stats: safeStats,
+      confessions: safeConfessions, highlights: safeHighlights, eventDate, volume: 1,
+    });
 
-  await Promise.allSettled(names.map(async (name) => {
-    const [profile] = await entityApi.filter('PlayerProfile', { playerName: name }, { limit: 1 });
-    const isWinner = name === winner;
-    if (profile) {
-      await entityApi.update('PlayerProfile', profile.id, {
-        totalSessions: (profile.totalSessions || 0) + 1,
-        totalWins: (profile.totalWins || 0) + (isWinner ? 1 : 0),
-        lastSessionCode: sessionCode,
+    const { rows: chronicles } = await client.query(
+      "SELECT id, data FROM records WHERE entity = 'Chronicle' AND data->>'sessionCode' = $1 ORDER BY created_date DESC LIMIT 1",
+      [sessionCode],
+    );
+    let chronicleTitle = chronicles[0]?.data?.title || `Κεφάλαιο ${sessionCode}`;
+    let chapter = Number(chronicles[0]?.data?.chapter) || null;
+    if (!chronicles[0]) {
+      const { rows: last } = await client.query(
+        "SELECT COALESCE(MAX((data->>'chapter')::int), 0) AS chapter FROM records WHERE entity = 'Chronicle' AND data->>'volume' = '1' AND data->>'chapter' ~ '^[0-9]+$'",
+      );
+      chapter = Number(last[0]?.chapter || 0) + 1;
+      const chronicleText = [
+        `Το τραπέζι στήθηκε για «${mode}».`,
+        winner ? `Νικήτρια της βραδιάς: ${winner}.` : '',
+        names.length ? `Στο τραπέζι κάθισαν: ${names.join(', ')}.` : '',
+        safeHighlights.length ? `Έμειναν: ${safeHighlights.join(' · ')}.` : '',
+        safeConfessions.length ? `Καταγράφηκαν ${safeConfessions.length} εξομολογήσεις στο Vault.` : '',
+      ].filter(Boolean).join(' ');
+      await insertRecord('Chronicle', {
+        volume: 1, chapter, sessionCode, title: chronicleTitle, content: chronicleText,
+        characters: names, eventDate,
       });
-    } else {
-      await entityApi.create('PlayerProfile', { playerName: name, totalSessions: 1, totalWins: isWinner ? 1 : 0, lastSessionCode: sessionCode });
     }
-  }));
 
-  const vaultEntries = (confessions || [])
-    .map((c) => ({ playerName: c.playerName || 'Unknown', confession: c.text || c.confession || '', confessionType: c.type || 'truth', sessionCode, eventDate }))
-    .filter((e) => e.confession);
-  for (const entry of vaultEntries) await entityApi.create('BlackmailVault', entry);
+    // lastSessionCode makes profile increments idempotent if a previous attempt was retried.
+    for (const name of names) {
+      const { rows: profiles } = await client.query(
+        "SELECT id, data FROM records WHERE entity = 'PlayerProfile' AND data->>'playerName' = $1 ORDER BY created_date ASC LIMIT 1 FOR UPDATE",
+        [name],
+      );
+      const profile = profiles[0];
+      const isWinner = name === winner;
+      if (profile) {
+        if (profile.data?.lastSessionCode !== sessionCode) {
+          const next = {
+            ...profile.data,
+            totalSessions: (profile.data?.totalSessions || 0) + 1,
+            totalWins: (profile.data?.totalWins || 0) + (isWinner ? 1 : 0),
+            lastSessionCode: sessionCode,
+          };
+          await client.query(
+            'UPDATE records SET data = $1::jsonb, updated_date = now() WHERE id = $2',
+            [JSON.stringify(next), profile.id],
+          );
+        }
+      } else {
+        await insertRecord('PlayerProfile', {
+          playerName: name, totalSessions: 1, totalWins: isWinner ? 1 : 0, lastSessionCode: sessionCode,
+        });
+      }
+    }
 
-  return { archiveId: archive.id, chronicleTitle: title, chapter: nextChapter };
+    for (const confession of safeConfessions) {
+      const entry = {
+        playerName: confession.playerName || 'Unknown',
+        confession: confession.text || confession.confession || '',
+        confessionType: confession.type || 'truth',
+        sessionCode,
+        eventDate,
+      };
+      if (!entry.confession) continue;
+      const { rowCount } = await client.query(
+        "SELECT 1 FROM records WHERE entity = 'BlackmailVault' AND data->>'sessionCode' = $1 AND data->>'playerName' = $2 AND data->>'confession' = $3 LIMIT 1",
+        [sessionCode, entry.playerName, entry.confession],
+      );
+      if (!rowCount) await insertRecord('BlackmailVault', entry);
+    }
+
+    await client.query('COMMIT');
+    return { archiveId, chronicleTitle, chapter };
+  } catch (error) {
+    await client.query('ROLLBACK').catch(() => {});
+    throw error;
+  } finally {
+    client.release();
+  }
 }
-
 function timingSafeEqual(a, b) {
   const ab = Buffer.from(a), bb = Buffer.from(b);
   return ab.length === bb.length && crypto.timingSafeEqual(ab, bb);
