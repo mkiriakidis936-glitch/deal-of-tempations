@@ -59,6 +59,12 @@ export default function ModeGame({ state, updateState, onEnd, onQR }) {
         </div>
       )}
       <div className="text-xs opacity-60 text-right">Χρόνος παιχνιδιού: {elapsedLabel} / 5:00 ώρες</div>
+      {state.customScenario && (
+        <div className="rounded-lg border px-3 py-2 text-sm" style={{ borderColor: theme.accent, background: `${theme.accent}18` }}>
+          <div className="font-heading" style={{ color: theme.accent2 }}>CUSTOM SCENARIO: {state.customScenario.name}</div>
+          {state.customScenario.description && <div className="mt-1 opacity-80">{state.customScenario.description}</div>}
+        </div>
+      )}
 
       {act === 'board' && <ActBoard ctx={ctx} onDone={nextAct} />}
       {act === 'midnight' && <ActMidnight ctx={ctx} onDone={nextAct} />}
