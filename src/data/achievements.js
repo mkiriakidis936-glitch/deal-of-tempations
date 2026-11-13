@@ -6,6 +6,8 @@ export const ACHIEVEMENTS = [
   { id: 'crew_legend', name: 'Θρύλος της Συμμορίας', icon: '🏆', desc: 'Μέλος νικήτριας ομάδας σε Marathon ή Arrest & Heist.' },
 ];
 
+export const ACHIEVEMENTS_SETTING_KEY = 'achievement_definitions';
+
 export function getAchievement(id) {
   return ACHIEVEMENTS.find((a) => a.id === id) || null;
 }
