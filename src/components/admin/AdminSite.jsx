@@ -48,7 +48,7 @@ function ListEditor({ items, onChange, blank, render, addLabel }) {
   );
 }
 
-export default function AdminSite() {
+export default function AdminSite({ focusScenario = false }) {
   const [ev, setEv] = useState('heist');
   const [rec, setRec] = useState(null);
   const [all, setAll] = useState({});
@@ -110,6 +110,8 @@ export default function AdminSite() {
         <Field label="Βασικά στοιχεία (κουτάκια)" hint="Ένα ανά γραμμή, π.χ. «2 ομάδες, 1 ταμπλό»."><Area rows={4} value={linesOf(d.highlights)} onChange={(v) => up({ highlights: toLines(v) })} /></Field>
       </ComicPanel>
 
+      {!focusScenario && (
+      <>
       <ComicPanel className="bg-card space-y-3">
         <div className="font-heading text-lg">🏠 ΑΡΧΙΚΗ ΕΝΟΤΗΤΑ</div>
         <Field label="Επάνω γραμμή"><Text value={d.overline} onChange={(v) => up({ overline: v })} /></Field>
@@ -200,6 +202,9 @@ export default function AdminSite() {
           )}
         />
       </ComicPanel>
+
+      </>
+      )}
 
       <div className="sticky bottom-0 z-20 -mx-2.5 px-2.5 py-2 bg-background/90 backdrop-blur border-t border-border/40 flex gap-2" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 8px)' }}>
         <ComicButton className="flex-1" disabled={busy} onClick={save}>💾 {busy ? 'ΑΠΟΘΗΚΕΥΣΗ…' : 'ΑΠΟΘΗΚΕΥΣΗ'}</ComicButton>
