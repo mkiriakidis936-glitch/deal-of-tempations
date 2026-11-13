@@ -404,6 +404,10 @@ export function entityRoutes() {
     const off = Math.max(parseInt(effectiveSkip, 10) || 0, 0);
     const { rows } = await query(`SELECT * FROM records WHERE ${where} ORDER BY ${orderBy(effectiveSort)} LIMIT ${lim} OFFSET ${off}`, params);
     const items = rows.map(toRecord);
+    if (req.entity === 'GameSession' && !isAdmin(req) && req.sessionViewerPlayerId &&
+        items.length && !(items[0].state?.players || []).some((player) => player.id === req.sessionViewerPlayerId)) {
+      return res.status(403).json({ error: 'Unknown player' });
+    }
     res.json({ items: req.entity === 'GameSession' && !isAdmin(req) ? items.map((item) => sanitizePublicSession(item, req.sessionViewerPlayerId)) : items });
   });
 
