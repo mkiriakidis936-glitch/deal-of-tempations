@@ -44,6 +44,7 @@ const NAV_GROUPS = [
       { id: 'statistics', label: '📈 Statistics' },
       { id: 'sessions', label: '🎲 Game Sessions' },
       { id: 'settings', label: '⚙️ Settings' },
+      { id: 'links', label: '🔗 Links & QR Codes' },
     ],
   },
 ];
@@ -66,7 +67,6 @@ const LEGACY_TABS = {
   visits: 'statistics',
   intakes: 'forms',
   rsvp: 'forms',
-  links: 'settings',
   blitz: 'players',
   leaderboard: 'achievements',
 };
