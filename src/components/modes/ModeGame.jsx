@@ -8,6 +8,7 @@ import ActMorning from '@/components/modes/ActMorning';
 import BeachBarGame from '@/components/modes/BeachBarGame';
 import { modeMeta, ACT_META, MODE_THEMES } from '@/data/modes/modeRegistry';
 import { useModeCtx, useTick } from '@/lib/modeKit';
+import { COLLECTIONS } from '@/lib/modesContentStore';
 
 // Tablet (game master) για τα 4 νέα modes. Κάθε mode = λίστα από acts.
 export default function ModeGame({ state, updateState, onEnd, onQR }) {
@@ -63,6 +64,7 @@ export default function ModeGame({ state, updateState, onEnd, onQR }) {
         <div className="rounded-lg border px-3 py-2 text-sm" style={{ borderColor: theme.accent, background: `${theme.accent}18` }}>
           <div className="font-heading" style={{ color: theme.accent2 }}>CUSTOM SCENARIO: {state.customScenario.name}</div>
           {state.customScenario.description && <div className="mt-1 opacity-80">{state.customScenario.description}</div>}
+          {(state.customScenario.collections || []).length > 0 && <div className="mt-2 text-xs opacity-75">Περιεχόμενο σεναρίου: {(state.customScenario.collections || []).map((id) => COLLECTIONS.find((collection) => collection.id === id)?.label || id).join(' · ')}</div>}
         </div>
       )}
 
