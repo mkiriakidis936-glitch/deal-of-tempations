@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 
-export default function CustomFormQuestions({ formType, value = {}, onChange, className = '' }) {
+export default function CustomFormQuestions({ formType, value = {}, onChange, onValidityChange, className = '' }) {
   const [questions, setQuestions] = useState([]);
   useEffect(() => {
     let active = true;
@@ -11,7 +11,7 @@ export default function CustomFormQuestions({ formType, value = {}, onChange, cl
     return () => { active = false; };
   }, [formType]);
 
-  if (!questions.length) return null;
+  useEffect(() => {\n    const valid = questions.every((question) => !question.required || String(value[question.id] || '').trim().length > 0);\n    onValidityChange?.(valid);\n  }, [questions, value, onValidityChange]);\n\n  if (!questions.length) return null;
   const setAnswer = (id, answer) => onChange({ ...value, [id]: answer });
   return <div className={className}>
     {questions.map((question) => <div key={question.id} className="space-y-2">
