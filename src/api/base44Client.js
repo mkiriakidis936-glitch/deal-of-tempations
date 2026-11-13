@@ -44,6 +44,7 @@ function subscribeEntity(name, callback, options = {}) {
     const params = new URLSearchParams();
     if (token) params.set('token', token);
     if (options.sessionCode) params.set('sessionCode', options.sessionCode);
+    if (options.playerId) params.set('playerId', options.playerId);
     const query = params.toString();
     const url = `${API_URL}/api/entities/${name}/stream${query ? `?${query}` : ''}`;
     const es = new EventSource(url);
