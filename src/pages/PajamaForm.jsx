@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { ART } from '@/data/brandArt';
+import CustomFormQuestions from '@/components/forms/CustomFormQuestions';
 const PAJAMA_TITLE = 'Pajama Pedi-Glam';
 
 const NAIL_COLORS = ['Red', 'Pink', 'White', 'Black', 'Nude', 'French', 'Blue', 'Purple', 'Green', 'Orange', 'Gold', 'Silver', 'None'];
@@ -18,6 +19,7 @@ export default function PajamaForm() {
     ticklish: 3,
     boundaries: '',
     safeWordConfirmed: false,
+    customAnswers: {},
   });
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -38,6 +40,7 @@ export default function PajamaForm() {
         footSensitivity: Number(form.footSensitivity),
         ticklish: Number(form.ticklish),
         approved: false,
+        customAnswers: form.customAnswers,
       });
       setSaved(true);
     } catch (e) {
