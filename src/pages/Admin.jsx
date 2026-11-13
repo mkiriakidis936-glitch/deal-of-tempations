@@ -20,7 +20,6 @@ import AdminLeaderboard from '@/components/admin/AdminLeaderboard';
 import AdminBlitz from '@/components/admin/AdminBlitz';
 import AdminMedia from '@/components/admin/AdminMedia';
 import AdminSite from '@/components/admin/AdminSite';
-import AdminModes from '@/components/admin/AdminModes';
 import AdminNotifications from '@/components/admin/AdminNotifications';
 import AdminVisits from '@/components/admin/AdminVisits';
 import AdminBackup from '@/components/admin/AdminBackup';
