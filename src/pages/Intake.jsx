@@ -4,6 +4,7 @@ import ComicButton from '@/components/comic/ComicButton';
 import { base44 } from '@/api/base44Client';
 import { isIntakeEnabled } from '@/lib/intakeFlag';
 import { ART } from '@/data/brandArt';
+import CustomFormQuestions from '@/components/forms/CustomFormQuestions';
 
 export default function Intake() {
   const [form, setForm] = useState({
@@ -19,6 +20,7 @@ export default function Intake() {
     funFact: '',
     intensity: 'medium',
     safeWordConfirmed: false,
+    customAnswers: {},
   });
   const [saved, setSaved] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -52,7 +54,7 @@ export default function Intake() {
     if (!form.leaderName.trim() || !form.accommodation || !form.safeWordConfirmed || form.sessionCode.trim().length !== 4) return;
     setSaving(true);
     try {
-      await base44.entities.BacheloretteIntake.create({ ...form, sessionCode: form.sessionCode.trim().toUpperCase() });
+      await base44.entities.BacheloretteIntake.create({ ...form, customAnswers: form.customAnswers, sessionCode: form.sessionCode.trim().toUpperCase() });
       setSaved(true);
     } catch (e) {
       console.error(e);
@@ -147,7 +149,7 @@ export default function Intake() {
                 ))}
               </div>
             </div>
-            <div className="comic-panel-sm p-3 bg-destructive/20">
+            <CustomFormQuestions formType="heist" value={form.customAnswers} onChange={(value) => setForm({ ...form, customAnswers: value })} className="space-y-3" />\n            <div className="comic-panel-sm p-3 bg-destructive/20">
               <label className="flex items-center gap-2 cursor-pointer">
                 <input type="checkbox" checked={form.safeWordConfirmed} onChange={(e) => setForm({ ...form, safeWordConfirmed: e.target.checked })} className="w-5 h-5" />
                 <span className="text-sm font-bold">Επιβεβαιώνω ότι γνωρίζω το Safe Word: "MAYDAY"</span>
