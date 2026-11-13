@@ -10,11 +10,12 @@ scripts/    migrate-assets.mjs (εικόνες/βίντεο από Base44) κα�
 
 ## 0. ΠΡΙΝ κλείσεις τον λογαριασμό Base44
 
-1. **Εικόνες/βίντεο:** είναι ακόμα στο CDN του Base44 και χάνονται μαζί με το app.
+1. **Εικόνες/βίντεο:** πριν κλείσεις το Base44, τρέξε τη μετανάστευση με το δημόσιο `DATABASE_URL` της PostgreSQL από το Railway. Το script ελέγχει κώδικα και εγγραφές της βάσης, κατεβάζει τα αρχεία στο `public/assets` με μοναδικά SHA-256 ονόματα και ενημερώνει τις αποθηκευμένες διευθύνσεις.
    ```bash
    npm install
-   node scripts/migrate-assets.mjs     # κατεβάζει στο public/assets και διορθώνει τα paths
+   DATABASE_URL="postgresql://..." node scripts/migrate-assets.mjs
    ```
+   Αν δεν δοθεί `DATABASE_URL`, μεταφέρονται μόνο οι αναφορές που βρίσκονται στα αρχεία του κώδικα — όχι οι φωτογραφίες που είναι αποθηκευμένες στη βάση.
 2. **Δεδομένα** (ερωτηματολόγια, RSVP, περιεχόμενο, προφίλ…): κάνε export κάθε entity σε JSON και βάλε τα στο `data-export/` ως `PlayerIntake.json`, `GameContent.json` κ.λπ. (Ο φάκελος είναι στο `.gitignore` — έχει προσωπικά δεδομένα, μην τον κάνεις commit.)
 3. Σημείωσε την τιμή του secret `CONTROL_PANEL_API_KEY` αν χρησιμοποιείς το ξεχωριστό Control Panel app.
 
