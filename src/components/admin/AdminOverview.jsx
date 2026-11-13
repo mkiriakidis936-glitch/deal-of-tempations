@@ -16,18 +16,16 @@ function MetricCard({ icon, label, value, note, accent }) {
 }
 
 export default function AdminOverview({ sessions = [], loading = false, onNavigate = () => {} }) {
-  const [extra, setExtra] = useState({ players: null, achievements: null, connection: 'loading' });
+  const [extra, setExtra] = useState({ achievements: null, connection: 'loading' });
   useEffect(() => {
     let mounted = true;
     Promise.allSettled([
-      base44.entities.PlayerProfile.filter({}, { limit: 500 }),
       base44.entities.Achievement.filter({}, { limit: 500 }),
-    ]).then(([players, achievements]) => {
+    ]).then(([achievements]) => {
       if (!mounted) return;
       setExtra({
-        players: players.status === 'fulfilled' ? (players.value.items || []).length : null,
         achievements: achievements.status === 'fulfilled' ? (achievements.value.items || []).length : null,
-        connection: players.status === 'fulfilled' || achievements.status === 'fulfilled' ? 'connected' : 'error',
+        connection: achievements.status === 'fulfilled' ? 'connected' : 'error',
       });
     });
     return () => { mounted = false; };
@@ -39,6 +37,7 @@ export default function AdminOverview({ sessions = [], loading = false, onNaviga
     return { active, finished };
   }, [sessions]);
   const recent = sessions.slice(0, 5);
+  const playerCount = new Set(sessions.flatMap((session) => (session.state?.players || []).map((player) => player.id || player.name).filter(Boolean).map((value) => String(value).trim().toLowerCase()))).size;
   const dateLabel = (value) => {
     if (!value) return 'Ημερομηνία μη διαθέσιμη';
     const d = new Date(value);
@@ -61,7 +60,7 @@ export default function AdminOverview({ sessions = [], loading = false, onNaviga
 
     <section className="grid grid-cols-2 xl:grid-cols-4 gap-3">
       <MetricCard icon="🎮" label="Game Modes" value={GAME_MODES.length} note="Διαθέσιμες λειτουργίες" accent="bg-amber-400" />
-      <MetricCard icon="👥" label="Players" value={extra.players ?? '—'} note={extra.players === null ? 'Μη διαθέσιμα δεδομένα προφίλ' : 'Καταχωρισμένα προφίλ'} accent="bg-sky-400" />
+      <MetricCard icon="👥" label="Players" value={playerCount} note="Μοναδικοί παίκτες στις αποθηκευμένες παρτίδες" accent="bg-sky-400" />
       <MetricCard icon="🎲" label="Game Sessions" value={loading ? '…' : sessions.length} note={`${activity.active.length} ενεργές · ${activity.finished.length} ολοκληρωμένες`} accent="bg-emerald-400" />
       <MetricCard icon="🏆" label="Achievements" value={extra.achievements ?? '—'} note={extra.achievements === null ? 'Μη διαθέσιμα δεδομένα' : 'Καταχωρισμένα επιτεύγματα'} accent="bg-fuchsia-400" />
     </section>
@@ -77,7 +76,7 @@ export default function AdminOverview({ sessions = [], loading = false, onNaviga
       </div>
       <div className="rounded-2xl border border-border/70 bg-card p-4 sm:p-5">
         <div className="font-heading text-xl">System Status</div><p className="mt-0.5 text-xs text-foreground/55">Κατάσταση ανάκτησης δεδομένων Admin</p>
-        <div className="mt-4 rounded-xl bg-secondary/70 p-3"><div className="flex items-center justify-between gap-2"><span className="text-sm font-semibold">Σύνδεση δεδομένων</span><span className={`rounded-full px-2.5 py-1 text-[10px] font-bold ${extra.connection === 'connected' ? 'bg-emerald-500/10 text-emerald-500' : extra.connection === 'error' ? 'bg-red-500/10 text-red-500' : 'bg-amber-500/10 text-amber-500'}`}>{extra.connection === 'connected' ? 'CONNECTED' : extra.connection === 'error' ? 'ERROR' : 'CHECKING'}</span></div><div className="mt-1 text-xs text-foreground/55">{extra.connection === 'connected' ? 'Η ανάκτηση προφίλ ή/και επιτευγμάτων ολοκληρώθηκε.' : extra.connection === 'error' ? 'Δεν ήταν δυνατή η ανάκτηση των δεδομένων.' : 'Έλεγχος σύνδεσης με τα δεδομένα…'}</div></div>
+        <div className="mt-4 rounded-xl bg-secondary/70 p-3"><div className="flex items-center justify-between gap-2"><span className="text-sm font-semibold">Σύνδεση δεδομένων</span><span className={`rounded-full px-2.5 py-1 text-[10px] font-bold ${extra.connection === 'connected' ? 'bg-emerald-500/10 text-emerald-500' : extra.connection === 'error' ? 'bg-red-500/10 text-red-500' : 'bg-amber-500/10 text-amber-500'}`}>{extra.connection === 'connected' ? 'CONNECTED' : extra.connection === 'error' ? 'ERROR' : 'CHECKING'}</span></div><div className="mt-1 text-xs text-foreground/55">{extra.connection === 'connected' ? 'Η ανάκτηση των δεδομένων επιτευγμάτων ολοκληρώθηκε.' : extra.connection === 'error' ? 'Δεν ήταν δυνατή η ανάκτηση των δεδομένων.' : 'Έλεγχος σύνδεσης με τα δεδομένα…'}</div></div>
         <div className="mt-3 flex items-center justify-between rounded-xl bg-secondary/70 p-3"><span className="text-sm font-semibold">Φόρτωση παρτίδων</span><span className={`text-xs font-bold ${loading ? 'text-amber-500' : 'text-emerald-500'}`}>{loading ? 'LOADING' : 'READY'}</span></div>
         <div className="mt-3 text-[11px] leading-relaxed text-foreground/45">Η ένδειξη αφορά τις λειτουργίες ανάκτησης που ελέγχονται εδώ και δεν αποτελεί συνολικό έλεγχο διαθεσιμότητας όλων των υπηρεσιών.</div>
       </div>
