@@ -21,18 +21,18 @@ function useCountdown(target) {
   };
 }
 
-export default function SiteHero({ c, ev, eventDate }) {
+export default function SiteHero({ c, ev, eventDate, heroSrc }) {
   const navigate = useNavigate();
   const countdown = useCountdown(eventDate);
 
   return (
     <section id="top" className="relative min-h-[92vh] flex items-center justify-center overflow-hidden px-4 py-20">
       <div className="absolute inset-0 -z-10">
-        <MediaSpot src={PHOTO.siteHero || FILM.siteHero} slot="siteHero" className="w-full h-full object-cover opacity-45" />
+        <MediaSpot src={heroSrc || PHOTO.siteHero || FILM.siteHero} slot={heroSrc ? undefined : "siteHero"} className="w-full h-full object-cover object-center opacity-55" />
         <div className="absolute inset-0 bg-gradient-to-b from-background/80 via-background/60 to-background" />
       </div>
 
-      <div className="relative w-full max-w-3xl text-center space-y-8">
+      <div className="relative w-full max-w-4xl text-center space-y-8">
         <div className="mx-auto w-24 h-24 sm:w-28 sm:h-28 relative flex items-center justify-center">
           <div className="absolute inset-0 cinv-sealglow" />
           <Image
@@ -44,11 +44,11 @@ export default function SiteHero({ c, ev, eventDate }) {
 
         <div className="space-y-3">
           <div className="text-[11px] tracking-[0.5em] text-tarot-gold/70 uppercase">{c.overline}</div>
-          <h1 className="font-display text-4xl sm:text-6xl text-tarot-gold tracking-[0.1em] leading-tight">
+          <h1 className="font-display text-4xl sm:text-6xl lg:text-7xl text-tarot-gold tracking-[0.1em] leading-tight drop-shadow-[0_4px_24px_rgba(0,0,0,.6)]">
             {c.titleLines.map((l, i) => (<React.Fragment key={i}>{i > 0 && <br />}{l}</React.Fragment>))}
           </h1>
           <div className="w-24 h-px bg-tarot-gold/40 mx-auto" />
-          <p className="text-lg sm:text-xl text-foreground/70 max-w-xl mx-auto">
+          <p className="text-base sm:text-xl text-foreground/80 max-w-2xl mx-auto leading-relaxed">
             {c.tagline}
           </p>
         </div>
