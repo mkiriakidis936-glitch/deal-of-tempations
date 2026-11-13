@@ -115,6 +115,19 @@ export default function Admin() {
 
   async function handleDeleteSession(id) {
     try {
+      const target = sessions.find((session) => session.id === id);
+      if (target) {
+        await base44.entities.GameSessionSnapshot.create({
+          sessionId: target.id,
+          sessionCode: target.sessionCode,
+          mode: target.state?.mode || target.mode || '',
+          stage: Number(target.state?.stage ?? 0),
+          playerCount: Array.isArray(target.state?.players) ? target.state.players.length : 0,
+          label: 'Αυτόματο αντίγραφο πριν από διαγραφή',
+          state: JSON.parse(JSON.stringify(target.state || {})),
+          sourceUpdatedAt: target.updated_date || target.created_date || null,
+        });
+      }
       await base44.entities.GameSession.delete(id);
       setSessions((prev) => prev.filter((s) => s.id !== id));
       setPickedSession((prev) => (prev?.id === id ? null : prev));
@@ -124,6 +137,16 @@ export default function Admin() {
   async function handleRestartSession(session) {
     try {
       const state = session.state || {};
+      await base44.entities.GameSessionSnapshot.create({
+        sessionId: session.id,
+        sessionCode: session.sessionCode,
+        mode: state.mode || session.mode || '',
+        stage: Number(state.stage ?? 0),
+        playerCount: Array.isArray(state.players) ? state.players.length : 0,
+        label: 'Αυτόματο αντίγραφο πριν από restart',
+        state: JSON.parse(JSON.stringify(state)),
+        sourceUpdatedAt: session.updated_date || session.created_date || null,
+      });
       const players = Array.isArray(state.players) ? state.players.map((p) => ({
         ...p,
         penaltyStep: 0,
