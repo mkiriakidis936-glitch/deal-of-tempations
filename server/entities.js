@@ -44,11 +44,34 @@ const onlyOwnMapEntryChanged = (before, after, playerId) => {
   if (!isObject(before) || !isObject(after)) return false;
   return sameJson(withoutKeys(before, [playerId]), withoutKeys(after, [playerId]));
 };
-const deepMerge = (target, patch) => {
+const deepMerge = (target, patch, field = '') => {
+  if (Array.isArray(target) && Array.isArray(patch)) {
+    if (field === 'players' || field === 'confessions') {
+      const key = field === 'players' ? 'id' : 'playerId';
+      const merged = new Map(target.map((item) => [item?.[key], item]));
+      for (const item of patch) {
+        const id = item?.[key];
+        if (id == null) continue;
+        merged.set(id, merged.has(id) ? deepMerge(merged.get(id), item) : item);
+      }
+      return [...merged.values()];
+    }
+    if (field === 'history') {
+      const entries = new Map();
+      for (const item of [...patch, ...target]) {
+        const key = item?.timestamp != null
+          ? `${item.timestamp}:${item.type || ''}:${item.player || item.voter || ''}`
+          : JSON.stringify(item);
+        if (!entries.has(key)) entries.set(key, item);
+      }
+      return [...entries.values()].sort((a, b) => (b?.timestamp || 0) - (a?.timestamp || 0)).slice(0, 50);
+    }
+    return patch;
+  }
   if (!isObject(target) || !isObject(patch)) return patch;
   const merged = { ...target };
   for (const [key, value] of Object.entries(patch)) {
-    merged[key] = isObject(value) && isObject(target[key]) ? deepMerge(target[key], value) : value;
+    merged[key] = deepMerge(target[key], value, key);
   }
   return merged;
 };
@@ -146,7 +169,8 @@ function validatePlayerPatch(current, patch, playerId) {
     const beforeOther = before.filter((item) => item.playerId !== playerId);
     const afterOther = after.filter((item) => item.playerId !== playerId);
     const own = after.find((item) => item.playerId === playerId);
-    if (!sameJson(beforeOther, afterOther) || (own && (typeof own.text !== 'string' || own.text.length > 1000))) return false;
+    if (!afterOther.every((item) => beforeOther.some((oldItem) => sameJson(oldItem, item))) ||
+        (own && (typeof own.text !== 'string' || own.text.length > 1000))) return false;
   }
 
   if ('mg' in patch) {
@@ -175,7 +199,8 @@ function validatePlayerPatch(current, patch, playerId) {
     if (!allowedHistory) return false;
     const entry = patch.history[0];
     if (!entry || !['snitch_vote', 'double_down', 'last_wish'].includes(entry.type)) return false;
-    if (!sameJson(patch.history.slice(1), (current.history || []).slice(0, 49))) return false;
+    const existingHistory = current.history || [];
+    if (!patch.history.slice(1).every((item) => existingHistory.some((oldItem) => sameJson(oldItem, item)))) return false;
     if (entry.type === 'snitch_vote' && entry.voter !== player.name) return false;
     if (entry.type === 'double_down' && entry.player !== player.name) return false;
   }
