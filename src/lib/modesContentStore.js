@@ -101,7 +101,7 @@ export function applyScenarioCollections(modeId, selectedIds = []) {
     const target = collection.targetArr || collection.arr;
     if (seen.has(target)) return;
     seen.add(target);
-    snapshots.push({ target, values: JSON.parse(JSON.stringify(target)), collection });
+    snapshots.push({ target, values: JSON.parse(JSON.stringify(collection.targetArr ? collection.arr : target)), collection });
     if (!selected.has(collection.id)) {
       const defaults = defaultsOf(collection.id);
       const runtimeDefaults = collection.toRuntime ? collection.toRuntime(defaults) : defaults;
@@ -109,7 +109,8 @@ export function applyScenarioCollections(modeId, selectedIds = []) {
     }
   });
   return () => snapshots.forEach(({ target, values, collection }) => {
-    target.splice(0, target.length, ...values);
-    if (collection.toRuntime) collection.toRuntime(values);
+    const restored = collection.targetArr && collection.toRuntime ? collection.toRuntime(values) : values;
+    target.splice(0, target.length, ...restored);
+    if (!collection.targetArr && collection.toRuntime) collection.toRuntime(values);
   });
 }
