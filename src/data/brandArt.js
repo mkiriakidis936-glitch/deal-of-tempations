@@ -101,12 +101,12 @@ export function applyMediaOverrides(o = {}) {
     const coverId = `modeCover_${id}`;
     const cover = str(saved.cover) || str(o[coverId]) || (clearPhotos ? '' : DEFAULTS[coverId]);
     MODE_MEDIA[id] = {
-      hero: clearPhotos ? '' : (str(saved.hero) || ''),
+      hero: str(saved.hero) || '',
       cover,
-      sections: clearPhotos ? (Array.isArray(saved.sections) ? saved.sections.map((item) => ({ ...item, image: '' })) : []) : (Array.isArray(saved.sections) ? saved.sections : []),
-      gallery: clearPhotos ? [] : (Array.isArray(saved.gallery) ? saved.gallery.filter(str) : []),
-      cards: clearPhotos ? (Array.isArray(saved.cards) ? saved.cards.map((item) => ({ ...item, image: '' })) : []) : (Array.isArray(saved.cards) ? saved.cards : []),
-      trailer: clearVideos ? '' : (str(saved.trailer) || ''),
+      sections: Array.isArray(saved.sections) ? saved.sections : [],
+      gallery: Array.isArray(saved.gallery) ? saved.gallery.filter(str) : [],
+      cards: Array.isArray(saved.cards) ? saved.cards : [],
+      trailer: str(saved.trailer) || '',
     };
     MODE_COVERS[coverId] = cover;
   }
