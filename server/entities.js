@@ -518,9 +518,10 @@ export function entityRoutes() {
   });
 
   r.delete('/:entity/:id', guard('delete'), async (req, res) => {
-    const { rowCount } = await query('DELETE FROM records WHERE id = $1 AND entity = $2', [req.params.id, req.entity]);
-    if (!rowCount) return res.status(404).json({ error: 'Not found' });
-    broadcast(req.entity, { type: 'delete', id: req.params.id, data: { id: req.params.id } });
+    const { rows } = await query('DELETE FROM records WHERE id = $1 AND entity = $2 RETURNING data', [req.params.id, req.entity]);
+    if (!rows[0]) return res.status(404).json({ error: 'Not found' });
+    const data = { id: req.params.id, ...(req.entity === 'GameSession' ? { sessionCode: rows[0].data?.sessionCode } : {}) };
+    broadcast(req.entity, { type: 'delete', id: req.params.id, data });
     res.json({ success: true });
   });
 
