@@ -16,6 +16,7 @@ import SiteContact from '@/components/site/SiteContact';
 import { getSiteContent, SITE_EVENTS } from '@/data/siteContent';
 import { ART, PHOTO, MODE_COVERS, MODE_MEDIA } from '@/data/brandArt';
 import { trackVisit } from '@/lib/track';
+import { applyTranslationKeys, LANGUAGES } from '@/lib/i18n';
 
 const MODE_IDS = {
   extended: 'pedi_extended',
@@ -58,7 +59,10 @@ export default function Site() {
   const evParam = params.get('event');
   const isHome = !SITE_EVENTS.some((event) => event.id === evParam);
   const ev = isHome ? 'heist' : evParam;
-  const c = getSiteContent(ev);
+  const language = params.get('lang') || 'el';
+  const [translations, setTranslations] = useState({});
+  const c = applyTranslationKeys(getSiteContent(ev), ev, translations, language);
+  const translatedHome = applyTranslationKeys(homeContent, 'home', translations, language);
   const [globalDate, setGlobalDate] = useState('');
   const eventDate = c.date || globalDate;
   const pageContent = isHome ? { ...c, cta: homeContent.cta } : c;
@@ -69,10 +73,17 @@ export default function Site() {
 
   useEffect(() => { trackVisit(isHome ? '/site' : `/site?event=${ev}`); }, [isHome, ev]);
   useEffect(() => {
+    base44.entities.AppSetting.filter({ key: 'site_admin_translations' }, { limit: 1 })
+      .then(({ items }) => setTranslations(items?.[0]?.value?.translations || {}))
+      .catch(() => {});
+  }, []);
+  useEffect(() => {
     base44.entities.AppSetting.filter({ key: 'event_date' }, { limit: 1 })
       .then(({ items }) => { if (items?.[0]?.value) setGlobalDate(items[0].value); })
       .catch(() => {});
   }, []);
+
+  const setLanguage = (next) => setParams((current) => { const p = new URLSearchParams(current); p.set('lang', next); return p; }, { replace: true });
 
   const setEvent = (id) => {
     setParams(id === 'home' ? {} : { event: id }, { replace: true });
@@ -93,10 +104,11 @@ export default function Site() {
 
   return (
     <div className="min-h-screen overflow-hidden bg-background text-foreground">
+      <div className="flex justify-end px-4 pt-3"><label className="text-[10px] tracking-widest text-tarot-gold/70 uppercase">Language <select aria-label="Language" value={language} onChange={(e) => setLanguage(e.target.value)} className="ml-2 bg-black/70 border border-tarot-gold/30 rounded px-2 py-1 text-xs text-foreground">{LANGUAGES.map((item) => <option key={item.id} value={item.id}>{item.label}</option>)}</select></label></div>
       <SiteNav ev={isHome ? '' : ev} onEvent={setEvent} c={pageContent} isHome={isHome} onRegister={register} />
       {isHome ? (
         <>
-          <SiteHero c={homeContent} ev="home" eventDate="" heroSrc={PHOTO.siteHero} onCta={register} />
+          <SiteHero c={translatedHome} ev="home" eventDate="" heroSrc={PHOTO.siteHero} onCta={register} />
           <SiteAbout />
           <SiteModes onSelect={setEvent} />
           <SiteVideo c={{ videoTitle: 'VIDEO & TRAILERS' }} />
