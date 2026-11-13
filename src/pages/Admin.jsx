@@ -28,6 +28,11 @@ import AdminCustomScenarios from '@/components/admin/AdminCustomScenarios';
 import AdminFormsBuilder from '@/components/admin/AdminFormsBuilder';
 import AdminNotifications from '@/components/admin/AdminNotifications';
 import AdminVisits from '@/components/admin/AdminVisits';
+import AdminDigitalInvitations from '@/components/admin/AdminDigitalInvitations';
+import AdminMultilingual from '@/components/admin/AdminMultilingual';
+import AdminPlayerCheckin from '@/components/admin/AdminPlayerCheckin';
+import AdminGameTimeline from '@/components/admin/AdminGameTimeline';
+import AdminHostControlCenter from '@/components/admin/AdminHostControlCenter';
 import { setActiveSessionCode } from '@/lib/activeSession';
 
 const NAV_GROUPS = [
@@ -43,6 +48,12 @@ const NAV_GROUPS = [
       { id: 'scenarios', label: '🎭 Scenarios' },
       { id: 'website', label: '🌐 Website Editor' },
       { id: 'media', label: '🖼️ Media Center' },
+      { id: 'invitations', label: '✉️ Digital Invitations' },
+      { id: 'languages', label: '🌐 Multilingual Management' },
+      { id: 'notifications', label: '🔔 Notification Center' },
+      { id: 'checkin', label: '📷 QR Player Check-in' },
+      { id: 'timeline', label: '🕒 Live Game Timeline' },
+      { id: 'host', label: '🎛️ Host Control Center' },
       { id: 'forms', label: '📝 Forms Manager' },
       { id: 'statistics', label: '📈 Statistics' },
       { id: 'sessions', label: '🎲 Game Sessions' },
@@ -64,7 +75,7 @@ const LEGACY_TABS = {
   special: 'editor',
   site: 'website',
   eventinfo: 'settings',
-  notifications: 'settings',
+  notifications: 'notifications',
   backup: 'settings',
   guide: 'settings',
   meta: 'achievements',
@@ -187,6 +198,18 @@ export default function Admin() {
         return <AdminSite />;
       case 'media':
         return <AdminMedia />;
+      case 'invitations':
+        return <AdminDigitalInvitations />;
+      case 'languages':
+        return <AdminMultilingual />;
+      case 'notifications':
+        return <AdminNotifications />;
+      case 'checkin':
+        return <AdminPlayerCheckin session={activeSession} />;
+      case 'timeline':
+        return <AdminGameTimeline session={activeSession} />;
+      case 'host':
+        return <AdminHostControlCenter session={activeSession} onUpdate={handleUpdateSession} />;
       case 'forms':
         return (
           <div className="space-y-6">
@@ -239,8 +262,6 @@ export default function Admin() {
         );
       case 'leaderboard':
         return <AdminLeaderboard />;
-      case 'notifications':
-        return <AdminNotifications />;
       case 'visits':
         return <AdminVisits />;
       case 'intakes':
