@@ -247,6 +247,48 @@ function validatePlayerPatch(current, patch, playerId) {
   return true;
 }
 
+function sanitizePublicSession(record, playerId = null) {
+  if (!record?.state || !isObject(record.state)) return record;
+  const state = { ...record.state };
+  const ownMap = (value) => {
+    if (!playerId || !isObject(value) || value[playerId] === undefined) return {};
+    return { [playerId]: value[playerId] };
+  };
+
+  if ('privateMessages' in state) state.privateMessages = ownMap(state.privateMessages);
+  if (state.pajama && Array.isArray(state.pajama.confessions)) {
+    state.pajama = {
+      ...state.pajama,
+      confessions: state.pajama.confessions.map((item) =>
+        item.playerId === playerId ? item : { playerId: item.playerId }
+      ),
+    };
+  }
+  if (state.mg && isObject(state.mg)) {
+    const mg = { ...state.mg, missions: ownMap(state.mg.missions), chaosCards: ownMap(state.mg.chaosCards) };
+    if (mg.card && mg.card.playerId !== playerId) mg.card = null;
+    if (mg.branch !== playerId) mg.branch = null;
+    state.mg = mg;
+  }
+  if (state.sealedVotes && isObject(state.sealedVotes)) {
+    state.sealedVotes = Object.fromEntries(Object.entries(state.sealedVotes).map(([id, vote]) => [
+      id,
+      vote?.revealed ? vote : { ...vote, votes: ownMap(vote?.votes) },
+    ]));
+  }
+  if (state.juryTrial) state.juryTrial = { ...state.juryTrial, votes: ownMap(state.juryTrial.votes) };
+  if (state.grandJury) state.grandJury = {
+    ...state.grandJury,
+    queenVotes: ownMap(state.grandJury.queenVotes),
+    championVotes: ownMap(state.grandJury.championVotes),
+  };
+  if (state.midnightPact) state.midnightPact = { ...state.midnightPact, offers: ownMap(state.midnightPact.offers) };
+  if (state.lastWish) state.lastWish = { ...state.lastWish, votes: ownMap(state.lastWish.votes) };
+  if (state.timeCapsule) state.timeCapsule = ownMap(state.timeCapsule);
+
+  return { ...record, state };
+}
+
 const FIELD = /^[A-Za-z0-9_]+$/;
 const BUILTIN_COLS = { id: 'id', created_date: 'created_date', updated_date: 'updated_date', created_by: 'created_by' };
 const MAX_LIMIT = 1000;
@@ -286,13 +328,16 @@ function buildWhere(entity, q, params) {
 }
 
 // ---------- realtime ----------
-const streams = new Map(); // entity -> Set<{ res, sessionCode }>
+const streams = new Map(); // entity -> Set<{ res, sessionCode, playerId, isPublic }>
 function broadcast(entity, event) {
   const set = streams.get(entity);
   if (!set) return;
-  const payload = `data: ${JSON.stringify(event)}\n\n`;
   for (const subscriber of set) {
-    if (!subscriber.sessionCode || event.data?.sessionCode === subscriber.sessionCode) subscriber.res.write(payload);
+    if (subscriber.sessionCode && event.data?.sessionCode !== subscriber.sessionCode) continue;
+    const delivered = subscriber.isPublic && entity === 'GameSession'
+      ? { ...event, data: sanitizePublicSession(event.data, subscriber.playerId) }
+      : event;
+    subscriber.res.write(`data: ${JSON.stringify(delivered)}\n\n`);
   }
 }
 // keep proxies (Railway) from closing idle connections
@@ -311,19 +356,24 @@ export function entityRoutes() {
   // --- realtime stream (EventSource can't send headers; the token may come as ?token=) ---
   r.get('/:entity/stream', guard('read'), async (req, res) => {
     let sessionCode = null;
+    let playerId = null;
     if (req.entity === 'GameSession') {
       sessionCode = String(req.query.sessionCode || '').trim().toUpperCase() || null;
+      playerId = String(req.query.playerId || '') || null;
       if (!isAdmin(req) && !sessionCode) return res.status(400).json({ error: 'sessionCode required' });
       if (sessionCode) {
-        const { rowCount } = await query("SELECT 1 FROM records WHERE entity = 'GameSession' AND data->>'sessionCode' = $1 LIMIT 1", [sessionCode]);
-        if (!rowCount) return res.status(404).json({ error: 'Session not found' });
+        const { rows } = await query("SELECT data FROM records WHERE entity = 'GameSession' AND data->>'sessionCode' = $1 LIMIT 1", [sessionCode]);
+        if (!rows[0]) return res.status(404).json({ error: 'Session not found' });
+        if (!isAdmin(req) && playerId && !(rows[0].data?.state?.players || []).some((player) => player.id === playerId)) {
+          return res.status(403).json({ error: 'Unknown player' });
+        }
       }
     }
     res.set({ 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache, no-transform', Connection: 'keep-alive', 'X-Accel-Buffering': 'no' });
     res.flushHeaders();
     res.write('retry: 2000\n\n');
     if (!streams.has(req.entity)) streams.set(req.entity, new Set());
-    const subscriber = { res, sessionCode };
+    const subscriber = { res, sessionCode, playerId, isPublic: !isAdmin(req) };
     streams.get(req.entity).add(subscriber);
     req.on('close', () => streams.get(req.entity)?.delete(subscriber));
   });
@@ -336,10 +386,14 @@ export function entityRoutes() {
     let effectiveSkip = skip;
     if (req.entity === 'GameSession' && !isAdmin(req)) {
       const keys = Object.keys(effectiveQuery);
-      if (keys.length && (keys.length !== 1 || keys[0] !== 'sessionCode' || typeof effectiveQuery.sessionCode !== 'string')) {
+      if (keys.some((key) => !['sessionCode', 'playerId'].includes(key)) ||
+          (keys.includes('playerId') && (!keys.includes('sessionCode') || typeof effectiveQuery.playerId !== 'string')) ||
+          (keys.includes('sessionCode') && typeof effectiveQuery.sessionCode !== 'string')) {
         return res.status(403).json({ error: 'Only session-code lookup is available' });
       }
-      effectiveQuery = keys.length ? { sessionCode: effectiveQuery.sessionCode.trim().toUpperCase() } : {};
+      const playerId = effectiveQuery.playerId || null;
+      effectiveQuery = keys.includes('sessionCode') ? { sessionCode: effectiveQuery.sessionCode.trim().toUpperCase() } : {};
+      req.sessionViewerPlayerId = playerId;
       effectiveSort = '-created_date';
       effectiveLimit = 1;
       effectiveSkip = 0;
@@ -349,7 +403,8 @@ export function entityRoutes() {
     const lim = Math.min(Math.max(parseInt(effectiveLimit, 10) || 50, 1), req.entity === 'GameSession' && !isAdmin(req) ? 1 : MAX_LIMIT);
     const off = Math.max(parseInt(effectiveSkip, 10) || 0, 0);
     const { rows } = await query(`SELECT * FROM records WHERE ${where} ORDER BY ${orderBy(effectiveSort)} LIMIT ${lim} OFFSET ${off}`, params);
-    res.json({ items: rows.map(toRecord) });
+    const items = rows.map(toRecord);
+    res.json({ items: req.entity === 'GameSession' && !isAdmin(req) ? items.map((item) => sanitizePublicSession(item, req.sessionViewerPlayerId)) : items });
   });
 
   r.post('/:entity/count', guard('count'), async (req, res) => {
@@ -444,7 +499,7 @@ export function entityRoutes() {
         await client.query('COMMIT');
         const rec = toRecord(rows[0]);
         broadcast(req.entity, { type: 'update', id: rec.id, data: rec });
-        return res.json(rec);
+        return res.json(sanitizePublicSession(rec, playerId));
       } catch (error) {
         await client.query('ROLLBACK').catch(() => {});
         throw error;
