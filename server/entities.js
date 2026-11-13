@@ -32,6 +32,7 @@ const rules = {
   Chronicle:      { read: ADMIN, create: ADMIN, update: ADMIN, delete: ADMIN },
   // Sessions are created and deleted by the Game Master. Player writes use the
   // session-scoped, validated update path below.
+  GameSession:     { create: ADMIN, delete: ADMIN },
 };
 const needsAdmin = (entity, op) => (rules[entity]?.[op] || 'public') === ADMIN;
 const isAdmin = (req) => req.user?.role === 'admin';
@@ -241,13 +242,23 @@ export function entityRoutes() {
   const guard = (op) => (req, res, next) => (needsAdmin(req.entity, op) ? requireAdmin(req, res, next) : next());
 
   // --- realtime stream (EventSource can't send headers; the token may come as ?token=) ---
-  r.get('/:entity/stream', guard('read'), (req, res) => {
+  r.get('/:entity/stream', guard('read'), async (req, res) => {
+    let sessionCode = null;
+    if (req.entity === 'GameSession') {
+      sessionCode = String(req.query.sessionCode || '').trim().toUpperCase() || null;
+      if (!isAdmin(req) && !sessionCode) return res.status(400).json({ error: 'sessionCode required' });
+      if (sessionCode) {
+        const { rowCount } = await query("SELECT 1 FROM records WHERE entity = 'GameSession' AND data->>'sessionCode' = $1 LIMIT 1", [sessionCode]);
+        if (!rowCount) return res.status(404).json({ error: 'Session not found' });
+      }
+    }
     res.set({ 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache, no-transform', Connection: 'keep-alive', 'X-Accel-Buffering': 'no' });
     res.flushHeaders();
-    res.write('retry: 2000\n\n');
+    res.write('retry: 2000\\n\\n');
     if (!streams.has(req.entity)) streams.set(req.entity, new Set());
-    streams.get(req.entity).add(res);
-    req.on('close', () => streams.get(req.entity)?.delete(res));
+    const subscriber = { res, sessionCode };
+    streams.get(req.entity).add(subscriber);
+    req.on('close', () => streams.get(req.entity)?.delete(subscriber));
   });
 
   r.post('/:entity/filter', guard('read'), async (req, res) => {
