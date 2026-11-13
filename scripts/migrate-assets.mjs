@@ -34,6 +34,7 @@ for (const f of files) {
   if (base) for (const m of s.matchAll(/\$\{BASE\}([^`'"\s]+)/g)) urls.add(base[1] + m[1]);
 }
 
+for (const u of [...urls]) if (u.endsWith('/')) urls.delete(u);
 if (!urls.size) { console.log('Nothing to migrate: no Base44-hosted assets found.'); process.exit(0); }
 await fs.mkdir(OUT, { recursive: true });
 
@@ -43,6 +44,11 @@ for (const url of urls) {
   const name = decodeURIComponent(url.split('/').pop().split('?')[0]);
   const dest = path.join(OUT, name);
   try {
+    if (await fs.access(dest).then(() => true, () => false)) {
+      mapping.set(url, `/assets/${name}`);
+      console.log('= (υπάρχει ήδη)', name);
+      continue;
+    }
     const res = await fetch(url);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     await fs.writeFile(dest, Buffer.from(await res.arrayBuffer()));
