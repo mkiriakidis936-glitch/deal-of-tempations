@@ -25,7 +25,6 @@ import AdminMedia from '@/components/admin/AdminMedia';
 import AdminSite from '@/components/admin/AdminSite';
 import AdminNotifications from '@/components/admin/AdminNotifications';
 import AdminVisits from '@/components/admin/AdminVisits';
-import AdminBackup from '@/components/admin/AdminBackup';
 import { setActiveSessionCode } from '@/lib/activeSession';
 
 const NAV_GROUPS = [
