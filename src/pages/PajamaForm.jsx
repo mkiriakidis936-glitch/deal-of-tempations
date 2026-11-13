@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
+import { ART } from '@/data/brandArt';
 const PAJAMA_TITLE = 'Pajama Pedi-Glam';
 
 const NAIL_COLORS = ['Red', 'Pink', 'White', 'Black', 'Nude', 'French', 'Blue', 'Purple', 'Green', 'Orange', 'Gold', 'Silver', 'None'];
@@ -20,6 +21,8 @@ export default function PajamaForm() {
   });
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+
+  const progress = Math.round(([form.name.trim(), form.safeWordConfirmed].filter(Boolean).length / 2) * 100);
 
   function set(field, value) {
     setForm((f) => ({ ...f, [field]: value }));
@@ -62,12 +65,15 @@ export default function PajamaForm() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-purple-950 via-pink-950 to-slate-950 text-pink-50 p-4 pb-16">
       <div className="max-w-xl mx-auto space-y-3">
-        <div className="text-center pt-4">
+        <div className="text-center pt-4 rounded-2xl border border-pink-400/30 bg-black/30 p-4 shadow-2xl">
+          <img src={ART.photoPediGlam} alt="Pajama Pedi-Glam" className="w-full h-44 sm:h-56 object-cover rounded-xl mb-4" />
           <div className="text-5xl">🛏️🩴💅🎀</div>
           <h1 className="font-heading text-2xl sm:text-3xl text-pink-100 drop-shadow-[0_0_18px_rgba(255,105,180,0.85)] mt-1">
             {PAJAMA_TITLE}
           </h1>
           <p className="text-sm text-pink-300 mt-1">Συμπλήρωσε τα στοιχεία σου πριν το πιτζάμα πάρτι.</p>
+          <div className="mt-4 flex justify-between text-xs text-pink-200"><span>ΠΡΟΟΔΟΣ ΦΟΡΜΑΣ</span><span>{progress}%</span></div>
+          <div className="mt-2 h-2 rounded-full bg-slate-800 overflow-hidden"><div className="h-full bg-gradient-to-r from-pink-500 to-fuchsia-300 rounded-full transition-all" style={{ width: `${progress}%` }} /></div>
         </div>
 
         <div className="rounded-xl border border-pink-500/40 bg-pink-950/50 p-3 space-y-3">
