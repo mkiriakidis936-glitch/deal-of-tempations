@@ -120,9 +120,11 @@ function validatePlayerPatch(current, patch, playerId) {
     const after = patch.timeCapsule?.[playerId];
     if (before?.submitted && !sameJson(before, after)) return false;
     if (after !== undefined) {
-      if (!isObject(after) || ['firstArrest', 'finalist', 'traitor'].some((key) =>
-        after[key] && !playerIds.has((current.players || []).find((item) => item.name === after[key])?.id)
-      )) return false;
+      if (!isObject(after) || typeof after.submitted !== 'boolean' || ['firstArrest', 'finalist', 'traitor'].some((key) => {
+        if (!after[key]) return false;
+        const target = (current.players || []).find((item) => item.name === after[key]);
+        return !target || target.id === playerId;
+      })) return false;
     }
   }
 
@@ -188,6 +190,8 @@ function validatePlayerPatch(current, patch, playerId) {
           typeof next.wish !== 'string' || !next.wish.trim() || next.wish.length > 160 ||
           next.phase !== 'vote' || !isObject(next.votes) || Object.keys(next.votes).length) return false;
     } else if (old.phase === 'vote') {
+      if (next.phase === 'result' && playerId !== old.playerId) return false;
+      if (next.votes?.[playerId] !== undefined && playerId === old.playerId) return false;
       if (!noChangesOutsideKeys(old, next, ['votes', 'phase', 'accepted']) ||
           !onlyOwnMapEntryChanged(old.votes || {}, next.votes || {}, playerId)) return false;
       if (next.phase === 'result') {
