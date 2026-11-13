@@ -11,6 +11,7 @@ import AdminDashboard from '@/components/admin/AdminDashboard';
 import AdminOverview from '@/components/admin/AdminOverview';
 import AdminSettings from '@/components/admin/AdminSettings';
 import AdminSessions from '@/components/admin/AdminSessions';
+import AdminSessionRecovery from '@/components/admin/AdminSessionRecovery';
 import AdminPlayers from '@/components/admin/AdminPlayers';
 import AdminGuide from '@/components/admin/AdminGuide';
 import AdminIntakes from '@/components/admin/AdminIntakes';
@@ -43,6 +44,7 @@ const NAV_GROUPS = [
       { id: 'forms', label: '📝 Forms Manager' },
       { id: 'statistics', label: '📈 Statistics' },
       { id: 'sessions', label: '🎲 Game Sessions' },
+      { id: 'recovery', label: '🛟 Session Recovery' },
       { id: 'settings', label: '⚙️ Settings' },
       { id: 'links', label: '🔗 Links & QR Codes' },
     ],
@@ -176,6 +178,8 @@ export default function Admin() {
         );
       case 'settings':
         return <AdminSettings />;
+      case 'recovery':
+        return <AdminSessionRecovery />;
       case 'sessions':
         return (
           <AdminSessions
