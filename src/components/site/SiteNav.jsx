@@ -11,7 +11,7 @@ const LINKS = [
   { href: '#faq', label: 'Ερωτήσεις' },
 ];
 
-export default function SiteNav({ ev, onEvent, c }) {
+export default function SiteNav({ ev, onEvent, c, isHome = false }) {
   const navigate = useNavigate();
   return (
     <header className="sticky top-0 z-40 border-b border-tarot-gold/25 bg-background/85 backdrop-blur">
@@ -33,13 +33,13 @@ export default function SiteNav({ ev, onEvent, c }) {
           ΚΡΑΤΗΣΗ
         </button>
       </div>
-      <div className="max-w-6xl mx-auto px-4 pb-2 flex flex-wrap justify-center gap-2">
+      <div className="max-w-6xl mx-auto px-4 pb-2 flex gap-2 overflow-x-auto whitespace-nowrap scrollbar-hide">
         {SITE_EVENTS.map((e) => (
           <button
             key={e.id}
             onClick={() => onEvent(e.id)}
             className={cn(
-              'min-h-[40px] px-3 sm:px-5 text-[10px] sm:text-[11px] tracking-[0.18em] uppercase rounded-full border transition-colors',
+              'min-h-[38px] shrink-0 px-3 sm:px-4 text-[9px] sm:text-[10px] tracking-[0.14em] uppercase rounded-full border transition-colors',
               ev === e.id
                 ? 'border-tarot-gold text-tarot-gold bg-tarot-gold/10'
                 : 'border-foreground/20 text-foreground/50 hover:text-tarot-gold hover:border-tarot-gold/50'
