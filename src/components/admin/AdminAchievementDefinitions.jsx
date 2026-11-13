@@ -30,7 +30,7 @@ export default function AdminAchievementDefinitions() {
     setBusy(true);
     setMessage('');
     try {
-      const value = { items: items.map(({ id, name, icon, desc, reward }) => ({ id, name, icon, desc, reward: reward || '' })) };
+      const value = { items: items.map(({ id, name, icon, desc, reward, conditionId, enabled }) => ({ id, name, icon, desc, reward: reward || '', conditionId, enabled: enabled !== false })) };
       if (record?.id) await saveAdminSettingVersion(ACHIEVEMENTS_SETTING_KEY, record.value || { items: ACHIEVEMENTS });
       if (record?.id) await base44.entities.AppSetting.update(record.id, { value });
       else setRecord(await base44.entities.AppSetting.create({ key: ACHIEVEMENTS_SETTING_KEY, value }));
@@ -43,12 +43,14 @@ export default function AdminAchievementDefinitions() {
   return (
     <ComicPanel className="bg-card space-y-3">
       <div className="font-heading text-lg">ΟΡΙΣΜΟΙ ACHIEVEMENTS</div>
-      <p className="text-xs text-foreground/60">Επεξεργασία των τεσσάρων υπαρχόντων achievements. Τα IDs και οι κανόνες απονομής του παιχνιδιού παραμένουν αμετάβλητα.</p>
+      <p className="text-xs text-foreground/60">Διαχείριση των τεσσάρων υπαρχόντων achievements. Μπορείς να ενεργοποιήσεις/απενεργοποιήσεις κάθε achievement και να αντιστοιχίσεις μόνο έναν από τους ήδη υπάρχοντες κανόνες του παιχνιδιού.</p>
       {items.map((item) => (
         <div key={item.id} className="rounded-lg border border-border/50 p-3 space-y-2">
           <div className="text-[10px] text-foreground/50">{item.id}</div>
           <label className="block text-xs font-bold">Εικονίδιο<input className="mt-1 w-full rounded border bg-background p-2" value={item.icon} onChange={(e) => update(item.id, 'icon', e.target.value)} /></label>
           <label className="block text-xs font-bold">Τίτλος<input className="mt-1 w-full rounded border bg-background p-2" value={item.name} onChange={(e) => update(item.id, 'name', e.target.value)} /></label>
+          <label className="block text-xs font-bold">Κανόνας απονομής<select className="mt-1 w-full rounded border bg-background p-2" value={item.conditionId || ''} onChange={(e) => update(item.id, 'conditionId', e.target.value)}><option value="pajama_top_score">Πρώτη θέση σε σκορ Pajama Pedi-Glam</option><option value="pajama_saboteur">Secret Saboteur σε Pajama</option><option value="classic_highest_bounty">Μεγαλύτερο bounty σε Classic</option><option value="winning_team">Μέλος νικήτριας ομάδας</option></select></label>
+          <label className="flex items-center gap-2 text-xs font-bold"><input type="checkbox" checked={item.enabled !== false} onChange={(e) => update(item.id, 'enabled', e.target.checked)} /> Ενεργό — απονομή achievement</label>
           <label className="block text-xs font-bold">Περιγραφή / υφιστάμενος κανόνας<textarea rows={2} className="mt-1 w-full rounded border bg-background p-2" value={item.desc} onChange={(e) => update(item.id, 'desc', e.target.value)} /></label>
           <label className="block text-xs font-bold">Ανταμοιβή / unlock description (προαιρετικό)<input className="mt-1 w-full rounded border bg-background p-2" value={item.reward || ''} onChange={(e) => update(item.id, 'reward', e.target.value)} placeholder="Περιγραφή ανταμοιβής — χωρίς αλλαγή στους κανόνες απονομής" /></label>
         </div>
