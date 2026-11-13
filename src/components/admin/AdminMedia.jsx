@@ -9,7 +9,7 @@ import { MEDIA_KEY, fetchOverrides, uploadMedia, listMedia, deleteMedia, deleteA
 const IMG_ACCEPT = 'image/*,.jpg,.jpeg,.png,.webp,.gif,.avif,.heic';
 const VID_ACCEPT = 'video/*,.mp4,.webm,.mov';
 const MEDIA_ACCEPT = 'image/*,video/*,.jpg,.jpeg,.png,.webp,.gif,.avif,.heic,.mp4,.webm,.mov';
-const isVideoFile = (url) => /\\.(mp4|webm|mov)(?:[?#]|$)/i.test(url || '');
+const isVideoFile = (url) => /\.(mp4|webm|mov)(?:[?#]|$)/i.test(url || '');
 const mb = (n) => (n >= 1048576 ? `${(n / 1048576).toFixed(1)} MB` : `${Math.max(1, Math.round(n / 1024))} KB`);
 
 function Thumb({ src, video, className = '' }) {
@@ -57,7 +57,8 @@ export default function AdminMedia() {
   }, [refreshLibrary]);
 
   const save = async (next) => {
-    const clean = Object.fromEntries(Object.entries(next).filter(([k, v]) => (k.startsWith('clearAll') ? !!v : (Array.isArray(v) ? v.length : v))));
+    const galleryIds = ['heistPhotos', 'pajamaPhotos', 'siteVideos'];
+    const clean = Object.fromEntries(Object.entries(next).filter(([k, v]) => (k.startsWith('clearAll') ? !!v : (Array.isArray(v) ? (v.length > 0 || galleryIds.includes(k)) : v))));
     if (rec?.id) await base44.entities.AppSetting.update(rec.id, { value: clean });
     else setRec(await base44.entities.AppSetting.create({ key: MEDIA_KEY, value: clean }));
     applyMediaOverrides(clean);
