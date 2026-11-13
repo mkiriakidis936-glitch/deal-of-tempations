@@ -13,8 +13,8 @@ const SUB_TABS = [
   { id: 'achievements', label: '🏅 Achievements' },
 ];
 
-export default function AdminMeta() {
-  const [subTab, setSubTab] = useState('chronicle');
+export default function AdminMeta({ initialTab = 'chronicle' }) {
+  const [subTab, setSubTab] = useState(initialTab);
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
 

@@ -6,6 +6,7 @@ import ComicButton from '@/components/comic/ComicButton';
 import AdminNav, { AdminTabBar } from '@/components/admin/AdminNav';
 import AdminSessionBar from '@/components/admin/AdminSessionBar';
 import AdminContentHub from '@/components/admin/AdminContentHub';
+import AdminContent from '@/components/admin/AdminContent';
 import AdminDashboard from '@/components/admin/AdminDashboard';
 import AdminSessions from '@/components/admin/AdminSessions';
 import AdminPlayers from '@/components/admin/AdminPlayers';
@@ -27,58 +28,46 @@ import { setActiveSessionCode } from '@/lib/activeSession';
 
 const NAV_GROUPS = [
   {
-    id: 'game',
-    label: 'ΠΑΙΧΝΙΔΙ',
+    id: 'control-center',
+    label: 'CONTROL CENTER',
     tabs: [
       { id: 'dashboard', label: '📊 Dashboard' },
-      { id: 'sessions', label: '🎮 Συνεδρίες' },
-      { id: 'players', label: '👥 Παίκτριες' },
-      { id: 'blitz', label: '⚡ 8 Δευτερόλεπτα' },
-      { id: 'links', label: '🔗 Σύνδεση & QR' },
-      { id: 'leaderboard', label: '🏅 Κατάταξη' },
-    ],
-  },
-  {
-    id: 'content',
-    label: 'ΠΕΡΙΕΧΟΜΕΝΟ',
-    tabs: [
-      { id: 'content', label: '🎮 Modes & Περιεχόμενο' },
-      { id: 'site', label: '🌐 Site & Σενάριο' },
-      { id: 'media', label: '🖼️ Φωτογραφίες & Βίντεο' },
-    ],
-  },
-  {
-    id: 'event',
-    label: 'ΔΙΟΡΓΑΝΩΣΗ',
-    tabs: [
-      { id: 'intakes', label: '📝 Ερωτηματολόγια' },
-      { id: 'rsvp', label: '💌 Προσκλήσεις' },
-      { id: 'eventinfo', label: '📅 Πρακτικά' },
-      { id: 'grandjury', label: '📜 Κατηγορητήριο' },
-    ],
-  },
-  {
-    id: 'system',
-    label: 'ΣΥΣΤΗΜΑ',
-    tabs: [
-      { id: 'notifications', label: '🔔 Ειδοποιήσεις' },
-      { id: 'visits', label: '📈 Επισκέψεις Site' },
-      { id: 'backup', label: '💾 Αντίγραφα' },
-      { id: 'guide', label: '📖 Οδηγός' },
-      { id: 'meta', label: '🔮 Meta-Game' },
+      { id: 'modes', label: '🎮 Game Modes' },
+      { id: 'editor', label: '🃏 Game Editor' },
+      { id: 'players', label: '👥 Players' },
+      { id: 'achievements', label: '🏅 Achievements' },
+      { id: 'scenarios', label: '🎭 Scenarios' },
+      { id: 'website', label: '🌐 Website Editor' },
+      { id: 'media', label: '🖼️ Media Center' },
+      { id: 'forms', label: '📝 Forms Manager' },
+      { id: 'statistics', label: '📈 Statistics' },
+      { id: 'sessions', label: '🎲 Game Sessions' },
+      { id: 'settings', label: '⚙️ Settings' },
     ],
   },
 ];
-
 const LEGACY_TABS = {
-  modes: 'content',
-  pajama: 'content',
-  board: 'content',
-  cards: 'content',
-  classic: 'content',
-  marathon: 'content',
-  arrest_heist: 'content',
-  special: 'content',
+  content: 'editor',
+  modes: 'modes',
+  pajama: 'editor',
+  board: 'editor',
+  cards: 'editor',
+  classic: 'editor',
+  marathon: 'editor',
+  arrest_heist: 'editor',
+  special: 'editor',
+  site: 'website',
+  eventinfo: 'settings',
+  notifications: 'settings',
+  backup: 'settings',
+  guide: 'settings',
+  meta: 'achievements',
+  visits: 'statistics',
+  intakes: 'forms',
+  rsvp: 'forms',
+  links: 'settings',
+  blitz: 'players',
+  leaderboard: 'achievements',
 };
 
 export default function Admin() {
@@ -158,8 +147,41 @@ export default function Admin() {
 
   function renderTab() {
     switch (tab) {
-      case 'backup':
-        return <AdminBackup />;
+      case 'modes':
+        return <AdminContentHub />;
+      case 'editor':
+        return <AdminContent />;
+      case 'achievements':
+        return <AdminMeta initialTab="achievements" />;
+      case 'scenarios':
+        return <AdminSite focusScenario />;
+      case 'website':
+        return <AdminSite />;
+      case 'media':
+        return <AdminMedia />;
+      case 'forms':
+        return (
+          <div className="space-y-6">
+            <AdminIntakes />
+            <AdminRSVP />
+          </div>
+        );
+      case 'statistics':
+        return (
+          <div className="space-y-6">
+            <AdminDashboard sessions={sessions} loading={loading} />
+            <AdminVisits />
+          </div>
+        );
+      case 'settings':
+        return (
+          <div className="space-y-6">
+            <AdminEventInfo />
+            <AdminNotifications />
+            <AdminBackup />
+            <AdminGuide />
+          </div>
+        );
       case 'sessions':
         return (
           <AdminSessions
@@ -193,12 +215,6 @@ export default function Admin() {
         );
       case 'leaderboard':
         return <AdminLeaderboard />;
-      case 'content':
-        return <AdminContentHub />;
-      case 'site':
-        return <AdminSite />;
-      case 'media':
-        return <AdminMedia />;
       case 'notifications':
         return <AdminNotifications />;
       case 'visits':
@@ -225,8 +241,8 @@ export default function Admin() {
       <div className="max-w-6xl mx-auto space-y-3">
         <ComicPanel className="bg-secondary flex items-center justify-between gap-2">
           <div className="min-w-0">
-            <div className="font-heading text-2xl sm:text-3xl comic-text-stroke text-primary">🔧 ADMIN PANEL</div>
-            <div className="text-[11px] sm:text-xs font-bold text-foreground/70 font-body truncate">DEAL OF TEMPTATION — Διαχείριση</div>
+            <div className="font-heading text-2xl sm:text-3xl comic-text-stroke text-primary">🔧 CONTROL CENTER</div>
+            <div className="text-[11px] sm:text-xs font-bold text-foreground/70 font-body truncate">DEAL OF TEMPTATION — Κεντρική διαχείριση εφαρμογής</div>
           </div>
           <ComicButton variant="dark" size="sm" onClick={loadSessions} disabled={loading}>
             🔄 <span className="hidden sm:inline">{loading ? 'ΦΟΡΤΩΣΗ...' : 'ΑΝΑΝΕΩΣΗ'}</span>
