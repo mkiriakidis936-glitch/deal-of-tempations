@@ -88,7 +88,6 @@ export async function saveModesContent(next) {
 // Applies a scenario's selected existing content collections only for the active game session.
 export function applyScenarioCollections(modeId, selectedIds = []) {
   const selected = new Set(selectedIds);
-  if (!selected.size) return () => {};
   const relevant = COLLECTIONS.filter((collection) => {
     if (modeId === 'pedi_extended' || modeId === 'marathon_4h') return /Pedi-Glam|Act 1|Act 2|Act 4|Marathon/i.test(collection.group);
     if (modeId === 'lockdown') return /Pajama Lockdown/i.test(collection.group);
