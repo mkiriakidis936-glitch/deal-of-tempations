@@ -1,6 +1,5 @@
 import React from 'react';
 import ComicPanel from '@/components/comic/ComicPanel';
-import ComicButton from '@/components/comic/ComicButton';
 
 export default function SealedVote({ state, updateState, selectedPlayerId }) {
   const sealed = state.sealedVotes || {};
