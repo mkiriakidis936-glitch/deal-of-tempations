@@ -67,7 +67,8 @@ export default function AdminDigitalInvitations() {
             <div className="font-heading text-lg">{item.title}</div>
             <div className="text-xs text-foreground/60 break-all my-2">{url}</div>
             <div className="flex flex-wrap gap-2">
-              <ComicButton size="sm" onClick={() => navigator.clipboard.writeText(url)}>ΑΝΤΙΓΡΑΦΗ LINK</ComicButton>
+              <ComicButton size="sm" onClick={() => { if (navigator.share) navigator.share({ title: item.title, url }).catch(() => {}); else navigator.clipboard.writeText(url); }}>ΑΠΟΣΤΟΛΗ / ΚΟΙΝΟΠΟΙΗΣΗ</ComicButton>
+              <ComicButton size="sm" variant="dark" onClick={() => navigator.clipboard.writeText(url)}>ΑΝΤΙΓΡΑΦΗ LINK</ComicButton>
               <ComicButton size="sm" variant="red" disabled={busy} onClick={() => save(items.filter((x) => x.id !== item.id))}>ΔΙΑΓΡΑΦΗ</ComicButton>
             </div>
           </div>
