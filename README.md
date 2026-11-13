@@ -72,7 +72,7 @@ npm run dev                 # frontend στο :5173 (proxy προς το API)
 
 **Στο Railway χρειάζεται Volume, αλλιώς τα αρχεία χάνονται σε κάθε deploy:**
 1. Στο project: **+ New → Volume**, σύνδεσέ το στο service της εφαρμογής, Mount path: `/data`.
-2. Στο service → **Variables**: `UPLOAD_DIR` = `/data/uploads` (προαιρετικά `MAX_UPLOAD_MB`, προεπιλογή 300).
+2. Στο service → **Variables**: `UPLOAD_DIR` = `/data/uploads` (προαιρετικά `MAX_UPLOAD_MB`, προεπιλογή 300). Αν το `UPLOAD_DIR` λείπει, ο server χρησιμοποιεί αυτόματα το `RAILWAY_VOLUME_MOUNT_PATH/uploads`.
 3. Redeploy.
 
 Τοπικά τα αρχεία πάνε στο `uploads/` (είναι στο `.gitignore`).
@@ -104,5 +104,5 @@ npm run dev                 # frontend στο :5173 (proxy προς το API)
 ### Φόρμα, Site & Admin για τα νέα modes
 - `/modes-form` (και `/modes-form?mode=lockdown`…): φόρμα όπου η καλεσμένη διαλέγει ένα ή περισσότερα modes. Αποθηκεύεται στο `PajamaIntake` (`formType: 'modes'`) και εγκρίνεται από Admin → Ερωτηματολόγια → Pajama (με φίλτρο ανά mode).
 - `/site?event=extended|lockdown|beachbar|marathon4h`: οι 4 νέες καρτέλες του site. Τα κείμενα αλλάζουν από Admin → 🌐 Site & Σενάριο.
-- Admin → 🎮 Νέα Modes: επεξεργασία καρτών, ερωτήσεων και αποστολών (αποθήκευση στο AppSetting `modes_content`).
+- Admin → 🎮 Νέα Modes: επεξεργασία καρτών, ερωτήσεων, αποστολών, mini-games, True/False, ASMR clues, επιλογών και ρυθμίσεων Lockdown, Chaos Powers, Shop και Beach Bar (αποθήκευση στο AppSetting `modes_content`). Τα στοιχεία που συνδέονται με σταθερούς μηχανισμούς δεν μπορούν να προστεθούν ή να διαγραφούν από το Admin.
 - Στο Setup του tablet, όταν διαλέξεις νέο mode, προ-συμπληρώνονται οι εγκεκριμένες που το ζήτησαν.
