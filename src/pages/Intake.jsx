@@ -3,6 +3,7 @@ import ComicPanel from '@/components/comic/ComicPanel';
 import ComicButton from '@/components/comic/ComicButton';
 import { base44 } from '@/api/base44Client';
 import { isIntakeEnabled } from '@/lib/intakeFlag';
+import { ART } from '@/data/brandArt';
 
 export default function Intake() {
   const [form, setForm] = useState({
@@ -59,6 +60,8 @@ export default function Intake() {
     setSaving(false);
   }
 
+  const progress = Math.round(([form.sessionCode.trim().length === 4, !!form.leaderName.trim(), !!form.accommodation, form.safeWordConfirmed].filter(Boolean).length / 4) * 100);
+
   if (saved) {
     return (
       <div className="min-h-screen comic-dots flex items-center justify-center p-4">
@@ -75,9 +78,12 @@ export default function Intake() {
   return (
     <div className="min-h-screen comic-dots p-4 pb-24">
       <div className="max-w-2xl mx-auto space-y-4">
-        <ComicPanel className="text-center py-6 bg-primary">
+        <ComicPanel className="text-center py-5 bg-primary overflow-hidden">
+          <img src={ART.photoHeistRoom} alt="Arrest & Heist" className="w-full h-44 sm:h-56 object-cover rounded-xl mb-4" />
           <h1 className="font-heading text-3xl comic-text-stroke">ΕΡΩΤΗΜΑΤΟΛΟΓΙΟ</h1>
           <p className="text-sm">Φόρμα προετοιμασίας — Arrest &amp; Heist Mode</p>
+          <div className="mt-4 flex justify-between text-xs font-bold"><span>ΠΡΟΟΔΟΣ ΦΟΡΜΑΣ</span><span>{progress}%</span></div>
+          <div className="mt-2 h-2 rounded-full bg-black/20 overflow-hidden"><div className="h-full rounded-full bg-white transition-all" style={{ width: `${progress}%` }} /></div>
         </ComicPanel>
 
         <ComicPanel>
