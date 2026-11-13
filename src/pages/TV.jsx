@@ -1,3 +1,5 @@
+import ModeTV from '@/components/modes/ModeTV';
+import { isNewMode } from '@/data/modes/modeRegistry';
 import React, { useMemo, useState } from 'react';
 import { useGameSession } from '@/hooks/useGameSession';
 import { getActiveSessionCode, subscribeActiveSession } from '@/lib/activeSession';
@@ -186,6 +188,7 @@ export default function TVScreen() {
   const isMarathon = state.mode === 'marathon';
   const isArrestHeist = state.mode === 'arrest_heist';
   const isPajama = state.mode === 'pajama';
+  const isNew = isNewMode(state.mode);
   const ahLeaderA = state.players?.find((p) => p.team === 'A' && p.isLeader);
   const ahLeaderB = state.players?.find((p) => p.team === 'B' && p.isLeader);
 
@@ -295,6 +298,8 @@ export default function TVScreen() {
                 </div>
                 <div className="text-sm text-foreground/50">Ο Game Master ετοιμάζει το παιχνίδι στο Tablet</div>
               </div>
+            ) : isNew ? (
+              <ModeTV state={state} />
             ) : isPajama ? (
               <PajamaTV players={state.players || []} pj={state.pajama || {}} />
             ) : isArrestHeist ? (

@@ -4,6 +4,7 @@ import ComicPanel from '@/components/comic/ComicPanel';
 import ComicButton from '@/components/comic/ComicButton';
 import { GAME_MODES, FOOTWEAR_LEVELS, TOENAIL_PERKS } from '@/data/gameConfig';
 import { createInitialState, generateSessionCode } from '@/lib/gameLogic';
+import { isNewMode, modeMeta } from '@/data/modes/modeRegistry';
 
 const SHOE_TO_LEVEL = { boots: 4, sneakers: 2, sandals: 1, barefoot: 0 };
 
@@ -84,8 +85,9 @@ export default function SetupScreen({ onStart }) {
 
   useEffect(() => { loadIntakes(); }, []);
 
-  const maxPlayers = mode === 'marathon' ? 10 : mode === 'arrest_heist' ? 10 : 6;
-  const minPlayers = mode === 'marathon' ? 8 : mode === 'arrest_heist' ? 4 : 2;
+  const newMode = isNewMode(mode) ? modeMeta(mode) : null;
+  const maxPlayers = newMode ? newMode.max : mode === 'marathon' ? 10 : mode === 'arrest_heist' ? 10 : 6;
+  const minPlayers = newMode ? newMode.min : mode === 'marathon' ? 8 : mode === 'arrest_heist' ? 4 : 2;
 
   function addPlayer() {
     if (players.length < maxPlayers) {
@@ -115,6 +117,10 @@ export default function SetupScreen({ onStart }) {
       setPlayers(Array.from({ length: 4 }, (_, i) => ({ name: '', footwearLevel: 2, toenailPerk: TOENAIL_PERKS[i % 5].id })));
     } else if (m.id === 'classic' && players.length > 6) {
       setPlayers(players.slice(0, 6));
+    } else if (isNewMode(m.id)) {
+      const meta = modeMeta(m.id);
+      if (players.length < meta.min) setPlayers([...players, ...Array.from({ length: meta.min - players.length }, () => ({ name: '', footwearLevel: 2, toenailPerk: 'pink' }))]);
+      else if (players.length > meta.max) setPlayers(players.slice(0, meta.max));
     }
   }
 
@@ -223,7 +229,7 @@ export default function SetupScreen({ onStart }) {
                   placeholder={`Όνομα ${idx + 1}`}
                   className="flex-1 min-w-0 px-3 py-1.5 border-2 border-border rounded-lg font-bold bg-background text-foreground focus:outline-none focus:ring-2 ring-primary font-body"
                 />
-                {mode === 'pajama' ? (
+                {newMode ? null : mode === 'pajama' ? (
                   <>
                     <input
                       type="text"
@@ -276,7 +282,9 @@ export default function SetupScreen({ onStart }) {
             ))}
           </div>
           <div className="mt-2 text-xs text-foreground/60 font-body">
-            {mode === 'pajama'
+            {newMode
+              ? '🔞 Μόνο ενήλικες (18+) που συμφωνούν να παίξουν. Κάθε παίκτρια μπορεί να πει ΣΤΟΠ οποιαδήποτε στιγμή.'
+              : mode === 'pajama'
               ? '🩴 Παντόφλες & 💅 χρώμα νυχιών — τα βασικά της βραδιάς. Δεν υπάρχουν παπούτσια ή perks σε αυτό το mode.'
               : '👟 Επίπεδο Παπουτσιού καθορίζει τη σκάλα ποινών · 💅 Toenail Perk = 1 ειδική δύναμη ανά παίκτρια'}
           </div>

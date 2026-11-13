@@ -11,6 +11,8 @@ import BombEventScreen from '@/components/tablet/BombEventScreen';
 import ArrestHeistScreen from '@/components/tablet/ArrestHeistScreen';
 import MarathonScreen from '@/components/tablet/MarathonScreen';
 import PajamaGame from '@/components/pajama/PajamaGame';
+import ModeGame from '@/components/modes/ModeGame';
+import { isNewMode } from '@/data/modes/modeRegistry';
 import PajamaTVPreview from '@/components/tablet/PajamaTVPreview';
 import PajamaForcePhase from '@/components/tablet/PajamaForcePhase';
 import PajamaMiniBar from '@/components/tablet/PajamaMiniBar';
@@ -127,6 +129,9 @@ export default function Tablet() {
         winner = (state.teamAlpha?.loot || 0) >= (state.teamBeta?.loot || 0) ? 'Team Alpha' : 'Team Beta';
       } else if (state.mode === 'arrest_heist') {
         winner = (state.teamA?.points || 0) >= (state.teamB?.points || 0) ? 'Team A' : 'Team B';
+      } else if (isNewMode(state.mode)) {
+        const sc = (p) => ((state.mg?.scores || {})[p.id] || 0) + ((state.mg?.tokens || {})[p.id] || 0);
+        winner = [...(state.players || [])].sort((a, b) => sc(b) - sc(a))[0]?.name || '';
       } else if (state.mode === 'pajama') {
         const scores = state.pajama?.scores || {};
         winner = [...(state.players || [])].sort((a, b) => (scores[b.id] || 0) - (scores[a.id] || 0))[0]?.name || '';
@@ -136,7 +141,9 @@ export default function Tablet() {
       }
       const stats = {};
       (state.players || []).forEach((p) => {
-        stats[p.name] = state.mode === 'pajama'
+        stats[p.name] = isNewMode(state.mode)
+          ? { points: (state.mg?.scores || {})[p.id] || 0, penalties: 0, tokens: (state.mg?.tokens || {})[p.id] || 0, team: '' }
+          : state.mode === 'pajama'
           ? {
             points: state.pajama?.scores?.[p.id] || 0,
             penalties: state.pajama?.fails?.[p.id] || 0,
@@ -194,6 +201,15 @@ export default function Tablet() {
   }
 
   const displayState = { ...state, sessionCode: session.sessionCode };
+
+  if (isNewMode(state.mode)) {
+    return (
+      <>
+        <ModeGame state={displayState} updateState={trackedUpdate} onEnd={archiveAndDelete} onQR={() => setShowQR(true)} />
+        {renderQR()}
+      </>
+    );
+  }
 
   if (state.mode === 'pajama') {
     return (

@@ -4,6 +4,8 @@ import {
   STREET_TRUTHS, STREET_DARES, WARRANT_CARDS, GLITCH_CARDS,
   HARDCORE_TRUTHS, ULTIMATE_TRUTHS,
 } from '@/data/gameContent';
+import { isNewMode } from '@/data/modes/modeRegistry';
+import { initialMg } from '@/lib/modeKit';
 
 export function rollDice() {
   return Math.floor(Math.random() * 6) + 1;
@@ -114,6 +116,12 @@ export function createInitialState(mode, intensity, players) {
     slipperType: p.slipperType || '',
     nailColor: p.nailColor || '',
   }));
+  if (isNewMode(mode)) {
+    return {
+      mode, intensity, stage: 1, players: assignedPlayers, history: [], mobileVotes: {},
+      stopActive: false, bombEvent: null, mg: initialMg(mode),
+    };
+  }
   if (mode === 'classic') {
     assignedPlayers = assignHiddenRoles(assignedPlayers);
   } else if (mode === 'marathon') {

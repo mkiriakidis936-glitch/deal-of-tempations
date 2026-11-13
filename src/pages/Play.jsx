@@ -1,3 +1,5 @@
+import ModeMobile from '@/components/modes/ModeMobile';
+import { isNewMode } from '@/data/modes/modeRegistry';
 import React, { useRef, useState } from 'react';
 import { useGameSession } from '@/hooks/useGameSession';
 import { getActiveSessionCode, subscribeActiveSession } from '@/lib/activeSession';
@@ -114,6 +116,20 @@ export default function Play() {
   async function handleZapVote(targetId) {
     const votes = { ...(state.electricChairVotes || {}), [selectedPlayerId]: targetId };
     await updateState({ electricChairVotes: votes });
+  }
+
+  if (isNewMode(state.mode) && myPlayer) {
+    return (
+      <ModeMobile
+        state={state}
+        me={myPlayer}
+        updateState={updateState}
+        onChangePlayer={() => {
+          setSelectedPlayerId(null);
+          if (session?.sessionCode) localStorage.removeItem(`dot_player_${session.sessionCode}`);
+        }}
+      />
+    );
   }
 
   if (state.mode === 'pajama' && myPlayer) {

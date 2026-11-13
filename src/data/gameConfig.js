@@ -118,6 +118,10 @@ export const GAME_MODES = [
   { id: 'pajama', name: 'PAJAMA PEDI-GLAM', icon: '🩴', desc: 'Μένουν στο σπίτι. Πιτζάμες, νύχια, παντόφλες, γαργαλητό & δεσίματα. 44 κουτιά, νύχτα & πρωί.' },
 ];
 
+// Τα 4 ψηφιακά modes του «Μεγάλου Update» ορίζονται στο data/modes/modeRegistry.js
+import { NEW_MODES } from '@/data/modes/modeRegistry';
+NEW_MODES.forEach((m) => GAME_MODES.push({ id: m.id, name: m.name, icon: m.icon, desc: m.desc }));
+
 // ===== MARATHON STAGES =====
 export const MARATHON_STAGES = [
   { stage: 1, name: 'INFILTRATION', wantedRange: '1-3', target: 'FINISH', desc: 'Ψηφιακό φιδάκι 80 κουτιών. Ζάρι και κίνηση. Challenge: Επιτυχία +$5.000, Αποτυχία +1⭐. Κόντρα: Νίκη +$5.000, Ήττα +1⭐. Παγίδες/Ποινές: αυτόματο εφέ +1⭐. Πρώτη ομάδα στο FINISH.' },
