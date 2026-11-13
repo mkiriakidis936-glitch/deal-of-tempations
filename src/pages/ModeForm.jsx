@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { NEW_MODES } from '@/data/modes/modeRegistry';
 import { MODE_COVERS } from '@/data/brandArt';
+import CustomFormQuestions from '@/components/forms/CustomFormQuestions';
 
 const NAIL_COLORS = ['Red', 'Pink', 'White', 'Black', 'Nude', 'French', 'Blue', 'Purple', 'Green', 'Orange', 'Gold', 'Silver', 'None'];
 const FIELD = 'w-full px-3 py-2 rounded-lg bg-slate-950/60 border border-pink-500/40 text-pink-50 focus:outline-none focus:ring-2 focus:ring-pink-400';
@@ -32,6 +33,7 @@ export default function ModeForm() {
     blindfoldOk: true,
     boundaries: '',
     safeWordConfirmed: false,
+    customAnswers: {},
   });
   const [step, setStep] = useState(0);
   const [saving, setSaving] = useState(false);
@@ -67,6 +69,7 @@ export default function ModeForm() {
         blindfoldOk: form.blindfoldOk,
         boundaries: form.boundaries,
         safeWordConfirmed: true,
+        customAnswers: form.customAnswers,
         approved: false,
       });
       setSaved(true);
