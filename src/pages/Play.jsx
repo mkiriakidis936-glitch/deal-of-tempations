@@ -151,7 +151,10 @@ export default function Play() {
         updateState={updateState}
         onChangePlayer={() => {
           setSelectedPlayerId(null);
-          if (session?.sessionCode) localStorage.removeItem(`dot_player_${session.sessionCode}`);
+          if (session?.sessionCode) {
+            localStorage.removeItem(`dot_player_${session.sessionCode}`);
+            joinByCode(session.sessionCode);
+          }
         }}
       />
     );
@@ -372,7 +375,7 @@ export default function Play() {
           </>
         )}
 
-        <ComicButton variant="white" size="sm" onClick={() => { setSelectedPlayerId(null); if (session?.sessionCode) localStorage.removeItem(`dot_player_${session.sessionCode}`); }} className="w-full">
+        <ComicButton variant="white" size="sm" onClick={() => { setSelectedPlayerId(null); if (session?.sessionCode) { localStorage.removeItem(`dot_player_${session.sessionCode}`); joinByCode(session.sessionCode); } }} className="w-full">
           🔄 ΑΛΛΑΓΗ ΠΑΙΚΤΡΙΑΣ
         </ComicButton>
       </div>
