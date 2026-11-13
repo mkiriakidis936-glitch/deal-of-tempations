@@ -226,7 +226,7 @@ export default function Admin() {
       case 'meta':
         return <AdminMeta />;
       default:
-        return <AdminOverview sessions={sessions} loading={loading} />;
+        return <AdminOverview sessions={sessions} loading={loading} onNavigate={setTab} />;
     }
   }
 
