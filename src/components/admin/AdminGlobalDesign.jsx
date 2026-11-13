@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import ComicPanel from '@/components/comic/ComicPanel';
 import ComicButton from '@/components/comic/ComicButton';
+import AdminSettingVersionHistory from '@/components/admin/AdminSettingVersionHistory';
+import { saveAdminSettingVersion } from '@/lib/adminVersionHistory';
 
 const KEY = 'admin_global_design';
 const DEFAULTS = {
@@ -70,6 +72,7 @@ export default function AdminGlobalDesign() {
     setMessage('');
     try {
       const payload = { ...value };
+      if (record?.id) await saveAdminSettingVersion(KEY, record.value || DEFAULTS);
       let saved;
       if (record?.id) saved = await base44.entities.AppSetting.update(record.id, { value: payload });
       else saved = await base44.entities.AppSetting.create({ key: KEY, value: payload });
@@ -122,6 +125,7 @@ export default function AdminGlobalDesign() {
           <ComicButton variant="green" disabled={busy} onClick={save}>{busy ? 'ΑΠΟΘΗΚΕΥΣΗ…' : 'ΑΠΟΘΗΚΕΥΣΗ'}</ComicButton>
           <ComicButton variant="white" disabled={busy} onClick={reset}>Επαναφορά προεπιλογών</ComicButton>
         </div>
+        <AdminSettingVersionHistory settingKey={KEY} onRestore={(restored) => setValue({ ...DEFAULTS, ...(restored || {}) })} />
       </ComicPanel>
     </div>
   );
