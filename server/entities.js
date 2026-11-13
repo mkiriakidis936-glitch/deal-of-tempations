@@ -8,7 +8,7 @@ import { notifyNewSubmission } from './push.js';
 export const ENTITIES = [
   'Achievement', 'AppSetting', 'BacheloretteIntake', 'BlackmailVault', 'Chronicle', 'GameContent',
   'GameSession', 'GameSessionSnapshot', 'Haunting', 'InvitationRSVP', 'Memorial', 'PajamaContent', 'PajamaIntake',
-  'PlayerIntake', 'PlayerProfile', 'SessionArchive',
+  'PlayerIntake', 'PlayerProfile', 'PlayerCheckin', 'SessionArchive',
 ];
 
 // Who may do what. Default for every operation is "public" (the phones/TV
@@ -29,6 +29,7 @@ const rules = {
   // Private game records and player profiles are visible only to administrators.
   BlackmailVault: { read: ADMIN, create: ADMIN, update: ADMIN, delete: ADMIN },
   PlayerProfile:  { read: ADMIN, create: ADMIN, update: ADMIN, delete: ADMIN },
+  PlayerCheckin:  { read: ADMIN, create: ADMIN, update: ADMIN, delete: ADMIN },
   SessionArchive: { read: ADMIN, create: ADMIN, update: ADMIN, delete: ADMIN },
   Chronicle:      { read: ADMIN, create: ADMIN, update: ADMIN, delete: ADMIN },
   // Sessions are created and deleted by the Game Master. Player writes use the
