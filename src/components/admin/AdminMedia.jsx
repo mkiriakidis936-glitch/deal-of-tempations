@@ -14,7 +14,6 @@ const IMG_ACCEPT = 'image/*,.jpg,.jpeg,.png,.webp,.gif,.avif,.heic,.svg';
 const VID_ACCEPT = 'video/*,.mp4,.webm,.mov';
 const MEDIA_ACCEPT = 'image/*,video/*,audio/*,.jpg,.jpeg,.png,.webp,.gif,.avif,.heic,.svg,.mp4,.webm,.mov,.mp3,.wav,.ogg,.m4a,.aac';
 const isVideoFile = (url) => /\.(mp4|webm|mov)(?:[?#]|$)/i.test(url || '');
-const isAudioFile = (url) => /\.(mp3|wav|ogg|m4a|aac)(?:[?#]|$)/i.test(url || '');
 const containsUrl = (value, url) => typeof value === 'string'
   ? value === url
   : Array.isArray(value)
@@ -60,6 +59,7 @@ export default function AdminMedia() {
   const vidOne = useRef(null);
   const vidMany = useRef(null);
   const mediaOne = useRef(null);
+  const libraryOne = useRef(null);
 
   const refreshLibrary = useCallback(async () => {
     try { setLibrary(await listMedia()); } catch (e) { setMsg({ ok: false, text: e.message }); }
@@ -109,6 +109,7 @@ export default function AdminMedia() {
         const r = await uploadMedia(files[i], (p) => setProgress((i + p) / files.length));
         urls.push(r.url);
       }
+      if (t.mode === 'library') { refreshLibrary(); return; }
       if (t.mode === 'slot') await save({ ...ov, [t.id]: urls[0], emptySlots: (ov.emptySlots || []).filter((id) => id !== t.id), emptyModeCovers: (ov.emptyModeCovers || []).filter((id) => id !== t.id) });
       else if (t.mode === 'replace') {
         const l = [...(ov[t.id] || DEFAULTS[t.id] || [])];
@@ -222,7 +223,8 @@ export default function AdminMedia() {
       <input ref={imgMany} type="file" accept={IMG_ACCEPT} multiple hidden onChange={onFiles} />
       <input ref={vidOne} type="file" accept={VID_ACCEPT} hidden onChange={onFiles} />
       <input ref={vidMany} type="file" accept={VID_ACCEPT} multiple hidden onChange={onFiles} />
-      <input ref={mediaOne} type="file" accept={MEDIA_ACCEPT} hidden onChange={onFiles} />
+      <input ref={mediaOne} type="file" accept="image/*,video/*,.jpg,.jpeg,.png,.webp,.gif,.avif,.heic,.svg,.mp4,.webm,.mov" hidden onChange={onFiles} />
+      <input ref={libraryOne} type="file" accept={MEDIA_ACCEPT} hidden onChange={onFiles} />
 
       <ComicPanel className="bg-card">
         <div className="font-heading text-xl text-primary">🗂️ MEDIA LIBRARY 2.0</div>
@@ -343,7 +345,7 @@ export default function AdminMedia() {
       })}
 
       <ComicPanel className="bg-card space-y-3">
-        <div className="font-heading text-lg">🗂️ ΒΙΒΛΙΟΘΗΚΗ ΑΡΧΕΙΩΝ ({library.length})</div>
+        <div className="flex items-center justify-between gap-2 flex-wrap"><div className="font-heading text-lg">🗂️ ΒΙΒΛΙΟΘΗΚΗ ΑΡΧΕΙΩΝ ({library.length})</div><ComicButton size="sm" disabled={!!busy} onClick={() => pick('library', 'library', libraryOne)}>＋ ΠΡΟΣΘΗΚΗ ΑΡΧΕΙΟΥ</ComicButton></div>
         <input type="search" value={librarySearch} onChange={(e) => setLibrarySearch(e.target.value)} placeholder="Αναζήτηση αρχείων…" className="w-full rounded-lg border-2 border-border bg-background px-3 py-2 text-sm" />
         <p className="text-[11px] text-foreground/60">Οργάνωσε τις εικόνες σε Heist, Pajama ή Branding. Από εδώ μπορείς επίσης να προσθέσεις μια εικόνα απευθείας στη σωστή γκαλερί. Η διαγραφή αφαιρεί το αρχείο οριστικά.</p>
         <div className="flex flex-wrap gap-2">
