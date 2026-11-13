@@ -189,7 +189,7 @@ function validatePlayerPatch(current, patch, playerId) {
   if ('mg' in patch) {
     const old = current.mg || {};
     const next = patch.mg;
-    if (!isObject(next) || old.stop || next.stop !== true || next.stopBy !== playerId) return false;
+    if (!isObject(next) || Object.keys(next).some((key) => !['stop', 'stopAt', 'stopBy', 'timer'].includes(key)) || old.stop || next.stop !== true || next.stopBy !== playerId) return false;
   }
 
   if ('players' in patch) {
