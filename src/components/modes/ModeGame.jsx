@@ -21,7 +21,7 @@ export default function ModeGame({ state, updateState, onEnd, onQR }) {
   const act = acts[actIndex];
   const theme = MODE_THEMES[state.mode];
   const multi = acts.length > 1;
-  useTick(multi, 15000);
+  useTick(true, 15000);
 
   function nextAct() {
     if (actIndex + 1 >= acts.length) { setMg({ finishedAll: true }); log('🏁 Το παιχνίδι ολοκληρώθηκε'); return; }
@@ -39,6 +39,8 @@ export default function ModeGame({ state, updateState, onEnd, onQR }) {
   }
 
   const elapsedMin = Math.floor((Date.now() - (mg.startedAt || Date.now())) / 60000);
+  const elapsedLabel = `${Math.floor(elapsedMin / 60)}:${String(elapsedMin % 60).padStart(2, '0')}`;
+  const actMinutes = (a) => meta.actDurations?.[a] ?? ACT_META[a].minutes;
 
   return (
     <ModeShell modeId={state.mode} ctx={ctx} act={act} onQR={onQR} onEnd={onEnd}>
@@ -51,12 +53,12 @@ export default function ModeGame({ state, updateState, onEnd, onQR }) {
               style={{ background: i === actIndex ? `${theme.accent}33` : '#ffffff0a', border: `1px solid ${i === actIndex ? theme.accent : '#ffffff22'}`, opacity: i < actIndex ? 0.5 : 1 }}
             >
               <div className="font-heading">{i < actIndex ? '✓ ' : ''}{ACT_META[a].title.split(' · ')[0]}</div>
-              <div className="opacity-70">{ACT_META[a].title.split(' · ')[1]} · {ACT_META[a].minutes}′</div>
+              <div className="opacity-70">{ACT_META[a].title.split(' · ')[1]} · {actMinutes(a)}′</div>
             </div>
           ))}
         </div>
       )}
-      {multi && <div className="text-xs opacity-60 text-right">Στο παιχνίδι: {fmt(elapsedMin * 60).slice(0, 5)}′ από ~{meta.minutes}′</div>}
+      <div className="text-xs opacity-60 text-right">Στο παιχνίδι: {elapsedLabel} ώρες / 5:00 ώρες</div>
 
       {act === 'board' && <ActBoard ctx={ctx} onDone={nextAct} />}
       {act === 'midnight' && <ActMidnight ctx={ctx} onDone={nextAct} />}
