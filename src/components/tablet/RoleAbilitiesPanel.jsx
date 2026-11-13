@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import ComicPanel from '@/components/comic/ComicPanel';
 import ComicButton from '@/components/comic/ComicButton';
 import { HIDDEN_ROLES } from '@/data/gameConfig';
-import { useRoleAbility as applyRoleAbility, calculateMostWanted, addHistory } from '@/lib/gameLogic';
+import { useRoleAbility as applyRoleAbility, addHistory } from '@/lib/gameLogic';
 
 export default function RoleAbilitiesPanel({ state, updateState }) {
   const [open, setOpen] = useState(false);

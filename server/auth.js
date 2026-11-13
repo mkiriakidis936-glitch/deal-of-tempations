@@ -58,16 +58,36 @@ async function sendEmail(to, subject, text) {
     });
     if (!r.ok) console.error('[mail] Resend error', r.status, await r.text());
   } else {
-    console.log(`[mail:not-configured] to=${to} subject="${subject}"\n${text}`);
+    console.warn(`[mail:not-configured] Email delivery is disabled; message not sent to ${to}.`);
   }
 }
 
 const baseUrl = (req) => process.env.PUBLIC_URL || `${req.headers['x-forwarded-proto'] || req.protocol}://${req.get('host')}`;
 const validEmail = (e) => typeof e === 'string' && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
+const authRateBuckets = new Map();
+function authRateLimit({ limit, windowMs }) {
+  return (req, res, next) => {
+    const now = Date.now();
+    const key = `${req.path}:${req.ip || req.socket.remoteAddress || 'unknown'}`;
+    let bucket = authRateBuckets.get(key);
+    if (!bucket || now - bucket.startedAt >= bucket.windowMs) {
+      bucket = { startedAt: now, count: 0, windowMs };
+      authRateBuckets.set(key, bucket);
+    }
+    if (bucket.count >= limit) return res.status(429).json({ error: 'Too many attempts. Try again later.' });
+    bucket.count += 1;
+    if (authRateBuckets.size > 5000) {
+      for (const [entry, value] of authRateBuckets) {
+        if (now - value.startedAt >= value.windowMs) authRateBuckets.delete(entry);
+      }
+    }
+    next();
+  };
+}
 
 // ---------- routes ----------
 export function authRoutes(app) {
-  app.post('/api/auth/register', async (req, res) => {
+  app.post('/api/auth/register', authRateLimit({ limit: 8, windowMs: 60 * 60 * 1000 }), async (req, res) => {
     const email = String(req.body?.email || '').trim().toLowerCase();
     const password = String(req.body?.password || '');
     if (!validEmail(email)) return res.status(400).json({ error: 'Invalid email' });
@@ -81,7 +101,7 @@ export function authRoutes(app) {
     res.json({ access_token: signToken(rows[0]), user: publicUser(rows[0]) });
   });
 
-  app.post('/api/auth/login', async (req, res) => {
+  app.post('/api/auth/login', authRateLimit({ limit: 10, windowMs: 15 * 60 * 1000 }), async (req, res) => {
     const email = String(req.body?.email || '').trim().toLowerCase();
     const { rows } = await query('SELECT * FROM users WHERE email = $1', [email]);
     const u = rows[0];
@@ -96,7 +116,7 @@ export function authRoutes(app) {
   });
 
   // Always answers 200 so it can't be used to discover which emails exist.
-  app.post('/api/auth/reset-request', async (req, res) => {
+  app.post('/api/auth/reset-request', authRateLimit({ limit: 5, windowMs: 60 * 60 * 1000 }), async (req, res) => {
     const email = String(req.body?.email || '').trim().toLowerCase();
     const { rows } = await query('SELECT id FROM users WHERE email = $1', [email]);
     if (rows[0]) {
@@ -107,7 +127,7 @@ export function authRoutes(app) {
     res.json({ ok: true });
   });
 
-  app.post('/api/auth/reset', async (req, res) => {
+  app.post('/api/auth/reset', authRateLimit({ limit: 10, windowMs: 60 * 60 * 1000 }), async (req, res) => {
     const { token, password } = req.body || {};
     if (!token || String(password || '').length < 8) return res.status(400).json({ error: 'Invalid request (password min 8 chars)' });
     const { rows } = await query('SELECT id FROM users WHERE reset_token_hash = $1 AND reset_expires > now()', [sha256(String(token))]);
@@ -145,9 +165,15 @@ export function authRoutes(app) {
       });
       const tokens = await tokenRes.json();
       if (!tokens.id_token) throw new Error('No id_token from Google');
-      // id_token arrives straight from Google over TLS, so decoding the payload is sufficient here.
-      const claims = JSON.parse(Buffer.from(tokens.id_token.split('.')[1], 'base64url').toString());
-      if (!claims.email || !claims.email_verified) throw new Error('Google email not verified');
+      // Ask Google's tokeninfo endpoint to validate the signature and claims.
+      const verifyRes = await fetch(`https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(tokens.id_token)}`);
+      const claims = await verifyRes.json();
+      if (!verifyRes.ok || claims.aud !== process.env.GOOGLE_CLIENT_ID ||
+          !['accounts.google.com', 'https://accounts.google.com'].includes(claims.iss) ||
+          Number(claims.exp) <= Math.floor(Date.now() / 1000) ||
+          !claims.sub || !claims.email || claims.email_verified !== 'true') {
+        throw new Error('Google ID token validation failed');
+      }
       const email = String(claims.email).toLowerCase();
       let { rows } = await query('SELECT * FROM users WHERE email = $1', [email]);
       if (!rows[0]) {

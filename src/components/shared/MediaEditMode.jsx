@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useAuth } from '@/lib/AuthContext';
 import {
-  ART, PHOTO, FILM, HEIST_PHOTOS, PAJAMA_PHOTOS, SITE_VIDEOS, DEFAULTS, applyMediaOverrides,
+  ART, PHOTO, HEIST_PHOTOS, PAJAMA_PHOTOS, SITE_VIDEOS, DEFAULTS, applyMediaOverrides,
 } from '@/data/brandArt';
 import { IMAGE_SLOTS, PHOTO_SPOT_IDS } from '@/data/mediaSlots';
 import { uploadMedia, patchOverrides } from '@/lib/media';

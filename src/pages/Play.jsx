@@ -27,8 +27,9 @@ import WaitingRoom from '@/components/play/WaitingRoom';
 import PajamaMobile from '@/components/play/PajamaMobile';
 
 export default function Play() {
-  const { session, state, loading, updateState, joinByCode } = useGameSession({ autoLoad: false });
+  const { session, state, loading, updateState: saveState, joinByCode } = useGameSession({ autoLoad: false });
   const [selectedPlayerId, setSelectedPlayerId] = useState(null);
+  const updateState = React.useCallback((patch) => saveState(patch, { playerId: selectedPlayerId }), [saveState, selectedPlayerId]);
   const [scannedCode, setScannedCode] = useState(null);
   const [autoJoinTried, setAutoJoinTried] = useState(false);
   const [activeTab, setActiveTab] = useState('status');
@@ -46,7 +47,10 @@ export default function Play() {
     if (restoredRef.current || !session?.sessionCode || !state?.players?.length) return;
     restoredRef.current = true;
     const saved = localStorage.getItem(`dot_player_${session.sessionCode}`);
-    if (saved && state.players.some((p) => p.id === saved)) setSelectedPlayerId(saved);
+    if (saved && state.players.some((p) => p.id === saved)) {
+      setSelectedPlayerId(saved);
+      joinByCode(session.sessionCode, saved);
+    }
   }, [session?.sessionCode, state?.players]);
 
   // Δόνηση όταν έρχεται η σειρά της.
@@ -59,7 +63,10 @@ export default function Play() {
 
   function selectPlayer(id) {
     setSelectedPlayerId(id);
-    if (session?.sessionCode) localStorage.setItem(`dot_player_${session.sessionCode}`, id);
+    if (session?.sessionCode) {
+      localStorage.setItem(`dot_player_${session.sessionCode}`, id);
+      joinByCode(session.sessionCode, id);
+    }
   }
 
   // Επανασύνδεση μετά από refresh/crash: URL κωδικός ή η ενεργή συνεδρία του Admin/Tablet.
@@ -126,7 +133,10 @@ export default function Play() {
         updateState={updateState}
         onChangePlayer={() => {
           setSelectedPlayerId(null);
-          if (session?.sessionCode) localStorage.removeItem(`dot_player_${session.sessionCode}`);
+          if (session?.sessionCode) {
+            localStorage.removeItem(`dot_player_${session.sessionCode}`);
+            joinByCode(session.sessionCode);
+          }
         }}
       />
     );
@@ -141,7 +151,10 @@ export default function Play() {
         updateState={updateState}
         onChangePlayer={() => {
           setSelectedPlayerId(null);
-          if (session?.sessionCode) localStorage.removeItem(`dot_player_${session.sessionCode}`);
+          if (session?.sessionCode) {
+            localStorage.removeItem(`dot_player_${session.sessionCode}`);
+            joinByCode(session.sessionCode);
+          }
         }}
       />
     );
@@ -362,7 +375,7 @@ export default function Play() {
           </>
         )}
 
-        <ComicButton variant="white" size="sm" onClick={() => { setSelectedPlayerId(null); if (session?.sessionCode) localStorage.removeItem(`dot_player_${session.sessionCode}`); }} className="w-full">
+        <ComicButton variant="white" size="sm" onClick={() => { setSelectedPlayerId(null); if (session?.sessionCode) { localStorage.removeItem(`dot_player_${session.sessionCode}`); joinByCode(session.sessionCode); } }} className="w-full">
           🔄 ΑΛΛΑΓΗ ΠΑΙΚΤΡΙΑΣ
         </ComicButton>
       </div>

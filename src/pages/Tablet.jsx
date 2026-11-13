@@ -162,9 +162,16 @@ export default function Tablet() {
         .map((e) => e.description || e.message || e.text || e.type)
         .slice(0, 10);
       await base44.functions.invoke('archiveSession', { sessionCode: session.sessionCode, mode: state.mode, winner, playerNames, stats, confessions, highlights });
-      await awardAchievements(session.sessionCode, collectAwards());
     } catch (e) {
       console.error('Archive failed', e);
+      window.alert('Η αρχειοθέτηση απέτυχε. Η συνεδρία διατηρήθηκε και δεν διαγράφηκε. Έλεγξε τη σύνδεση και δοκίμασε ξανά.');
+      endingRef.current = false;
+      return;
+    }
+    try {
+      await awardAchievements(session.sessionCode, collectAwards());
+    } catch (e) {
+      console.error('Achievement save failed', e);
     }
     await deleteSession();
     endingRef.current = false;

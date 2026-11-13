@@ -35,7 +35,7 @@ export default function ModeMobile({ state, me, updateState, onChangePlayer }) {
 
   function panic() {
     if (mg.stop) return;
-    updateState({ mg: { ...mg, stop: true, stopAt: Date.now(), stopBy: me.id, timer: timerPause(mg.timer) } });
+    updateState({ mg: { stop: true, stopAt: Date.now(), stopBy: me.id, timer: timerPause(mg.timer) } });
   }
 
   const ld = mg.ld || {};

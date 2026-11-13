@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef } from 'react';
-import ComicButton from '@/components/comic/ComicButton';
 
 // EP-03: Chair Bound Interrogation — random question/tickle/ice prompts in darkness
 const PROMPTS = [

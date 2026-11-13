@@ -1,5 +1,4 @@
 import React from 'react';
-import ComicPanel from '@/components/comic/ComicPanel';
 import ComicButton from '@/components/comic/ComicButton';
 import { calculateMostWanted } from '@/lib/gameLogic';
 
