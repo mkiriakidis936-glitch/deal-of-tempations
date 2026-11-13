@@ -44,9 +44,8 @@ const NAV_GROUPS = [
     id: 'content',
     label: 'ΠΕΡΙΕΧΟΜΕΝΟ',
     tabs: [
-      { id: 'content', label: '📦 Περιεχόμενο & Κουτιά' },
+      { id: 'content', label: '🎮 Modes & Περιεχόμενο' },
       { id: 'pajama', label: '🩴 Pajama Mode' },
-      { id: 'modes', label: '🎮 Νέα Modes' },
       { id: 'site', label: '🌐 Site & Σενάριο' },
       { id: 'media', label: '🖼️ Φωτογραφίες & Βίντεο' },
     ],
@@ -75,6 +74,7 @@ const NAV_GROUPS = [
 ];
 
 const LEGACY_TABS = {
+  modes: 'content',
   board: 'content',
   cards: 'content',
   classic: 'content',
@@ -199,8 +199,6 @@ export default function Admin() {
         return <AdminContentHub />;
       case 'pajama':
         return <AdminPajama />;
-      case 'modes':
-        return <AdminModes />;
       case 'site':
         return <AdminSite />;
       case 'media':
