@@ -204,7 +204,7 @@ function validatePlayerPatch(current, patch, playerId) {
   if ('pajama' in patch) {
     const old = current.pajama || {};
     const next = patch.pajama;
-    if (!isObject(next) || !noChangesOutsideKeys(old, next, ['confessions'])) return false;
+    if (!isObject(next) || !noChangesOutsideKeys(old, withoutKeys(next, ['saboteurId', 'sabotages']), ['confessions'])) return false;
     const before = old.confessions || [];
     const after = next.confessions || [];
     if (!Array.isArray(before) || !Array.isArray(after)) return false;
@@ -276,14 +276,16 @@ function sanitizePublicSession(record, playerId = null) {
   };
 
   if ('privateMessages' in state) state.privateMessages = ownMap(state.privateMessages);
-  if (state.pajama && Array.isArray(state.pajama.confessions)) {
+  if (state.pajama && isObject(state.pajama)) {
     state.pajama = {
       ...state.pajama,
       saboteurId: undefined,
       sabotages: (state.pajama.sabotages || []).map(() => ({})),
-      confessions: state.pajama.confessions.map((item) =>
-        item.playerId === playerId ? item : { playerId: item.playerId }
-      ),
+      ...(Array.isArray(state.pajama.confessions) ? {
+        confessions: state.pajama.confessions.map((item) =>
+          item.playerId === playerId ? item : { playerId: item.playerId }
+        ),
+      } : {}),
     };
   }
   if (state.mg && isObject(state.mg)) {
@@ -517,7 +519,13 @@ export function entityRoutes() {
           await client.query('ROLLBACK');
           return res.status(403).json({ error: 'Player update is not permitted' });
         }
-        const mergedState = deepMerge(current.state || {}, statePatch);
+        const safePlayerPatch = { ...statePatch };
+        if (isObject(safePlayerPatch.pajama)) {
+          safePlayerPatch.pajama = { ...safePlayerPatch.pajama };
+          delete safePlayerPatch.pajama.saboteurId;
+          delete safePlayerPatch.pajama.sabotages;
+        }
+        const mergedState = deepMerge(current.state || {}, safePlayerPatch);
         const { rows } = await client.query(
           "UPDATE records SET data = data || $1::jsonb, updated_date = now() WHERE id = $2 AND entity = $3 RETURNING *",
           [JSON.stringify({ state: mergedState }), req.params.id, req.entity],
