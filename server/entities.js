@@ -222,12 +222,14 @@ function buildWhere(entity, q, params) {
 }
 
 // ---------- realtime ----------
-const streams = new Map(); // entity -> Set<res>
+const streams = new Map(); // entity -> Set<{ res, sessionCode }>
 function broadcast(entity, event) {
   const set = streams.get(entity);
   if (!set) return;
   const payload = `data: ${JSON.stringify(event)}\n\n`;
-  for (const res of set) res.write(payload);
+  for (const subscriber of set) {
+    if (!subscriber.sessionCode || event.data?.sessionCode === subscriber.sessionCode) subscriber.res.write(payload);
+  }
 }
 // keep proxies (Railway) from closing idle connections
 setInterval(() => { for (const set of streams.values()) for (const subscriber of set) subscriber.res.write(': ping\n\n'); }, 25000).unref();
