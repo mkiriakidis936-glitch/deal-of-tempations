@@ -2,6 +2,8 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import ComicPanel from '@/components/comic/ComicPanel';
 import ComicButton from '@/components/comic/ComicButton';
+import AdminSettingVersionHistory from '@/components/admin/AdminSettingVersionHistory';
+import { saveAdminSettingVersion } from '@/lib/adminVersionHistory';
 import { NEW_MODES } from '@/data/modes/modeRegistry';
 import { COLLECTIONS } from '@/lib/modesContentStore';
 
@@ -45,6 +47,7 @@ export default function AdminCustomScenarios() {
         ? items.map((item) => item.id === editing.id ? normalized : item)
         : [...items, normalized];
       const value = { items: next };
+      if (record?.id) await saveAdminSettingVersion(KEY, { items });
       let saved;
       if (record?.id) saved = await base44.entities.AppSetting.update(record.id, { value });
       else saved = await base44.entities.AppSetting.create({ key: KEY, value });
@@ -59,6 +62,7 @@ export default function AdminCustomScenarios() {
     const next = items.filter((item) => item.id !== id);
     setBusy(true);
     try {
+      if (record?.id) await saveAdminSettingVersion(KEY, { items });
       if (record?.id) await base44.entities.AppSetting.update(record.id, { value: { items: next } });
       setItems(next); if (editing?.id === id) setEditing(null);
       setMessage('Το σενάριο διαγράφηκε.');
@@ -98,6 +102,7 @@ export default function AdminCustomScenarios() {
           <div className="flex gap-2"><ComicButton size="sm" variant="dark" onClick={() => setEditing({ ...item })}>ΕΠΕΞΕΡΓΑΣΙΑ</ComicButton><ComicButton size="sm" variant="red" disabled={busy} onClick={() => remove(item.id)}>ΔΙΑΓΡΑΦΗ</ComicButton></div>
         </ComicPanel>)}
       </div>
+      <AdminSettingVersionHistory settingKey={KEY} onRestore={(value) => setItems(value?.items || [])} />
     </div>
   );
 }
