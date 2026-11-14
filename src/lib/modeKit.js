@@ -11,6 +11,13 @@ export const isGameStopActive = () => gameStopActive;
 
 export function setGameStopActive(active) {
   gameStopActive = !!active;
+  if (gameStopActive) {
+    audioCtx?.suspend().catch(() => {});
+    try { window.speechSynthesis?.cancel(); } catch { /* δεν υποστηρίζεται */ }
+    try { navigator.vibrate?.(0); } catch { /* δεν υποστηρίζεται */ }
+  } else if (audioCtx?.state === 'suspended') {
+    audioCtx.resume().catch(() => {});
+  }
   gameStopListeners.forEach((listener) => listener(gameStopActive));
 }
 
