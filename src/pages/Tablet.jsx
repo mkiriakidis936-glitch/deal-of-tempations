@@ -323,7 +323,7 @@ export default function Tablet() {
       </div>
       <TabletStatusStrip state={displayState} />
       {state.stopActive && (
-        <div className="fixed inset-0 z-40 bg-destructive/20 pointer-events-none flex items-center justify-center">
+        <div className="fixed inset-0 z-40 bg-destructive/20 pointer-events-auto flex items-center justify-center">
           <div className="font-heading text-6xl text-destructive comic-text-stroke comic-pulse">⏸ ΠΑΥΣΗ</div>
         </div>
       )}
