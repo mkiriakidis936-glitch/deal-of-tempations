@@ -5,7 +5,7 @@ import {
   FREEZE_COMMANDS, WHEEL_CATEGORIES, BEACH_WHEEL, FLIPFLOP_MISSIONS, SHOT_TRUTH,
   BEACH_STEP_SECONDS, BEACH_FINALE_SECONDS, BEACH_PHASES,
 } from '@/data/modes/beachBarContent';
-import { pick, sfx, startBeat, drinkText, useLocalCountdown } from '@/lib/modeKit';
+import { pick, sfx, startBeat, drinkText, useLocalCountdown, isGameStopActive } from '@/lib/modeKit';
 
 const TURQ = '#00F2FE';
 const CORAL = '#FF3366';
@@ -173,6 +173,7 @@ function Wheel({ ctx, bb, setBb, T, flopOn }) {
     setRun(false);
     let n = 0;
     const i = setInterval(() => {
+      if (isGameStopActive()) return;
       setCat(pick(WHEEL_CATEGORIES).id);
       sfx.click();
       n += 1;
