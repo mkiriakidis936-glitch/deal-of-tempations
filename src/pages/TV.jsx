@@ -199,6 +199,16 @@ export default function TVScreen() {
         <MediaSpot src={PHOTO.tv || FILM.tv} slot="tv" className="w-full h-full object-cover" />
       </div>
       {state.stopActive && <div className="fixed inset-0 z-[100] bg-destructive/90 flex items-center justify-center text-center pointer-events-auto"><div className="font-heading text-7xl text-white">⏸ ΣΤΟΠ</div></div>}
+      {(state.absoluteInterrogation?.active || state.interrogationVerdict || state.bailoutAuction?.active || state.blackBribe || state.sacrificeWheel || state.bailoutOutcome) && (
+        <div className="fixed bottom-4 left-4 z-50 max-w-sm w-[min(92vw,24rem)] comic-panel bg-background/95 border-2 border-primary p-3 space-y-2">
+          {state.absoluteInterrogation?.active && <div><b className="text-primary">⚖️ ABSOLUTE INTERROGATION · {state.absoluteInterrogation.step + 1}/3</b><div className="text-sm">{state.absoluteInterrogation.questions?.[state.absoluteInterrogation.step]}</div></div>}
+          {state.interrogationVerdict && <div><b className="text-primary">{state.interrogationVerdict.label}</b><div className="text-xs">{state.interrogationVerdict.release ? '+5.000€ · 1 Pass Card' : 'Ποινή ×' + state.interrogationVerdict.penaltyMultiplier + ' · Sensory Lock'}</div></div>}
+          {state.bailoutAuction?.active && <div><b className="text-primary">🔨 BAILOUT AUCTION LIVE</b><div className="text-xs">Μυστικές προσφορές: {Object.keys(state.bailoutAuction.bids || {}).length}</div></div>}
+          {state.blackBribe && <div className="text-xs">💰 BLACK BRIBE: {state.players?.find((p) => p.id === state.blackBribe.playerId)?.name} → {state.players?.find((p) => p.id === state.blackBribe.targetId)?.name} · 20′</div>}
+          {state.sacrificeWheel && <div className="text-xs">🎡 SACRIFICE WHEEL: {state.sacrificeWheel.choice === 'sacrifice' ? 'Θυσία · 15′ · Top 3 ×2' : 'Άρνηση · αφαίρεση μεγαλύτερου ποσού'}</div>}
+          {state.bailoutOutcome && <div className="text-xs">🔓 BAILOUT: {state.bailoutOutcome.released ? 'Άμεση απελευθέρωση' : 'Επιπλέον 15′ · Sensory Lock'}</div>}
+        </div>
+      )}
       <LiveOverlay />
       <PajamaRevealOverlay />
       <IntroSequenceTV state={state} />
