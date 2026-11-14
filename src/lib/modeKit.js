@@ -201,7 +201,22 @@ export function useModeCtx(state, updateState) {
   const toggleStop = useCallback(() => {
     const cur = mgRef.current;
     if (cur.stop) {
-      setMg({ stop: false, stopBy: null, timer: timerResume(cur.timer) });
+      const pausedFor = Math.max(0, Date.now() - (cur.stopAt || Date.now()));
+      const missions = { ...(cur.missions || {}) };
+      Object.keys(missions).forEach((id) => {
+        if (missions[id]?.status === 'active' && missions[id].expiresAt) {
+          missions[id] = { ...missions[id], expiresAt: missions[id].expiresAt + pausedFor };
+        }
+      });
+      setMg({
+        stop: false,
+        stopBy: null,
+        timer: timerResume(cur.timer),
+        missions,
+        ...(cur.startedAt ? { startedAt: cur.startedAt + pausedFor } : {}),
+        ...(cur.actStartedAt ? { actStartedAt: cur.actStartedAt + pausedFor } : {}),
+        ...(cur.morningTimer ? { morningTimer: cur.morningTimer + pausedFor } : {}),
+      });
     } else {
       setMg({ stop: true, stopAt: Date.now(), timer: timerPause(cur.timer) });
     }
