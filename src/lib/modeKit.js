@@ -37,6 +37,16 @@ export const timerAdd = (t, sec) => {
 export const timerPause = (t) => (t && t.endsAt ? { ...t, remaining: timerLeft(t), endsAt: null } : t);
 export const timerResume = (t) => (t && !t.endsAt ? { ...t, endsAt: Date.now() + (t.remaining || 0) * 1000 } : t);
 
+export function useGameStopState() {
+  const [paused, setPaused] = useState(gameStopActive);
+  useEffect(() => {
+    const listener = (value) => setPaused(value);
+    gameStopListeners.add(listener);
+    return () => gameStopListeners.delete(listener);
+  }, []);
+  return paused;
+}
+
 export function useTick(active = true, ms = 250) {
   const [, set] = useState(0);
   useEffect(() => {
