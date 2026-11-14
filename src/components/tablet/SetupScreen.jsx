@@ -125,6 +125,8 @@ export default function SetupScreen({ onStart }) {
 
   function handleModeChange(m) {
     setMode(m.id);
+    const selectedModeMeta = isNewMode(m.id) ? modeMeta(m.id) : null;
+    const selectedModeMax = selectedModeMeta ? selectedModeMeta.max : (m.id === 'marathon' || m.id === 'arrest_heist' ? 10 : 6);
     if (m.id === 'marathon' && players.length < 8) {
       setPlayers(Array.from({ length: 8 }, (_, i) => ({ name: '', footwearLevel: 2, toenailPerk: TOENAIL_PERKS[i % 5].id })));
     } else if (m.id === 'arrest_heist' && players.length < 4) {
@@ -165,7 +167,7 @@ export default function SetupScreen({ onStart }) {
             vipProfile: item.vipProfile || null,
           });
         });
-        return [...byName.values()].slice(0, maxPlayers);
+        return [...byName.values()].slice(0, selectedModeMax);
       });
     }
   }
