@@ -474,12 +474,27 @@ export function entityRoutes() {
           !isObject(body.answers || {})) {
         return res.status(400).json({ error: 'Συμπλήρωσε σωστά τα στοιχεία της πρόσκλησης.' });
       }
+      const { rows: settings } = await query(
+        "SELECT data FROM records WHERE entity = 'AppSetting' AND data->>'key' = 'admin_form_questions' LIMIT 1"
+      );
+      const questions = settings[0]?.data?.value?.forms?.invitation || [];
+      const allowedQuestions = new Map((Array.isArray(questions) ? questions : []).map((question) => [question.id, question]));
+      const answers = body.answers || {};
+      if (Object.keys(answers).some((id) => !allowedQuestions.has(id)) ||
+          (Array.isArray(questions) ? questions : []).some((question) =>
+            question.required && !String(answers[question.id] || '').trim()
+          ) ||
+          Object.values(answers).some((answer) => typeof answer !== 'string' || answer.length > 2000)) {
+        return res.status(400).json({ error: 'Έλεγξε τις απαντήσεις της φόρμας και δοκίμασε ξανά.' });
+      }
+      const answerLabels = Object.fromEntries(Object.entries(answers).map(([id, answer]) => [allowedQuestions.get(id)?.label || id, answer]));
       const data = {
         invitationId: invitations[0].id,
         submissionId,
         name: body.name.trim(),
         avatar: body.avatar,
-        answers: body.answers,
+        answers,
+        answerLabels,
         confirmed: true,
         submittedAt: new Date().toISOString(),
       };

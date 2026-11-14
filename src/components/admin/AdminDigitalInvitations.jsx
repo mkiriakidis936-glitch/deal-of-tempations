@@ -140,7 +140,7 @@ export default function AdminDigitalInvitations() {
             <div key={response.id} className="rounded-lg border border-[#b99a45]/25 bg-black/40 p-3">
               <div className="font-bold text-[#f4e6bd]">{response.avatar} {response.name}</div>
               <div className="mt-2 space-y-1 text-xs text-foreground/70">
-                {Object.entries(response.answers || {}).map(([questionId, answer]) => <div key={questionId}><span className="text-[#c9a94e]">{questionId}:</span> {String(answer)}</div>)}
+                {Object.entries(response.answerLabels || response.answers || {}).map(([label, answer]) => <div key={label}><span className="text-[#c9a94e]">{label}:</span> {String(answer)}</div>)}
               </div>
               <div className="mt-2 text-[10px] text-foreground/40">{new Date(response.created_date).toLocaleString('el-GR')}</div>
             </div>
