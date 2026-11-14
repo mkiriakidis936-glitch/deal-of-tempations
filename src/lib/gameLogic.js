@@ -13,10 +13,10 @@ export function rollDice() {
 
 export function drawCard(type) {
   const decks = {
-    street_truth: STREET_TRUTHS,
-    street_dare: STREET_DARES,
-    warrant: WARRANT_CARDS,
-    glitch: GLITCH_CARDS,
+    street_truth: PDF_STREET_TRUTHS,
+    street_dare: PDF_STREET_DARES,
+    warrant: PDF_WARRANT_CARDS,
+    glitch: PDF_GLITCH_CARDS,
     hardcore: HARDCORE_TRUTHS,
     ultimate: ULTIMATE_TRUTHS,
   };
