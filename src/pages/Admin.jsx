@@ -33,25 +33,68 @@ import { setActiveSessionCode } from '@/lib/activeSession';
 
 const NAV_GROUPS = [
   {
-    id: 'control-center',
-    label: 'CONTROL CENTER',
+    id: 'overview',
+    label: '01 · ΚΕΝΤΡΙΚΟΣ ΠΙΝΑΚΑΣ',
     tabs: [
-      { id: 'dashboard', label: '📊 Dashboard' },
+      { id: 'dashboard', label: '📊 Επισκόπηση' },
+      { id: 'statistics', label: '📈 Στατιστικά' },
+    ],
+  },
+  {
+    id: 'game-management',
+    label: '02 · ΔΙΑΧΕΙΡΙΣΗ ΠΑΙΧΝΙΔΙΟΥ',
+    tabs: [
       { id: 'modes', label: '🎮 Game Modes' },
-      { id: 'editor', label: '🃏 Game Editor' },
-      { id: 'players', label: '👥 Players' },
-      { id: 'achievements', label: '🏅 Achievements' },
+    ],
+  },
+  {
+    id: 'players',
+    label: '03 · ΔΙΑΧΕΙΡΙΣΗ ΠΑΙΚΤΩΝ',
+    tabs: [
+      { id: 'players', label: '👥 Παίκτες & Ρόλοι' },
+      { id: 'achievements', label: '🏅 Επιτεύγματα' },
+    ],
+  },
+  {
+    id: 'content',
+    label: '04 · ΠΕΡΙΕΧΟΜΕΝΟ',
+    tabs: [
+      { id: 'editor', label: '🃏 Decks & Game Editor' },
       { id: 'scenarios', label: '🎭 Scenarios' },
-      { id: 'website', label: '🌐 Website Editor' },
-      { id: 'media', label: '🖼️ Media Center' },
+      { id: 'media', label: '🖼️ Media Library' },
+    ],
+  },
+  {
+    id: 'experiences',
+    label: '05 · EXPERIENCES',
+    tabs: [
+      { id: 'website', label: '🌐 Website' },
       { id: 'invitations', label: '✉️ Digital Invitations' },
-      { id: 'notifications', label: '🔔 Notification Center' },
-      { id: 'forms', label: '📝 Forms Manager' },
-      { id: 'statistics', label: '📈 Statistics' },
-      { id: 'sessions', label: '🎲 Game Sessions' },
-      { id: 'recovery', label: '🛟 Session Recovery' },
-      { id: 'settings', label: '⚙️ Settings' },
-      { id: 'links', label: '🔗 Links & QR Codes' },
+      { id: 'forms', label: '📝 Forms & RSVP' },
+      { id: 'links', label: '🔗 Links & QR' },
+    ],
+  },
+  {
+    id: 'live-control',
+    label: '06 · LIVE CONTROL',
+    tabs: [
+      { id: 'live', label: '⏯️ Ζωντανός έλεγχος' },
+    ],
+  },
+  {
+    id: 'settings',
+    label: '07 · ΡΥΘΜΙΣΕΙΣ',
+    tabs: [
+      { id: 'settings', label: '⚙️ Κεντρικές ρυθμίσεις' },
+      { id: 'notifications', label: '🔔 Ειδοποιήσεις' },
+    ],
+  },
+  {
+    id: 'history',
+    label: '08 · ΙΣΤΟΡΙΚΟ & ΑΝΑΚΤΗΣΗ',
+    tabs: [
+      { id: 'sessions', label: '🎲 Ιστορικό παρτίδων' },
+      { id: 'recovery', label: '🛟 Ανάκτηση παρτίδων' },
     ],
   },
 ];
@@ -226,6 +269,7 @@ export default function Admin() {
           />
         );
       case 'players':
+      case 'live':
         return (
           <AdminPlayers
             sessions={sessions}
