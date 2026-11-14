@@ -104,7 +104,7 @@ export function pushRoutes() {
     await query(
       `INSERT INTO push_subscriptions (endpoint, user_id, subscription, device, session_code, player_id)
        VALUES ($1,NULL,$2,$3,$4,$5)
-       ON CONFLICT (endpoint) DO UPDATE SET subscription = EXCLUDED.subscription, device = EXCLUDED.device,
+       ON CONFLICT (endpoint) DO UPDATE SET user_id = COALESCE(push_subscriptions.user_id, EXCLUDED.user_id), subscription = EXCLUDED.subscription, device = EXCLUDED.device,
          session_code = EXCLUDED.session_code, player_id = EXCLUDED.player_id`,
       [sub.endpoint, sub, clip(req.body.device, 80), sessionCode, playerId],
     );
