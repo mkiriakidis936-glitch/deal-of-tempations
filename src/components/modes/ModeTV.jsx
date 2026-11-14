@@ -1,8 +1,8 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { MODE_THEMES, modeMeta, ACT_META } from '@/data/modes/modeRegistry';
 import { EXT_END, EXT_ZONES, zoneOf, squareType, ROUTES } from '@/data/modes/extendedContent';
 import { EXIT_CODE } from '@/data/modes/lockdownContent';
-import { fmt, timerLeft, useTick } from '@/lib/modeKit';
+import { fmt, timerLeft, useTick, setGameStopActive } from '@/lib/modeKit';
 
 // Τηλεόραση (/tv) για τα 4 νέα modes. Δεν δείχνει ποτέ κρυφές κάρτες, ερωτήσεις ψιθύρων ή μυστικές αποστολές.
 export default function ModeTV({ state }) {
@@ -11,6 +11,7 @@ export default function ModeTV({ state }) {
   const theme = MODE_THEMES[state.mode];
   const players = state.players || [];
   const act = meta.acts[Math.min(mg.actIndex || 0, meta.acts.length - 1)];
+  useEffect(() => { setGameStopActive(!!mg.stop); }, [mg.stop]);
   useTick(true, 500);
   const left = timerLeft(mg.timer);
   const ld = mg.ld || {};
