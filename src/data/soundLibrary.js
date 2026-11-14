@@ -1,10 +1,21 @@
 // Sound effects generated via Web Audio API — no external files needed.
 // Each sound is a function that takes an AudioContext and plays a tone sequence.
 
+const activeContexts = new Set();
+
+export function stopAllSounds() {
+  activeContexts.forEach((ctx) => {
+    try { ctx.close(); } catch { /* already closed */ }
+  });
+  activeContexts.clear();
+}
+
 function createCtx() {
   const Ctx = window.AudioContext || window.webkitAudioContext;
   if (!Ctx) return null;
-  return new Ctx();
+  const ctx = new Ctx();
+  activeContexts.add(ctx);
+  return ctx;
 }
 
 function tone(ctx, dest, freq, start, duration, type = 'sine', volume = 0.3) {
