@@ -29,9 +29,6 @@ import AdminFormsBuilder from '@/components/admin/AdminFormsBuilder';
 import AdminNotifications from '@/components/admin/AdminNotifications';
 import AdminVisits from '@/components/admin/AdminVisits';
 import AdminDigitalInvitations from '@/components/admin/AdminDigitalInvitations';
-import AdminPlayerCheckin from '@/components/admin/AdminPlayerCheckin';
-import AdminGameTimeline from '@/components/admin/AdminGameTimeline';
-import AdminHostControlCenter from '@/components/admin/AdminHostControlCenter';
 import { setActiveSessionCode } from '@/lib/activeSession';
 
 const NAV_GROUPS = [
@@ -49,9 +46,6 @@ const NAV_GROUPS = [
       { id: 'media', label: '🖼️ Media Center' },
       { id: 'invitations', label: '✉️ Digital Invitations' },
       { id: 'notifications', label: '🔔 Notification Center' },
-      { id: 'checkin', label: '📷 QR Player Check-in' },
-      { id: 'timeline', label: '🕒 Live Game Timeline' },
-      { id: 'host', label: '🎛️ Host Control Center' },
       { id: 'forms', label: '📝 Forms Manager' },
       { id: 'statistics', label: '📈 Statistics' },
       { id: 'sessions', label: '🎲 Game Sessions' },
@@ -201,12 +195,6 @@ export default function Admin() {
         return <AdminDigitalInvitations />;
       case 'notifications':
         return <AdminNotifications />;
-      case 'checkin':
-        return <AdminPlayerCheckin session={activeSession} />;
-      case 'timeline':
-        return <AdminGameTimeline session={activeSession} />;
-      case 'host':
-        return <AdminHostControlCenter session={activeSession} onUpdate={handleUpdateSession} />;
       case 'forms':
         return (
           <div className="space-y-6">
