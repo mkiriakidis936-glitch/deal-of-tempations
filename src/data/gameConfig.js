@@ -51,6 +51,9 @@ const BOARD_SQUARES = [
 
 export const BOARD = BOARD_SQUARES.map((sq, i) => ({ ...sq, position: i, zone: Math.floor(i / 11) + 1 }));
 
+// Το βασικό DEAL χρησιμοποιεί 24 κουτιά. Το πλήρες 44-base board παραμένει διαθέσιμο για Heist & Arrest.
+export const CLASSIC_BOARD = BOARD.slice(0, 24);
+
 export const SQUARE_TYPES = {
   street: { label: 'Street Truth/Dare', icon: '🎲', color: 'bg-yellow-300', desc: 'Τράβα κάρτα Αλήθειας ή Θάρρους. Αποτυχία ➔ +1 Λάθος στη Σκάλα Ποινών.' },
   police: { label: 'Police HQ', icon: '🚔', color: 'bg-blue-400', desc: 'Οδηγείσαι αμέσως σε Interrogation Duel με τον Αστυνόμο.' },
