@@ -1,7 +1,7 @@
 import React, { useRef, useState, useEffect } from 'react';
 import ComicPanel from '@/components/comic/ComicPanel';
 import ComicButton from '@/components/comic/ComicButton';
-import { SOUND_LIST, SOUNDS } from '@/data/soundLibrary';
+import { SOUND_LIST, SOUNDS, registerAudioContext } from '@/data/soundLibrary';
 
 const MUSIC_TRACKS = [
   { id: 'none', label: '🔇 Σιωπή' },
@@ -33,7 +33,7 @@ export default function AudioControl({ state, updateState, onClose }) {
   function stopMusic() {
     if (ambientRef.current) {
       try { ambientRef.current.osc1.stop(); ambientRef.current.osc2.stop(); } catch (e) {}
-      try { ambientRef.current.ctx.close(); } catch (e) {}
+      try { ambientRef.current.unregister?.(); ambientRef.current.ctx.close().catch(() => {}); } catch (e) {}
       ambientRef.current = null;
     }
     setMusicPlaying(false);
@@ -60,7 +60,7 @@ export default function AudioControl({ state, updateState, onClose }) {
     gain.connect(dest);
     osc1.start();
     osc2.start();
-    ambientRef.current = { ctx, osc1, osc2 };
+    ambientRef.current = { ctx, osc1, osc2, unregister: registerAudioContext(ctx) };
     setMusicPlaying(true);
   }
 
