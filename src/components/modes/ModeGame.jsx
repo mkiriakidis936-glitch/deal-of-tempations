@@ -9,7 +9,7 @@ import ActLockdown from '@/components/modes/ActLockdown';
 import ActMorning from '@/components/modes/ActMorning';
 import BeachBarGame from '@/components/modes/BeachBarGame';
 import { modeMeta, ACT_META, MODE_THEMES } from '@/data/modes/modeRegistry';
-import { useModeCtx, useTick } from '@/lib/modeKit';
+import { useModeCtx, useTick, timerStart } from '@/lib/modeKit';
 import { COLLECTIONS, applyScenarioCollections } from '@/lib/modesContentStore';
 
 // Tablet (game master) για τα 4 νέα modes. Κάθε mode = λίστα από acts.
@@ -27,6 +27,9 @@ export default function ModeGame({ state, updateState, onEnd, onQR }) {
   }, [state.mode, state.customScenario?.id]);
   const ctx = useModeCtx(state, updateState);
   const { mg, setMg, log } = ctx;
+  useEffect(() => {
+    if (['pedi_glam', 'villa_48h'].includes(state.mode) && !mg.timer) setMg({ timer: timerStart((state.mode === 'villa_48h' ? 48 * 60 : 90) * 60) });
+  }, [state.mode, mg.timer, setMg]);
   const meta = modeMeta(state.mode);
   const acts = meta.acts;
   const actIndex = Math.min(mg.actIndex || 0, acts.length - 1);
