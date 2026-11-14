@@ -27,7 +27,6 @@ export default function BoardView({ players = [], onSquareClick, compact = false
               'aspect-square border rounded-sm relative flex flex-col items-center justify-center transition-colors duration-300 ease-lux',
               typeInfo.color,
               sq.position === 0 && 'border-primary/40',
-              sq.position === 23 && 'border-destructive/50',
               !sq.position && 'border-primary/12',
               onSquareClick && 'cursor-pointer hover:border-primary/45'
             )}
