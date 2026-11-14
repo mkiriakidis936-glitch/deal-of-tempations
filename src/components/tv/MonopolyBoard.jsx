@@ -4,7 +4,7 @@ import { getPlayerColor } from '@/components/shared/BoardView';
 import { cn } from '@/lib/utils';
 
 export default function MonopolyBoard({ players = [], large = false, board = BOARD }) {
-  const size = 12;
+  const size = board.length === 24 ? 7 : 12;
   const total = board.length;
 
   function getPos(i) {
