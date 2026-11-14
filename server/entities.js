@@ -533,6 +533,7 @@ export function entityRoutes() {
       };
       const client = await pool.connect();
       let inserted;
+      let playerIntakeRecord = null;
       try {
         await client.query('BEGIN');
         inserted = await client.query(
@@ -554,10 +555,11 @@ export function entityRoutes() {
             approved: true,
             formType: 'vip',
           };
-          await client.query(
-            "INSERT INTO records (id, entity, data, created_by) VALUES ($1, 'PlayerIntake', $2, NULL)",
-            [crypto.randomUUID(), JSON.stringify(intake)],
+          const intakeInsert = await client.query(
+            "INSERT INTO records (id, entity, data, created_by) VALUES ($1, 'PlayerIntake', $2, NULL) RETURNING *",
+            [crypto.randomUUID(), JSON.stringify({ ...intake, name: data.displayName || body.name.trim(), legalName: body.name.trim() })],
           );
+          playerIntakeRecord = toRecord(intakeInsert.rows[0]);
         }
         await client.query('COMMIT');
       } catch (error) {
@@ -566,7 +568,7 @@ export function entityRoutes() {
         return next(error);
       }
       client.release();
-      if (inserted.rows.length) broadcast('PlayerIntake', { type: 'create', data: { ...data, ...{ name: body.name.trim(), vipGameMode: gameMode } } });
+      if (playerIntakeRecord) broadcast('PlayerIntake', { type: 'create', id: playerIntakeRecord.id, data: playerIntakeRecord });
       let record = inserted.rows[0] ? toRecord(inserted.rows[0]) : null;
       if (!record) {
         const existing = await query(
