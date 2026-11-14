@@ -7,8 +7,8 @@ import { notifyNewSubmission } from './push.js';
 // Entities that used to live in base44/entities/*.jsonc
 export const ENTITIES = [
   'Achievement', 'AppSetting', 'BacheloretteIntake', 'BlackmailVault', 'Chronicle', 'GameContent',
-  'GameSession', 'GameSessionEvent', 'GameSessionSnapshot', 'Haunting', 'InvitationRSVP', 'Memorial', 'PajamaContent', 'PajamaIntake',
-  'PlayerIntake', 'PlayerProfile', 'PlayerCheckin', 'SessionArchive',
+  'GameSession', 'GameSessionSnapshot', 'Haunting', 'InvitationRSVP', 'Memorial', 'PajamaContent', 'PajamaIntake',
+  'PlayerIntake', 'PlayerProfile', 'SessionArchive',
 ];
 
 // Who may do what. Default for every operation is "public" (the phones/TV
@@ -29,13 +29,11 @@ const rules = {
   // Private game records and player profiles are visible only to administrators.
   BlackmailVault: { read: ADMIN, create: ADMIN, update: ADMIN, delete: ADMIN },
   PlayerProfile:  { read: ADMIN, create: ADMIN, update: ADMIN, delete: ADMIN },
-  PlayerCheckin:  { read: ADMIN, create: ADMIN, update: ADMIN, delete: ADMIN },
   SessionArchive: { read: ADMIN, create: ADMIN, update: ADMIN, delete: ADMIN },
   Chronicle:      { read: ADMIN, create: ADMIN, update: ADMIN, delete: ADMIN },
   // Sessions are created and deleted by the Game Master. Player writes use the
   // session-scoped, validated update path below.
   GameSession:     { create: ADMIN, delete: ADMIN },
-  GameSessionEvent: { read: ADMIN, create: ADMIN, update: ADMIN, delete: ADMIN },
   GameSessionSnapshot: { read: ADMIN, create: ADMIN, update: ADMIN, delete: ADMIN },
 };
 const needsAdmin = (entity, op) => (rules[entity]?.[op] || 'public') === ADMIN;
@@ -382,29 +380,6 @@ function broadcast(entity, event) {
 // keep proxies (Railway) from closing idle connections
 setInterval(() => { for (const set of streams.values()) for (const subscriber of set) subscriber.res.write(': ping\n\n'); }, 25000).unref();
 
-async function insertSessionEvent(req, current, nextState, changedFields, actorType) {
-  if (!changedFields.length) return null;
-  const data = {
-    sessionId: current.id,
-    sessionCode: current.sessionCode,
-    mode: nextState?.mode || current.mode || '',
-    stage: Number(nextState?.stage ?? 0),
-    actorType,
-    actorId: actorType === 'player' ? (req.body?.playerId || null) : (req.user?.email || null),
-    changedFields: [...new Set(changedFields)].slice(0, 30),
-    summary: actorType === 'host' ? 'Ενέργεια παρουσιαστή' : 'Ενέργεια παίκτη',
-  };
-  try {
-    const { rows } = await query(
-      'INSERT INTO records (id, entity, data, created_by) VALUES ($1,$2,$3,$4) RETURNING *',
-      [crypto.randomUUID(), 'GameSessionEvent', JSON.stringify(data), req.user?.email || null],
-    );
-    return toRecord(rows[0]);
-  } catch (error) {
-    console.error('[timeline] failed to record session event:', error.message);
-    return null;
-  }
-}
 
 export function entityRoutes() {
   const r = express.Router();
@@ -539,10 +514,8 @@ export function entityRoutes() {
               [JSON.stringify({ state: mergedState }), req.params.id, req.entity],
             );
             await client.query('COMMIT');
-            const timelineEvent = await insertSessionEvent(req, current, mergedState, Object.keys(statePatch), 'host');
             const rec = toRecord(rows[0]);
             broadcast(req.entity, { type: 'update', id: rec.id, data: rec });
-            if (timelineEvent) broadcast('GameSessionEvent', { type: 'create', id: timelineEvent.id, data: timelineEvent });
             return res.json(rec);
           }
           const { rows } = await client.query(
@@ -554,10 +527,8 @@ export function entityRoutes() {
             ? Object.keys(nextState).filter((key) => !sameJson(current.state?.[key], nextState[key]))
             : [];
           await client.query('COMMIT');
-          const timelineEvent = await insertSessionEvent(req, current, nextState, changedFields, 'host');
           const rec = toRecord(rows[0]);
           broadcast(req.entity, { type: 'update', id: rec.id, data: rec });
-          if (timelineEvent) broadcast('GameSessionEvent', { type: 'create', id: timelineEvent.id, data: timelineEvent });
           return res.json(rec);
         }
         if (typeof sessionCode !== 'string' || !playerId || !isObject(statePatch) ||
@@ -578,10 +549,8 @@ export function entityRoutes() {
           [JSON.stringify({ state: mergedState }), req.params.id, req.entity],
         );
         await client.query('COMMIT');
-        const timelineEvent = await insertSessionEvent(req, current, mergedState, Object.keys(safePlayerPatch), 'player');
         const rec = toRecord(rows[0]);
         broadcast(req.entity, { type: 'update', id: rec.id, data: rec });
-        if (timelineEvent) broadcast('GameSessionEvent', { type: 'create', id: timelineEvent.id, data: timelineEvent });
         return res.json(sanitizePublicSession(rec, playerId));
       } catch (error) {
         await client.query('ROLLBACK').catch(() => {});
