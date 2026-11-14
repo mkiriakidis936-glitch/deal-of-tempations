@@ -213,6 +213,8 @@ export default function Play() {
         {activeTab === 'status' && (
           <>
             <MobileStatus state={state} myPlayer={myPlayer} isMyTurn={isMyTurn} />
+            {state.absoluteInterrogation?.active && <AbsoluteInterrogationMobile state={state} myPlayer={myPlayer} updateState={updateState} />}
+            {state.bailoutAuction?.active && <BailoutAuctionMobile state={state} myPlayer={myPlayer} updateState={updateState} />}
 
             <SyncTimerDisplay state={state} variant="mobile" />
 
@@ -383,3 +385,54 @@ export default function Play() {
     </div>
   );
 }
+function AbsoluteInterrogationMobile({ state, myPlayer, updateState }) {
+  const inter = state.absoluteInterrogation;
+  const step = inter.step || 0;
+  const myVote = inter.votes?.[step]?.[myPlayer.id];
+  const isTarget = inter.targetId === myPlayer.id;
+  async function vote(value) {
+    if (state.stopActive || isTarget || myVote !== undefined) return;
+    const votes = { ...(inter.votes || {}), [step]: { ...(inter.votes?.[step] || {}), [myPlayer.id]: value } };
+    await updateState({ absoluteInterrogation: { ...inter, votes } });
+  }
+  return (
+    <ComicPanel className="bg-tarot-royal/30 space-y-2">
+      <div className="font-heading text-lg text-primary">⚖️ ABSOLUTE INTERROGATION · {step + 1}/3</div>
+      <div className="text-sm">{state.players.find((p) => p.id === inter.targetId)?.name} — απάντησε φωναχτά:</div>
+      <div className="rounded bg-background p-3 text-base">{inter.questions?.[step]}</div>
+      {isTarget ? <div className="text-xs opacity-70">Η δική σου απάντηση ακούγεται στην παρέα. Οι υπόλοιπες ψηφίζουν από τα κινητά τους.</div> : (
+        <>
+          <div className="text-xs opacity-70">Η απάντηση ήταν αλήθεια ή ψέμα;</div>
+          <div className="grid grid-cols-2 gap-2">
+            <button type="button" onClick={() => vote(true)} disabled={state.stopActive || myVote !== undefined} className={`rounded-lg p-3 font-heading ${myVote === true ? 'bg-emerald-700' : 'bg-secondary'}`}>ΑΛΗΘΕΙΑ</button>
+            <button type="button" onClick={() => vote(false)} disabled={state.stopActive || myVote !== undefined} className={`rounded-lg p-3 font-heading ${myVote === false ? 'bg-red-800' : 'bg-secondary'}`}>ΨΕΜΑ</button>
+          </div>
+          {myVote !== undefined && <div className="text-xs text-center">Η ψήφος σου καταχωρίστηκε.</div>}
+        </>
+      )}
+    </ComicPanel>
+  );
+}
+
+function BailoutAuctionMobile({ state, myPlayer, updateState }) {
+  const [amount, setAmount] = useState('');
+  const auction = state.bailoutAuction;
+  const myBid = auction.bids?.[myPlayer.id];
+  async function submit() {
+    const bid = Math.max(0, Number(amount) || 0);
+    if (!bid || state.stopActive) return;
+    const bids = { ...(auction.bids || {}), [myPlayer.id]: bid };
+    await updateState({ bailoutAuction: { ...auction, bids } });
+  }
+  return (
+    <ComicPanel className="bg-tarot-forest/20 space-y-2">
+      <div className="font-heading text-lg text-primary">🔨 BAILOUT AUCTION</div>
+      <div className="text-sm">Αποφυλάκιση: {state.players.find((p) => p.id === auction.targetId)?.name}</div>
+      <div className="text-xs opacity-70">Η προσφορά σου είναι μυστική από τις υπόλοιπες παίκτριες.</div>
+      <input type="number" min="1" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="Προσφορά" className="w-full rounded bg-background border border-border p-2" />
+      <button type="button" onClick={submit} disabled={state.stopActive || !(Number(amount) > 0)} className="w-full rounded-lg bg-emerald-800 p-3 font-heading">ΥΠΟΒΟΛΗ ΠΡΟΣΦΟΡΑΣ</button>
+      {myBid != null && <div className="text-xs text-center">Η προσφορά σου καταχωρίστηκε.</div>}
+    </ComicPanel>
+  );
+}
+
