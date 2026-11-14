@@ -7,6 +7,15 @@ export function useAudioSync(state) {
   const lastMusicRef = useRef(null);
 
   useEffect(() => {
+    if (state?.mg?.stop || state?.stopActive) {
+      Object.values(SOUNDS).forEach((sound) => {
+        try {
+          sound?.pause?.();
+          if (sound && 'currentTime' in sound) sound.currentTime = 0;
+        } catch { /* best-effort stop */ }
+      });
+      return;
+    }
     if (!state?.audioSync) return;
 
     // Sound effect sync
@@ -28,5 +37,5 @@ export function useAudioSync(state) {
         // Music is handled by AudioControl on the Tablet; TV/Play just play effects
       }
     }
-  }, [state?.audioSync]);
+  }, [state?.audioSync, state?.mg?.stop, state?.stopActive]);
 }
