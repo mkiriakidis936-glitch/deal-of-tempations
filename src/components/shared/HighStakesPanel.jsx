@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import ComicPanel from '@/components/comic/ComicPanel';
 import ComicButton from '@/components/comic/ComicButton';
 
@@ -13,7 +13,7 @@ export default function HighStakesPanel({ state, updateState }) {
   const inter = state.absoluteInterrogation || {};
   const voters = players.filter((p) => p.id !== inter.targetId);
   const stepVotes = inter.votes?.[inter.step] || {};
-  const ready = !!inter.active && voters.length > 0 && voters.every((p) => stepVotes[p.id] === true || stepVotes[p.id] === false);
+  const ready = !state.stopActive && !!inter.active && voters.length > 0 && voters.every((p) => stepVotes[p.id] === true || stepVotes[p.id] === false);
   const voteKey = JSON.stringify(stepVotes);
 
   useEffect(() => {
@@ -131,7 +131,7 @@ export default function HighStakesPanel({ state, updateState }) {
               {players.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
             </select>
             {questions.map((q, i) => <textarea key={i} value={q} onChange={(e) => setQuestions((old) => old.map((v, n) => n === i ? e.target.value : v))} placeholder={'Ερώτηση ' + (i + 1)} className="w-full rounded bg-background border border-border p-2 text-sm" rows={2} />)}
-            <ComicButton variant="purple" size="sm" onClick={startInterrogation} disabled={questions.some((q) => !q.trim())}>ΕΝΑΡΞΗ 3 ΨΗΦΟΦΟΡΙΩΝ</ComicButton>
+            <ComicButton variant="purple" size="sm" onClick={startInterrogation} disabled={!!state.stopActive || questions.some((q) => !q.trim())}>ΕΝΑΡΞΗ 3 ΨΗΦΟΦΟΡΙΩΝ</ComicButton>
           </>
         ) : (
           <>
@@ -152,7 +152,7 @@ export default function HighStakesPanel({ state, updateState }) {
           <option value="">Επιλογή συμπαίκτριας</option>
           {players.filter((p) => p.id !== current?.id).map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
         </select>
-        <ComicButton variant="red" size="sm" onClick={applyBlackBribe} disabled={!current || !(Number(offer) > 0)}>ΕΦΑΡΜΟΓΗ BLACK BRIBE</ComicButton>
+        <ComicButton variant="red" size="sm" onClick={applyBlackBribe} disabled={!!state.stopActive || !current || !(Number(offer) > 0)}>ΕΦΑΡΜΟΓΗ BLACK BRIBE</ComicButton>
         {state.blackBribe && <div className="text-xs">Τελευταίο Black Bribe: {players.find((p) => p.id === state.blackBribe.playerId)?.name} → {players.find((p) => p.id === state.blackBribe.targetId)?.name} · {state.blackBribe.durationSeconds / 60}′</div>}
       </ComicPanel>
 
@@ -160,8 +160,8 @@ export default function HighStakesPanel({ state, updateState }) {
         <div className="font-heading text-lg text-primary">🎡 THE SACRIFICE WHEEL</div>
         <div className="text-xs opacity-70">Επιλογή Α: 15′ στην Καρέκλα και διπλασιασμός των 3 μεγαλύτερων ποσών. Επιλογή Β: αφαίρεση του μεγαλύτερου ποσού.</div>
         <div className="flex flex-wrap gap-2">
-          <ComicButton variant="red" size="sm" onClick={() => applySacrifice('sacrifice')}>Α · ΘΥΣΙΑ</ComicButton>
-          <ComicButton variant="dark" size="sm" onClick={() => applySacrifice('refuse')}>Β · ΑΡΝΗΣΗ</ComicButton>
+          <ComicButton variant="red" size="sm" onClick={() => applySacrifice('sacrifice')} disabled={!!state.stopActive}>Α · ΘΥΣΙΑ</ComicButton>
+          <ComicButton variant="dark" size="sm" onClick={() => applySacrifice('refuse')} disabled={!!state.stopActive}>Β · ΑΡΝΗΣΗ</ComicButton>
         </div>
         {state.sacrificeWheel && <div className="text-xs">Τελευταία επιλογή: {state.sacrificeWheel.choice === 'sacrifice' ? 'Θυσία · 15′' : 'Άρνηση · αφαιρέθηκε το μεγαλύτερο ποσό'}</div>}
       </ComicPanel>
@@ -173,15 +173,15 @@ export default function HighStakesPanel({ state, updateState }) {
             <select value={auctionTarget || current?.id || ''} onChange={(e) => setAuctionTarget(e.target.value)} className="w-full rounded bg-background border border-border p-2 text-sm">
               {players.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
             </select>
-            <ComicButton variant="green" size="sm" onClick={startAuction}>ΕΝΑΡΞΗ ΜΥΣΤΙΚΗΣ ΔΗΜΟΠΡΑΣΙΑΣ</ComicButton>
+            <ComicButton variant="green" size="sm" onClick={startAuction} disabled={!!state.stopActive}>ΕΝΑΡΞΗ ΜΥΣΤΙΚΗΣ ΔΗΜΟΠΡΑΣΙΑΣ</ComicButton>
           </>
         ) : (
           <>
             <div className="text-sm">Στόχος: {players.find((p) => p.id === state.bailoutAuction.targetId)?.name}</div>
             <div className="text-xs">Προσφορές: {Object.keys(bids).length} · Υψηλότερη: {highestBid ? players.find((p) => p.id === highestBid.playerId)?.name + ' · ' + highestBid.amount : '—'}</div>
             <div className="flex flex-wrap gap-2">
-              <ComicButton variant="green" size="sm" onClick={() => finishAuction('release')} disabled={!highestBid}>Άμεση απελευθέρωση</ComicButton>
-              <ComicButton variant="red" size="sm" onClick={() => finishAuction('double')} disabled={!highestBid}>Διπλά χρήματα + 15′ Sensory Lock</ComicButton>
+              <ComicButton variant="green" size="sm" onClick={() => finishAuction('release')} disabled={!!state.stopActive || !highestBid}>Άμεση απελευθέρωση</ComicButton>
+              <ComicButton variant="red" size="sm" onClick={() => finishAuction('double')} disabled={!!state.stopActive || !highestBid}>Διπλά χρήματα + 15′ Sensory Lock</ComicButton>
             </div>
           </>
         )}
