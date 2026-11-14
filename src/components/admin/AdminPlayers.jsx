@@ -145,6 +145,16 @@ export default function AdminPlayers({ sessions, selectedSession, onSelect, onUp
                 {edit.immunity && <span className="bg-tarot-forest text-foreground text-xs px-2 py-0.5 rounded font-bold">🛡️ Ασυλία</span>}
                 {edit.team && <span className={`text-xs px-2 py-0.5 rounded font-bold ${edit.team === 'alpha' || edit.team === 'A' ? 'bg-destructive/40' : 'bg-tarot-teal/30'}`}>Ομάδα {edit.team}</span>}
               </div>
+              {p.vipProfile?.answerLabels && (
+                <details className="mb-3 rounded-lg border border-[#b99a45]/35 bg-black/30 p-3">
+                  <summary className="cursor-pointer text-xs font-bold text-[#d8bd72]">✦ VIP ΠΡΟΦΙΛ ΣΥΜΜΕΤΕΧΟΝΤΑ</summary>
+                  <div className="mt-2 space-y-1 text-xs text-foreground/75">
+                    {Object.entries(p.vipProfile.answerLabels).filter(([, value]) => String(value || '').trim()).map(([label, value]) => (
+                      <div key={label}><span className="text-[#d8bd72]">{label}:</span> {String(value)}</div>
+                    ))}
+                  </div>
+                </details>
+              )}
 
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
                 {/* Penalty step */}
