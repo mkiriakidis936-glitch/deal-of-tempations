@@ -415,7 +415,11 @@ export function entityRoutes() {
     try {
       const token = crypto.randomBytes(32).toString('base64url');
       const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+      const gameMode = String(req.body?.gameMode || 'classic');
+      const allowedGameModes = ['classic', 'marathon', 'arrest_heist', 'pajama', 'villa_48h', 'pedi_glam', 'pedi_extended', 'lockdown', 'beach_bar', 'marathon_4h'];
+      if (!allowedGameModes.includes(gameMode)) return res.status(400).json({ error: 'Επίλεξε έγκυρο παιχνίδι.' });
       const data = {
+        gameMode,
         title: 'VIP INVITATION',
         gameTitle: 'DEAL OF TEMPTATION',
         intro: 'Έχεις λάβει μια προσωπική πρόσκληση σε μια ξεχωριστή εμπειρία. Επιβεβαίωσε τη συμμετοχή σου και συμπλήρωσε το προσωπικό σου προφίλ.',
@@ -449,6 +453,7 @@ export function entityRoutes() {
         id: rows[0].id,
         title: rows[0].data.title || 'VIP INVITATION',
         gameTitle: rows[0].data.gameTitle || 'DEAL OF TEMPTATION',
+        gameMode: rows[0].data.gameMode || 'classic',
         intro: rows[0].data.intro || '',
         questions: Array.isArray(questions) ? questions : [],
       });
@@ -460,7 +465,7 @@ export function entityRoutes() {
     if (!/^[A-Za-z0-9_-]{40,60}$/.test(token)) return res.status(404).json({ error: 'Η πρόσκληση δεν βρέθηκε ή δεν είναι πλέον ενεργή.' });
     const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
     const { rows: invitations } = await query(
-      "SELECT id FROM records WHERE entity = 'VIPInvitation' AND data->>'tokenHash' = $1 AND data->>'active' = 'true' LIMIT 1",
+      "SELECT id, data FROM records WHERE entity = 'VIPInvitation' AND data->>'tokenHash' = $1 AND data->>'active' = 'true' LIMIT 1",
       [tokenHash],
     );
     if (!invitations[0]) return res.status(404).json({ error: 'Η πρόσκληση δεν βρέθηκε ή δεν είναι πλέον ενεργή.' });
@@ -474,34 +479,96 @@ export function entityRoutes() {
           !isObject(body.answers || {})) {
         return res.status(400).json({ error: 'Συμπλήρωσε σωστά τα στοιχεία της πρόσκλησης.' });
       }
-      const { rows: settings } = await query(
-        "SELECT data FROM records WHERE entity = 'AppSetting' AND data->>'key' = 'admin_form_questions' LIMIT 1"
-      );
-      const questions = settings[0]?.data?.value?.forms?.invitation || [];
-      const allowedQuestions = new Map((Array.isArray(questions) ? questions : []).map((question) => [question.id, question]));
       const answers = body.answers || {};
-      if (Object.keys(answers).some((id) => !allowedQuestions.has(id)) ||
-          (Array.isArray(questions) ? questions : []).some((question) =>
-            question.required && !String(answers[question.id] || '').trim()
-          ) ||
-          Object.values(answers).some((answer) => typeof answer !== 'string' || answer.length > 2000)) {
-        return res.status(400).json({ error: 'Έλεγξε τις απαντήσεις της φόρμας και δοκίμασε ξανά.' });
+      const allowedKeys = new Set([
+        'displayName', 'personality', 'competitiveness', 'preferredTestType',
+        'activityPreferences', 'difficulty', 'unexpectedChallenge', 'activeParticipation',
+        'boundaries', 'surpriseWish', 'shoeSize', 'plannedOutfit', 'shoesToWear',
+        'nailColor', 'slipperType', 'pajamaType', 'stayAtVilla', 'favoriteDrink',
+      ]);
+      const scalarValues = Object.entries(answers).filter(([key]) => key !== 'activityPreferences').map(([, value]) => value);
+      if (Object.keys(answers).some((key) => !allowedKeys.has(key)) ||
+          scalarValues.some((value) => typeof value !== 'string' || value.length > 2000) ||
+          !['bold', 'reserved', ''].includes(answers.personality || '') ||
+          !['yes', 'no', ''].includes(answers.unexpectedChallenge || '') ||
+          !['yes', 'no', ''].includes(answers.activeParticipation || '') ||
+          !['yes', 'no', ''].includes(answers.stayAtVilla || '') ||
+          !['questions', 'missions', 'surprises'].every((key) => ['yes', 'no'].includes(answers.activityPreferences?.[key] || 'no')) ||
+          !['competitiveness', 'difficulty'].every((key) => answers[key] === undefined || answers[key] === '' || /^[1-5]$/.test(String(answers[key]))) ||
+          (answers.activityPreferences !== undefined && (!isObject(answers.activityPreferences) || Object.keys(answers.activityPreferences).some((key) => !['questions', 'missions', 'surprises'].includes(key))))) {
+        return res.status(400).json({ error: 'Έλεγξε τις απαντήσεις της VIP φόρμας και δοκίμασε ξανά.' });
       }
-      const answerLabels = Object.fromEntries(Object.entries(answers).map(([id, answer]) => [allowedQuestions.get(id)?.label || id, answer]));
+      const gameMode = invitations[0].data.gameMode || 'classic';
+      const answerLabels = {
+        'Πώς θέλεις να σε αποκαλούν στο παιχνίδι;': answers.displayName || '',
+        'Προσωπικότητα': answers.personality === 'bold' ? 'Τολμηρός/ή' : answers.personality === 'reserved' ? 'Συγκρατημένος/η' : '',
+        'Ανταγωνιστικότητα': answers.competitiveness || '',
+        'Προτιμώμενο είδος δοκιμασιών': answers.preferredTestType || '',
+        'Προτιμήσεις δραστηριοτήτων': Object.entries(answers.activityPreferences || {}).filter(([, value]) => value === 'yes').map(([key]) => ({ questions: 'Ερωτήσεις', missions: 'Αποστολές', surprises: 'Εκπλήξεις' }[key])).join(', '),
+        'Δυσκολία δοκιμασιών': answers.difficulty || '',
+        'Απρόβλεπτη πρόκληση': answers.unexpectedChallenge === 'yes' ? 'ΝΑΙ' : answers.unexpectedChallenge === 'no' ? 'ΟΧΙ' : '',
+        'Ενεργή συμμετοχή': answers.activeParticipation === 'yes' ? 'ΝΑΙ' : answers.activeParticipation === 'no' ? 'ΟΧΙ' : '',
+        'Τι δεν επιθυμείς να περιλαμβάνει το παιχνίδι': answers.boundaries || '',
+        'Επιθυμητή έκπληξη': answers.surpriseWish || '',
+        'Νούμερο παπουτσιού': answers.shoeSize || '',
+        'Τι σκέφτεσαι να φορέσεις': answers.plannedOutfit || '',
+        'Τι παπούτσια θα φορέσεις': answers.shoesToWear || '',
+        'Χρώμα νυχιών': answers.nailColor || '',
+        'Τύπος παντόφλας / σαγιονάρας': answers.slipperType || '',
+        'Τύπος πιτζάμας': answers.pajamaType || '',
+        'Διαμονή στο σπίτι / Villa': answers.stayAtVilla === 'yes' ? 'ΝΑΙ' : answers.stayAtVilla === 'no' ? 'ΟΧΙ' : '',
+        'Αγαπημένο ποτό': answers.favoriteDrink || '',
+      };
       const data = {
         invitationId: invitations[0].id,
         submissionId,
+        gameMode,
         name: body.name.trim(),
+        displayName: String(answers.displayName || '').trim(),
         avatar: body.avatar,
         answers,
         answerLabels,
         confirmed: true,
         submittedAt: new Date().toISOString(),
       };
-      const inserted = await query(
-        "INSERT INTO records (id, entity, data, created_by) VALUES ($1, 'VIPInvitationSubmission', $2, NULL) ON CONFLICT ((data->>'submissionId')) WHERE entity = 'VIPInvitationSubmission' AND data ? 'submissionId' DO NOTHING RETURNING *",
-        [crypto.randomUUID(), JSON.stringify(data)],
-      );
+      const client = await pool.connect();
+      let inserted;
+      let playerIntakeRecord = null;
+      try {
+        await client.query('BEGIN');
+        inserted = await client.query(
+          "INSERT INTO records (id, entity, data, created_by) VALUES ($1, 'VIPInvitationSubmission', $2, NULL) ON CONFLICT ((data->>'submissionId')) WHERE entity = 'VIPInvitationSubmission' AND data ? 'submissionId' DO NOTHING RETURNING *",
+          [crypto.randomUUID(), JSON.stringify(data)],
+        );
+        if (inserted.rows.length) {
+          const intake = {
+            name: body.name.trim(),
+            vipGameMode: gameMode,
+            vipInvitationId: invitations[0].id,
+            vipSubmissionId: submissionId,
+            vipProfile: { displayName: data.displayName, avatar: body.avatar, answers, answerLabels },
+            shoeSize: answers.shoeSize || '',
+            nailColor: answers.nailColor || '',
+            slipperType: answers.slipperType || '',
+            pajamaStyle: answers.pajamaType || '',
+            preferredModes: [gameMode],
+            approved: true,
+            formType: 'vip',
+          };
+          const intakeInsert = await client.query(
+            "INSERT INTO records (id, entity, data, created_by) VALUES ($1, 'PlayerIntake', $2, NULL) RETURNING *",
+            [crypto.randomUUID(), JSON.stringify({ ...intake, name: data.displayName || body.name.trim(), legalName: body.name.trim() })],
+          );
+          playerIntakeRecord = toRecord(intakeInsert.rows[0]);
+        }
+        await client.query('COMMIT');
+      } catch (error) {
+        await client.query('ROLLBACK').catch(() => {});
+        client.release();
+        return next(error);
+      }
+      client.release();
+      if (playerIntakeRecord) broadcast('PlayerIntake', { type: 'create', id: playerIntakeRecord.id, data: playerIntakeRecord });
       let record = inserted.rows[0] ? toRecord(inserted.rows[0]) : null;
       if (!record) {
         const existing = await query(

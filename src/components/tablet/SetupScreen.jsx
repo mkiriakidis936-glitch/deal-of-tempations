@@ -31,7 +31,7 @@ export default function SetupScreen({ onStart }) {
   const [customScenarios, setCustomScenarios] = useState([]);
   const [selectedScenarioId, setSelectedScenarioId] = useState('');
 
-  const applyNames = (names, shoeByName, pjByName = {}) => {
+  const applyNames = (names, shoeByName, pjByName = {}, vipByName = {}) => {
     if (!names.length) return;
     setPlayers((prev) => {
       const kept = prev.map((p) => p.name.trim()).filter(Boolean);
@@ -43,6 +43,7 @@ export default function SetupScreen({ onStart }) {
         toenailPerk: TOENAIL_PERKS[idx % TOENAIL_PERKS.length].id,
         slipperType: pjByName[n]?.slipperType || '',
         nailColor: pjByName[n]?.nailColor || 'Pink',
+        ...(vipByName[n]?.vipProfile ? { vipProfile: vipByName[n].vipProfile } : {}),
       }));
     });
   };
@@ -53,9 +54,10 @@ export default function SetupScreen({ onStart }) {
         base44.entities.PlayerIntake.filter({}, { sort: '-created_date', limit: 50 }),
         base44.entities.PajamaIntake.filter({}, { sort: '-created_date', limit: 100 }),
       ]);
-      const classic = classicRes.items || [];
+      const allClassic = classicRes.items || [];
+      const classic = allClassic.filter((item) => !item.vipGameMode || item.vipGameMode === 'classic');
       const approved = (pajamaRes.items || []).filter((i) => i.approved === true && i.name);
-      setIntakes(classic);
+      setIntakes(allClassic);
       setPajamaApproved(approved);
 
       const shoeByName = {};
@@ -79,7 +81,7 @@ export default function SetupScreen({ onStart }) {
         if (n && !names.includes(n)) names.push(n);
       });
 
-      applyNames(names, shoeByName, pjByName);
+      applyNames(names, shoeByName, pjByName, Object.fromEntries(allClassic.map((item) => [item.name?.trim(), item]).filter(([name]) => name)));
     } catch (e) {
       console.error('Intake load error', e);
     } finally {
@@ -123,6 +125,8 @@ export default function SetupScreen({ onStart }) {
 
   function handleModeChange(m) {
     setMode(m.id);
+    const selectedModeMeta = isNewMode(m.id) ? modeMeta(m.id) : null;
+    const selectedModeMax = selectedModeMeta ? selectedModeMeta.max : (m.id === 'marathon' || m.id === 'arrest_heist' ? 10 : 6);
     if (m.id === 'marathon' && players.length < 8) {
       setPlayers(Array.from({ length: 8 }, (_, i) => ({ name: '', footwearLevel: 2, toenailPerk: TOENAIL_PERKS[i % 5].id })));
     } else if (m.id === 'arrest_heist' && players.length < 4) {
@@ -131,14 +135,17 @@ export default function SetupScreen({ onStart }) {
       setPlayers(players.slice(0, 6));
     } else if (isNewMode(m.id)) {
       const meta = modeMeta(m.id);
-      const wanted = pajamaApproved
-        .filter((i) => Array.isArray(i.preferredModes) && i.preferredModes.includes(m.id))
-        .map((i) => i.name.trim());
+      const vipForMode = intakes.filter((i) => i.vipGameMode === m.id && i.name).map((i) => i.name.trim());
+      const wanted = [...new Set([
+        ...pajamaApproved.filter((i) => Array.isArray(i.preferredModes) && i.preferredModes.includes(m.id)).map((i) => i.name.trim()),
+        ...vipForMode,
+      ])];
       if (wanted.length > 0) {
-        const byName = Object.fromEntries(pajamaApproved.map((i) => [i.name.trim(), i]));
+        const byName = Object.fromEntries([...pajamaApproved, ...intakes].filter((i) => i.name).map((i) => [i.name.trim(), i]));
         const next = [...new Set(wanted)].slice(0, meta.max).map((n, idx) => ({
           name: n, footwearLevel: 2, toenailPerk: TOENAIL_PERKS[idx % TOENAIL_PERKS.length].id,
           slipperType: byName[n]?.slipperType || '', nailColor: byName[n]?.nailColor || 'Pink',
+          ...(byName[n]?.vipProfile ? { vipProfile: byName[n].vipProfile } : {}),
         }));
         while (next.length < meta.min) next.push({ name: '', footwearLevel: 2, toenailPerk: 'pink' });
         setPlayers(next);
@@ -146,6 +153,22 @@ export default function SetupScreen({ onStart }) {
       }
       if (players.length < meta.min) setPlayers([...players, ...Array.from({ length: meta.min - players.length }, () => ({ name: '', footwearLevel: 2, toenailPerk: 'pink' }))]);
       else if (players.length > meta.max) setPlayers(players.slice(0, meta.max));
+    }
+    const vipForLegacyMode = intakes.filter((i) => i.vipGameMode === m.id && i.name);
+    if (vipForLegacyMode.length) {
+      setPlayers((previous) => {
+        const byName = new Map(previous.filter((p) => p.name.trim()).map((p) => [p.name.trim(), p]));
+        vipForLegacyMode.forEach((item, index) => {
+          const playerName = item.name.trim();
+          if (!byName.has(playerName)) byName.set(playerName, {
+            name: playerName,
+            footwearLevel: 2,
+            toenailPerk: TOENAIL_PERKS[(byName.size + index) % TOENAIL_PERKS.length].id,
+            vipProfile: item.vipProfile || null,
+          });
+        });
+        return [...byName.values()].slice(0, selectedModeMax);
+      });
     }
   }
 

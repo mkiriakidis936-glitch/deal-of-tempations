@@ -3,6 +3,7 @@ import { QRCodeSVG } from 'qrcode.react';
 import ComicPanel from '@/components/comic/ComicPanel';
 import ComicButton from '@/components/comic/ComicButton';
 import { base44, request } from '@/api/base44Client';
+import { GAME_MODES } from '@/data/gameConfig';
 
 const KEY = 'digital_invitations';
 const TARGETS = [
@@ -27,6 +28,7 @@ export default function AdminDigitalInvitations() {
   const [vipSubmissions, setVipSubmissions] = useState({});
   const [vipBusy, setVipBusy] = useState(false);
   const [vipMessage, setVipMessage] = useState('');
+  const [vipGameMode, setVipGameMode] = useState('classic');
 
   useEffect(() => {
     base44.entities.AppSetting.filter({ key: KEY }, { limit: 1 }).then(({ items: rows }) => {
@@ -67,7 +69,7 @@ export default function AdminDigitalInvitations() {
     setVipBusy(true);
     setVipMessage('');
     try {
-      const invitation = await request('POST', '/api/entities/vip-invitations', {});
+      const invitation = await request('POST', '/api/entities/vip-invitations', { gameMode: vipGameMode });
       setVipInvitations((current) => [invitation, ...current]);
       setVipMessage('Η VIP πρόσκληση δημιουργήθηκε και είναι έτοιμη για αποστολή.');
     } catch (e) { setVipMessage(e.message || 'Δεν δημιουργήθηκε η VIP πρόσκληση.'); }
@@ -104,7 +106,8 @@ export default function AdminDigitalInvitations() {
       </div>
       <ComicButton disabled={vipBusy} onClick={createVipInvitation}>＋ ΔΗΜΙΟΥΡΓΙΑ ΕΤΟΙΜΗΣ VIP ΠΡΟΣΚΛΗΣΗΣ</ComicButton>
       {vipMessage && <div className="text-sm font-bold text-foreground">{vipMessage}</div>}
-      <p className="text-xs text-foreground/55">Οι ερωτήσεις της φόρμας ορίζονται από την καρτέλα Forms & RSVP → Invitation Form.</p>
+      <label className="block space-y-1 text-sm font-bold text-[#d8bd72]">ΣΥΝΔΕΣΗ ΜΕ ΠΑΙΧΝΙΔΙ<select value={vipGameMode} onChange={(e) => setVipGameMode(e.target.value)} className="w-full rounded-lg border border-[#b99a45]/50 bg-black px-3 py-3 text-sm text-[#f4e6bd]">{GAME_MODES.map((mode) => <option key={mode.id} value={mode.id}>{mode.name}</option>)}</select></label>
+      <p className="text-xs text-foreground/55">Η VIP φόρμα έχει δικές της ερωτήσεις και δεν επηρεάζει το απλό Invitation Form.</p>
     </ComicPanel>
 
     {vipInvitations.map((invitation) => {
@@ -115,6 +118,7 @@ export default function AdminDigitalInvitations() {
           <div>
             <div className="font-heading text-lg text-[#c9a94e]">VIP INVITATION</div>
             <div className="text-xs text-foreground/60">{new Date(invitation.created_date).toLocaleString('el-GR')}</div>
+            <div className="text-xs text-[#d8bd72]">Παιχνίδι: {GAME_MODES.find((mode) => mode.id === invitation.gameMode)?.name || invitation.gameMode || 'ΚΛΑΣΣΙΚΗ'}</div>
           </div>
           <span className={invitation.active ? 'rounded-full border border-[#b99a45] px-3 py-1 text-xs text-[#d8bd72]' : 'rounded-full border border-white/20 px-3 py-1 text-xs text-foreground/50'}>
             {invitation.active ? 'ΕΝΕΡΓΗ' : 'ΑΝΕΝΕΡΓΗ'}
