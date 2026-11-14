@@ -198,6 +198,7 @@ export default function TVScreen() {
       <div className="fixed inset-0 -z-10 pointer-events-none opacity-20">
         <MediaSpot src={PHOTO.tv || FILM.tv} slot="tv" className="w-full h-full object-cover" />
       </div>
+      {state.stopActive && <div className="fixed inset-0 z-[100] bg-destructive/90 flex items-center justify-center text-center pointer-events-auto"><div className="font-heading text-7xl text-white">⏸ ΣΤΟΠ</div></div>}
       <LiveOverlay />
       <PajamaRevealOverlay />
       <IntroSequenceTV state={state} />
