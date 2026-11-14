@@ -324,7 +324,7 @@ export default function Admin() {
         </ComicPanel>
 
         {/* Κινητό: μενού που σκρολάρει οριζόντια, πάντα ορατό */}
-        <div className="lg:hidden sticky z-30 -mx-2.5 px-2.5 py-1 bg-background/90 backdrop-blur border-b border-border/40" style={{ top: 0 }}>
+        <div className="lg:hidden sticky z-30 -mx-2.5 px-2.5 py-1 bg-background/90 backdrop-blur border-b border-border/40" style={{ top: 'env(safe-area-inset-top, 0px)' }}>
           <AdminTabBar groups={navGroups} active={tab} onChange={setTab} />
         </div>
 
