@@ -45,6 +45,7 @@ export default function ModeTV({ state }) {
         </div>
       )}
 
+      {act === 'villa' && <div className="rounded-xl p-8 text-center text-4xl" style={{ background: '#171300', border: '2px solid #FFD700' }}>🏡 VILLA — 48 ΩΡΕΣ<div className="text-xl opacity-80 mt-3">{['Άφιξη','Ημέρα','Απόγευμα','Νύχτα','Πρωινή Φάση','Δεύτερη Ημέρα','Τελικό SHOW','FINALE'][mg.villaPhaseIndex || 0]}</div><div className="text-sm opacity-60 mt-2">Φάση {(mg.villaPhaseIndex || 0) + 1}/8</div></div>}
       {act === 'pedi_glam' && <div className="rounded-xl p-8 text-center text-3xl" style={{ background: '#170914', border: '2px solid #FF2A85' }}>💅 Pajama Pedi-Glam<div className="text-lg opacity-70 mt-2">Sensory & Pamper Edition · {mg.pediGlamUsed || 0}/20 κάρτες ολοκληρωμένες</div></div>}
       {act === 'board' && <TVBoard mg={mg} players={players} />}
       {act === 'midnight' && <div className="rounded-xl p-8 text-center text-3xl" style={{ background: '#0b0418', border: '2px solid #8B5CF6' }}>🌙 Midnight ASMR & Tickle Vault<div className="text-lg opacity-70 mt-2">Φώτα χαμηλά. Οι ερωτήσεις ψιθυρίζονται — δεν φαίνονται εδώ.</div></div>}
