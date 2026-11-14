@@ -102,6 +102,58 @@ export const EXTENDED_SECRET_MISSIONS = [
   { id: 'em10', title: 'The Alliance', text: 'Συμφώνησε κρυφά με μία άλλη παίκτρια να ψηφίσετε το ίδιο άτομο στην επόμενη δοκιμασία.', reward: 2, mins: 10 },
 ];
 
+
+export const EXTENDED_CHAOS_MARKET_CARDS = [
+  {
+    "id": "reverse",
+    "name": "Reverse Card",
+    "icon": "↩️",
+    "text": "Επιστρέφεις οποιαδήποτε ποινή γαργαλητού πίσω σε αυτήν που στην έριξε."
+  },
+  {
+    "id": "token_tax",
+    "name": "Token Tax",
+    "icon": "🪙",
+    "text": "Κλέβεις 2 Glam Tokens από την παίκτρια με τα περισσότερα."
+  },
+  {
+    "id": "double_tickle",
+    "name": "Double Tickle",
+    "icon": "⏱️",
+    "text": "Διπλασιάζεις τον χρόνο (από 15″ σε 30″) της επόμενης ποινής μιας αντιπάλου."
+  },
+  {
+    "id": "forced_route",
+    "name": "Forced Route",
+    "icon": "🔀",
+    "text": "Αναγκάζεις μια παίκτρια να μπει υποχρεωτικά στο Chaos Route στην επόμενη διακλάδωση."
+  },
+  {
+    "id": "sock_confiscation",
+    "name": "Sock Confiscation",
+    "icon": "🧦",
+    "text": "Αφαιρείς τις κάλτσες μιας παίκτριας για 3 γύρους."
+  },
+  {
+    "id": "hostage_swap",
+    "name": "Hostage Swap",
+    "icon": "🔄",
+    "text": "Ανταλλάσσεις θέση με οποιαδήποτε παίκτρια."
+  },
+  {
+    "id": "silence_curse",
+    "name": "Silence Curse",
+    "icon": "🤫",
+    "text": "Η παίκτρια που στοχεύεις δεν μιλά ή γελά για 2 γύρους."
+  },
+  {
+    "id": "glam_shield",
+    "name": "Glam Shield",
+    "icon": "🛡️",
+    "text": "Απόλυτη ασυλία από κάθε σαμποτάζ και ποινή για 1 ολόκληρο γύρο."
+  }
+];
+
 // Act 2 — Midnight ASMR & Tickle Vault
 export const BLIND_TEXTURES = [
   { id: 't1', name: 'The Satin Freeze', text: 'Παγάκι τυλιγμένο σε σατέν ύφασμα, πέρασμα στην καμάρα.' },
