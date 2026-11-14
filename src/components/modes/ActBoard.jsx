@@ -24,6 +24,11 @@ export default function ActBoard({ ctx, onDone }) {
 
   function nextTurn(fromIdx, fin, skipList) {
     const skip = [...skipList];
+    const sockConfiscation = { ...(mg.sockConfiscation || {}) };
+    const silenceCurses = { ...(mg.silenceCurses || {}) };
+    const justPlayed = players[fromIdx]?.id;
+    if (justPlayed && sockConfiscation[justPlayed] > 0) sockConfiscation[justPlayed] -= 1;
+    if (justPlayed && silenceCurses[justPlayed] > 0) silenceCurses[justPlayed] -= 1;
     let idx = fromIdx;
     for (let n = 0; n < players.length * 2; n += 1) {
       idx = (idx + 1) % players.length;
@@ -31,9 +36,9 @@ export default function ActBoard({ ctx, onDone }) {
       if (fin.includes(p.id)) continue;
       const si = skip.indexOf(p.id);
       if (si >= 0) { skip.splice(si, 1); continue; }
-      return { turn: idx, skip };
+      return { turn: idx, skip, sockConfiscation, silenceCurses };
     }
-    return { turn: fromIdx, skip };
+    return { turn: fromIdx, skip, sockConfiscation, silenceCurses };
   }
 
   function draw(player, forcedRoute) {
@@ -43,8 +48,11 @@ export default function ActBoard({ ctx, onDone }) {
     let used = mg.usedCards || [];
     let pool = deck.filter((c) => !used.includes(c.id));
     if (!pool.length) { used = used.filter((id) => !deck.some((c) => c.id === id)); pool = deck; }
-    const card = pick(pool);
+    const drawn = pick(pool);
+    const doubled = !!(mg.doublePenaltyNext || {})[player.id] && !!drawn.secs;
+    const card = doubled ? { ...drawn, secs: drawn.secs * 2 } : drawn;
     const patch = { card: { ...card, route, playerId: player.id, at: Date.now() }, usedCards: [...used, card.id] };
+    if (doubled) { const nextDouble = { ...(mg.doublePenaltyNext || {}) }; delete nextDouble[player.id]; patch.doublePenaltyNext = nextDouble; }
     if (forcedRoute) patch.routes = { ...routes, [player.id]: { route: forcedRoute, left: ROUTES[forcedRoute].steps - 1 } };
     else if (r && r.left > 0) patch.routes = { ...routes, [player.id]: { ...r, left: r.left - 1 } };
     if (route === 'chaos') patch.chaosUsed = { ...(mg.chaosUsed || {}), [player.id]: true };
@@ -93,11 +101,14 @@ export default function ActBoard({ ctx, onDone }) {
     const t = { ...tokens };
     const scores = { ...(mg.scores || {}) };
     const patch = { card: null };
+    const immune = [...(mg.immune || [])];
+    const shielded = !ok && immune.includes(p.id);
+    if (shielded) { immune.splice(immune.indexOf(p.id), 1); patch.immune = immune; }
     if (ok) {
       t[p.id] = (t[p.id] || 0) + reward;
       scores[p.id] = (scores[p.id] || 0) + reward * 5;
       if (c.giveChaos) patch.chaosCards = { ...chaosCards, [p.id]: [...(chaosCards[p.id] || []), pick(EXTENDED_CHAOS_MARKET_CARDS).id] };
-    } else if (c.route === 'chaos') {
+    } else if (!shielded && c.route === 'chaos') {
       t[p.id] = Math.max(0, (t[p.id] || 0) - 1);
     }
     Object.assign(patch, { tokens: t, scores }, nextTurn(turn, finished, mg.skip || []));
@@ -192,7 +203,7 @@ export default function ActBoard({ ctx, onDone }) {
             const r = routes[p.id];
             return (
               <div key={p.id} className={`flex items-center gap-2 text-sm rounded px-2 py-1 ${p.id === cur?.id ? 'bg-primary/20' : 'bg-background/40'}`}>
-                <b className="flex-1 truncate">{p.name}{finished.includes(p.id) ? ' 👑' : ''}</b>
+                <b className="flex-1 truncate">{p.name}{finished.includes(p.id) ? ' 👑' : ''}{(mg.sockConfiscation || {})[p.id] > 0 ? ' 🧦' : ''}{(mg.silenceCurses || {})[p.id] > 0 ? ' 🤫' : ''}</b>
                 <span className="opacity-70 text-xs">#{pos[p.id] || 0}{r?.left > 0 ? ` · ${ROUTES[r.route].icon}` : ''}</span>
                 <span className="font-heading">{t}🪙</span>
                 <span className="w-16 h-2 rounded bg-foreground/10 overflow-hidden"><i className="block h-full bg-yellow-400" style={{ width: `${Math.min(100, (t / GATE_TOKENS) * 100)}%` }} /></span>
@@ -204,7 +215,7 @@ export default function ActBoard({ ctx, onDone }) {
             );
           })}
         </div>
-        <div className="text-xs opacity-70">Πύλη Act 2 / Lockdown: χρειάζονται {GATE_TOKENS} tokens ανά παίκτρια ({gateOpen}/{players.length} έτοιμες).</div>
+        <div className="text-xs opacity-70">Πύλη Act 2 / Lockdown: χρειάζονται {GATE_TOKENS} tokens ανά παίκτρια ({gateOpen}/{players.length} έτοιμες). 🧦 = Sock Confiscation · 🤫 = Silence Curse.</div>
       </Panel>
 
       <Market ctx={ctx} cur={cur} />
