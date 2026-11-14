@@ -16,6 +16,7 @@ export default function ActPediGlam({ ctx, onDone }) {
     const card = pick(pool);
     setActive(card);
     setRemainingDeck((ids) => ids.filter((id) => id !== card.id));
+    setMg({ pediGlamUsed: 20 - remainingDeck.length + 1 });
     log('Pedi-Glam: ' + card.title);
   };
   const resolve = (success) => {
@@ -41,7 +42,7 @@ export default function ActPediGlam({ ctx, onDone }) {
             {players.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
           </select>
           <Btn color="bg-fuchsia-700" onClick={draw} disabled={!!active || !remainingDeck.length || stopped}>Τράβηξε κάρτα</Btn>
-          <Btn color="bg-secondary" onClick={() => { setRemainingDeck(PEDI_GLAM_CARDS.map((c) => c.id)); setActive(null); }} disabled={stopped}>Επαναφορά deck</Btn>
+          <Btn color="bg-secondary" onClick={() => { setRemainingDeck(PEDI_GLAM_CARDS.map((c) => c.id)); setActive(null); setMg({ pediGlamUsed: 0 }); }} disabled={stopped}>Επαναφορά deck</Btn>
         </div>
         {active && (
           <div className="rounded-xl border border-primary/50 bg-background/70 p-4 space-y-3">
