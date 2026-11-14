@@ -583,3 +583,68 @@ html, body { max-width: 100%; overflow-x: clip; -webkit-text-size-adjust: 100%; 
 @media (max-width: 480px) {
   .admin-root .comic-panel { padding: 0.75rem; }
 }
+
+
+/* iPhone / touch viewport refinements — keep desktop layout unchanged. */
+#root {
+  min-height: 100vh;
+  min-height: 100svh;
+  overflow-x: clip;
+}
+
+body {
+  min-width: 320px;
+  min-height: 100vh;
+  min-height: 100svh;
+}
+
+@media (max-width: 768px) {
+  html, body, #root {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  body {
+    background-attachment: scroll;
+  }
+
+  .admin-root {
+    min-height: 100svh;
+    padding-left: max(0.625rem, env(safe-area-inset-left));
+    padding-right: max(0.625rem, env(safe-area-inset-right));
+    padding-bottom: max(1.5rem, env(safe-area-inset-bottom));
+  }
+
+  .admin-root [class*="overflow-x-auto"],
+  .admin-root [class*="overflow-auto"] {
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .admin-root img,
+  .admin-root video,
+  .admin-root canvas,
+  .admin-root iframe {
+    max-width: 100%;
+  }
+
+  .admin-root input,
+  .admin-root select,
+  .admin-root textarea {
+    font-size: 16px !important;
+  }
+}
+
+@media (display-mode: standalone) {
+  #root {
+    min-height: calc(100svh - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .admin-root * {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

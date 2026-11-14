@@ -36,7 +36,12 @@ export default function AdminNav({ groups, active, onChange }) {
 export function AdminTabBar({ groups, active, onChange }) {
   const ref = useRef(null);
   useEffect(() => {
-    ref.current?.querySelector('[data-active="true"]')?.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'smooth' });
+    const container = ref.current;
+    const selected = container?.querySelector('[data-active="true"]');
+    if (!container || !selected) return;
+
+    const left = selected.offsetLeft - (container.clientWidth - selected.clientWidth) / 2;
+    container.scrollTo({ left: Math.max(0, left), behavior: 'smooth' });
   }, [active]);
 
   return (
