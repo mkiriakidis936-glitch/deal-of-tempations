@@ -50,10 +50,10 @@ function DirectorScorePanel({ state, updateState, stage }) {
             <b>{label}</b>
             <div className="text-lg tabular-nums">$ {Number(team.loot || 0).toLocaleString()} · ⭐ {team.stars || 0}</div>
             <div className="flex flex-wrap gap-2">
-              <button type="button" onClick={() => change(key,'loot',value)} className="rounded bg-emerald-800 px-3 py-2 text-sm" disabled={!value}>+ Loot</button>
-              <button type="button" onClick={() => change(key,'loot',-value)} className="rounded bg-red-900 px-3 py-2 text-sm" disabled={!value || !team.loot}>− Loot</button>
-              <button type="button" onClick={() => change(key,'stars',1)} className="rounded bg-amber-800 px-3 py-2 text-sm">+ Star</button>
-              <button type="button" onClick={() => change(key,'stars',-1)} className="rounded bg-secondary px-3 py-2 text-sm" disabled={!team.stars}>− Star</button>
+              <button type="button" onClick={() => change(key,'loot',value)} className="rounded bg-emerald-800 px-3 py-2 text-sm" disabled={!!state.stopActive || !value}>+ Loot</button>
+              <button type="button" onClick={() => change(key,'loot',-value)} className="rounded bg-red-900 px-3 py-2 text-sm" disabled={!!state.stopActive || !value || !team.loot}>− Loot</button>
+              <button type="button" onClick={() => change(key,'stars',1)} className="rounded bg-amber-800 px-3 py-2 text-sm" disabled={!!state.stopActive}>+ Star</button>
+              <button type="button" onClick={() => change(key,'stars',-1)} className="rounded bg-secondary px-3 py-2 text-sm" disabled={!!state.stopActive || !team.stars}>− Star</button>
             </div>
           </div>
         ))}
