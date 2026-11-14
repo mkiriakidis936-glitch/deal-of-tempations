@@ -634,7 +634,7 @@ function HeistBoardPanel({ state, updateState }) {
         <div className="rounded-lg border border-primary/50 bg-background/70 p-3 space-y-2">
           <div className="font-heading text-xl">{activeCard.name}</div>
           <p className="text-sm">{activeCard.text}</p>
-          <ComicButton variant="green" size="sm" onClick={() => updateState({ heistBoardCard: null })}>ΟΛΟΚΛΗΡΩΘΗΚΕ</ComicButton>
+          <ComicButton variant="green" size="sm" onClick={() => updateState({ heistBoardCard: null })} disabled={!!state.stopActive}>ΟΛΟΚΛΗΡΩΘΗΚΕ</ComicButton>
         </div>
       )}
     </ComicPanel>
