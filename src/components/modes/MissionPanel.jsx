@@ -4,7 +4,7 @@ import { pick, useTick, fmt } from '@/lib/modeKit';
 
 // Real-Time Secret Missions: ξεκινούν από το tablet και εμφανίζονται κρυφά στο κινητό της παίκτριας.
 export default function MissionPanel({ ctx, pool, onSuccess, onFail, title = '📲 Secret Missions' }) {
-  const { players, mg, setMg, log } = ctx;
+  const { players, mg, setMg, log, stopped } = ctx;
   const missions = mg.missions || {};
   const [target, setTarget] = useState('random');
   const [auto, setAuto] = useState(false);
@@ -12,6 +12,7 @@ export default function MissionPanel({ ctx, pool, onSuccess, onFail, title = '�
   useTick(true, 1000);
 
   function send() {
+    if (stopped) return;
     const cur = ctx.mg.missions || {};
     const free = players.filter((p) => !cur[p.id] || cur[p.id].status !== 'active');
     const p = target === 'random' ? pick(free.length ? free : players) : players.find((x) => x.id === target);
@@ -29,10 +30,10 @@ export default function MissionPanel({ ctx, pool, onSuccess, onFail, title = '�
   sendRef.current = send;
 
   useEffect(() => {
-    if (!auto) return undefined;
+    if (!auto || stopped) return undefined;
     const i = setInterval(() => sendRef.current(), everyMin * 60000);
     return () => clearInterval(i);
-  }, [auto, everyMin]);
+  }, [auto, everyMin, stopped]);
 
   function finish(pid, ok) {
     const m = missions[pid];
@@ -52,7 +53,7 @@ export default function MissionPanel({ ctx, pool, onSuccess, onFail, title = '�
           <option value="random">🎲 Τυχαία παίκτρια</option>
           {players.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
         </select>
-        <Btn color="bg-fuchsia-700" onClick={send}>📲 Στείλε αποστολή</Btn>
+        <Btn color="bg-fuchsia-700" onClick={send} disabled={stopped}>📲 Στείλε αποστολή</Btn>
         <label className="flex items-center gap-1 text-xs">
           <input type="checkbox" checked={auto} onChange={(e) => setAuto(e.target.checked)} />
           αυτόματα κάθε
