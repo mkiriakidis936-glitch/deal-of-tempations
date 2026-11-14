@@ -1,6 +1,17 @@
 // Τα 4 νέα ψηφιακά game modes (από το PDF "Μεγάλο Update").
 export const NEW_MODES = [
   {
+    id: 'villa_48h',
+    name: 'VILLA — 48 ΩΡΕΣ',
+    icon: '🏡',
+    desc: 'Εκτεταμένη εμπειρία 48 ωρών: Άφιξη, Ημέρα, Απόγευμα, Νύχτα, Πρωινή Φάση, Δεύτερη Ημέρα, Τελικό SHOW και FINALE.',
+    min: 2,
+    max: 10,
+    acts: ['villa'],
+    actDurations: { villa: 2880 },
+    minutes: 2880,
+  },
+  {
     id: 'pedi_glam',
     name: 'PAJAMA PEDI-GLAM',
     icon: '💅',
@@ -62,6 +73,7 @@ export const modeMeta = (id) => NEW_MODES.find((m) => m.id === id);
 
 // Χρώματα από τους UI οδηγούς του PDF.
 export const MODE_THEMES = {
+  villa_48h: { bg: '#080808', accent: '#FFD700', accent2: '#FF2A85' },
   pedi_glam: { bg: '#0A0A0A', accent: '#FF2A85', accent2: '#FFD700' },
   pedi_extended: { bg: '#0A0A0A', accent: '#FF2A85', accent2: '#FFD700' },
   lockdown: { bg: '#0A0A0A', accent: '#FF003C', accent2: '#FF6B8A' },
@@ -70,6 +82,7 @@ export const MODE_THEMES = {
 };
 
 export const ACT_META = {
+  villa: { title: 'Villa · 48-hour experience', minutes: 2880 },
   pedi_glam: { title: 'Pajama Pedi-Glam · Sensory & Pamper Edition', minutes: 90 },
   board: { title: 'Act 1 · The Glam & Chaos Board', minutes: 45 },
   midnight: { title: 'Act 2 · Midnight ASMR & Tickle Vault', minutes: 45 },
