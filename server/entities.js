@@ -435,6 +435,67 @@ export function entityRoutes() {
     } catch (error) { return next(error); }
   });
 
+  r.delete('/vip-invitations/:id', requireAdmin, async (req, res, next) => {
+    const client = await pool.connect();
+    try {
+      await client.query('BEGIN');
+      const { rows: invitationRows } = await client.query(
+        "SELECT id FROM records WHERE id = $1 AND entity = 'VIPInvitation' FOR UPDATE",
+        [req.params.id],
+      );
+      if (!invitationRows[0]) {
+        await client.query('ROLLBACK');
+        return res.status(404).json({ error: 'Η VIP πρόσκληση δεν βρέθηκε.' });
+      }
+      const { rows: submissions } = await client.query(
+        "SELECT id, data FROM records WHERE entity = 'VIPInvitationSubmission' AND data->>'invitationId' = $1",
+        [req.params.id],
+      );
+      const submissionIds = submissions.map(({ data }) => data?.submissionId).filter(Boolean);
+      const { rows: players } = await client.query(
+        "DELETE FROM records WHERE entity = 'PlayerIntake' AND (data->>'vipInvitationId' = $1 OR data->>'vipSubmissionId' = ANY($2::text[])) RETURNING id",
+        [req.params.id, submissionIds],
+      );
+      await client.query("DELETE FROM records WHERE entity = 'VIPInvitationSubmission' AND data->>'invitationId' = $1", [req.params.id]);
+      await client.query("DELETE FROM records WHERE id = $1 AND entity = 'VIPInvitation'", [req.params.id]);
+      await client.query('COMMIT');
+      players.forEach(({ id }) => broadcast('PlayerIntake', { type: 'delete', id, data: { id } }));
+      submissions.forEach(({ id }) => broadcast('VIPInvitationSubmission', { type: 'delete', id, data: { id } }));
+      broadcast('VIPInvitation', { type: 'delete', id: req.params.id, data: { id: req.params.id } });
+      return res.json({ success: true, deletedSubmissions: submissions.length, deletedPlayers: players.length });
+    } catch (error) {
+      await client.query('ROLLBACK').catch(() => {});
+      return next(error);
+    } finally { client.release(); }
+  });
+
+  r.delete('/vip-submissions/:id', requireAdmin, async (req, res, next) => {
+    const client = await pool.connect();
+    try {
+      await client.query('BEGIN');
+      const { rows: submissions } = await client.query(
+        "SELECT id, data FROM records WHERE id = $1 AND entity = 'VIPInvitationSubmission' FOR UPDATE",
+        [req.params.id],
+      );
+      if (!submissions[0]) {
+        await client.query('ROLLBACK');
+        return res.status(404).json({ error: 'Η απάντηση δεν βρέθηκε.' });
+      }
+      const { rows: players } = await client.query(
+        "DELETE FROM records WHERE entity = 'PlayerIntake' AND data->>'vipSubmissionId' = $1 RETURNING id",
+        [submissions[0].data?.submissionId || ''],
+      );
+      await client.query("DELETE FROM records WHERE id = $1 AND entity = 'VIPInvitationSubmission'", [req.params.id]);
+      await client.query('COMMIT');
+      players.forEach(({ id }) => broadcast('PlayerIntake', { type: 'delete', id, data: { id } }));
+      broadcast('VIPInvitationSubmission', { type: 'delete', id: req.params.id, data: { id: req.params.id } });
+      return res.json({ success: true, deletedPlayers: players.length });
+    } catch (error) {
+      await client.query('ROLLBACK').catch(() => {});
+      return next(error);
+    } finally { client.release(); }
+  });
+
   r.get('/vip-invitations/:token', async (req, res, next) => {
     try {
       const token = String(req.params.token || '');
