@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { stopAllSounds } from '@/data/soundLibrary';
 
 export const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
 export const shuffle = (arr) => [...arr].sort(() => Math.random() - 0.5);
@@ -12,6 +13,7 @@ export const isGameStopActive = () => gameStopActive;
 export function setGameStopActive(active) {
   gameStopActive = !!active;
   if (gameStopActive) {
+    stopAllSounds();
     audioCtx?.suspend().catch(() => {});
     try { window.speechSynthesis?.cancel(); } catch { /* δεν υποστηρίζεται */ }
     try { navigator.vibrate?.(0); } catch { /* δεν υποστηρίζεται */ }
