@@ -185,7 +185,7 @@ export default function ActBoard({ ctx, onDone }) {
         </Panel>
       )}
 
-      {mg.card && <CardStage card={mg.card} who={nameOf(mg.card.playerId)} immune={(mg.immune || []).includes(mg.card.playerId)} onResolve={resolve} onImmunity={payImmunity} canPay={(tokens[mg.card.playerId] || 0) >= 2} />}
+      {mg.card && <CardStage card={mg.card} who={nameOf(mg.card.playerId)} players={players} tokens={tokens} immune={(mg.immune || []).includes(mg.card.playerId)} onResolve={resolve} onImmunity={payImmunity} onRansom={(buyerId) => { const nextTokens = { ...tokens, [buyerId]: Math.max(0, (tokens[buyerId] || 0) - 2) }; setMg({ card: null, tokens: nextTokens, ...nextTurn(turn, finished, mg.skip || []) }); log(nameOf(buyerId) + ' εξαγόρασε την κάρτα Hogtie Ransom με 2 Tokens.'); }} canPay={(tokens[mg.card.playerId] || 0) >= 2} />}
 
       {!mg.card && !mg.branch && !allDone && (
         <div className="text-center">
@@ -250,8 +250,9 @@ export default function ActBoard({ ctx, onDone }) {
   );
 }
 
-function CardStage({ card, who, immune, onResolve, onImmunity, canPay }) {
+function CardStage({ card, who, players, tokens, immune, onResolve, onImmunity, onRansom, canPay }) {
   const [run, setRun] = useState(false);
+  const [ransomBuyer, setRansomBuyer] = useState(card.playerId);
   const left = useLocalCountdown(card.secs || 0, run, () => { sfx.alarm(); setRun(false); });
   const r = ROUTES[card.route];
   return (
@@ -265,6 +266,14 @@ function CardStage({ card, who, immune, onResolve, onImmunity, canPay }) {
           <Btn color="bg-sky-700" onClick={() => setRun(true)} disabled={run}>⏱ {Math.ceil(run ? left : card.secs)}″</Btn>
         </div>
       ) : null}
+      {card.title === 'The Hogtie Ransom' && (
+        <div className="flex flex-wrap gap-2 items-center">
+          <select value={ransomBuyer} onChange={(e) => setRansomBuyer(e.target.value)} className="rounded bg-background border border-border p-2 text-sm">
+            {players.map((p) => <option key={p.id} value={p.id}>{p.name} ({tokens[p.id] || 0}🪙)</option>)}
+          </select>
+          <Btn color="bg-yellow-700" disabled={(tokens[ransomBuyer] || 0) < 2} onClick={() => onRansom(ransomBuyer)}>ΕΞΑΓΟΡΑ · 2 TOKENS</Btn>
+        </div>
+      )}
       {card.trap && (
         <div className="flex flex-wrap gap-2">
           <Btn color="bg-yellow-600 text-black" disabled={!canPay} onClick={() => onImmunity(false)}>🪙 Πλήρωσε 2 για ασυλία</Btn>
