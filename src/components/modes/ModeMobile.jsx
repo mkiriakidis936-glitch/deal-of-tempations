@@ -2,10 +2,11 @@ import React, { useEffect, useRef, useState } from 'react';
 import { MODE_THEMES, modeMeta } from '@/data/modes/modeRegistry';
 import { CHAOS_POWERS, GATE_TOKENS } from '@/data/modes/extendedContent';
 import { EXIT_CODE } from '@/data/modes/lockdownContent';
-import { fmt, sfx, timerLeft, timerPause, useTick } from '@/lib/modeKit';
+import { fmt, sfx, timerLeft, timerPause, useTick, setGameStopActive } from '@/lib/modeKit';
+import { enablePlayerPush } from '@/lib/push';
 
 // Οθόνη κινητού (/play) για τα 4 νέα modes.
-export default function ModeMobile({ state, me, updateState, onChangePlayer }) {
+export default function ModeMobile({ state, me, updateState, onChangePlayer, sessionCode }) {
   const mg = state.mg || {};
   const meta = modeMeta(state.mode);
   const theme = MODE_THEMES[state.mode];
@@ -16,22 +17,26 @@ export default function ModeMobile({ state, me, updateState, onChangePlayer }) {
   const missionKey = mission ? `${mission.sentAt}` : null;
   const seen = useRef(null);
   const [alert, setAlert] = useState(false);
+  const [pushStatus, setPushStatus] = useState('');
+
+  useEffect(() => { setGameStopActive(!!mg.stop); }, [mg.stop]);
 
   useEffect(() => {
     if (!mission || mission.status !== 'active' || seen.current === missionKey) return;
     seen.current = missionKey;
     setAlert(true);
     sfx.buzz(400);
-    try {
-      if ('Notification' in window && Notification.permission === 'granted') {
-        navigator.serviceWorker?.ready
-          .then((r) => r.showNotification('🕵️ Μυστική αποστολή', { body: mission.title, vibrate: [200, 100, 200] }))
-          .catch(() => new Notification('🕵️ Μυστική αποστολή', { body: mission.title }));
-      }
-    } catch { /* οι ειδοποιήσεις δεν είναι διαθέσιμες */ }
   }, [missionKey]);
 
-  function askNotif() { try { Notification.requestPermission(); } catch { /* ignore */ } }
+  async function askNotif() {
+    setPushStatus('Σύνδεση ειδοποιήσεων…');
+    try {
+      await enablePlayerPush(sessionCode, me.id);
+      setPushStatus('Οι ειδοποιήσεις αποστολών είναι ενεργές.');
+    } catch (error) {
+      setPushStatus(error?.message || 'Δεν ήταν δυνατή η ενεργοποίηση ειδοποιήσεων.');
+    }
+  }
 
   function panic() {
     if (mg.stop) return;
@@ -117,9 +122,10 @@ export default function ModeMobile({ state, me, updateState, onChangePlayer }) {
         </div>
 
         <div className="grid grid-cols-2 gap-2">
-          <button onClick={askNotif} className="py-2 rounded-lg text-xs border border-border bg-secondary">🔔 Ειδοποιήσεις αποστολών</button>
+          <button onClick={askNotif} className="py-2 rounded-lg text-xs border border-border bg-secondary">🔔 Ενεργοποίηση ειδοποιήσεων</button>
           <button onClick={onChangePlayer} className="py-2 rounded-lg text-xs border border-border bg-secondary">🔄 Αλλαγή παίκτριας</button>
         </div>
+        {pushStatus && <div className="text-center text-xs opacity-80">{pushStatus}</div>}
       </div>
 
       <button onClick={panic} className="fixed bottom-3 left-3 right-3 z-40 py-4 rounded-xl font-heading text-xl bg-destructive text-destructive-foreground" style={{ maxWidth: 448, margin: '0 auto' }}>
