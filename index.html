@@ -7,7 +7,7 @@
     <script>
       // Guests who install from a public page must not open the admin login: use the public manifest there.
       (function () {
-        if (/^\/(site|promo|invitation|welcome|pajama-invite|pajama-form|modes-form|gift-unlock)/.test(location.pathname)) {
+        if (/^\/(?:site|promo|invitation|welcome|pajama-invite|pajama-form|modes-form|gift-unlock|intake|play|tv)(?:\/|$)/.test(location.pathname)) {
           var l = document.querySelector('link[rel="manifest"]'); if (l) l.href = '/manifest-public.webmanifest';
         }
       })();

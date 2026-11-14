@@ -398,12 +398,73 @@ export function entityRoutes() {
     const key = `${req.entity}:${req.ip || req.socket.remoteAddress || 'unknown'}`;
     let b = formBuckets.get(key);
     if (!b || now - b.startedAt >= 3600_000) { b = { startedAt: now, count: 0 }; formBuckets.set(key, b); }
-    if (b.count >= 60) return res.status(429).json({ error: 'Too many submissions. Try again later.' });
-    b.count += 1;
+    const weight = Array.isArray(req.body) ? req.body.length : 1;
+    if (Array.isArray(req.body) && weight > 10) return res.status(413).json({ error: 'Bulk submission is too large.' });
+    if (b.count + weight > 60) return res.status(429).json({ error: 'Too many submissions. Try again later.' });
+    b.count += weight;
     if (formBuckets.size > 5000) for (const [k, v] of formBuckets) if (now - v.startedAt >= 3600_000) formBuckets.delete(k);
-    next();
+    return next();
   };
   const guard = (op) => (req, res, next) => (needsAdmin(req.entity, op) ? requireAdmin(req, res, next) : next());
+
+  // Store the invitation intake and RSVP together. A stable submissionId makes retries safe.
+  r.post('/invitation-intake', async (req, res, next) => {
+    req.entity = 'PlayerIntake';
+    return formLimit(req, res, async () => {
+      const body = req.body || {};
+      const submissionId = typeof body.submissionId === 'string' ? body.submissionId.trim() : '';
+      if (!/^[A-Za-z0-9-]{16,100}$/.test(submissionId) || typeof body.name !== 'string' || !body.name.trim()) {
+        return res.status(400).json({ error: 'Invalid invitation submission.' });
+      }
+      const client = await pool.connect();
+      let playerRecord;
+      let rsvpRecord;
+      let playerCreated = false;
+      let rsvpCreated = false;
+      try {
+        await client.query('BEGIN');
+        let inserted = await client.query(
+          "INSERT INTO records (id, entity, data, created_by) VALUES ($1, 'PlayerIntake', $2, NULL) ON CONFLICT ((data->>'submissionId')) WHERE entity = 'PlayerIntake' AND data ? 'submissionId' DO NOTHING RETURNING *",
+          [crypto.randomUUID(), JSON.stringify(stripBuiltins({ ...body, submissionId }))],
+        );
+        playerCreated = inserted.rows.length > 0;
+        if (playerCreated) playerRecord = toRecord(inserted.rows[0]);
+        else {
+          const existing = await client.query(
+            "SELECT * FROM records WHERE entity = 'PlayerIntake' AND data->>'submissionId' = $1 LIMIT 1",
+            [submissionId],
+          );
+          playerRecord = existing.rows[0] ? toRecord(existing.rows[0]) : null;
+        }
+        inserted = await client.query(
+          "INSERT INTO records (id, entity, data, created_by) VALUES ($1, 'InvitationRSVP', $2, NULL) ON CONFLICT ((data->>'submissionId')) WHERE entity = 'InvitationRSVP' AND data ? 'submissionId' DO NOTHING RETURNING *",
+          [crypto.randomUUID(), JSON.stringify({ name: body.name.trim(), confirmed: true, submissionId })],
+        );
+        rsvpCreated = inserted.rows.length > 0;
+        if (rsvpCreated) rsvpRecord = toRecord(inserted.rows[0]);
+        else {
+          const existing = await client.query(
+            "SELECT * FROM records WHERE entity = 'InvitationRSVP' AND data->>'submissionId' = $1 LIMIT 1",
+            [submissionId],
+          );
+          rsvpRecord = existing.rows[0] ? toRecord(existing.rows[0]) : null;
+        }
+        if (!playerRecord || !rsvpRecord) throw new Error('Invitation submission could not be completed.');
+        await client.query('COMMIT');
+      } catch (error) {
+        await client.query('ROLLBACK').catch(() => {});
+        client.release();
+        return next(error);
+      }
+      client.release();
+      if (playerCreated) {
+        broadcast('PlayerIntake', { type: 'create', id: playerRecord.id, data: playerRecord });
+        notifyNewSubmission('PlayerIntake', playerRecord);
+      }
+      if (rsvpCreated) broadcast('InvitationRSVP', { type: 'create', id: rsvpRecord.id, data: rsvpRecord });
+      return res.json({ playerIntake: playerRecord, invitationRSVP: rsvpRecord, alreadySubmitted: !playerCreated && !rsvpCreated });
+    });
+  });
 
   // --- realtime stream (EventSource can't send headers; the token may come as ?token=) ---
   r.get('/:entity/stream', guard('read'), async (req, res) => {

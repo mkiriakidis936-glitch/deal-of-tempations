@@ -38,6 +38,12 @@ export async function migrate() {
     );
     CREATE INDEX IF NOT EXISTS records_entity_created_idx ON records (entity, created_date DESC);
     CREATE INDEX IF NOT EXISTS records_data_gin_idx ON records USING GIN (data jsonb_path_ops);
+    CREATE UNIQUE INDEX IF NOT EXISTS records_player_intake_submission_idx
+      ON records ((data->>'submissionId'))
+      WHERE entity = 'PlayerIntake' AND data ? 'submissionId';
+    CREATE UNIQUE INDEX IF NOT EXISTS records_invitation_rsvp_submission_idx
+      ON records ((data->>'submissionId'))
+      WHERE entity = 'InvitationRSVP' AND data ? 'submissionId';
     DELETE FROM records WHERE entity IN ('GameSessionEvent', 'PlayerCheckin');
     CREATE TABLE IF NOT EXISTS server_secrets (
       key   TEXT PRIMARY KEY,
