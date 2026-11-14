@@ -8,7 +8,7 @@ import {
   BINDING_OPTIONS, HOSTAGE_QUESTIONS, HOSTAGE_NEEDED, CONFESSION_LOCK, SPICY_WHEEL,
   WHEEL_DECISION_SECONDS, WHEEL_PENALTY_SECONDS, FOOT_ID, WHISPER_CLUES, SOCK_HEIST_SECONDS,
 } from '@/data/modes/lockdownContent';
-import { pick, shuffle, sfx, whisper, timerStart, timerAdd, timerLeft, useTick, useLocalCountdown } from '@/lib/modeKit';
+import { pick, shuffle, sfx, whisper, timerStart, timerAdd, timerLeft, useTick, useLocalCountdown, isGameStopActive } from '@/lib/modeKit';
 
 const norm = (s) => String(s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().toLowerCase();
 const RED = '#FF003C';
@@ -136,8 +136,8 @@ export default function ActLockdown({ ctx, onDone, standalone }) {
 function Init({ onStart, durationLabel }) {
   const [v, setV] = useState(0);
   useEffect(() => {
-    sfx.alarm();
-    const i = setInterval(() => sfx.alarm(), 9000);
+    if (!isGameStopActive()) sfx.alarm();
+    const i = setInterval(() => { if (!isGameStopActive()) sfx.alarm(); }, 9000);
     return () => clearInterval(i);
   }, []);
   return (
@@ -320,6 +320,7 @@ function SyncConfirm({ onOk }) {
   useEffect(() => {
     let s = 0;
     const i = setInterval(() => {
+      if (isGameStopActive()) return;
       s = both.current ? s + 0.1 : 0;
       setSecs(s);
       if (s >= 3) { clearInterval(i); onOk(); }
@@ -383,6 +384,7 @@ function SpicyWheel({ onClose, log }) {
     setPhase('idle');
     let n = 0;
     const i = setInterval(() => {
+      if (isGameStopActive()) return;
       setQ(pick(SPICY_WHEEL));
       sfx.click();
       n += 1;
