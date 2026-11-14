@@ -86,6 +86,34 @@ export default function AdminDigitalInvitations() {
     finally { setVipBusy(false); }
   }
 
+  async function deleteVipInvitation(invitation) {
+    if (!window.confirm('Να διαγραφεί οριστικά η VIP πρόσκληση μαζί με όλες τις απαντήσεις και τις εγγραφές συμμετεχόντων της;')) return;
+    setVipBusy(true);
+    setVipMessage('');
+    try {
+      await request('DELETE', `/api/entities/vip-invitations/${invitation.id}`);
+      setVipInvitations((current) => current.filter((item) => item.id !== invitation.id));
+      setVipSubmissions((current) => { const next = { ...current }; delete next[invitation.id]; return next; });
+      setVipMessage('Η VIP πρόσκληση και όλα τα συνδεδεμένα στοιχεία διαγράφηκαν.');
+    } catch (e) { setVipMessage(e.message || 'Δεν διαγράφηκε η VIP πρόσκληση.'); }
+    finally { setVipBusy(false); }
+  }
+
+  async function deleteVipSubmission(invitation, response) {
+    if (!window.confirm(`Να διαγραφεί οριστικά η απάντηση του/της ${response.displayName || response.name || 'συμμετέχοντα/ουσας'} και η συνδεδεμένη εγγραφή συμμετέχοντα;`)) return;
+    setVipBusy(true);
+    setVipMessage('');
+    try {
+      await request('DELETE', `/api/entities/vip-submissions/${response.id}`);
+      setVipSubmissions((current) => ({
+        ...current,
+        [invitation.id]: (current[invitation.id] || []).filter((item) => item.id !== response.id),
+      }));
+      setVipMessage('Η απάντηση και η συνδεδεμένη εγγραφή συμμετέχοντα διαγράφηκαν.');
+    } catch (e) { setVipMessage(e.message || 'Δεν διαγράφηκε η απάντηση.'); }
+    finally { setVipBusy(false); }
+  }
+
   async function loadVipSubmissions(invitation) {
     setVipBusy(true);
     try {
@@ -137,6 +165,7 @@ export default function AdminDigitalInvitations() {
         <div className="flex flex-wrap gap-2">
           <ComicButton size="sm" variant="dark" disabled={vipBusy} onClick={() => loadVipSubmissions(invitation)}>ΑΠΑΝΤΗΣΕΙΣ / ΣΥΜΜΕΤΟΧΕΣ</ComicButton>
           <ComicButton size="sm" variant={invitation.active ? 'red' : 'green'} disabled={vipBusy} onClick={() => toggleVipInvitation(invitation)}>{invitation.active ? 'ΑΠΕΝΕΡΓΟΠΟΙΗΣΗ LINK' : 'ΕΝΕΡΓΟΠΟΙΗΣΗ LINK'}</ComicButton>
+          <ComicButton size="sm" variant="red" disabled={vipBusy} onClick={() => deleteVipInvitation(invitation)}>ΔΙΑΓΡΑΦΗ VIP ΠΡΟΣΚΛΗΣΗΣ + ΑΠΑΝΤΗΣΕΩΝ</ComicButton>
         </div>
         {responses && <div className="space-y-2 border-t border-[#b99a45]/30 pt-3">
           <div className="font-heading text-sm text-[#d8bd72]">ΣΥΜΜΕΤΟΧΕΣ: {responses.length}</div>
@@ -146,7 +175,10 @@ export default function AdminDigitalInvitations() {
               <div className="mt-2 space-y-1 text-xs text-foreground/70">
                 {Object.entries(response.answerLabels || response.answers || {}).map(([label, answer]) => <div key={label}><span className="text-[#c9a94e]">{label}:</span> {String(answer)}</div>)}
               </div>
-              <div className="mt-2 text-[10px] text-foreground/40">{new Date(response.created_date).toLocaleString('el-GR')}</div>
+              <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
+                <div className="text-[10px] text-foreground/40">{new Date(response.created_date).toLocaleString('el-GR')}</div>
+                <ComicButton size="sm" variant="red" disabled={vipBusy} onClick={() => deleteVipSubmission(invitation, response)}>ΔΙΑΓΡΑΦΗ ΑΠΑΝΤΗΣΗΣ</ComicButton>
+              </div>
             </div>
           ))}
         </div>}
