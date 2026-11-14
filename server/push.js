@@ -32,7 +32,7 @@ const clip = (s, n) => String(s ?? '').trim().slice(0, n);
 export async function notifyAdmins({ title, body, url }) {
   await init();
   await query('INSERT INTO notifications (title, body, url) VALUES ($1,$2,$3)', [title, body || '', url || '/admin']);
-  const { rows } = await query('SELECT endpoint, subscription FROM push_subscriptions');
+  const { rows } = await query('SELECT endpoint, subscription FROM push_subscriptions WHERE user_id IS NOT NULL');
   const payload = JSON.stringify({ title, body, url: url || '/admin' });
   await Promise.all(rows.map(async (row) => {
     try {
@@ -40,6 +40,31 @@ export async function notifyAdmins({ title, body, url }) {
     } catch (e) {
       if (e.statusCode === 404 || e.statusCode === 410) await query('DELETE FROM push_subscriptions WHERE endpoint = $1', [row.endpoint]);
       else console.error('[push] αποτυχία αποστολής:', e.statusCode || e.message);
+    }
+  }));
+}
+
+export async function notifyPlayerMission(sessionCode, playerId, mission) {
+  if (!sessionCode || !playerId || !mission?.title) return;
+  await init();
+  const { rows } = await query(
+    'SELECT endpoint, subscription FROM push_subscriptions WHERE session_code = $1 AND player_id = $2',
+    [sessionCode, playerId],
+  );
+  const payload = JSON.stringify({
+    title: 'Μυστική αποστολή',
+    body: clip(mission.title, 120),
+    url: `/play?code=${encodeURIComponent(sessionCode)}`,
+  });
+  await Promise.all(rows.map(async (row) => {
+    try {
+      await webpush.sendNotification(row.subscription, payload, { TTL: 60 * 60, urgency: 'high' });
+    } catch (e) {
+      if (e.statusCode === 404 || e.statusCode === 410) {
+        await query('DELETE FROM push_subscriptions WHERE endpoint = $1', [row.endpoint]);
+      } else {
+        console.error('[player-push] αποτυχία αποστολής:', e.statusCode || e.message);
+      }
     }
   }));
 }
@@ -62,6 +87,39 @@ export function pushRoutes() {
   const r = express.Router();
 
   r.get('/public-key', async (_req, res) => res.json({ key: await init() }));
+
+  r.post('/player-subscribe', async (req, res) => {
+    const sessionCode = String(req.body?.sessionCode || '').trim().toUpperCase();
+    const playerId = String(req.body?.playerId || '').trim();
+    const sub = req.body?.subscription;
+    if (!sessionCode || !playerId || !sub?.endpoint || !sub?.keys?.p256dh || !sub?.keys?.auth) {
+      return res.status(400).json({ error: 'Μη έγκυρη συνδρομή παίκτριας' });
+    }
+    const { rows: sessions } = await query(
+      "SELECT data FROM records WHERE entity = 'GameSession' AND data->>'sessionCode' = $1 LIMIT 1",
+      [sessionCode],
+    );
+    const players = sessions[0]?.data?.state?.players || [];
+    if (!players.some((player) => player.id === playerId)) return res.status(404).json({ error: 'Δεν βρέθηκε η παίκτρια στη συνεδρία' });
+    await query(
+      `INSERT INTO push_subscriptions (endpoint, user_id, subscription, device, session_code, player_id)
+       VALUES ($1,NULL,$2,$3,$4,$5)
+       ON CONFLICT (endpoint) DO UPDATE SET subscription = EXCLUDED.subscription, device = EXCLUDED.device,
+         session_code = EXCLUDED.session_code, player_id = EXCLUDED.player_id`,
+      [sub.endpoint, sub, clip(req.body.device, 80), sessionCode, playerId],
+    );
+    res.json({ success: true });
+  });
+
+  r.post('/player-unsubscribe', async (req, res) => {
+    const sessionCode = String(req.body?.sessionCode || '').trim().toUpperCase();
+    const playerId = String(req.body?.playerId || '').trim();
+    await query(
+      'UPDATE push_subscriptions SET session_code = NULL, player_id = NULL WHERE endpoint = $1 AND session_code = $2 AND player_id = $3',
+      [String(req.body?.endpoint || ''), sessionCode, playerId],
+    );
+    res.json({ success: true });
+  });
 
   r.post('/subscribe', requireAdmin, async (req, res) => {
     const sub = req.body?.subscription;
