@@ -4,6 +4,14 @@ export const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
 export const shuffle = (arr) => [...arr].sort(() => Math.random() - 0.5);
 export const uid = () => Math.random().toString(36).slice(2, 8);
 
+let gameStopActive = false;
+const gameStopListeners = new Set();
+
+export function setGameStopActive(active) {
+  gameStopActive = !!active;
+  gameStopListeners.forEach((listener) => listener(gameStopActive));
+}
+
 export function fmt(sec) {
   const s = Math.max(0, Math.ceil(sec || 0));
   return `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
@@ -32,20 +40,52 @@ export function useTick(active = true, ms = 250) {
 // Τοπικό αντίστροφο για μικρές δοκιμασίες (π.χ. 30″ ποινή) — δεν γράφεται στη βάση.
 export function useLocalCountdown(seconds, running, onDone) {
   const [left, setLeft] = useState(seconds);
+  const [paused, setPaused] = useState(gameStopActive);
+  const remainingRef = useRef(seconds);
   const doneRef = useRef(onDone);
+  const completedRef = useRef(false);
   doneRef.current = onDone;
-  useEffect(() => { setLeft(seconds); }, [seconds]);
+
   useEffect(() => {
-    if (!running) return undefined;
-    const start = Date.now();
-    const base = seconds;
+    const listener = (value) => setPaused(value);
+    gameStopListeners.add(listener);
+    return () => gameStopListeners.delete(listener);
+  }, []);
+
+  useEffect(() => {
+    remainingRef.current = seconds;
+    completedRef.current = false;
+    setLeft(seconds);
+  }, [seconds]);
+
+  useEffect(() => {
+    if (!running) {
+      completedRef.current = false;
+      return undefined;
+    }
+    remainingRef.current = seconds;
+    completedRef.current = false;
+    setLeft(seconds);
+    return undefined;
+  }, [running, seconds]);
+
+  useEffect(() => {
+    if (!running || paused || completedRef.current) return undefined;
+    let last = Date.now();
     const i = setInterval(() => {
-      const l = Math.max(0, base - (Date.now() - start) / 1000);
-      setLeft(l);
-      if (l <= 0) { clearInterval(i); doneRef.current?.(); }
+      const now = Date.now();
+      remainingRef.current = Math.max(0, remainingRef.current - (now - last) / 1000);
+      last = now;
+      setLeft(remainingRef.current);
+      if (remainingRef.current <= 0 && !completedRef.current) {
+        completedRef.current = true;
+        clearInterval(i);
+        doneRef.current?.();
+      }
     }, 100);
     return () => clearInterval(i);
-  }, [running, seconds]);
+  }, [running, paused, seconds]);
+
   return left;
 }
 
