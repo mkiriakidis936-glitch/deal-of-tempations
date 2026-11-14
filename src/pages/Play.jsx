@@ -418,9 +418,10 @@ function BailoutAuctionMobile({ state, myPlayer, updateState }) {
   const [amount, setAmount] = useState('');
   const auction = state.bailoutAuction;
   const myBid = auction.bids?.[myPlayer.id];
+  const isTarget = auction.targetId === myPlayer.id;
   async function submit() {
     const bid = Math.max(0, Number(amount) || 0);
-    if (!bid || state.stopActive) return;
+    if (!bid || state.stopActive || isTarget) return;
     const bids = { ...(auction.bids || {}), [myPlayer.id]: bid };
     await updateState({ bailoutAuction: { ...auction, bids } });
   }
@@ -429,8 +430,10 @@ function BailoutAuctionMobile({ state, myPlayer, updateState }) {
       <div className="font-heading text-lg text-primary">🔨 BAILOUT AUCTION</div>
       <div className="text-sm">Αποφυλάκιση: {state.players.find((p) => p.id === auction.targetId)?.name}</div>
       <div className="text-xs opacity-70">Η προσφορά σου είναι μυστική από τις υπόλοιπες παίκτριες.</div>
-      <input type="number" min="1" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="Προσφορά" className="w-full rounded bg-background border border-border p-2" />
-      <button type="button" onClick={submit} disabled={state.stopActive || !(Number(amount) > 0)} className="w-full rounded-lg bg-emerald-800 p-3 font-heading">ΥΠΟΒΟΛΗ ΠΡΟΣΦΟΡΑΣ</button>
+      {isTarget ? <div className="text-sm">Είσαι η παίκτρια της αποφυλάκισης. Δεν συμμετέχεις στη δημοπρασία.</div> : <>
+        <input type="number" min="1" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="Προσφορά" className="w-full rounded bg-background border border-border p-2" />
+        <button type="button" onClick={submit} disabled={state.stopActive || !(Number(amount) > 0)} className="w-full rounded-lg bg-emerald-800 p-3 font-heading">ΥΠΟΒΟΛΗ ΠΡΟΣΦΟΡΑΣ</button>
+      </>}
       {myBid != null && <div className="text-xs text-center">Η προσφορά σου καταχωρίστηκε.</div>}
     </ComicPanel>
   );
