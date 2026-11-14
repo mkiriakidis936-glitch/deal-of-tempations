@@ -486,7 +486,7 @@ export function entityRoutes() {
         'boundaries', 'surpriseWish', 'shoeSize', 'plannedOutfit', 'shoesToWear',
         'nailColor', 'slipperType', 'pajamaType', 'stayAtVilla', 'favoriteDrink',
       ]);
-      const scalarValues = Object.values(answers);
+      const scalarValues = Object.entries(answers).filter(([key]) => key !== 'activityPreferences').map(([, value]) => value);
       if (Object.keys(answers).some((key) => !allowedKeys.has(key)) ||
           scalarValues.some((value) => typeof value !== 'string' || value.length > 2000) ||
           !['bold', 'reserved', ''].includes(answers.personality || '') ||
