@@ -15,6 +15,10 @@ export default function AudioControl({ state, updateState, onClose }) {
   const [musicPlaying, setMusicPlaying] = useState(false);
   const ambientRef = useRef(null);
 
+  useEffect(() => {
+    if (state.stopActive || state.mg?.stop) stopMusic();
+  }, [state.stopActive, state.mg?.stop]);
+
   // Music playback via Web Audio API (simple ambient drone)
   useEffect(() => {
     const track = audioSync.music?.track;
