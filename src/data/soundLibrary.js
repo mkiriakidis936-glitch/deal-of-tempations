@@ -5,9 +5,14 @@ const activeContexts = new Set();
 
 export function stopAllSounds() {
   activeContexts.forEach((ctx) => {
-    try { ctx.close(); } catch { /* already closed */ }
+    try { ctx.close().catch(() => {}); } catch { /* already closed */ }
   });
   activeContexts.clear();
+}
+
+function closeCtx(ctx) {
+  activeContexts.delete(ctx);
+  return ctx.close().catch(() => {});
 }
 
 function createCtx() {
@@ -39,7 +44,7 @@ export const SOUNDS = {
       const ctx = createCtx(); if (!ctx) return;
       const dest = ctx.destination;
       [220, 330, 440, 550].forEach((f, i) => tone(ctx, dest, f, i * 0.15, 0.4, 'sawtooth', 0.2));
-      setTimeout(() => ctx.close(), 2500);
+      setTimeout(() => closeCtx(ctx), 2500);
     },
   },
   suspense: {
