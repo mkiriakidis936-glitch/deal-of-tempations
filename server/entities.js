@@ -522,10 +522,6 @@ export function entityRoutes() {
             'UPDATE records SET data = data || $1::jsonb, updated_date = now() WHERE id = $2 AND entity = $3 RETURNING *',
             [JSON.stringify(stripBuiltins(req.body)), req.params.id, req.entity],
           );
-          const nextState = isObject(req.body?.state) ? req.body.state : (current.state || {});
-          const changedFields = isObject(req.body?.state)
-            ? Object.keys(nextState).filter((key) => !sameJson(current.state?.[key], nextState[key]))
-            : [];
           await client.query('COMMIT');
           const rec = toRecord(rows[0]);
           broadcast(req.entity, { type: 'update', id: rec.id, data: rec });
