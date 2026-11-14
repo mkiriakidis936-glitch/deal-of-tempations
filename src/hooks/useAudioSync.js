@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { SOUNDS } from '@/data/soundLibrary';
+import { SOUNDS, stopAllSounds } from '@/data/soundLibrary';
 
 // Cross-device audio sync: watches state.audioSync and plays the triggered effect on all devices.
 export function useAudioSync(state) {
@@ -8,12 +8,7 @@ export function useAudioSync(state) {
 
   useEffect(() => {
     if (state?.mg?.stop || state?.stopActive) {
-      Object.values(SOUNDS).forEach((sound) => {
-        try {
-          sound?.pause?.();
-          if (sound && 'currentTime' in sound) sound.currentTime = 0;
-        } catch { /* best-effort stop */ }
-      });
+      stopAllSounds();
       return;
     }
     if (!state?.audioSync) return;
