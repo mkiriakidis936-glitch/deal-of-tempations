@@ -3,7 +3,7 @@ import { Panel, Btn, RestraintNote } from '@/components/modes/ModeShell';
 import MissionPanel from '@/components/modes/MissionPanel';
 import {
   GATE_TOKENS, EXT_END, EXT_PORTAL, EXT_ZONES, squareType, zoneOf, ROUTES,
-  GLAM_CARDS, CHAOS_CARDS, CHAOS_POWERS, SHOP, SECRET_MISSIONS,
+  EXTENDED_GLAM_CARDS, EXTENDED_CHAOS_CARDS, CHAOS_POWERS, SHOP, EXTENDED_SECRET_MISSIONS,
 } from '@/data/modes/extendedContent';
 import { pick, sfx, useLocalCountdown } from '@/lib/modeKit';
 
@@ -39,7 +39,7 @@ export default function ActBoard({ ctx, onDone }) {
   function draw(player, forcedRoute) {
     const r = routes[player.id];
     const route = forcedRoute || (r && r.left > 0 ? r.route : 'glam');
-    const deck = route === 'chaos' ? CHAOS_CARDS : GLAM_CARDS;
+    const deck = route === 'chaos' ? EXTENDED_CHAOS_CARDS : EXTENDED_GLAM_CARDS;
     let used = mg.usedCards || [];
     let pool = deck.filter((c) => !used.includes(c.id));
     if (!pool.length) { used = used.filter((id) => !deck.some((c) => c.id === id)); pool = deck; }
@@ -89,7 +89,7 @@ export default function ActBoard({ ctx, onDone }) {
     const c = mg.card;
     if (!c) return;
     const p = players.find((x) => x.id === c.playerId);
-    const reward = c.free ? 1 : ROUTES[c.route].reward;
+    const reward = c.reward || (c.free ? 1 : ROUTES[c.route].reward);
     const t = { ...tokens };
     const scores = { ...(mg.scores || {}) };
     const patch = { card: null };
@@ -212,7 +212,7 @@ export default function ActBoard({ ctx, onDone }) {
 
       <MissionPanel
         ctx={ctx}
-        pool={SECRET_MISSIONS}
+        pool={EXTENDED_SECRET_MISSIONS}
         onSuccess={(m, pid) => {
           const t = { ...(ctx.mg.tokens || {}) };
           t[pid] = (t[pid] || 0) + m.reward;
