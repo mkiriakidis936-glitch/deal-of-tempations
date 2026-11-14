@@ -1,5 +1,6 @@
 import React from 'react';
-import { ARREST_HEIST_LADDER } from '@/data/gameConfig';
+import { ARREST_HEIST_LADDER, BOARD } from '@/data/gameConfig';
+import MonopolyBoard from '@/components/tv/MonopolyBoard';
 import { cn } from '@/lib/utils';
 
 function PrisonCell({ leader, teamLabel, teamIcon, teamColor, points }) {
@@ -97,6 +98,7 @@ export default function ArrestHeistTV({ state }) {
   const leaderB = players.find((p) => p.team === 'B' && p.isLeader);
   const pointsA = state.teamA?.points || 0;
   const pointsB = state.teamB?.points || 0;
+  const boardPlayers = players.map((p) => ({ ...p, position: (state.heistPositions || {})[p.id] || 0 }));
   const round = state.round || 1;
   const maxRounds = 6;
 
@@ -174,6 +176,11 @@ export default function ArrestHeistTV({ state }) {
           </div>
           <span className="font-heading text-sm text-foreground w-10 text-right">{Math.round(alarmPct)}%</span>
         </div>
+      </div>
+
+      <div className="comic-panel bg-card p-3 space-y-2">
+        <div className="font-heading text-lg text-primary text-center">🗺️ HEIST &amp; ARREST — 44 BASES</div>
+        <MonopolyBoard players={boardPlayers} board={BOARD} large />
       </div>
 
       {/* Two prison cells (C + B) */}
