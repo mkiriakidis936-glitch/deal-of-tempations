@@ -3,6 +3,11 @@
 
 const activeContexts = new Set();
 
+export function registerAudioContext(ctx) {
+  activeContexts.add(ctx);
+  return () => activeContexts.delete(ctx);
+}
+
 export function stopAllSounds() {
   activeContexts.forEach((ctx) => {
     try { ctx.close().catch(() => {}); } catch { /* already closed */ }
