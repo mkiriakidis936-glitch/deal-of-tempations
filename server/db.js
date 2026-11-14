@@ -50,6 +50,9 @@ export async function migrate() {
       device       TEXT,
       created_date TIMESTAMPTZ NOT NULL DEFAULT now()
     );
+    ALTER TABLE push_subscriptions ADD COLUMN IF NOT EXISTS session_code TEXT;
+    ALTER TABLE push_subscriptions ADD COLUMN IF NOT EXISTS player_id TEXT;
+    CREATE INDEX IF NOT EXISTS push_subscriptions_player_idx ON push_subscriptions (session_code, player_id);
     CREATE TABLE IF NOT EXISTS notifications (
       id           BIGSERIAL PRIMARY KEY,
       title        TEXT NOT NULL,
