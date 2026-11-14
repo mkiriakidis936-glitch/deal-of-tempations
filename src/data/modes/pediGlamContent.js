@@ -4,7 +4,8 @@ export const PEDI_GLAM_CARDS = [
     "id": "pg01",
     "title": "The Pedi-Gloss Check",
     "text": "Δείξε τα νύχια των ποδιών σου. Αν είναι βαμμένα, +1 Glam Token. Αν όχι, κάνε 30″ μασάζ πέλματος στη διπλανή σου.",
-    "reward": 1
+    "reward": 0,
+    "conditionalReward": 1
   },
   {
     "id": "pg02",
@@ -40,7 +41,8 @@ export const PEDI_GLAM_CARDS = [
     "id": "pg07",
     "title": "The Satin Ribbon Wrap",
     "text": "Δέσε χαλαρά μια σατέν κορδέλα γύρω από τους αστραγάλους σου σαν βραχιόλι για τους επόμενους 3 γύρους.",
-    "reward": 0
+    "reward": 0,
+    "ribbonTurns": 3
   },
   {
     "id": "pg08",
@@ -70,7 +72,8 @@ export const PEDI_GLAM_CARDS = [
     "id": "pg12",
     "title": "The Warm Towel Spa",
     "text": "Τύλιξε τα πόδια σου με ζεστή πετσέτα και κέρδισε ασυλία για τον επόμενο γύρο.",
-    "reward": 0
+    "reward": 0,
+    "immunity": true
   },
   {
     "id": "pg13",
@@ -94,7 +97,8 @@ export const PEDI_GLAM_CARDS = [
     "id": "pg16",
     "title": "The Fluffy Sock Swap",
     "text": "Αντάλλαξε τις κάλτσες ή τις παντόφλες σου με την παίκτρια απέναντί σου για το υπόλοιπο του γύρου.",
-    "reward": 0
+    "reward": 0,
+    "sockSwap": true
   },
   {
     "id": "pg17",
@@ -118,6 +122,7 @@ export const PEDI_GLAM_CARDS = [
     "id": "pg20",
     "title": "The Pamper Queen Bonus",
     "text": "Διάλεξε μία συμπαίκτρια για να μοιραστείτε από +1 Glam Token.",
-    "reward": 1
+    "reward": 0,
+    "sharedReward": true
   }
 ];
