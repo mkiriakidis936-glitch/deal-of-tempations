@@ -1,7 +1,7 @@
 // DEAL OF TEMPTATION - Shared Game Logic
 import { BOARD, getPenaltyLadder, FULL_PENALTY_LADDER, HIDDEN_ROLES } from '@/data/gameConfig';
 import {
-  STREET_TRUTHS, STREET_DARES, WARRANT_CARDS, GLITCH_CARDS,
+  PDF_STREET_TRUTHS, PDF_STREET_DARES, PDF_WARRANT_CARDS, PDF_GLITCH_CARDS,
   HARDCORE_TRUTHS, ULTIMATE_TRUTHS,
 } from '@/data/gameContent';
 import { isNewMode } from '@/data/modes/modeRegistry';
