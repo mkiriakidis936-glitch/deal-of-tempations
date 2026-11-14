@@ -77,6 +77,8 @@ export function notifyNewSubmission(entity, rec) {
     msg = { title: '💌 Νέα πρόσκληση', body: `${name} συμπλήρωσε το ερωτηματολόγιο στο /invitation`, url: '/admin?tab=intakes' };
   } else if (entity === 'InvitationRSVP' && rec.event === 'pajama') {
     msg = { title: '🩴 Νέα κράτηση θέσης', body: `${name} κράτησε θέση στο /pajama-invite`, url: '/admin?tab=rsvp' };
+  } else if (entity === 'VIPInvitationSubmission') {
+    msg = { title: '✦ Νέο VIP Ερωτηματολόγιο', body: `${clip(rec.displayName || name, 80)} συμπλήρωσε το VIP Questionnaire`, url: '/admin?tab=digital-invitations' };
   } else if (entity === 'PajamaIntake') {
     msg = { title: '🩴 Νέα φόρμα Pajama', body: `${name} συμπλήρωσε τη φόρμα στο /pajama-form`, url: '/admin?tab=pajama' };
   }
