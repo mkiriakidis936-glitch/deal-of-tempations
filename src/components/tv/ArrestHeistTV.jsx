@@ -183,6 +183,27 @@ export default function ArrestHeistTV({ state }) {
         <MonopolyBoard players={boardPlayers} board={BOARD} large />
       </div>
 
+      {state.absoluteInterrogation?.active && (
+        <div className="comic-panel bg-tarot-royal/30 p-4 space-y-2 text-center">
+          <div className="font-heading text-2xl text-primary">⚖️ ABSOLUTE INTERROGATION · ΑΛΗΘΕΙΑ {state.absoluteInterrogation.step + 1}/3</div>
+          <div className="text-lg">{state.players.find((p) => p.id === state.absoluteInterrogation.targetId)?.name}</div>
+          <div className="text-xl">{state.absoluteInterrogation.questions?.[state.absoluteInterrogation.step]}</div>
+          <div className="text-xs opacity-70">Μυστικές ψήφοι κινητών: {Object.keys(state.absoluteInterrogation.votes?.[state.absoluteInterrogation.step] || {}).length}/{Math.max(0, players.length - 1)}</div>
+        </div>
+      )}
+      {state.interrogationVerdict && (
+        <div className="comic-panel bg-tarot-gold/20 p-4 text-center">
+          <div className="font-heading text-2xl text-primary">{state.interrogationVerdict.label}</div>
+          <div className="text-sm">{state.interrogationVerdict.release ? 'Άμεση απελευθέρωση · +5.000€ · 1 Pass Card' : 'Ποινή ×' + state.interrogationVerdict.penaltyMultiplier + ' · Sensory Lock'}</div>
+        </div>
+      )}
+      {state.bailoutAuction?.active && (
+        <div className="comic-panel bg-tarot-forest/30 p-4 text-center">
+          <div className="font-heading text-2xl text-primary">🔨 BAILOUT AUCTION LIVE</div>
+          <div className="text-sm">Μυστικές προσφορές από τα κινητά · {Object.keys(state.bailoutAuction.bids || {}).length} συμμετοχές</div>
+        </div>
+      )}
+
       {/* Two prison cells (C + B) */}
       <div className="grid grid-cols-2 gap-4">
         <PrisonCell leader={leaderA} teamLabel="TEAM ALPHA" teamIcon="💖" teamColor="text-tarot-crimson" points={pointsA} />
