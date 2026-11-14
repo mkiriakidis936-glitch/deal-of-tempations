@@ -29,12 +29,10 @@ import AdminFormsBuilder from '@/components/admin/AdminFormsBuilder';
 import AdminNotifications from '@/components/admin/AdminNotifications';
 import AdminVisits from '@/components/admin/AdminVisits';
 import AdminDigitalInvitations from '@/components/admin/AdminDigitalInvitations';
-import AdminMultilingual from '@/components/admin/AdminMultilingual';
 import AdminPlayerCheckin from '@/components/admin/AdminPlayerCheckin';
 import AdminGameTimeline from '@/components/admin/AdminGameTimeline';
 import AdminHostControlCenter from '@/components/admin/AdminHostControlCenter';
 import { setActiveSessionCode } from '@/lib/activeSession';
-import { LANGUAGES, translateAdminLabel } from '@/lib/i18n';
 
 const NAV_GROUPS = [
   {
@@ -50,7 +48,6 @@ const NAV_GROUPS = [
       { id: 'website', label: '🌐 Website Editor' },
       { id: 'media', label: '🖼️ Media Center' },
       { id: 'invitations', label: '✉️ Digital Invitations' },
-      { id: 'languages', label: '🌐 Multilingual Management' },
       { id: 'notifications', label: '🔔 Notification Center' },
       { id: 'checkin', label: '📷 QR Player Check-in' },
       { id: 'timeline', label: '🕒 Live Game Timeline' },
@@ -95,9 +92,7 @@ export default function Admin() {
   const [sessions, setSessions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [pickedSession, setPickedSession] = useState(null);
-  const [adminLanguage, setAdminLanguage] = useState(() => localStorage.getItem('dot_admin_language') || 'el');
-  const [translations, setTranslations] = useState({});
-  const navGroups = NAV_GROUPS.map((group) => ({ ...group, tabs: group.tabs.map((item) => ({ ...item, label: translateAdminLabel(translations, `nav.${item.id}`, item.label, adminLanguage) })) }));
+  const navGroups = NAV_GROUPS;
 
   const loadSessions = useCallback(async () => {
     setLoading(true);
@@ -112,12 +107,6 @@ export default function Admin() {
   }, []);
 
   useEffect(() => { loadSessions(); }, [loadSessions]);
-  useEffect(() => {
-    base44.entities.AppSetting.filter({ key: 'site_admin_translations' }, { limit: 1 })
-      .then(({ items }) => setTranslations(items?.[0]?.value?.translations || {}))
-      .catch(() => {});
-  }, []);
-  const changeAdminLanguage = (value) => { setAdminLanguage(value); localStorage.setItem('dot_admin_language', value); };
 
   // Μία κοινή ενεργή συνεδρία για όλες τις καρτέλες — προεπιλογή η πιο πρόσφατη (ό,τι δείχνει η TV).
   const activeSession = pickedSession || sessions[0] || null;
@@ -210,8 +199,6 @@ export default function Admin() {
         return <AdminMedia />;
       case 'invitations':
         return <AdminDigitalInvitations />;
-      case 'languages':
-        return <AdminMultilingual />;
       case 'notifications':
         return <AdminNotifications />;
       case 'checkin':
@@ -299,7 +286,6 @@ export default function Admin() {
             <div className="font-heading text-2xl sm:text-3xl comic-text-stroke text-primary">🔧 CONTROL CENTER</div>
             <div className="text-[11px] sm:text-xs font-bold text-foreground/70 font-body truncate">DEAL OF TEMPTATION — Κεντρική διαχείριση εφαρμογής</div>
           </div>
-          <select aria-label="Γλώσσα διαχείρισης" value={adminLanguage} onChange={(e) => changeAdminLanguage(e.target.value)} className="rounded border border-border bg-background px-2 py-1 text-xs">{LANGUAGES.map((item) => <option key={item.id} value={item.id}>{item.label}</option>)}</select>
           <ComicButton variant="dark" size="sm" onClick={loadSessions} disabled={loading}>
             🔄 <span className="hidden sm:inline">{loading ? 'ΦΟΡΤΩΣΗ...' : 'ΑΝΑΝΕΩΣΗ'}</span>
           </ComicButton>
