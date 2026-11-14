@@ -10,11 +10,24 @@ export default function HighStakesPanel({ state, updateState }) {
   const [interrogationTarget, setInterrogationTarget] = useState('');
   const [questions, setQuestions] = useState(['', '', '']);
   const [auctionTarget, setAuctionTarget] = useState('');
+  const [now, setNow] = useState(Date.now());
+  useEffect(() => { const id = setInterval(() => setNow(Date.now()), 1000); return () => clearInterval(id); }, []);
   const inter = state.absoluteInterrogation || {};
   const voters = players.filter((p) => p.id !== inter.targetId);
   const stepVotes = inter.votes?.[inter.step] || {};
   const ready = !state.stopActive && !!inter.active && voters.length > 0 && voters.every((p) => stepVotes[p.id] === true || stepVotes[p.id] === false);
   const voteKey = JSON.stringify(stepVotes);
+  useEffect(() => {
+    if (!state.hogtieStartedAt) return;
+    if (state.stopActive && !state.hogtiePausedAt) updateState({ hogtiePausedAt: Date.now() });
+    else if (!state.stopActive && state.hogtiePausedAt) updateState({ hogtieStartedAt: state.hogtieStartedAt + (Date.now() - state.hogtiePausedAt), hogtiePausedAt: null });
+  }, [state.stopActive, state.hogtieStartedAt, state.hogtiePausedAt]);
+  useEffect(() => {
+    if (!state.hogtieStartedAt || state.stopActive || state.bailoutAuction?.openedAt) return;
+    if (now - state.hogtieStartedAt >= 15 * 60 * 1000) {
+      updateState({ bailoutAuction: { active: true, targetId: state.hogtieTargetId, bids: {}, openedAt: Date.now() } });
+    }
+  }, [now, state.hogtieStartedAt, state.hogtieTargetId, state.stopActive, state.bailoutAuction?.openedAt]);
 
   useEffect(() => {
     if (!ready) return;
@@ -28,7 +41,7 @@ export default function HighStakesPanel({ state, updateState }) {
     const all = Object.values(completed);
     const totalLies = all.reduce((sum, x) => sum + x.lieCount, 0);
     const allTruth = totalLies === 0;
-    const allLie = totalLies === all.reduce((sum, x) => sum + x.total, 0);
+    const allLie = totalLies === 3;
     const targetId = inter.targetId;
     const balances = { ...(state.moneyBalances || {}) };
     const passes = { ...(state.passCards || {}) };
@@ -99,10 +112,10 @@ export default function HighStakesPanel({ state, updateState }) {
     }
   }
 
-  function startAuction() {
+  function startHogtieTimer() {
     const targetId = auctionTarget || current?.id;
-    if (!targetId) return;
-    updateState({ bailoutAuction: { active: true, targetId, bids: {}, startedAt: Date.now() } });
+    if (!targetId || state.stopActive) return;
+    updateState({ hogtieTargetId: targetId, hogtieStartedAt: Date.now(), hogtiePausedAt: null, bailoutAuction: null });
   }
 
   const bids = state.bailoutAuction?.bids || {};
@@ -114,6 +127,8 @@ export default function HighStakesPanel({ state, updateState }) {
     if (outcome === 'double') balances[highestBid.playerId] += highestBid.amount * 2;
     updateState({
       moneyBalances: balances,
+      hogtieStartedAt: null,
+      hogtiePausedAt: null,
       bailoutAuction: { ...state.bailoutAuction, active: false, winnerId: highestBid.playerId, winningBid: highestBid.amount, outcome, finishedAt: Date.now() },
       bailoutOutcome: outcome === 'release'
         ? { targetId: state.bailoutAuction.targetId, released: true }
@@ -170,10 +185,21 @@ export default function HighStakesPanel({ state, updateState }) {
         <div className="font-heading text-lg text-primary">🔨 BAILOUT AUCTION</div>
         {!state.bailoutAuction?.active ? (
           <>
-            <select value={auctionTarget || current?.id || ''} onChange={(e) => setAuctionTarget(e.target.value)} className="w-full rounded bg-background border border-border p-2 text-sm">
-              {players.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
-            </select>
-            <ComicButton variant="green" size="sm" onClick={startAuction} disabled={!!state.stopActive}>ΕΝΑΡΞΗ ΜΥΣΤΙΚΗΣ ΔΗΜΟΠΡΑΣΙΑΣ</ComicButton>
+            {!state.hogtieStartedAt ? (
+              <>
+                <select value={auctionTarget || current?.id || ''} onChange={(e) => setAuctionTarget(e.target.value)} className="w-full rounded bg-background border border-border p-2 text-sm">
+                  {players.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
+                </select>
+                <ComicButton variant="green" size="sm" onClick={startHogtieTimer} disabled={!!state.stopActive}>ΕΝΑΡΞΗ HOGTIE · ΧΡΟΝΟΜΕΤΡΟ 15′</ComicButton>
+              </>
+            ) : (
+              <>
+                <div className="text-sm">Hogtie: {players.find((p) => p.id === state.hogtieTargetId)?.name}</div>
+                <div className="font-heading text-2xl">{state.stopActive ? 'ΠΑΥΣΗ' : Math.max(0, Math.ceil((15 * 60 * 1000 - (now - state.hogtieStartedAt)) / 1000)) + '″'}</div>
+                <div className="text-xs opacity-70">Η μυστική δημοπρασία ανοίγει αυτόματα μόλις συμπληρωθούν 15 λεπτά.</div>
+                <ComicButton variant="dark" size="sm" onClick={() => updateState({ hogtieStartedAt: null, hogtieTargetId: null, hogtiePausedAt: null })} disabled={!!state.stopActive}>ΑΚΥΡΩΣΗ ΧΡΟΝΟΜΕΤΡΟΥ</ComicButton>
+              </>
+            )}
           </>
         ) : (
           <>
