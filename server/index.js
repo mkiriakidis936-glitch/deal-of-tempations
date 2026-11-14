@@ -30,15 +30,43 @@ app.use('/api', (_req, res) => res.status(404).json({ error: 'Not found' }));
 // Serve the built React app + SPA fallback (client-side routing: /tv, /play, /admin ...)
 const dist = path.resolve(import.meta.dirname, '..', 'dist');
 if (fs.existsSync(dist)) {
+  // index.html is rendered per request so shared links (WhatsApp, Viber, Messenger) get a proper title, description and preview image.
+  const indexTemplate = fs.readFileSync(path.join(dist, 'index.html'), 'utf8');
+  const SITE_DESC = 'Το παιχνίδι ρίσκου και επιβράβευσης για παρέες. Λήστεψε το χρηματοκιβώτιο, παίξε και κέρδισε. 18+';
+  const PAGES = {
+    '/site': { title: 'Deal of Temptation — Το παιχνίδι', desc: SITE_DESC, index: true },
+    '/promo': { title: 'Deal of Temptation — Trailer', desc: SITE_DESC, index: true },
+    '/invitation': { title: 'Deal of Temptation — Πρόσκληση Heist Night', desc: 'Έχεις προσκληθεί σε μια νύχτα Heist. Συμπλήρωσε το ερωτηματολόγιο για να κλείσεις τη θέση σου.' },
+    '/pajama-invite': { title: 'Deal of Temptation — Πρόσκληση Pajama Pedi-Glam', desc: 'Έχεις προσκληθεί σε Pajama Pedi-Glam. Κλείσε τη θέση σου.' },
+    '/pajama-form': { title: 'Deal of Temptation — Φόρμα Pajama', desc: 'Συμπλήρωσε τη φόρμα σου για το Pajama Pedi-Glam.' },
+    '/modes-form': { title: 'Deal of Temptation — Φόρμα συμμετοχής', desc: 'Διάλεξε mode και συμπλήρωσε τη φόρμα συμμετοχής σου.' },
+    '/gift-unlock': { title: 'Deal of Temptation — Ξεκλείδωσε το δώρο σου', desc: 'Βάλε τον κωδικό σου και ξεκλείδωσε το δώρο.' },
+  };
+  const esc = (v) => String(v).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+  const renderIndex = (req) => {
+    const origin = (process.env.PUBLIC_URL || `${req.headers['x-forwarded-proto'] || req.protocol}://${req.get('host')}`).replace(/\/$/, '');
+    const route = req.path.replace(/\/+$/, '') || '/';
+    const meta = PAGES[route] || { title: 'Deal of Temptation', desc: SITE_DESC };
+    const indexable = !!meta.index;
+    return indexTemplate
+      .replace('<title>Deal of Temptation</title>', `<title>${esc(meta.title)}</title>`)
+      .replaceAll('__TITLE__', esc(meta.title)).replaceAll('__DESC__', esc(meta.desc))
+      .replaceAll('__ORIGIN__', origin).replaceAll('__URL__', esc(origin + route))
+      .replaceAll('__ROBOTS__', indexable ? 'index,follow' : 'noindex,nofollow');
+  };
+
   app.use(express.static(dist, {
     index: false,
     maxAge: '1h',
     // το service worker και το manifest δεν πρέπει να μένουν σε cache, αλλιώς δεν ενημερώνεται η εφαρμογή
-    setHeaders: (res, file) => { if (/(^|[\\/])(sw\.js|manifest\.webmanifest)$/.test(file)) res.setHeader('Cache-Control', 'no-cache'); },
+    setHeaders: (res, file) => {
+      if (/(^|[\/])(sw\.js|manifest(-public)?\.webmanifest)$/.test(file)) res.setHeader('Cache-Control', 'no-cache');
+      else if (/[\/]assets[\/]/.test(file)) res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+    },
   }));
   app.use((req, res, next) => {
     if (req.method !== 'GET') return next();
-    res.sendFile(path.join(dist, 'index.html'));
+    res.type('html').set('Cache-Control', 'no-cache').send(renderIndex(req));
   });
 }
 

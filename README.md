@@ -112,3 +112,8 @@ npm run dev                 # frontend στο :5173 (proxy προς το API)
 - `/site?event=extended|lockdown|beachbar|marathon4h`: οι 4 νέες καρτέλες του site. Τα κείμενα αλλάζουν από Admin → 🌐 Site & Σενάριο.
 - Admin → 🎮 Νέα Modes: επεξεργασία καρτών, ερωτήσεων, αποστολών, mini-games, True/False, ASMR clues, επιλογών και ρυθμίσεων Lockdown, Chaos Powers, Shop και Beach Bar (αποθήκευση στο AppSetting `modes_content`). Τα στοιχεία που συνδέονται με σταθερούς μηχανισμούς δεν μπορούν να προστεθούν ή να διαγραφούν από το Admin.
 - Στο Setup του tablet, όταν διαλέξεις νέο mode, προ-συμπληρώνονται οι εγκεκριμένες που το ζήτησαν.
+
+## Δημόσια links (κοινοποίηση)
+- Όρισε στο hosting τη μεταβλητή `PUBLIC_URL` (π.χ. `https://dealoftemptation.gr`) ώστε τα προεπισκόπηση-links (WhatsApp/Viber) να δείχνουν σωστή διεύθυνση και εικόνα (`/og-image.jpg`).
+- Δημόσιες σελίδες: `/site`, `/promo`, `/invitation`, `/pajama-invite`, `/pajama-form`, `/modes-form`, `/gift-unlock`, `/intake`, `/play`, `/tv`. Μόνο `/` και `/admin` ζητούν σύνδεση διαχειριστή.
+- Το `robots.txt` επιτρέπει ευρετηρίαση μόνο σε `/site` και `/promo`.

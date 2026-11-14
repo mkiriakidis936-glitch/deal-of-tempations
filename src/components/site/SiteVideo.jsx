@@ -24,7 +24,7 @@ export default function SiteVideo({ c, eventId }) {
           </div>
         ) : (
           <div className="relative overflow-hidden rounded-2xl border border-tarot-gold/25 bg-black shadow-[0_24px_70px_rgba(0,0,0,.35)]">
-            <MediaSpot src={PHOTO.siteTrailer || FILM.siteTrailer} slot="siteTrailer" alt="" className="w-full aspect-video bg-black object-cover object-center" />
+            <MediaSpot src={PHOTO.siteTrailer || FILM.siteTrailer} slot="siteTrailer" alt="" className="w-full aspect-video bg-black object-cover object-top" />
           </div>
         )}
         {!modeId && SITE_VIDEOS.length > 0 && (

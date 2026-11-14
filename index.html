@@ -4,6 +4,14 @@
     <meta charset="UTF-8" />
     <link rel="icon" href="/icons/icon-192.png" type="image/png" />
     <link rel="manifest" href="/manifest.webmanifest" />
+    <script>
+      // Guests who install from a public page must not open the admin login: use the public manifest there.
+      (function () {
+        if (/^\/(site|promo|invitation|welcome|pajama-invite|pajama-form|modes-form|gift-unlock)/.test(location.pathname)) {
+          var l = document.querySelector('link[rel="manifest"]'); if (l) l.href = '/manifest-public.webmanifest';
+        }
+      })();
+    </script>
     <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="theme-color" content="#150f15" />
@@ -12,6 +20,22 @@
     <meta name="apple-mobile-web-app-title" content="Deal of Temptation" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <title>Deal of Temptation</title>
+    <meta name="description" content="__DESC__" />
+    <meta name="robots" content="__ROBOTS__" />
+    <link rel="canonical" href="__URL__" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Deal of Temptation" />
+    <meta property="og:locale" content="el_GR" />
+    <meta property="og:title" content="__TITLE__" />
+    <meta property="og:description" content="__DESC__" />
+    <meta property="og:url" content="__URL__" />
+    <meta property="og:image" content="__ORIGIN__/og-image.jpg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="__TITLE__" />
+    <meta name="twitter:description" content="__DESC__" />
+    <meta name="twitter:image" content="__ORIGIN__/og-image.jpg" />
   </head>
   <body>
     <div id="root"></div>

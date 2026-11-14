@@ -6,7 +6,7 @@ import { MODE_COVERS } from '@/data/brandArt';
 import CustomFormQuestions from '@/components/forms/CustomFormQuestions';
 
 const NAIL_COLORS = ['Red', 'Pink', 'White', 'Black', 'Nude', 'French', 'Blue', 'Purple', 'Green', 'Orange', 'Gold', 'Silver', 'None'];
-const FIELD = 'w-full px-3 py-2 rounded-lg bg-slate-950/60 border border-pink-500/40 text-pink-50 focus:outline-none focus:ring-2 focus:ring-pink-400';
+const FIELD = 'w-full px-3 py-2 rounded-lg bg-input border border-primary/40 text-foreground focus:outline-none focus:ring-2 focus:ring-ring';
 const LEVELS = [
   { id: 'none', label: 'Όχι δεσίματα' },
   { id: 'light', label: 'Ελαφριά (κορδέλες σε καρπούς/αστραγάλους)' },
@@ -83,43 +83,43 @@ export default function ModeForm() {
 
   if (saved) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-purple-950 via-pink-950 to-slate-950 text-pink-50 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-background text-foreground flex items-center justify-center p-4">
         <div className="text-center space-y-2 max-w-sm">
           <div className="text-6xl">✨</div>
-          <div className="font-heading text-2xl text-pink-100">Ευχαριστώ, {form.name}!</div>
-          <div className="text-sm text-pink-300">
+          <div className="font-heading text-2xl text-foreground">Ευχαριστώ, {form.name}!</div>
+          <div className="text-sm text-muted-foreground">
             Καταχωρήθηκες για: {form.modes.map((id) => NEW_MODES.find((m) => m.id === id)?.name).join(' · ')}
           </div>
-          <div className="text-xs text-pink-400/80">Θα μπεις στο παιχνίδι μόλις η διοργανώτρια εγκρίνει τη φόρμα σου.</div>
+          <div className="text-xs text-muted-foreground">Θα μπεις στο παιχνίδι μόλις η διοργανώτρια εγκρίνει τη φόρμα σου.</div>
         </div>
       </div>
     );
   }
 
-  const TONES = { pink: 'bg-pink-600 border-pink-300 text-white', rose: 'bg-rose-600 border-rose-300 text-white' };
+  const TONES = { pink: 'bg-primary text-primary-foreground border-primary ', rose: 'bg-accent text-accent-foreground border-accent ' };
   const Choice = ({ on, onClick, children, tone = 'pink' }) => (
     <button
       type="button"
       onClick={onClick}
-      className={`py-2 px-2 rounded-lg text-sm font-bold border ${on ? TONES[tone] : 'bg-slate-950/60 border-pink-500/40 text-pink-200'}`}
+      className={`py-2 px-2 rounded-lg text-sm font-bold border ${on ? TONES[tone] : 'bg-input border-primary/40 text-foreground/80'}`}
     >{children}</button>
   );
 
   const progress = step === 0 ? 50 : 100;
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-purple-950 via-pink-950 to-slate-950 text-pink-50 p-4 pb-16">
+    <div className="min-h-screen bg-background text-foreground p-4 pb-16">
       <div className="max-w-xl mx-auto space-y-3">
-        <div className="text-center pt-4 rounded-2xl border border-pink-400/30 bg-black/30 p-5 shadow-2xl">
+        <div className="text-center pt-4 rounded-2xl border border-primary/30 bg-black/30 p-5 shadow-2xl">
           <div className="text-5xl">🎮🩴💅🍹</div>
-          <h1 className="font-heading text-2xl sm:text-3xl text-pink-100 drop-shadow-[0_0_18px_rgba(255,105,180,0.85)] mt-2">Deal of Temptation · 18+</h1>
-          <p className="text-sm text-pink-300 mt-2">Φόρμα συμμετοχής — επίλεξε τα Modes και συμπλήρωσε τα στοιχεία σου.</p>
-          <div className="mt-5 flex items-center justify-between text-xs text-pink-200"><span>ΒΗΜΑ {step + 1} ΑΠΟ 2</span><span>{progress}%</span></div>
-          <div className="mt-2 h-2 rounded-full bg-slate-800 overflow-hidden"><div className="h-full rounded-full bg-gradient-to-r from-pink-500 to-fuchsia-300 transition-all" style={{ width: `${progress}%` }} /></div>
+          <h1 className="font-heading text-2xl sm:text-3xl text-foreground drop-shadow-[0_0_18px_rgba(255,105,180,0.85)] mt-2">Deal of Temptation · 18+</h1>
+          <p className="text-sm text-muted-foreground mt-2">Φόρμα συμμετοχής — επίλεξε τα Modes και συμπλήρωσε τα στοιχεία σου.</p>
+          <div className="mt-5 flex items-center justify-between text-xs text-foreground/80"><span>ΒΗΜΑ {step + 1} ΑΠΟ 2</span><span>{progress}%</span></div>
+          <div className="mt-2 h-2 rounded-full bg-surface-3 overflow-hidden"><div className="h-full rounded-full bg-primary transition-all" style={{ width: `${progress}%` }} /></div>
         </div>
 
-        {step === 0 && <div className="rounded-xl border border-pink-500/40 bg-pink-950/50 p-3 space-y-2">
-          <div className="text-sm text-pink-200">Ποιο mode θέλεις; * <span className="opacity-60">(μπορείς πολλά)</span></div>
+        {step === 0 && <div className="rounded-xl border border-primary/40 bg-surface-2 p-3 space-y-2">
+          <div className="text-sm text-foreground/80">Ποιο mode θέλεις; * <span className="opacity-60">(μπορείς πολλά)</span></div>
           <div className="grid gap-2">
             {NEW_MODES.map((m) => {
               const on = form.modes.includes(m.id);
@@ -128,11 +128,11 @@ export default function ModeForm() {
                   key={m.id}
                   type="button"
                   onClick={() => toggleMode(m.id)}
-                  className={`text-left rounded-lg border p-3 ${on ? 'bg-pink-700/60 border-pink-300' : 'bg-slate-950/60 border-pink-500/40'}`}
+                  className={`text-left rounded-lg border p-3 ${on ? 'bg-primary/25 border-primary' : 'bg-input border-primary/40'}`}
                 >
                   <div className="flex items-start gap-3">
-                    {MODE_COVERS[`modeCover_${m.id}`] && <img src={MODE_COVERS[`modeCover_${m.id}`]} alt={m.name} loading="lazy" className="w-24 h-20 sm:w-28 sm:h-24 rounded-lg object-cover shrink-0 border border-pink-300/30" />}
-                    <div className="min-w-0"><div className="font-heading text-lg">{on ? '✅' : '⬜'} {m.icon} {m.name}</div><div className="text-xs text-pink-200/80 mt-1">{m.desc}</div></div>
+                    {MODE_COVERS[`modeCover_${m.id}`] && <img src={MODE_COVERS[`modeCover_${m.id}`]} alt={m.name} loading="lazy" className="w-24 h-20 sm:w-28 sm:h-24 rounded-lg object-cover shrink-0 border border-primary/30" />}
+                    <div className="min-w-0"><div className="font-heading text-lg">{on ? '✅' : '⬜'} {m.icon} {m.name}</div><div className="text-xs text-foreground/70 mt-1">{m.desc}</div></div>
                   </div>
                 </button>
               );
@@ -140,26 +140,26 @@ export default function ModeForm() {
           </div>
         </div>}
 
-        {step === 1 && <div className="rounded-xl border border-pink-500/40 bg-pink-950/50 p-3 space-y-3">
+        {step === 1 && <div className="rounded-xl border border-primary/40 bg-surface-2 p-3 space-y-3">
           <div>
-            <div className="text-sm text-pink-200 mb-1">Όνομα *</div>
+            <div className="text-sm text-foreground/80 mb-1">Όνομα *</div>
             <input className={FIELD} value={form.name} onChange={(e) => set('name', e.target.value)} />
           </div>
 
           {pajamaish && (
             <>
               <div>
-                <div className="text-sm text-pink-200 mb-1">Πιτζάμες (χρώμα / σχέδιο)</div>
+                <div className="text-sm text-foreground/80 mb-1">Πιτζάμες (χρώμα / σχέδιο)</div>
                 <input className={FIELD} value={form.pajamaStyle} onChange={(e) => set('pajamaStyle', e.target.value)} placeholder="π.χ. ροζ σατέν με αστεράκια" />
               </div>
               <div>
-                <div className="text-sm text-pink-200 mb-1">Χρώμα νυχιών ποδιών</div>
+                <div className="text-sm text-foreground/80 mb-1">Χρώμα νυχιών ποδιών</div>
                 <select className={FIELD} value={form.nailColor} onChange={(e) => set('nailColor', e.target.value)}>
                   {NAIL_COLORS.map((c) => <option key={c} value={c}>{c}</option>)}
                 </select>
               </div>
               <div>
-                <div className="text-sm text-pink-200 mb-1">Θα φέρεις τις δικές σου παντόφλες;</div>
+                <div className="text-sm text-foreground/80 mb-1">Θα φέρεις τις δικές σου παντόφλες;</div>
                 <div className="grid grid-cols-2 gap-2">
                   <Choice on={form.bringsOwnSlippers} onClick={() => set('bringsOwnSlippers', true)}>🩴 ΝΑΙ</Choice>
                   <Choice on={!form.bringsOwnSlippers} onClick={() => set('bringsOwnSlippers', false)} tone="rose">🙅 ΟΧΙ</Choice>
@@ -172,14 +172,14 @@ export default function ModeForm() {
           {beachish && (
             <>
               <div>
-                <div className="text-sm text-pink-200 mb-1">Έχεις σαγιονάρες; (υποχρεωτικές στο Beach Bar)</div>
+                <div className="text-sm text-foreground/80 mb-1">Έχεις σαγιονάρες; (υποχρεωτικές στο Beach Bar)</div>
                 <div className="grid grid-cols-2 gap-2">
                   <Choice on={form.hasFlipFlops} onClick={() => set('hasFlipFlops', true)}>🩴 ΝΑΙ</Choice>
                   <Choice on={!form.hasFlipFlops} onClick={() => set('hasFlipFlops', false)} tone="rose">ΟΧΙ, χρειάζομαι</Choice>
                 </div>
               </div>
               <div>
-                <div className="text-sm text-pink-200 mb-1">Ποτό</div>
+                <div className="text-sm text-foreground/80 mb-1">Ποτό</div>
                 <div className="grid grid-cols-2 gap-2">
                   <Choice on={form.alcohol === 'drinks'} onClick={() => set('alcohol', 'drinks')}>🥃 Πίνω</Choice>
                   <Choice on={form.alcohol === 'free'} onClick={() => set('alcohol', 'free')}>🧃 Χωρίς αλκοόλ</Choice>
@@ -189,42 +189,42 @@ export default function ModeForm() {
           )}
 
           <div>
-            <div className="text-sm text-pink-200 mb-1">Ευαισθησία πελμάτων (1-5): {form.footSensitivity}</div>
-            <input type="range" min="1" max="5" value={form.footSensitivity} onChange={(e) => set('footSensitivity', e.target.value)} className="w-full accent-pink-400" />
+            <div className="text-sm text-foreground/80 mb-1">Ευαισθησία πελμάτων (1-5): {form.footSensitivity}</div>
+            <input type="range" min="1" max="5" value={form.footSensitivity} onChange={(e) => set('footSensitivity', e.target.value)} className="w-full accent-primary" />
           </div>
           <div>
-            <div className="text-sm text-pink-200 mb-1">Πόσο γαργαλιέσαι (1-5): {form.ticklish}</div>
-            <input type="range" min="1" max="5" value={form.ticklish} onChange={(e) => set('ticklish', e.target.value)} className="w-full accent-pink-400" />
+            <div className="text-sm text-foreground/80 mb-1">Πόσο γαργαλιέσαι (1-5): {form.ticklish}</div>
+            <input type="range" min="1" max="5" value={form.ticklish} onChange={(e) => set('ticklish', e.target.value)} className="w-full accent-primary" />
           </div>
           <div>
-            <div className="text-sm text-pink-200 mb-1">Δεσίματα: τι σε βολεύει;</div>
+            <div className="text-sm text-foreground/80 mb-1">Δεσίματα: τι σε βολεύει;</div>
             <div className="grid gap-2">
               {LEVELS.map((l) => <Choice key={l.id} on={form.restraintLevel === l.id} onClick={() => set('restraintLevel', l.id)}>{l.label}</Choice>)}
             </div>
           </div>
-          <label className="flex items-center gap-2 text-sm text-pink-100/90">
-            <input type="checkbox" checked={form.blindfoldOk} onChange={(e) => set('blindfoldOk', e.target.checked)} className="accent-pink-500" />
+          <label className="flex items-center gap-2 text-sm text-foreground/90">
+            <input type="checkbox" checked={form.blindfoldOk} onChange={(e) => set('blindfoldOk', e.target.checked)} className="accent-primary" />
             Δέχομαι να φορέσω μάσκα ύπνου στις τυφλές δοκιμασίες
           </label>
           <div>
-            <div className="text-sm text-pink-200 mb-1">Όρια: τι ΔΕΝ θέλεις</div>
+            <div className="text-sm text-foreground/80 mb-1">Όρια: τι ΔΕΝ θέλεις</div>
             <textarea rows={3} className={FIELD} value={form.boundaries} onChange={(e) => set('boundaries', e.target.value)} />
           </div>
 
           <CustomFormQuestions formType="modes" value={form.customAnswers} onChange={(value) => set('customAnswers', value)} onValidityChange={setCustomQuestionsValid} className="space-y-3" />
 
-          <label className="flex items-start gap-2 text-sm text-pink-100/90">
-            <input type="checkbox" checked={form.adult} onChange={(e) => set('adult', e.target.checked)} className="mt-1 accent-pink-500" />
+          <label className="flex items-start gap-2 text-sm text-foreground/90">
+            <input type="checkbox" checked={form.adult} onChange={(e) => set('adult', e.target.checked)} className="mt-1 accent-primary" />
             <span>Είμαι 18 ετών ή μεγαλύτερη και συμμετέχω με τη θέλησή μου. *</span>
           </label>
-          <label className="flex items-start gap-2 text-sm text-pink-100/90">
-            <input type="checkbox" checked={form.safeWordConfirmed} onChange={(e) => set('safeWordConfirmed', e.target.checked)} className="mt-1 accent-pink-500" />
+          <label className="flex items-start gap-2 text-sm text-foreground/90">
+            <input type="checkbox" checked={form.safeWordConfirmed} onChange={(e) => set('safeWordConfirmed', e.target.checked)} className="mt-1 accent-primary" />
             <span>Κατάλαβα ότι μπορώ να πω ΣΤΟΠ οποιαδήποτε στιγμή και όλα σταματούν. *</span>
           </label>
         </div>}
 
         {error && <div className="text-sm text-red-300 text-center">{error}</div>}
-        {step === 0 ? <button type="button" onClick={() => setStep(1)} disabled={!form.modes.length} className="w-full py-3 rounded-xl font-heading text-xl bg-pink-600 hover:bg-pink-500 text-white disabled:opacity-40">ΣΥΝΕΧΕΙΑ ΣΤΑ ΣΤΟΙΧΕΙΑ →</button> : <div className="flex gap-2"><button type="button" onClick={() => setStep(0)} className="px-5 py-3 rounded-xl font-bold border border-pink-400/40 text-pink-100">← ΠΙΣΩ</button><button onClick={submit} disabled={!canSend} className="w-full py-3 rounded-xl font-heading text-xl bg-pink-600 hover:bg-pink-500 text-white disabled:opacity-40">
+        {step === 0 ? <button type="button" onClick={() => setStep(1)} disabled={!form.modes.length} className="w-full py-3 rounded-xl font-heading text-xl bg-primary text-primary-foreground hover:bg-primary/90  disabled:opacity-40">ΣΥΝΕΧΕΙΑ ΣΤΑ ΣΤΟΙΧΕΙΑ →</button> : <div className="flex gap-2"><button type="button" onClick={() => setStep(0)} className="px-5 py-3 rounded-xl font-bold border border-primary/40 text-foreground">← ΠΙΣΩ</button><button onClick={submit} disabled={!canSend} className="w-full py-3 rounded-xl font-heading text-xl bg-primary text-primary-foreground hover:bg-primary/90  disabled:opacity-40">
           {saving ? 'ΑΠΟΣΤΟΛΗ...' : 'ΑΠΟΣΤΟΛΗ'}
         </button></div>}
       </div>

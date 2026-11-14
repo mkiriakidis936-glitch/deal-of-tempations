@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import ComicPanel from '@/components/comic/ComicPanel';
 import ComicButton from '@/components/comic/ComicButton';
@@ -40,6 +40,7 @@ const COMFORT_FIELDS = [
   { key: 'comfortDrinking', label: 'Ποτό', icon: '🍹' },
 ];
 
+const DRAFT_KEY = 'dot_invitation_draft';
 const INITIAL_FORM = {
   name: '',
   accommodation: '',
@@ -63,7 +64,12 @@ const INITIAL_FORM = {
 export default function InvitationIntakeForm({ onDone }) {
   const [step, setStep] = useState(0);
   const [saving, setSaving] = useState(false);
-  const [form, setForm] = useState(INITIAL_FORM);
+  const [form, setForm] = useState(() => {
+    try { return { ...INITIAL_FORM, ...JSON.parse(localStorage.getItem(DRAFT_KEY) || '{}') }; } catch { return INITIAL_FORM; }
+  });
+  useEffect(() => {
+    try { localStorage.setItem(DRAFT_KEY, JSON.stringify({ ...form, safeWordConfirmed: false })); } catch { /* ignore */ }
+  }, [form]);
   const [customQuestionsValid, setCustomQuestionsValid] = useState(true);
 
   function update(field, value) {
@@ -75,6 +81,7 @@ export default function InvitationIntakeForm({ onDone }) {
     try {
       await base44.entities.PlayerIntake.create({ ...form, customAnswers: form.customAnswers });
       await base44.entities.InvitationRSVP.create({ name: form.name.trim(), confirmed: true });
+      try { localStorage.removeItem(DRAFT_KEY); } catch { /* ignore */ }
       onDone();
     } catch (e) {
       console.error('Intake submit error', e);

@@ -60,13 +60,13 @@ export default function GiftUnlock() {
 
   if (!unlocked) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-fuchsia-950 via-purple-950 to-slate-950 text-pink-50 flex items-center justify-center p-5">
+      <div className="min-h-screen bg-background text-foreground flex items-center justify-center p-5">
         <div className="max-w-md w-full space-y-4 text-center">
-          <div className="text-7xl drop-shadow-[0_0_28px_rgba(255,105,180,0.9)] animate-pulse">🔒</div>
-          <div className="font-heading text-2xl text-pink-100 drop-shadow-[0_0_18px_rgba(255,105,180,0.85)]">
+          <div className="text-7xl drop-shadow-[0_0_28px_rgba(222,184,96,0.9)] animate-pulse">🔒</div>
+          <div className="font-heading text-2xl text-foreground drop-shadow-[0_0_18px_rgba(222,184,96,0.85)]">
             The Night Trial Passed!
           </div>
-          <p className="text-sm text-pink-300">
+          <p className="text-sm text-muted-foreground">
             Εισάγετε τον Μυστικό Κωδικό της Παρέας για να ξεκλειδώσετε το Vault.
           </p>
           <input
@@ -74,52 +74,52 @@ export default function GiftUnlock() {
             onChange={(e) => setCode(e.target.value)}
             onKeyDown={(e) => { if (e.key === 'Enter') handleUnlock(); }}
             placeholder="ΜΥΣΤΙΚΟΣ ΚΩΔΙΚΟΣ"
-            className="w-full text-center tracking-[0.25em] font-heading uppercase px-3 py-3 rounded-xl bg-slate-950/70 border-2 border-fuchsia-500/60 text-fuchsia-100 focus:outline-none focus:border-fuchsia-300 focus:shadow-[0_0_28px_rgba(255,105,180,0.6)]"
+            className="w-full text-center tracking-[0.25em] font-heading uppercase px-3 py-3 rounded-xl bg-input border-2 border-primary/60 text-primary focus:outline-none focus:border-primary focus:shadow-[0_0_28px_rgba(222,184,96,0.6)]"
           />
           <button
             onClick={handleUnlock}
-            className="w-full py-3 rounded-xl font-heading text-xl bg-fuchsia-600 hover:bg-fuchsia-500 text-white shadow-[0_0_35px_rgba(255,105,180,0.5)]"
+            className="w-full py-3 rounded-xl font-heading text-xl bg-primary text-primary-foreground hover:bg-primary/90 shadow-[0_0_35px_rgba(222,184,96,0.5)]"
           >
             ENTER
           </button>
-          {error && <div className="text-sm text-rose-300 font-bold">{error}</div>}
+          {error && <div className="text-sm text-destructive font-bold">{error}</div>}
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-fuchsia-950 via-purple-950 to-slate-950 text-pink-50 p-4 pb-14">
+    <div className="min-h-screen bg-background text-foreground p-4 pb-14">
       <div className="max-w-md mx-auto space-y-4">
         <div className="text-center pt-4">
           <div className="text-6xl animate-bounce">🎁✨</div>
-          <div className="font-heading text-2xl text-fuchsia-100 mt-1 drop-shadow-[0_0_22px_rgba(255,105,180,0.95)]">
+          <div className="font-heading text-2xl text-primary mt-1 drop-shadow-[0_0_22px_rgba(222,184,96,0.95)]">
             ΤΟ VAULT ΑΝΟΙΞΕ
           </div>
         </div>
 
-        <p className="text-sm text-pink-100/90 leading-relaxed text-center rounded-xl border border-fuchsia-500/40 bg-fuchsia-950/40 p-3">
+        <p className="text-sm text-foreground/90 leading-relaxed text-center rounded-xl border border-primary/40 bg-surface-2 p-3">
           {VOW_TEXT}
         </p>
 
-        <div className="rounded-2xl border-2 border-pink-300/70 bg-slate-950/60 p-4 space-y-1 text-center shadow-[0_0_45px_rgba(255,105,180,0.45)]">
-          <div className="text-[10px] tracking-[0.35em] font-bold text-pink-300">VIP ΠΑΣΟ ΠΑΡΑΣΚΗΝΙΩΝ</div>
+        <div className="rounded-2xl border-2 border-primary/70 bg-surface-2 p-4 space-y-1 text-center shadow-[0_0_45px_rgba(222,184,96,0.45)]">
+          <div className="text-[10px] tracking-[0.35em] font-bold text-muted-foreground">VIP ΠΑΣΟ ΠΑΡΑΣΚΗΝΙΩΝ</div>
           <input
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="Γράψε το όνομά σου"
-            className="w-full text-center font-heading text-2xl bg-transparent text-pink-100 placeholder:text-pink-400/60 focus:outline-none border-b border-pink-400/40 py-1"
+            className="w-full text-center font-heading text-2xl bg-transparent text-foreground placeholder:text-muted-foreground focus:outline-none border-b border-primary/40 py-1"
           />
-          <div className="font-heading text-base text-fuchsia-200 leading-tight pt-1">{PASS_TITLE}</div>
-          <div className="text-[11px] text-pink-300/80">Νυχτερινή Δοκιμασία · Έκδοση Πεδι-Glam</div>
+          <div className="font-heading text-base text-primary leading-tight pt-1">{PASS_TITLE}</div>
+          <div className="text-[11px] text-muted-foreground">Νυχτερινή Δοκιμασία · Έκδοση Πεδι-Glam</div>
         </div>
 
-        <div className="rounded-xl border-2 border-fuchsia-300 bg-fuchsia-500/15 p-4 text-center space-y-2 shadow-[0_0_55px_rgba(255,105,180,0.55)]">
-          <div className="text-xs tracking-[0.3em] font-bold text-fuchsia-200">ΤΟ ΟΜΑΔΙΚΟ ΔΩΡΟ</div>
-          <div className="font-heading text-3xl text-pink-100 drop-shadow-[0_0_22px_rgba(255,105,180,0.95)]">
+        <div className="rounded-xl border-2 border-primary bg-primary/15 p-4 text-center space-y-2 shadow-[0_0_55px_rgba(222,184,96,0.55)]">
+          <div className="text-xs tracking-[0.3em] font-bold text-primary">ΤΟ ΟΜΑΔΙΚΟ ΔΩΡΟ</div>
+          <div className="font-heading text-3xl text-foreground drop-shadow-[0_0_22px_rgba(222,184,96,0.95)]">
             {GIFT_NAME}
           </div>
-          <p className="text-sm text-pink-50/90 leading-relaxed">{GIFT_TEXT}</p>
+          <p className="text-sm text-foreground/90 leading-relaxed">{GIFT_TEXT}</p>
         </div>
       </div>
     </div>

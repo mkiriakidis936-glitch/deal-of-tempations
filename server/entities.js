@@ -389,6 +389,20 @@ export function entityRoutes() {
     req.entity = name;
     next();
   });
+  // Public forms are open to everyone; cap how many submissions one IP can send so bots can't flood the DB.
+  const FORM_ENTITIES = new Set(['PlayerIntake', 'PajamaIntake', 'BacheloretteIntake', 'InvitationRSVP']);
+  const formBuckets = new Map();
+  const formLimit = (req, res, next) => {
+    if (isAdmin(req) || !FORM_ENTITIES.has(req.entity)) return next();
+    const now = Date.now();
+    const key = `${req.entity}:${req.ip || req.socket.remoteAddress || 'unknown'}`;
+    let b = formBuckets.get(key);
+    if (!b || now - b.startedAt >= 3600_000) { b = { startedAt: now, count: 0 }; formBuckets.set(key, b); }
+    if (b.count >= 60) return res.status(429).json({ error: 'Too many submissions. Try again later.' });
+    b.count += 1;
+    if (formBuckets.size > 5000) for (const [k, v] of formBuckets) if (now - v.startedAt >= 3600_000) formBuckets.delete(k);
+    next();
+  };
   const guard = (op) => (req, res, next) => (needsAdmin(req.entity, op) ? requireAdmin(req, res, next) : next());
 
   // --- realtime stream (EventSource can't send headers; the token may come as ?token=) ---
@@ -464,7 +478,7 @@ export function entityRoutes() {
     res.json(toRecord(rows[0]));
   });
 
-  r.post('/:entity', guard('create'), async (req, res) => {
+  r.post('/:entity', guard('create'), formLimit, async (req, res) => {
     const { rows } = await query(
       'INSERT INTO records (id, entity, data, created_by) VALUES ($1,$2,$3,$4) RETURNING *',
       [crypto.randomUUID(), req.entity, stripBuiltins(req.body), req.user?.email || null],
@@ -475,7 +489,7 @@ export function entityRoutes() {
     res.json(rec);
   });
 
-  r.post('/:entity/bulk', guard('create'), async (req, res) => {
+  r.post('/:entity/bulk', guard('create'), formLimit, async (req, res) => {
     if (!Array.isArray(req.body)) return res.status(400).json({ error: 'Expected an array' });
     const client = await pool.connect();
     const created = [];

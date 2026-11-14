@@ -24,7 +24,7 @@ export default function SiteHero({ c, ev, eventDate, heroSrc, onCta }) {
   const countdown = useCountdown(eventDate);
 
   return (
-    <section id="top" className="relative min-h-[92vh] flex items-center justify-center overflow-hidden px-4 py-20">
+    <section id="top" className="relative min-h-[92svh] flex items-center justify-center overflow-hidden px-4 py-20">
       <div className="absolute inset-0 -z-10">
         <MediaSpot src={heroSrc || PHOTO.siteHero || FILM.siteHero} slot={heroSrc ? undefined : "siteHero"} className="w-full h-full object-cover object-center opacity-55" />
         <div className="absolute inset-0 bg-gradient-to-b from-background/80 via-background/60 to-background" />
@@ -36,6 +36,7 @@ export default function SiteHero({ c, ev, eventDate, heroSrc, onCta }) {
           <Image
             src={ART.emblem}
             fittingType="fill"
+            eager
             className="relative w-full h-full rounded-full border-2 border-tarot-gold/60"
           />
         </div>

@@ -24,6 +24,7 @@ export default function Intake() {
   });
   const [saved, setSaved] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
   const [enabled, setEnabled] = useState(null);
   const [customQuestionsValid, setCustomQuestionsValid] = useState(true);
 
@@ -54,11 +55,13 @@ export default function Intake() {
   async function handleSubmit() {
     if (!form.leaderName.trim() || !form.accommodation || !form.safeWordConfirmed || form.sessionCode.trim().length !== 4 || !customQuestionsValid) return;
     setSaving(true);
+    setError('');
     try {
       await base44.entities.BacheloretteIntake.create({ ...form, customAnswers: form.customAnswers, sessionCode: form.sessionCode.trim().toUpperCase() });
       setSaved(true);
     } catch (e) {
       console.error(e);
+      setError('Δεν στάλθηκε. Έλεγξε τη σύνδεσή σου και δοκίμασε ξανά — τα στοιχεία σου δεν χάθηκαν.');
     }
     setSaving(false);
   }
@@ -160,6 +163,7 @@ export default function Intake() {
           </div>
         </ComicPanel>
 
+        {error && <div role="alert" className="mb-3 rounded-lg border border-red-400/60 bg-red-950/60 p-3 text-center text-sm text-red-100">{error}</div>}
         <div className="text-center">
           <ComicButton variant="magenta" size="lg" onClick={handleSubmit} disabled={!form.leaderName.trim() || !form.accommodation || !form.safeWordConfirmed || form.sessionCode.trim().length !== 4 || !customQuestionsValid || saving}>
             {saving ? 'ΑΠΟΘΗΚΕΥΣΗ...' : '✅ ΥΠΟΒΟΛΗ'}
