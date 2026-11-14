@@ -92,11 +92,19 @@ function CheckIn({ ctx, bb, setBb, onStart }) {
 }
 
 function Dance({ ctx, bb, setBb, T, addDrink, flopOn }) {
-  const { players, log, nameOf } = ctx;
+  const { players, log, nameOf, stopped } = ctx;
   const stopRef = useRef(null);
   const [bpm, setBpm] = useState(110);
   const [playing, setPlaying] = useState(false);
   const [url, setUrl] = useState('');
+  useEffect(() => {
+    if (stopped) {
+      stopRef.current?.();
+      stopRef.current = null;
+    } else if (playing && !stopRef.current) {
+      stopRef.current = startBeat(bpm);
+    }
+  }, [stopped, playing, bpm]);
   useEffect(() => () => stopRef.current?.(), []);
 
   function music(on) {
