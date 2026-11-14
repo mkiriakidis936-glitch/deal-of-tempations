@@ -52,9 +52,11 @@ import { useSyncTimerAutoFire } from '@/hooks/useSyncTimerAutoFire';
 import { calculateMostWanted, getWantedLevel } from '@/lib/gameLogic';
 import { base44 } from '@/api/base44Client';
 import { awardAchievements } from '@/lib/achievements';
+import { setGameStopActive } from '@/lib/modeKit';
 
 export default function Tablet() {
   const { session, state, loading, updateState, createSession, deleteSession, refresh, joinByCode } = useGameSession();
+  React.useEffect(() => { setGameStopActive(!!(state?.stopActive || state?.mg?.stop)); }, [state?.stopActive, state?.mg?.stop]);
 
   // Sync με Admin & links: κωδικός στο URL ή η ενεργή συνεδρία του Admin ανοίγει πάντα εδώ.
   React.useEffect(() => {
