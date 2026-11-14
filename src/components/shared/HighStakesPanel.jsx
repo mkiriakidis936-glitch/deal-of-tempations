@@ -19,7 +19,8 @@ export default function HighStakesPanel({ state, updateState }) {
   useEffect(() => {
     if (!ready) return;
     const lieCount = Object.values(stepVotes).filter((v) => v === false).length;
-    const completed = { ...(inter.completed || {}), [inter.step]: { lieCount, total: voters.length } };
+    const truthCount = Object.values(stepVotes).filter((v) => v === true).length;
+    const completed = { ...(inter.completed || {}), [inter.step]: { lieCount: lieCount > truthCount ? 1 : 0, truthCount, total: voters.length } };
     if (inter.step < 2) {
       updateState({ absoluteInterrogation: { ...inter, completed, step: inter.step + 1 } });
       return;
@@ -74,7 +75,7 @@ export default function HighStakesPanel({ state, updateState }) {
     const targetId = bribeTarget || players.find((p) => p.id !== current?.id)?.id;
     if (!current || !targetId || !amount) return;
     const balances = { ...(state.moneyBalances || {}) };
-    balances[current.id] = (balances[current.id] || 0) - amount * 0.5;
+    balances[current.id] = Math.max(0, (balances[current.id] || 0) - amount * 0.5);
     updateState({
       moneyBalances: balances,
       bankBalance: (state.bankBalance || 0) + amount * 0.5,
@@ -110,6 +111,7 @@ export default function HighStakesPanel({ state, updateState }) {
     if (!highestBid || !state.bailoutAuction?.targetId) return;
     const balances = { ...(state.moneyBalances || {}) };
     balances[highestBid.playerId] = (balances[highestBid.playerId] || 0) - highestBid.amount;
+    if (outcome === 'double') balances[highestBid.playerId] += highestBid.amount * 2;
     updateState({
       moneyBalances: balances,
       bailoutAuction: { ...state.bailoutAuction, active: false, winnerId: highestBid.playerId, winningBid: highestBid.amount, outcome, finishedAt: Date.now() },
