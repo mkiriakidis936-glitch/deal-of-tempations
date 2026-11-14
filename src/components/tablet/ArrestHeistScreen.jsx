@@ -12,6 +12,7 @@ import { addHistory, drawHeistCard } from '@/lib/gameLogic';
 import { buildSecretTruths } from '@/lib/intakeContent';
 import GmTools from '@/components/tablet/GmTools';
 import TemptationSlots from '@/components/tablet/TemptationSlots';
+import HighStakesPanel from '@/components/shared/HighStakesPanel';
 
 export default function ArrestHeistScreen({ state, updateState, onEnd }) {
   const [phase, setPhase] = useState('round_intro');
@@ -199,6 +200,7 @@ export default function ArrestHeistScreen({ state, updateState, onEnd }) {
           </div>
 
           <HeistBoardPanel state={state} updateState={updateState} />
+          <HighStakesPanel state={state} updateState={updateState} />
 
           {intake ? (
             <ComicPanel className="bg-tarot-wine/30 p-2 text-sm">
