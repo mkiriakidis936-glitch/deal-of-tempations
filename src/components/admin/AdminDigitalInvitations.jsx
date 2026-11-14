@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
 import ComicPanel from '@/components/comic/ComicPanel';
 import ComicButton from '@/components/comic/ComicButton';
-import { base44 } from '@/api/base44Client';
+import { base44, request } from '@/api/base44Client';
 
 const KEY = 'digital_invitations';
 const TARGETS = [
@@ -23,6 +23,10 @@ export default function AdminDigitalInvitations() {
   const [target, setTarget] = useState(TARGETS[0].path);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState('');
+  const [vipInvitations, setVipInvitations] = useState([]);
+  const [vipSubmissions, setVipSubmissions] = useState({});
+  const [vipBusy, setVipBusy] = useState(false);
+  const [vipMessage, setVipMessage] = useState('');
 
   useEffect(() => {
     base44.entities.AppSetting.filter({ key: KEY }, { limit: 1 }).then(({ items: rows }) => {
@@ -30,7 +34,15 @@ export default function AdminDigitalInvitations() {
       setRecord(rec);
       setItems(Array.isArray(rec?.value?.items) ? rec.value.items : []);
     }).catch((e) => setMessage(e.message));
+    loadVipInvitations();
   }, []);
+
+  async function loadVipInvitations() {
+    try {
+      const { items: rows } = await base44.entities.VIPInvitation.filter({}, { sort: '-created_date', limit: 30 });
+      setVipInvitations(rows || []);
+    } catch (e) { setVipMessage(e.message || 'Δεν φορτώθηκαν οι VIP προσκλήσεις.'); }
+  }
 
   const save = async (next) => {
     setBusy(true);
@@ -51,7 +63,92 @@ export default function AdminDigitalInvitations() {
     save(next).then(() => setTitle(''));
   };
 
-  return <div className="space-y-3">
+  async function createVipInvitation() {
+    setVipBusy(true);
+    setVipMessage('');
+    try {
+      const invitation = await request('POST', '/api/entities/vip-invitations', {});
+      setVipInvitations((current) => [invitation, ...current]);
+      setVipMessage('Η VIP πρόσκληση δημιουργήθηκε και είναι έτοιμη για αποστολή.');
+    } catch (e) { setVipMessage(e.message || 'Δεν δημιουργήθηκε η VIP πρόσκληση.'); }
+    finally { setVipBusy(false); }
+  }
+
+  async function toggleVipInvitation(invitation) {
+    setVipBusy(true);
+    try {
+      const updated = await base44.entities.VIPInvitation.update(invitation.id, { active: !invitation.active });
+      setVipInvitations((current) => current.map((item) => item.id === invitation.id ? updated : item));
+      setVipMessage(updated.active ? 'Η VIP πρόσκληση ενεργοποιήθηκε.' : 'Η VIP πρόσκληση απενεργοποιήθηκε.');
+    } catch (e) { setVipMessage(e.message || 'Δεν ενημερώθηκε η πρόσκληση.'); }
+    finally { setVipBusy(false); }
+  }
+
+  async function loadVipSubmissions(invitation) {
+    setVipBusy(true);
+    try {
+      const { items: rows } = await base44.entities.VIPInvitationSubmission.filter({ invitationId: invitation.id }, { sort: '-created_date', limit: 500 });
+      setVipSubmissions((current) => ({ ...current, [invitation.id]: rows || [] }));
+    } catch (e) { setVipMessage(e.message || 'Δεν φορτώθηκαν οι απαντήσεις.'); }
+    finally { setVipBusy(false); }
+  }
+
+  return <div className="space-y-4">
+    <ComicPanel className="bg-card space-y-3 border border-[#b99a45]/60">
+      <div className="font-heading text-xl text-primary">VIP PRIVATE INVITATION</div>
+      <p className="text-sm text-foreground/70">Έτοιμη, ιδιωτική πρόσκληση DEAL OF TEMPTATION. Το σύστημα δημιουργεί ένα κοινό link και QR για όλους τους καλεσμένους. Το κείμενο και ο σχεδιασμός είναι προκαθορισμένα.</p>
+      <div className="rounded-xl border border-[#b99a45]/50 bg-black p-4 text-center">
+        <div className="text-xs tracking-[0.35em] text-[#c9a94e]">EXCLUSIVE ACCESS</div>
+        <div className="my-2 font-serif text-2xl tracking-[0.12em] text-[#f4e6bd]">VIP INVITATION</div>
+        <div className="text-xs text-[#b99a45]">DEAL OF TEMPTATION</div>
+      </div>
+      <ComicButton disabled={vipBusy} onClick={createVipInvitation}>＋ ΔΗΜΙΟΥΡΓΙΑ ΕΤΟΙΜΗΣ VIP ΠΡΟΣΚΛΗΣΗΣ</ComicButton>
+      {vipMessage && <div className="text-sm font-bold text-foreground">{vipMessage}</div>}
+      <p className="text-xs text-foreground/55">Οι ερωτήσεις της φόρμας ορίζονται από την καρτέλα Forms & RSVP → Invitation Form.</p>
+    </ComicPanel>
+
+    {vipInvitations.map((invitation) => {
+      const url = invitation.token ? `${window.location.origin}/vip/${invitation.token}` : '';
+      const responses = vipSubmissions[invitation.id];
+      return <ComicPanel key={invitation.id} className="bg-card space-y-3 border border-[#b99a45]/40">
+        <div className="flex items-center justify-between gap-2">
+          <div>
+            <div className="font-heading text-lg text-[#c9a94e]">VIP INVITATION</div>
+            <div className="text-xs text-foreground/60">{new Date(invitation.created_date).toLocaleString('el-GR')}</div>
+          </div>
+          <span className={invitation.active ? 'rounded-full border border-[#b99a45] px-3 py-1 text-xs text-[#d8bd72]' : 'rounded-full border border-white/20 px-3 py-1 text-xs text-foreground/50'}>
+            {invitation.active ? 'ΕΝΕΡΓΗ' : 'ΑΝΕΝΕΡΓΗ'}
+          </span>
+        </div>
+        {url && <div className="flex flex-col sm:flex-row items-center gap-4 rounded-xl bg-black p-3">
+          <div className="rounded bg-white p-2"><QRCodeSVG value={url} size={132} /></div>
+          <div className="min-w-0 flex-1 space-y-2 text-center sm:text-left">
+            <div className="break-all text-xs text-[#d8bd72]">{url}</div>
+            <div className="flex flex-wrap justify-center sm:justify-start gap-2">
+              <ComicButton size="sm" onClick={() => navigator.clipboard.writeText(url)}>ΑΝΤΙΓΡΑΦΗ LINK</ComicButton>
+              <ComicButton size="sm" variant="dark" onClick={() => { if (navigator.share) navigator.share({ title: 'VIP Invitation — DEAL OF TEMPTATION', url }).catch(() => {}); else navigator.clipboard.writeText(url); }}>ΚΟΙΝΟΠΟΙΗΣΗ</ComicButton>
+            </div>
+          </div>
+        </div>}
+        <div className="flex flex-wrap gap-2">
+          <ComicButton size="sm" variant="dark" disabled={vipBusy} onClick={() => loadVipSubmissions(invitation)}>ΑΠΑΝΤΗΣΕΙΣ / ΣΥΜΜΕΤΟΧΕΣ</ComicButton>
+          <ComicButton size="sm" variant={invitation.active ? 'red' : 'green'} disabled={vipBusy} onClick={() => toggleVipInvitation(invitation)}>{invitation.active ? 'ΑΠΕΝΕΡΓΟΠΟΙΗΣΗ LINK' : 'ΕΝΕΡΓΟΠΟΙΗΣΗ LINK'}</ComicButton>
+        </div>
+        {responses && <div className="space-y-2 border-t border-[#b99a45]/30 pt-3">
+          <div className="font-heading text-sm text-[#d8bd72]">ΣΥΜΜΕΤΟΧΕΣ: {responses.length}</div>
+          {responses.length === 0 ? <div className="text-sm text-foreground/55">Δεν υπάρχουν ακόμη υποβολές.</div> : responses.map((response) => (
+            <div key={response.id} className="rounded-lg border border-[#b99a45]/25 bg-black/40 p-3">
+              <div className="font-bold text-[#f4e6bd]">{response.avatar} {response.name}</div>
+              <div className="mt-2 space-y-1 text-xs text-foreground/70">
+                {Object.entries(response.answers || {}).map(([questionId, answer]) => <div key={questionId}><span className="text-[#c9a94e]">{questionId}:</span> {String(answer)}</div>)}
+              </div>
+              <div className="mt-2 text-[10px] text-foreground/40">{new Date(response.created_date).toLocaleString('el-GR')}</div>
+            </div>
+          ))}
+        </div>}
+      </ComicPanel>;
+    })}
+
     <ComicPanel className="bg-card space-y-3">
       <div className="font-heading text-xl text-primary">DIGITAL INVITATIONS</div>
       <p className="text-xs text-foreground/65">Δημιουργία QR προσκλήσεων που οδηγούν στις ήδη υπάρχουσες φόρμες και εμπειρίες.</p>
