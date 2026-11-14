@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { MODE_THEMES, modeMeta } from '@/data/modes/modeRegistry';
-import { CHAOS_POWERS, GATE_TOKENS } from '@/data/modes/extendedContent';
+import { EXTENDED_CHAOS_MARKET_CARDS, GATE_TOKENS } from '@/data/modes/extendedContent';
 import { EXIT_CODE } from '@/data/modes/lockdownContent';
 import { fmt, sfx, timerLeft, timerPause, useTick, setGameStopActive } from '@/lib/modeKit';
 import { enablePlayerPush } from '@/lib/push';
@@ -96,7 +96,7 @@ export default function ModeMobile({ state, me, updateState, onChangePlayer, ses
             <div className="flex justify-between"><b>🪙 Tokens</b><b className="font-display text-xl">{tokens}</b></div>
             <div className="text-xs opacity-70">Πύλη: {Math.min(tokens, GATE_TOKENS)}/{GATE_TOKENS}{(mg.immune || []).includes(me.id) ? ' · 🛡️ έχεις ασυλία' : ''}</div>
             {hand.length > 0 && (
-              <div className="text-xs">🃏 Chaos Cards (κρυφές): {hand.map((id) => CHAOS_POWERS.find((x) => x.id === id)?.name).join(', ')} — πες στη διοργανώτρια πότε θες να παίξεις.</div>
+              <div className="text-xs">🃏 Chaos Cards (κρυφές): {hand.map((id) => EXTENDED_CHAOS_MARKET_CARDS.find((x) => x.id === id)?.name).join(', ')} — πες στη διοργανώτρια πότε θες να παίξεις.</div>
             )}
             {mg.card && mg.card.playerId === me.id && <div className="rounded bg-fuchsia-950/70 p-2 text-sm"><b>{mg.card.title}</b><div>{mg.card.text}</div></div>}
             {mg.branch === me.id && <div className="rounded bg-yellow-900/60 p-2 text-sm">🔀 Σε διακλάδωση! Διάλεξε Glam ή Chaos Route στο tablet.</div>}
