@@ -403,14 +403,14 @@ export function entityRoutes() {
     if (b.count + weight > 60) return res.status(429).json({ error: 'Too many submissions. Try again later.' });
     b.count += weight;
     if (formBuckets.size > 5000) for (const [k, v] of formBuckets) if (now - v.startedAt >= 3600_000) formBuckets.delete(k);
-    next();
+    return next();
   };
   const guard = (op) => (req, res, next) => (needsAdmin(req.entity, op) ? requireAdmin(req, res, next) : next());
 
   // Store the invitation intake and RSVP together. A stable submissionId makes retries safe.
   r.post('/invitation-intake', async (req, res, next) => {
     req.entity = 'PlayerIntake';
-    formLimit(req, res, async () => {
+    return formLimit(req, res, async () => {
       const body = req.body || {};
       const submissionId = typeof body.submissionId === 'string' ? body.submissionId.trim() : '';
       if (!/^[A-Za-z0-9-]{16,100}$/.test(submissionId) || typeof body.name !== 'string' || !body.name.trim()) {
