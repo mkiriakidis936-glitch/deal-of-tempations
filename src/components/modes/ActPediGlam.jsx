@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Panel, Btn } from '@/components/modes/ModeShell';
 import { PEDI_GLAM_CARDS } from '@/data/modes/pediGlamContent';
-import { pick, useLocalCountdown } from '@/lib/modeKit';
+import { pick, timerLeft, useTick } from '@/lib/modeKit';
 
 export default function ActPediGlam({ ctx, onDone }) {
   const { players, mg, setMg, log, stopped } = ctx;
@@ -9,7 +9,8 @@ export default function ActPediGlam({ ctx, onDone }) {
   const [remainingDeck, setRemainingDeck] = useState(PEDI_GLAM_CARDS.map((c) => c.id));
   const [playerId, setPlayerId] = useState(players[0]?.id || '');
   const tokens = mg.glamTokens || {};
-  const left = useLocalCountdown(90 * 60, true, () => log('Ολοκληρώθηκαν τα 90 λεπτά του Pedi-Glam.'));
+  useTick(true, 1000);
+  const left = timerLeft(mg.timer);
   const draw = () => {
     if (stopped || !remainingDeck.length) return;
     const pool = PEDI_GLAM_CARDS.filter((c) => remainingDeck.includes(c.id));
