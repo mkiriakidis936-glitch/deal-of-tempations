@@ -65,9 +65,9 @@ export default function ModeMobile({ state, me, updateState, onChangePlayer, ses
         )}
 
         {mg.stop && (
-          <div className="rounded-lg p-4 text-center" style={{ background: '#78001e' }}>
-            <div className="font-display text-3xl text-white">⏸ ΣΤΟΠ</div>
-            <div className="text-sm text-white/90">Όλα σταμάτησαν. Λύστε δεσίματα και ελέγξτε ότι είστε όλες καλά. Η συνέχεια γίνεται από το tablet.</div>
+          <div className="fixed inset-0 z-[90] flex flex-col items-center justify-center gap-4 p-6 text-center" style={{ background: 'rgba(120,0,20,.96)' }}>
+            <div className="font-display text-5xl text-white">⏸ ΣΤΟΠ</div>
+            <div className="max-w-sm text-base text-white/95">Όλα σταμάτησαν. Λύστε αμέσως κάθε δέσιμο και ελέγξτε ότι όλες είναι καλά. Η συνέχεια γίνεται από το tablet.</div>
           </div>
         )}
 
