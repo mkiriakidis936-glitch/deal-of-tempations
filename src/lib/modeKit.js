@@ -7,6 +7,8 @@ export const uid = () => Math.random().toString(36).slice(2, 8);
 let gameStopActive = false;
 const gameStopListeners = new Set();
 
+export const isGameStopActive = () => gameStopActive;
+
 export function setGameStopActive(active) {
   gameStopActive = !!active;
   gameStopListeners.forEach((listener) => listener(gameStopActive));
