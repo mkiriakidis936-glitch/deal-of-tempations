@@ -44,6 +44,9 @@ export async function migrate() {
     CREATE UNIQUE INDEX IF NOT EXISTS records_invitation_rsvp_submission_idx
       ON records ((data->>'submissionId'))
       WHERE entity = 'InvitationRSVP' AND data ? 'submissionId';
+    CREATE UNIQUE INDEX IF NOT EXISTS records_vip_invitation_submission_idx
+      ON records ((data->>'submissionId'))
+      WHERE entity = 'VIPInvitationSubmission' AND data ? 'submissionId';
     DELETE FROM records WHERE entity IN ('GameSessionEvent', 'PlayerCheckin');
     CREATE TABLE IF NOT EXISTS server_secrets (
       key   TEXT PRIMARY KEY,

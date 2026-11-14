@@ -8,7 +8,7 @@ import { notifyNewSubmission, notifyPlayerMission } from './push.js';
 export const ENTITIES = [
   'Achievement', 'AppSetting', 'BacheloretteIntake', 'BlackmailVault', 'Chronicle', 'GameContent',
   'GameSession', 'GameSessionSnapshot', 'Haunting', 'InvitationRSVP', 'Memorial', 'PajamaContent', 'PajamaIntake',
-  'PlayerIntake', 'PlayerProfile', 'SessionArchive',
+  'PlayerIntake', 'PlayerProfile', 'SessionArchive', 'VIPInvitation', 'VIPInvitationSubmission',
 ];
 
 // Who may do what. Default for every operation is "public" (the phones/TV
@@ -21,6 +21,8 @@ const rules = {
   PajamaIntake:       { read: ADMIN, update: ADMIN, delete: ADMIN },
   BacheloretteIntake: { read: ADMIN, update: ADMIN, delete: ADMIN },
   InvitationRSVP:     { read: ADMIN, update: ADMIN, delete: ADMIN },
+  VIPInvitation: { read: ADMIN, create: ADMIN, update: ADMIN, delete: ADMIN },
+  VIPInvitationSubmission: { read: ADMIN, update: ADMIN, delete: ADMIN },
   Achievement:        { create: ADMIN, update: ADMIN, delete: ADMIN },
   // configuration / content: everybody reads, only admins change
   AppSetting:     { create: ADMIN, update: ADMIN, delete: ADMIN },
@@ -390,7 +392,7 @@ export function entityRoutes() {
     next();
   });
   // Public forms are open to everyone; cap how many submissions one IP can send so bots can't flood the DB.
-  const FORM_ENTITIES = new Set(['PlayerIntake', 'PajamaIntake', 'BacheloretteIntake', 'InvitationRSVP']);
+  const FORM_ENTITIES = new Set(['PlayerIntake', 'PajamaIntake', 'BacheloretteIntake', 'InvitationRSVP', 'VIPInvitationSubmission']);
   const formBuckets = new Map();
   const formLimit = (req, res, next) => {
     if (isAdmin(req) || !FORM_ENTITIES.has(req.entity)) return next();
@@ -406,6 +408,116 @@ export function entityRoutes() {
     return next();
   };
   const guard = (op) => (req, res, next) => (needsAdmin(req.entity, op) ? requireAdmin(req, res, next) : next());
+
+
+  // Private VIP invitations: the shared token is only returned to administrators.
+  r.post('/vip-invitations', requireAdmin, async (req, res, next) => {
+    try {
+      const token = crypto.randomBytes(32).toString('base64url');
+      const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+      const data = {
+        title: 'VIP INVITATION',
+        gameTitle: 'DEAL OF TEMPTATION',
+        intro: 'Έχεις λάβει μια προσωπική πρόσκληση σε μια ξεχωριστή εμπειρία. Επιβεβαίωσε τη συμμετοχή σου και συμπλήρωσε το προσωπικό σου προφίλ.',
+        token,
+        tokenHash,
+        active: true,
+      };
+      const { rows } = await query(
+        "INSERT INTO records (id, entity, data, created_by) VALUES ($1, 'VIPInvitation', $2, $3) RETURNING *",
+        [crypto.randomUUID(), JSON.stringify(data), req.user?.email || null],
+      );
+      return res.json({ ...toRecord(rows[0]), token });
+    } catch (error) { return next(error); }
+  });
+
+  r.get('/vip-invitations/:token', async (req, res, next) => {
+    try {
+      const token = String(req.params.token || '');
+      if (!/^[A-Za-z0-9_-]{40,60}$/.test(token)) return res.status(404).json({ error: 'Η πρόσκληση δεν βρέθηκε ή δεν είναι πλέον ενεργή.' });
+      const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+      const { rows } = await query(
+        "SELECT id, data FROM records WHERE entity = 'VIPInvitation' AND data->>'tokenHash' = $1 AND data->>'active' = 'true' LIMIT 1",
+        [tokenHash],
+      );
+      if (!rows[0]) return res.status(404).json({ error: 'Η πρόσκληση δεν βρέθηκε ή δεν είναι πλέον ενεργή.' });
+      const { rows: settings } = await query(
+        "SELECT data FROM records WHERE entity = 'AppSetting' AND data->>'key' = 'admin_form_questions' LIMIT 1"
+      );
+      const questions = settings[0]?.data?.value?.forms?.invitation || [];
+      return res.json({
+        id: rows[0].id,
+        title: rows[0].data.title || 'VIP INVITATION',
+        gameTitle: rows[0].data.gameTitle || 'DEAL OF TEMPTATION',
+        intro: rows[0].data.intro || '',
+        questions: Array.isArray(questions) ? questions : [],
+      });
+    } catch (error) { return next(error); }
+  });
+
+  r.post('/vip-invitations/:token/submit', async (req, res, next) => {
+    const token = String(req.params.token || '');
+    if (!/^[A-Za-z0-9_-]{40,60}$/.test(token)) return res.status(404).json({ error: 'Η πρόσκληση δεν βρέθηκε ή δεν είναι πλέον ενεργή.' });
+    const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+    const { rows: invitations } = await query(
+      "SELECT id FROM records WHERE entity = 'VIPInvitation' AND data->>'tokenHash' = $1 AND data->>'active' = 'true' LIMIT 1",
+      [tokenHash],
+    );
+    if (!invitations[0]) return res.status(404).json({ error: 'Η πρόσκληση δεν βρέθηκε ή δεν είναι πλέον ενεργή.' });
+    req.entity = 'VIPInvitationSubmission';
+    return formLimit(req, res, async () => {
+      const body = req.body || {};
+      const submissionId = typeof body.submissionId === 'string' ? body.submissionId.trim() : '';
+      if (!/^[A-Za-z0-9_-]{16,100}$/.test(submissionId) ||
+          typeof body.name !== 'string' || !body.name.trim() || body.name.trim().length > 80 ||
+          typeof body.avatar !== 'string' || body.avatar.length > 32 ||
+          !isObject(body.answers || {})) {
+        return res.status(400).json({ error: 'Συμπλήρωσε σωστά τα στοιχεία της πρόσκλησης.' });
+      }
+      const { rows: settings } = await query(
+        "SELECT data FROM records WHERE entity = 'AppSetting' AND data->>'key' = 'admin_form_questions' LIMIT 1"
+      );
+      const questions = settings[0]?.data?.value?.forms?.invitation || [];
+      const allowedQuestions = new Map((Array.isArray(questions) ? questions : []).map((question) => [question.id, question]));
+      const answers = body.answers || {};
+      if (Object.keys(answers).some((id) => !allowedQuestions.has(id)) ||
+          (Array.isArray(questions) ? questions : []).some((question) =>
+            question.required && !String(answers[question.id] || '').trim()
+          ) ||
+          Object.values(answers).some((answer) => typeof answer !== 'string' || answer.length > 2000)) {
+        return res.status(400).json({ error: 'Έλεγξε τις απαντήσεις της φόρμας και δοκίμασε ξανά.' });
+      }
+      const answerLabels = Object.fromEntries(Object.entries(answers).map(([id, answer]) => [allowedQuestions.get(id)?.label || id, answer]));
+      const data = {
+        invitationId: invitations[0].id,
+        submissionId,
+        name: body.name.trim(),
+        avatar: body.avatar,
+        answers,
+        answerLabels,
+        confirmed: true,
+        submittedAt: new Date().toISOString(),
+      };
+      const inserted = await query(
+        "INSERT INTO records (id, entity, data, created_by) VALUES ($1, 'VIPInvitationSubmission', $2, NULL) ON CONFLICT ((data->>'submissionId')) WHERE entity = 'VIPInvitationSubmission' AND data ? 'submissionId' DO NOTHING RETURNING *",
+        [crypto.randomUUID(), JSON.stringify(data)],
+      );
+      let record = inserted.rows[0] ? toRecord(inserted.rows[0]) : null;
+      if (!record) {
+        const existing = await query(
+          "SELECT * FROM records WHERE entity = 'VIPInvitationSubmission' AND data->>'submissionId' = $1 LIMIT 1",
+          [submissionId],
+        );
+        record = existing.rows[0] ? toRecord(existing.rows[0]) : null;
+      }
+      if (!record) return res.status(500).json({ error: 'Δεν ήταν δυνατή η αποθήκευση της συμμετοχής.' });
+      if (inserted.rows[0]) {
+        broadcast('VIPInvitationSubmission', { type: 'create', id: record.id, data: record });
+        notifyNewSubmission('VIPInvitationSubmission', record);
+      }
+      return res.json({ success: true, alreadySubmitted: !inserted.rows.length });
+    });
+  });
 
   // Store the invitation intake and RSVP together. A stable submissionId makes retries safe.
   r.post('/invitation-intake', async (req, res, next) => {

@@ -15,6 +15,7 @@ import Play from '@/pages/Play';
 import Intake from '@/pages/Intake';
 import Admin from '@/pages/Admin';
 import Invitation from '@/pages/Invitation';
+import VIPInvitationPage from '@/pages/VIPInvitationPage';
 import Promo from '@/pages/Promo';
 import GiftUnlock from '@/pages/GiftUnlock';
 import PajamaForm from '@/pages/PajamaForm';
@@ -64,6 +65,7 @@ const AuthenticatedApp = () => {
       <Route path="/reset-password" element={<ResetPassword />} />
       <Route path="/promo" element={<Promo />} />
       <Route path="/invitation" element={<Invitation />} />
+      <Route path="/vip/:token" element={<VIPInvitationPage />} />
       <Route path="/welcome" element={<Navigate to="/invitation" replace />} />
       <Route path="/pajama-form" element={<PajamaForm />} />
       <Route path="/modes-form" element={<ModeForm />} />
