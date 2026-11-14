@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
+import { request } from '@/api/base44Client';
 import ComicPanel from '@/components/comic/ComicPanel';
 import ComicButton from '@/components/comic/ComicButton';
 import { Image } from '@/components/ui/image';
@@ -41,6 +42,8 @@ const COMFORT_FIELDS = [
 ];
 
 const DRAFT_KEY = 'dot_invitation_draft';
+const DRAFT_TTL_MS = 24 * 60 * 60 * 1000;
+const createSubmissionId = () => window.crypto?.randomUUID?.() || `dot-${Date.now()}-${Math.random().toString(36).slice(2)}`;
 const INITIAL_FORM = {
   name: '',
   accommodation: '',
@@ -65,10 +68,24 @@ export default function InvitationIntakeForm({ onDone }) {
   const [step, setStep] = useState(0);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState(() => {
-    try { return { ...INITIAL_FORM, ...JSON.parse(localStorage.getItem(DRAFT_KEY) || '{}') }; } catch { return INITIAL_FORM; }
+    try {
+      const saved = JSON.parse(localStorage.getItem(DRAFT_KEY) || 'null');
+      if (!saved || !saved.savedAt || Date.now() - saved.savedAt > DRAFT_TTL_MS || !saved.form) {
+        localStorage.removeItem(DRAFT_KEY);
+        return { ...INITIAL_FORM, submissionId: createSubmissionId() };
+      }
+      return { ...INITIAL_FORM, ...saved.form, submissionId: saved.form.submissionId || createSubmissionId() };
+    } catch {
+      return { ...INITIAL_FORM, submissionId: createSubmissionId() };
+    }
   });
   useEffect(() => {
-    try { localStorage.setItem(DRAFT_KEY, JSON.stringify({ ...form, safeWordConfirmed: false })); } catch { /* ignore */ }
+    try {
+      localStorage.setItem(DRAFT_KEY, JSON.stringify({
+        savedAt: Date.now(),
+        form: { ...form, safeWordConfirmed: false },
+      }));
+    } catch { /* ignore */ }
   }, [form]);
   const [customQuestionsValid, setCustomQuestionsValid] = useState(true);
 
@@ -79,8 +96,12 @@ export default function InvitationIntakeForm({ onDone }) {
   async function handleSubmit() {
     setSaving(true);
     try {
-      await base44.entities.PlayerIntake.create({ ...form, customAnswers: form.customAnswers });
-      await base44.entities.InvitationRSVP.create({ name: form.name.trim(), confirmed: true });
+      await request('POST', '/api/entities/invitation-intake', {
+        ...form,
+        name: form.name.trim(),
+        customAnswers: form.customAnswers,
+        submissionId: form.submissionId,
+      });
       try { localStorage.removeItem(DRAFT_KEY); } catch { /* ignore */ }
       onDone();
     } catch (e) {
