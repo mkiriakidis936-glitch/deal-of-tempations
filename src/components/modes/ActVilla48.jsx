@@ -1,6 +1,6 @@
 import React from 'react';
 import { Panel, Btn } from '@/components/modes/ModeShell';
-import { useLocalCountdown } from '@/lib/modeKit';
+import { timerLeft, useTick } from '@/lib/modeKit';
 
 const PHASES = [
   'Άφιξη',
@@ -16,7 +16,8 @@ const PHASES = [
 export default function ActVilla48({ ctx, onDone }) {
   const { mg, setMg, log, stopped } = ctx;
   const index = Math.min(PHASES.length - 1, Math.max(0, mg.villaPhaseIndex || 0));
-  const left = useLocalCountdown(48 * 60 * 60, true, () => log('Ολοκληρώθηκαν οι 48 ώρες της Villa.'));
+  useTick(true, 1000);
+  const left = timerLeft(mg.timer);
   const move = (next) => {
     if (stopped) return;
     const value = Math.max(0, Math.min(PHASES.length - 1, next));
