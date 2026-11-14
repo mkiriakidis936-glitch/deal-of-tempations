@@ -3,7 +3,7 @@ import { Panel, Btn, RestraintNote } from '@/components/modes/ModeShell';
 import MissionPanel from '@/components/modes/MissionPanel';
 import {
   GATE_TOKENS, EXT_END, EXT_PORTAL, EXT_ZONES, squareType, zoneOf, ROUTES,
-  EXTENDED_GLAM_CARDS, EXTENDED_CHAOS_CARDS, CHAOS_POWERS, SHOP, EXTENDED_SECRET_MISSIONS,
+  EXTENDED_GLAM_CARDS, EXTENDED_CHAOS_CARDS, EXTENDED_CHAOS_MARKET_CARDS, SHOP, EXTENDED_SECRET_MISSIONS,
 } from '@/data/modes/extendedContent';
 import { pick, sfx, useLocalCountdown } from '@/lib/modeKit';
 
@@ -96,7 +96,7 @@ export default function ActBoard({ ctx, onDone }) {
     if (ok) {
       t[p.id] = (t[p.id] || 0) + reward;
       scores[p.id] = (scores[p.id] || 0) + reward * 5;
-      if (c.giveChaos) patch.chaosCards = { ...chaosCards, [p.id]: [...(chaosCards[p.id] || []), pick(CHAOS_POWERS).id] };
+      if (c.giveChaos) patch.chaosCards = { ...chaosCards, [p.id]: [...(chaosCards[p.id] || []), pick(EXTENDED_CHAOS_MARKET_CARDS).id] };
     } else if (c.route === 'chaos') {
       t[p.id] = Math.max(0, (t[p.id] || 0) - 1);
     }
@@ -280,7 +280,7 @@ function Market({ ctx, cur }) {
     const t = { ...tokens, [b]: tokens[b] - item.cost };
     const patch = { tokens: t };
     if (item.id === 'immunity') patch.immune = [...(mg.immune || []), b];
-    if (item.id === 'chaos') patch.chaosCards = { ...(mg.chaosCards || {}), [b]: [...((mg.chaosCards || {})[b] || []), pick(CHAOS_POWERS).id] };
+    if (item.id === 'chaos') patch.chaosCards = { ...(mg.chaosCards || {}), [b]: [...((mg.chaosCards || {})[b] || []), pick(EXTENDED_CHAOS_MARKET_CARDS).id] };
     if (item.id === 'skip') patch.skips = { ...(mg.skips || {}), [b]: ((mg.skips || {})[b] || 0) + 1 };
     if (item.id === 'hint') patch.hints = { ...(mg.hints || {}), [b]: ((mg.hints || {})[b] || 0) + 1 };
     if (item.id === 'bribe') {
@@ -335,20 +335,37 @@ function ChaosHand({ ctx }) {
 
   function use(owner, idx) {
     const powerId = hands[owner.id][idx];
-    const power = CHAOS_POWERS.find((x) => x.id === powerId);
+    const power = EXTENDED_CHAOS_MARKET_CARDS.find((x) => x.id === powerId);
     const target = targets[owner.id] || players.find((p) => p.id !== owner.id)?.id;
     if (!power || !target) return;
     const rest = hands[owner.id].filter((_, i) => i !== idx);
     const patch = { chaosCards: { ...hands, [owner.id]: rest } };
-    if (power.id === 'skip') patch.skip = [...(mg.skip || []), target];
-    if (power.id === 'swap') {
+    if (power.id === 'reverse') {
+      patch.reverseNextPenalty = { ...(mg.reverseNextPenalty || {}), [owner.id]: true };
+      if (mg.attack?.to === owner.id) patch.attack = { ...mg.attack, from: owner.id, to: mg.attack.from, reversed: true };
+    }
+    if (power.id === 'token_tax') {
+      const richest = players.filter((p) => p.id !== owner.id).sort((a, b) => ((mg.tokens || {})[b.id] || 0) - ((mg.tokens || {})[a.id] || 0))[0];
+      const balances = { ...(mg.tokens || {}) };
+      if (richest) {
+        const taken = Math.min(2, balances[richest.id] || 0);
+        balances[richest.id] = (balances[richest.id] || 0) - taken;
+        balances[owner.id] = (balances[owner.id] || 0) + taken;
+      }
+      patch.tokens = balances;
+    }
+    if (power.id === 'double_tickle') patch.doublePenaltyNext = { ...(mg.doublePenaltyNext || {}), [target]: true };
+    if (power.id === 'forced_route') patch.routes = { ...(mg.routes || {}), [target]: { route: 'chaos', left: 3 } };
+    if (power.id === 'sock_confiscation') patch.sockConfiscation = { ...(mg.sockConfiscation || {}), [target]: 3 };
+    if (power.id === 'hostage_swap') {
       const pos = { ...(mg.pos || {}) };
       const a = pos[owner.id] || 0;
       pos[owner.id] = pos[target] || 0;
       pos[target] = a;
       patch.pos = pos;
     }
-    if (power.id === 'tickle') patch.attack = { from: owner.id, to: target, at: Date.now() };
+    if (power.id === 'silence_curse') patch.silenceCurses = { ...(mg.silenceCurses || {}), [target]: 2 };
+    if (power.id === 'glam_shield') patch.immune = [...(mg.immune || []), owner.id];
     setMg(patch);
     log(`🃏 ${owner.name} έπαιξε «${power.name}» στην ${nameOf(target)}`);
   }
@@ -367,7 +384,7 @@ function ChaosHand({ ctx }) {
             {players.filter((p) => p.id !== o.id).map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
           </select>
           {hands[o.id].map((pid, i) => {
-            const pw = CHAOS_POWERS.find((x) => x.id === pid);
+            const pw = EXTENDED_CHAOS_MARKET_CARDS.find((x) => x.id === pid);
             return <Btn key={i} className="!py-1" color="bg-red-900" onClick={() => use(o, i)}>{pw?.icon} {pw?.name}</Btn>;
           })}
         </div>
