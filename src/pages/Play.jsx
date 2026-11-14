@@ -131,6 +131,7 @@ export default function Play() {
         state={state}
         me={myPlayer}
         updateState={updateState}
+        sessionCode={session.sessionCode}
         onChangePlayer={() => {
           setSelectedPlayerId(null);
           if (session?.sessionCode) {
