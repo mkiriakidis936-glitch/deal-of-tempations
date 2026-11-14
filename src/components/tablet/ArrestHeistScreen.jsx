@@ -5,9 +5,10 @@ import Timer from '@/components/comic/Timer';
 import WheelOfMisfortune from '@/components/comic/WheelOfMisfortune';
 import SpeakButton from '@/components/comic/VoiceReader';
 import { base44 } from '@/api/base44Client';
-import { ARREST_HEIST_LADDER } from '@/data/gameConfig';
+import { ARREST_HEIST_LADDER, BOARD } from '@/data/gameConfig';
+import MonopolyBoard from '@/components/tv/MonopolyBoard';
 import { ARREST_HEIST_DARES, ARREST_HEIST_TRUTHS, MINI_GAMES, PLOT_TWISTS, ULTIMATE_TRUTHS } from '@/data/gameContent';
-import { addHistory } from '@/lib/gameLogic';
+import { addHistory, drawHeistCard } from '@/lib/gameLogic';
 import { buildSecretTruths } from '@/lib/intakeContent';
 import GmTools from '@/components/tablet/GmTools';
 import TemptationSlots from '@/components/tablet/TemptationSlots';
@@ -196,6 +197,8 @@ export default function ArrestHeistScreen({ state, updateState, onEnd }) {
               <div className="text-sm">Ποινή: {leaderB?.penaltyStep || 0}/{maxSteps} · Πόντοι: {pointsB}</div>
             </ComicPanel>
           </div>
+
+          <HeistBoardPanel state={state} updateState={updateState} />
 
           {intake ? (
             <ComicPanel className="bg-tarot-wine/30 p-2 text-sm">
@@ -576,3 +579,63 @@ export default function ArrestHeistScreen({ state, updateState, onEnd }) {
 
   return null;
 }
+
+function HeistBoardPanel({ state, updateState }) {
+  const positions = state.heistPositions || {};
+  const activeCard = state.heistBoardCard || null;
+  const players = (state.players || []).map((p) => ({ ...p, position: positions[p.id] || 0 }));
+  const currentIndex = (state.currentPlayerIndex || 0) % Math.max(1, players.length);
+  const current = players[currentIndex];
+
+  async function roll() {
+    if (!current || state.stopActive || activeCard) return;
+    const dice = 1 + Math.floor(Math.random() * 6);
+    const next = Math.min(43, (positions[current.id] || 0) + dice);
+    const square = BOARD[next];
+    let card = null;
+    if (square.type === 'street') {
+      const kind = Math.random() < 0.5 ? 'street_truth' : 'street_dare';
+      const drawn = drawHeistCard(kind);
+      card = drawn ? { kind, name: drawn.name, text: drawn.text } : null;
+    } else if (square.type === 'warrant') {
+      const drawn = drawHeistCard('warrant');
+      card = drawn ? { kind: 'warrant', name: drawn.name, text: drawn.desc } : null;
+    } else if (square.type === 'glitch') {
+      const drawn = drawHeistCard('glitch');
+      card = drawn ? { kind: 'glitch', name: drawn.name, text: drawn.desc } : null;
+    } else {
+      const details = {
+        police: ['POLICE HQ', 'Ενεργοποιείται η διαδικασία Absolute Interrogation.'],
+        safehouse: ['SAFEHOUSE', 'Ασυλία μέχρι τον επόμενο γύρο.'],
+        blackmarket: ['BLACK MARKET', 'Immunity Pass · Perk Recharge · Bribe.'],
+      };
+      const entry = details[square.type];
+      if (entry) card = { kind: square.type, name: entry[0], text: entry[1] };
+    }
+    await updateState({
+      heistPositions: { ...positions, [current.id]: next },
+      currentPlayerIndex: (currentIndex + 1) % players.length,
+      heistLastRoll: { playerId: current.id, dice, position: next },
+      heistBoardCard: card,
+    });
+  }
+
+  return (
+    <ComicPanel className="bg-card p-3 space-y-2">
+      <div className="flex items-center justify-between gap-2">
+        <div className="font-heading text-lg">🗺️ HEIST &amp; ARREST — 44 BASES</div>
+        <ComicButton variant="yellow" size="sm" onClick={roll} disabled={!!state.stopActive || !!activeCard || !players.length}>🎲 ΡΙΞΕ ΖΑΡΙ</ComicButton>
+      </div>
+      <MonopolyBoard players={players} board={BOARD} />
+      {state.heistLastRoll && <div className="text-xs text-foreground/70">{players.find((p) => p.id === state.heistLastRoll.playerId)?.name} · 🎲 {state.heistLastRoll.dice} · Base {String(state.heistLastRoll.position + 1).padStart(2,'0')}</div>}
+      {activeCard && (
+        <div className="rounded-lg border border-primary/50 bg-background/70 p-3 space-y-2">
+          <div className="font-heading text-xl">{activeCard.name}</div>
+          <p className="text-sm">{activeCard.text}</p>
+          <ComicButton variant="green" size="sm" onClick={() => updateState({ heistBoardCard: null })}>ΟΛΟΚΛΗΡΩΘΗΚΕ</ComicButton>
+        </div>
+      )}
+    </ComicPanel>
+  );
+}
+
