@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { SOUNDS } from '@/data/soundLibrary';
+import { SOUNDS, stopAllSounds } from '@/data/soundLibrary';
 
 // Cross-device audio sync: watches state.audioSync and plays the triggered effect on all devices.
 export function useAudioSync(state) {
@@ -7,6 +7,10 @@ export function useAudioSync(state) {
   const lastMusicRef = useRef(null);
 
   useEffect(() => {
+    if (state?.mg?.stop || state?.stopActive) {
+      stopAllSounds();
+      return;
+    }
     if (!state?.audioSync) return;
 
     // Sound effect sync
@@ -28,5 +32,5 @@ export function useAudioSync(state) {
         // Music is handled by AudioControl on the Tablet; TV/Play just play effects
       }
     }
-  }, [state?.audioSync]);
+  }, [state?.audioSync, state?.mg?.stop, state?.stopActive]);
 }

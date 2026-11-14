@@ -62,6 +62,98 @@ export const SECRET_MISSIONS = [
   { id: 'm3', title: 'The Secret Token Transfer', text: 'Μυστική αποστολή: Δωροδόκησε κρυφά μια συμπαίκτρια με ένα βλέμμα συνενοχής, χωρίς να το πάρουν χαμπάρι οι υπόλοιπες.', reward: 2, mins: 8, bothReward: true },
 ];
 
+
+export const EXTENDED_GLAM_CARDS = [
+  { id: 'eg1', title: 'The Skincare Rule', text: 'Ποιο είναι το #1 βήμα πριν το βερνίκι; (Base coat). Σωστό = +1 Token.' },
+  { id: 'eg2', title: 'The Satin Touch', text: 'Πέρασε σατέν κορδέλα γύρω από τις καμάρες σου για 15″ χωρίς να γελάσεις. +1 Token.', secs: 15 },
+  { id: 'eg3', title: 'The Lazy Break', text: 'Ξεκουράσου σε αυτόν τον γύρο και πάρε +1 Glam Token δώρο.', free: true },
+  { id: 'eg4', title: 'The Beauty Confession', text: 'Ποια είναι η πιο ακριβή αγορά ομορφιάς που μετάνιωσες; +1 Token.' },
+  { id: 'eg5', title: 'The Hand & Foot Sync', text: 'Κάνε 20″ χαλαρωτικό μασάζ χεριών στη διπλανή σου. +1 Token.', secs: 20 },
+  { id: 'eg6', title: 'The Velvet Blindfold', text: 'Φόρεσε μάσκα ύπνου και μάντεψε ποια κοπέλα σου φυσάει απαλά στο μέτωπο. +1 Token.' },
+  { id: 'eg7', title: 'The Secret Crush Hint', text: 'Δώσε 3 στοιχεία για το τελευταίο άτομο που φλέρταρες. +1 Token.' },
+  { id: 'eg8', title: 'The Pedi-Check', text: 'Αν φοράς χνουδωτές κάλτσες, +1 Token. Αν είσαι ξυπόλυτη, +2 Tokens.' },
+  { id: 'eg9', title: 'The Compliment Duel', text: 'Ανταλλάξτε από 3 αληθινά κομπλιμέντα με την απέναντί σου. +1 Token η καθεμία.' },
+  { id: 'eg10', title: 'The Golden Token', text: 'Βρήκες κρυμμένο θησαυρό! Κερδίζεις +2 Glam Tokens.', free: true, reward: 2 },
+];
+
+export const EXTENDED_CHAOS_CARDS = [
+  { id: 'ec1', title: 'The Sock Switch Heist', text: 'Έχεις 30″ να κλέψεις την κάλτσα της παίκτριας στα δεξιά σου χωρίς να σηκωθείς. Επιτυχία = +2 Tokens.', secs: 30 },
+  { id: 'ec2', title: 'The Tied Step', text: 'Οι φτέρνες σου δένονται χαλαρά με σατέν ζώνη για 2 γύρους. Αν τερματίσεις έτσι, διπλοί πόντοι.', restraint: true },
+  { id: 'ec3', title: 'The Tickle Trap', text: 'Η απέναντι σε γαργαλάει στα πέλματα για 15″ εκτός αν πληρώσεις 2 Tokens.', secs: 15, trap: true },
+  { id: 'ec4', title: 'The Piggyback Penalty', text: 'Μετέφερε την παίκτρια στα αριστερά σου στην πλάτη μέχρι το επόμενο τετράγωνο.' },
+  { id: 'ec5', title: 'The Blind Balance', text: 'Κλείσε τα μάτια και στάσου στο ένα πόδι για 20″. Αν πέσεις, 10″ γαργάλημα στα δάχτυλα.', secs: 20 },
+  { id: 'ec6', title: 'The Hogtie Ransom', text: 'Hogtie για 45″. Η κάρτα ολοκληρώνεται με επιβεβαίωση της παίκτριας ή άμεσο STOP.', secs: 45, restraint: true },
+  { id: 'ec7', title: 'The Feather Torture', text: 'Δεμένα χέρια πίσω, 20″ δοκιμασία με φτερό στις καμάρες. +2 Tokens αν ολοκληρωθεί.', secs: 20, restraint: true },
+  { id: 'ec8', title: 'The Barefoot Walk', text: 'Βγάλε τις κάλτσες σου και περπάτα στις μύτες γύρω από το δωμάτιο ενώ οι άλλες σου πετούν μαξιλάρια. +2 Tokens.' },
+  { id: 'ec9', title: 'The Double Trouble', text: 'Διάλεξε μια συμπαίκτρια. Δένεστε αστράγαλο με αστράγαλο για τους επόμενους 2 γύρους. +2 Tokens.', restraint: true },
+  { id: 'ec10', title: 'The Chaos Card Draw', text: 'Τράβηξε αμέσως μία Chaos Card από το κρυφό deck!', giveChaos: true },
+];
+
+export const EXTENDED_SECRET_MISSIONS = [
+  { id: 'em1', title: 'The Stealthy Sock', text: 'Βγάλε αθόρυβα την κάλτσα της παίκτριας στα αριστερά σου μέσα σε 10′ χωρίς να το καταλάβει.', reward: 3, mins: 10 },
+  { id: 'em2', title: 'The Hidden Giggles', text: 'Κάνε την απέναντί σου να γελάσει δυνατά μέσα σε 1′ με μία μόνο γκριμάτσα.', reward: 2, mins: 1 },
+  { id: 'em3', title: 'The Secret Token Transfer', text: 'Δωροδόκησε κρυφά μια συμπαίκτρια με ένα βλέμμα συνενοχής χωρίς να το πάρουν χαμπάρι οι άλλες.', reward: 2, mins: 8, bothReward: true },
+  { id: 'em4', title: 'The Barefoot Frame', text: 'Πείσε μία παίκτρια να βγάλει τις κάλτσες της οικειοθελώς μέσα στα επόμενα 3 λεπτά.', reward: 3, mins: 3 },
+  { id: 'em5', title: 'The Whisper Sabotage', text: 'Ψιθύρισε κάτι αστείο στο αυτί μιας παίκτριας την ώρα που προσπαθεί να μείνει σοβαρή σε δοκιμασία.', reward: 2, mins: 3 },
+  { id: 'em6', title: 'The Pillow Thief', text: 'Κλέψε το μαξιλάρι της διπλανής σου και κάθισε πάνω του χωρίς να το προσέξει για 2 λεπτά.', reward: 2, mins: 2 },
+  { id: 'em7', title: 'The Mirror Copy', text: 'Αντίγραψε κάθε κίνηση της αρχηγού του γύρου για 3 λεπτά χωρίς να σε καταλάβει.', reward: 3, mins: 3 },
+  { id: 'em8', title: 'The Satin Knot', text: 'Δέσε κρυφά μία σατέν κορδέλα στον αστράγαλο της διπλανής σου ενώ μιλάει.', reward: 3, mins: 3 },
+  { id: 'em9', title: 'The Forbidden Word', text: 'Κάνε μία παίκτρια να πει τη λέξη «Γαργάλημα» ή «Κάλτσα» μέσα σε 2 λεπτά.', reward: 2, mins: 2 },
+  { id: 'em10', title: 'The Alliance', text: 'Συμφώνησε κρυφά με μία άλλη παίκτρια να ψηφίσετε το ίδιο άτομο στην επόμενη δοκιμασία.', reward: 2, mins: 10 },
+];
+
+
+export const EXTENDED_CHAOS_MARKET_CARDS = [
+  {
+    "id": "reverse",
+    "name": "Reverse Card",
+    "icon": "↩️",
+    "text": "Επιστρέφεις οποιαδήποτε ποινή γαργαλητού πίσω σε αυτήν που στην έριξε."
+  },
+  {
+    "id": "token_tax",
+    "name": "Token Tax",
+    "icon": "🪙",
+    "text": "Κλέβεις 2 Glam Tokens από την παίκτρια με τα περισσότερα."
+  },
+  {
+    "id": "double_tickle",
+    "name": "Double Tickle",
+    "icon": "⏱️",
+    "text": "Διπλασιάζεις τον χρόνο (από 15″ σε 30″) της επόμενης ποινής μιας αντιπάλου."
+  },
+  {
+    "id": "forced_route",
+    "name": "Forced Route",
+    "icon": "🔀",
+    "text": "Αναγκάζεις μια παίκτρια να μπει υποχρεωτικά στο Chaos Route στην επόμενη διακλάδωση."
+  },
+  {
+    "id": "sock_confiscation",
+    "name": "Sock Confiscation",
+    "icon": "🧦",
+    "text": "Αφαιρείς τις κάλτσες μιας παίκτριας για 3 γύρους."
+  },
+  {
+    "id": "hostage_swap",
+    "name": "Hostage Swap",
+    "icon": "🔄",
+    "text": "Ανταλλάσσεις θέση με οποιαδήποτε παίκτρια."
+  },
+  {
+    "id": "silence_curse",
+    "name": "Silence Curse",
+    "icon": "🤫",
+    "text": "Η παίκτρια που στοχεύεις δεν μιλά ή γελά για 2 γύρους."
+  },
+  {
+    "id": "glam_shield",
+    "name": "Glam Shield",
+    "icon": "🛡️",
+    "text": "Απόλυτη ασυλία από κάθε σαμποτάζ και ποινή για 1 ολόκληρο γύρο."
+  }
+];
+
 // Act 2 — Midnight ASMR & Tickle Vault
 export const BLIND_TEXTURES = [
   { id: 't1', name: 'The Satin Freeze', text: 'Παγάκι τυλιγμένο σε σατέν ύφασμα, πέρασμα στην καμάρα.' },
@@ -76,6 +168,10 @@ export const WHISPER_QUESTIONS = [
   'Ποια από τις παρούσες θεωρείς ότι έχει το πιο ακαταμάχητο βλέμμα;',
   'Ποιο είναι το μεγαλύτερο ψέμα που έχεις πει ποτέ σε γονείς για να πας σε βραδινό πάρτι;',
   'Ψιθύρισε ποιο είναι το πιο ένοχο μυστικό σου σχετικά με το πώς περνάς τα βράδια μόνη σου στο σπίτι.',
+  'Ποιο άτομο από το παρελθόν σου θα έστελνες μήνυμα απόψε αν ήξερες ότι δεν θα το μάθει κανείς;',
+  'Ψιθύρισε ποια είναι η πιο ευαίσθητη ζώνη στο σώμα σου όταν σου κάνουν μασάζ.',
+  'Ποιο είναι το πιο αμήχανο φλερτ που δέχτηκες ποτέ και προσποιήθηκες ότι δεν κατάλαβες;',
+  'Ψιθύρισε ποια συμπαίκτρια πιστεύεις ότι θα σπάσει πρώτη στο επόμενο Act του Escape Room.',
 ];
 
 export const ASMR_CLIPS = [

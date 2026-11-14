@@ -1,5 +1,6 @@
 import React from 'react';
-import { ARREST_HEIST_LADDER } from '@/data/gameConfig';
+import { ARREST_HEIST_LADDER, BOARD } from '@/data/gameConfig';
+import MonopolyBoard from '@/components/tv/MonopolyBoard';
 import { cn } from '@/lib/utils';
 
 function PrisonCell({ leader, teamLabel, teamIcon, teamColor, points }) {
@@ -97,6 +98,7 @@ export default function ArrestHeistTV({ state }) {
   const leaderB = players.find((p) => p.team === 'B' && p.isLeader);
   const pointsA = state.teamA?.points || 0;
   const pointsB = state.teamB?.points || 0;
+  const boardPlayers = players.map((p) => ({ ...p, position: (state.heistPositions || {})[p.id] || 0 }));
   const round = state.round || 1;
   const maxRounds = 6;
 
@@ -175,6 +177,32 @@ export default function ArrestHeistTV({ state }) {
           <span className="font-heading text-sm text-foreground w-10 text-right">{Math.round(alarmPct)}%</span>
         </div>
       </div>
+
+      <div className="comic-panel bg-card p-3 space-y-2">
+        <div className="font-heading text-lg text-primary text-center">🗺️ HEIST &amp; ARREST — 44 BASES</div>
+        <MonopolyBoard players={boardPlayers} board={BOARD} large />
+      </div>
+
+      {state.absoluteInterrogation?.active && (
+        <div className="comic-panel bg-tarot-royal/30 p-4 space-y-2 text-center">
+          <div className="font-heading text-2xl text-primary">⚖️ ABSOLUTE INTERROGATION · ΑΛΗΘΕΙΑ {state.absoluteInterrogation.step + 1}/3</div>
+          <div className="text-lg">{state.players.find((p) => p.id === state.absoluteInterrogation.targetId)?.name}</div>
+          <div className="text-xl">{state.absoluteInterrogation.questions?.[state.absoluteInterrogation.step]}</div>
+          <div className="text-xs opacity-70">Μυστικές ψήφοι κινητών: {Object.keys(state.absoluteInterrogation.votes?.[state.absoluteInterrogation.step] || {}).length}/{Math.max(0, players.length - 1)}</div>
+        </div>
+      )}
+      {state.interrogationVerdict && (
+        <div className="comic-panel bg-tarot-gold/20 p-4 text-center">
+          <div className="font-heading text-2xl text-primary">{state.interrogationVerdict.label}</div>
+          <div className="text-sm">{state.interrogationVerdict.release ? 'Άμεση απελευθέρωση · +5.000€ · 1 Pass Card' : 'Ποινή ×' + state.interrogationVerdict.penaltyMultiplier + ' · Sensory Lock'}</div>
+        </div>
+      )}
+      {state.bailoutAuction?.active && (
+        <div className="comic-panel bg-tarot-forest/30 p-4 text-center">
+          <div className="font-heading text-2xl text-primary">🔨 BAILOUT AUCTION LIVE</div>
+          <div className="text-sm">Μυστικές προσφορές από τα κινητά · {Object.keys(state.bailoutAuction.bids || {}).length} συμμετοχές</div>
+        </div>
+      )}
 
       {/* Two prison cells (C + B) */}
       <div className="grid grid-cols-2 gap-4">

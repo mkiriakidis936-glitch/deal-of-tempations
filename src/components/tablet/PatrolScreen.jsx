@@ -8,6 +8,7 @@ import ExtremeProtocolsPanel from '@/components/shared/ExtremeProtocolsPanel';
 import RoleAbilitiesPanel from '@/components/tablet/RoleAbilitiesPanel';
 import DigitalCardsPanel from '@/components/shared/DigitalCardsPanel';
 import BountyMultiplier from '@/components/shared/BountyMultiplier';
+import HighStakesPanel from '@/components/shared/HighStakesPanel';
 import SpeakButton from '@/components/comic/VoiceReader';
 import { SQUARE_TYPES, getPenaltyLadder } from '@/data/gameConfig';
 import { BLACK_MARKET_OPTIONS } from '@/data/gameContent';
@@ -133,6 +134,7 @@ export default function PatrolScreen({ state, updateState, onGoToStage2 }) {
             <DigitalCardsPanel state={state} updateState={updateState} />
             <ExtremeProtocolsPanel state={state} updateState={updateState} />
             <BountyMultiplier state={state} />
+            <HighStakesPanel state={state} updateState={updateState} />
             <span className="bg-background text-primary px-2 py-1 rounded font-body">ΓΥΡΟΣ {state.round}</span>
             <span className="bg-card border-2 border-border px-2 py-1 rounded text-foreground font-body">Κωδικός: {state.sessionCode || '------'}</span>
           </div>

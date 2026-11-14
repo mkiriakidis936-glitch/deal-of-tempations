@@ -2,7 +2,7 @@ import crypto from 'node:crypto';
 import express from 'express';
 import { query, pool } from './db.js';
 import { requireAdmin } from './auth.js';
-import { notifyNewSubmission } from './push.js';
+import { notifyNewSubmission, notifyPlayerMission } from './push.js';
 
 // Entities that used to live in base44/entities/*.jsonc
 export const ENTITIES = [
@@ -516,6 +516,15 @@ export function entityRoutes() {
             await client.query('COMMIT');
             const rec = toRecord(rows[0]);
             broadcast(req.entity, { type: 'update', id: rec.id, data: rec });
+            const beforeMissions = current.state?.mg?.missions || {};
+            const afterMissions = rec.state?.mg?.missions || {};
+            for (const [playerId, mission] of Object.entries(afterMissions)) {
+              if (mission?.status === 'active' && mission.sentAt && mission.sentAt !== beforeMissions[playerId]?.sentAt) {
+                notifyPlayerMission(current.sessionCode, playerId, mission).catch((error) =>
+                  console.error('[player-push] mission notification failed:', error.message)
+                );
+              }
+            }
             return res.json(rec);
           }
           const { rows } = await client.query(

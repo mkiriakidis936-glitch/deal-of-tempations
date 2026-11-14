@@ -1,6 +1,28 @@
 // Τα 4 νέα ψηφιακά game modes (από το PDF "Μεγάλο Update").
 export const NEW_MODES = [
   {
+    id: 'villa_48h',
+    name: 'VILLA — 48 ΩΡΕΣ',
+    icon: '🏡',
+    desc: 'Εκτεταμένη εμπειρία 48 ωρών: Άφιξη, Ημέρα, Απόγευμα, Νύχτα, Πρωινή Φάση, Δεύτερη Ημέρα, Τελικό SHOW και FINALE.',
+    min: 2,
+    max: 10,
+    acts: ['villa'],
+    actDurations: { villa: 2880 },
+    minutes: 2880,
+  },
+  {
+    id: 'pedi_glam',
+    name: 'PAJAMA PEDI-GLAM',
+    icon: '💅',
+    desc: 'Sensory & Pamper Edition · 20 κάρτες Pedi-care, ASMR, Glam Tokens και Spicy Confessions. Διάρκεια: 90 λεπτά.',
+    min: 2,
+    max: 8,
+    acts: ['pedi_glam'],
+    actDurations: { pedi_glam: 90 },
+    minutes: 90,
+  },
+  {
     id: 'pedi_extended',
     name: 'PEDI-GLAM EXTENDED',
     icon: '💅',
@@ -51,6 +73,8 @@ export const modeMeta = (id) => NEW_MODES.find((m) => m.id === id);
 
 // Χρώματα από τους UI οδηγούς του PDF.
 export const MODE_THEMES = {
+  villa_48h: { bg: '#080808', accent: '#FFD700', accent2: '#FF2A85' },
+  pedi_glam: { bg: '#0A0A0A', accent: '#FF2A85', accent2: '#FFD700' },
   pedi_extended: { bg: '#0A0A0A', accent: '#FF2A85', accent2: '#FFD700' },
   lockdown: { bg: '#0A0A0A', accent: '#FF003C', accent2: '#FF6B8A' },
   beach_bar: { bg: '#0D0D11', accent: '#00F2FE', accent2: '#FF3366' },
@@ -58,9 +82,11 @@ export const MODE_THEMES = {
 };
 
 export const ACT_META = {
+  villa: { title: 'Villa · 48-hour experience', minutes: 2880 },
+  pedi_glam: { title: 'Pajama Pedi-Glam · Sensory & Pamper Edition', minutes: 90 },
   board: { title: 'Act 1 · The Glam & Chaos Board', minutes: 45 },
   midnight: { title: 'Act 2 · Midnight ASMR & Tickle Vault', minutes: 45 },
   lockdown: { title: 'Act 3 · Pajama Lockdown (18+)', minutes: 75 },
   morning: { title: 'Act 4 · Extended Morning Escape & VIP Vault', minutes: 45 },
-  beach: { title: 'Beach Bar Lockdown', minutes: 210 },
+  beach: { title: 'Beach Bar Lockdown', minutes: 300 },
 };

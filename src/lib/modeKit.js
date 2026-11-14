@@ -1,8 +1,27 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { stopAllSounds } from '@/data/soundLibrary';
 
 export const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
 export const shuffle = (arr) => [...arr].sort(() => Math.random() - 0.5);
 export const uid = () => Math.random().toString(36).slice(2, 8);
+
+let gameStopActive = false;
+const gameStopListeners = new Set();
+
+export const isGameStopActive = () => gameStopActive;
+
+export function setGameStopActive(active) {
+  gameStopActive = !!active;
+  if (gameStopActive) {
+    stopAllSounds();
+    audioCtx?.suspend().catch(() => {});
+    try { window.speechSynthesis?.cancel(); } catch { /* δεν υποστηρίζεται */ }
+    try { navigator.vibrate?.(0); } catch { /* δεν υποστηρίζεται */ }
+  } else if (audioCtx?.state === 'suspended') {
+    audioCtx.resume().catch(() => {});
+  }
+  gameStopListeners.forEach((listener) => listener(gameStopActive));
+}
 
 export function fmt(sec) {
   const s = Math.max(0, Math.ceil(sec || 0));
@@ -20,6 +39,16 @@ export const timerAdd = (t, sec) => {
 export const timerPause = (t) => (t && t.endsAt ? { ...t, remaining: timerLeft(t), endsAt: null } : t);
 export const timerResume = (t) => (t && !t.endsAt ? { ...t, endsAt: Date.now() + (t.remaining || 0) * 1000 } : t);
 
+export function useGameStopState() {
+  const [paused, setPaused] = useState(gameStopActive);
+  useEffect(() => {
+    const listener = (value) => setPaused(value);
+    gameStopListeners.add(listener);
+    return () => gameStopListeners.delete(listener);
+  }, []);
+  return paused;
+}
+
 export function useTick(active = true, ms = 250) {
   const [, set] = useState(0);
   useEffect(() => {
@@ -32,20 +61,52 @@ export function useTick(active = true, ms = 250) {
 // Τοπικό αντίστροφο για μικρές δοκιμασίες (π.χ. 30″ ποινή) — δεν γράφεται στη βάση.
 export function useLocalCountdown(seconds, running, onDone) {
   const [left, setLeft] = useState(seconds);
+  const [paused, setPaused] = useState(gameStopActive);
+  const remainingRef = useRef(seconds);
   const doneRef = useRef(onDone);
+  const completedRef = useRef(false);
   doneRef.current = onDone;
-  useEffect(() => { setLeft(seconds); }, [seconds]);
+
   useEffect(() => {
-    if (!running) return undefined;
-    const start = Date.now();
-    const base = seconds;
+    const listener = (value) => setPaused(value);
+    gameStopListeners.add(listener);
+    return () => gameStopListeners.delete(listener);
+  }, []);
+
+  useEffect(() => {
+    remainingRef.current = seconds;
+    completedRef.current = false;
+    setLeft(seconds);
+  }, [seconds]);
+
+  useEffect(() => {
+    if (!running) {
+      completedRef.current = false;
+      return undefined;
+    }
+    remainingRef.current = seconds;
+    completedRef.current = false;
+    setLeft(seconds);
+    return undefined;
+  }, [running, seconds]);
+
+  useEffect(() => {
+    if (!running || paused || completedRef.current) return undefined;
+    let last = Date.now();
     const i = setInterval(() => {
-      const l = Math.max(0, base - (Date.now() - start) / 1000);
-      setLeft(l);
-      if (l <= 0) { clearInterval(i); doneRef.current?.(); }
+      const now = Date.now();
+      remainingRef.current = Math.max(0, remainingRef.current - (now - last) / 1000);
+      last = now;
+      setLeft(remainingRef.current);
+      if (remainingRef.current <= 0 && !completedRef.current) {
+        completedRef.current = true;
+        clearInterval(i);
+        doneRef.current?.();
+      }
     }, 100);
     return () => clearInterval(i);
-  }, [running, seconds]);
+  }, [running, paused, seconds]);
+
   return left;
 }
 
@@ -140,7 +201,22 @@ export function useModeCtx(state, updateState) {
   const toggleStop = useCallback(() => {
     const cur = mgRef.current;
     if (cur.stop) {
-      setMg({ stop: false, stopBy: null, timer: timerResume(cur.timer) });
+      const pausedFor = Math.max(0, Date.now() - (cur.stopAt || Date.now()));
+      const missions = { ...(cur.missions || {}) };
+      Object.keys(missions).forEach((id) => {
+        if (missions[id]?.status === 'active' && missions[id].expiresAt) {
+          missions[id] = { ...missions[id], expiresAt: missions[id].expiresAt + pausedFor };
+        }
+      });
+      setMg({
+        stop: false,
+        stopBy: null,
+        timer: timerResume(cur.timer),
+        missions,
+        ...(cur.startedAt ? { startedAt: cur.startedAt + pausedFor } : {}),
+        ...(cur.actStartedAt ? { actStartedAt: cur.actStartedAt + pausedFor } : {}),
+        ...(cur.morningTimer ? { morningTimer: cur.morningTimer + pausedFor } : {}),
+      });
     } else {
       setMg({ stop: true, stopAt: Date.now(), timer: timerPause(cur.timer) });
     }

@@ -4,12 +4,12 @@
 // ===== 44-SQUARE BOARD =====
 const BOARD_SQUARES = [
   { type: 'street', name: 'START' },
-  { type: 'street', name: 'Δρόμος 1' },
+  { type: 'glitch', name: 'Base44 Glitch' },
   { type: 'glitch', name: 'Σφάλμα' },
   { type: 'street', name: 'Ο Καθρέφτης' },
   { type: 'street', name: 'Το Ψέμα' },
   { type: 'blackmarket', name: 'Μαύρη Αγορά' },
-  { type: 'street', name: 'Δρόμος 3' },
+  { type: 'police', name: 'Police HQ' },
   { type: 'safehouse', name: 'Κρησφύγετο' },
   { type: 'warrant', name: 'Ένταλμα' },
   { type: 'street', name: 'Η Σφραγίδα' },
@@ -18,13 +18,13 @@ const BOARD_SQUARES = [
   { type: 'street', name: 'Δρόμος 5' },
   { type: 'warrant', name: 'Ένταλμα' },
   { type: 'blackmarket', name: 'Μαύρη Αγορά' },
-  { type: 'street', name: 'Δρόμος 6' },
+  { type: 'warrant', name: 'Warrant' },
   { type: 'street', name: 'Η Μάρτυρας' },
   { type: 'safehouse', name: 'Κρησφύγετο' },
   { type: 'street', name: 'Δρόμος 7' },
   { type: 'warrant', name: 'Ένταλμα' },
   { type: 'glitch', name: 'Σφάλμα' },
-  { type: 'street', name: 'Δρόμος 8' },
+  { type: 'glitch', name: 'Base44 Glitch' },
   { type: 'police', name: 'Αστυνομία' },
   { type: 'blackmarket', name: 'Μαύρη Αγορά' },
   { type: 'street', name: 'Δρόμος 9' },
@@ -50,6 +50,9 @@ const BOARD_SQUARES = [
 ];
 
 export const BOARD = BOARD_SQUARES.map((sq, i) => ({ ...sq, position: i, zone: Math.floor(i / 11) + 1 }));
+
+// Το βασικό DEAL χρησιμοποιεί 24 κουτιά. Το πλήρες 44-base board παραμένει διαθέσιμο για Heist & Arrest.
+export const CLASSIC_BOARD = BOARD.slice(0, 24);
 
 export const SQUARE_TYPES = {
   street: { label: 'Street Truth/Dare', icon: '🎲', color: 'bg-yellow-300', desc: 'Τράβα κάρτα Αλήθειας ή Θάρρους. Αποτυχία ➔ +1 Λάθος στη Σκάλα Ποινών.' },

@@ -1,7 +1,7 @@
 // DEAL OF TEMPTATION - Shared Game Logic
-import { BOARD, getPenaltyLadder, FULL_PENALTY_LADDER, HIDDEN_ROLES } from '@/data/gameConfig';
+import { BOARD, CLASSIC_BOARD, getPenaltyLadder, FULL_PENALTY_LADDER, HIDDEN_ROLES } from '@/data/gameConfig';
 import {
-  STREET_TRUTHS, STREET_DARES, WARRANT_CARDS, GLITCH_CARDS,
+  PDF_STREET_TRUTHS, PDF_STREET_DARES, PDF_WARRANT_CARDS, PDF_GLITCH_CARDS,
   HARDCORE_TRUTHS, ULTIMATE_TRUTHS,
 } from '@/data/gameContent';
 import { isNewMode } from '@/data/modes/modeRegistry';
@@ -26,7 +26,17 @@ export function drawCard(type) {
 }
 
 export function getBoardSquare(position) {
+  return CLASSIC_BOARD[position % CLASSIC_BOARD.length];
+}
+
+export function getHeistBoardSquare(position) {
   return BOARD[position % BOARD.length];
+}
+
+export function drawHeistCard(type) {
+  const decks = { street_truth: PDF_STREET_TRUTHS, street_dare: PDF_STREET_DARES, warrant: PDF_WARRANT_CARDS, glitch: PDF_GLITCH_CARDS, hardcore: HARDCORE_TRUTHS, ultimate: ULTIMATE_TRUTHS };
+  const deck = decks[type] || [];
+  return deck.length ? deck[Math.floor(Math.random() * deck.length)] : null;
 }
 
 export function getSquareType(position) {

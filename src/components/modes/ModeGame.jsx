@@ -2,12 +2,14 @@ import React, { useEffect, useState } from 'react';
 import { loadModesContent } from '@/lib/modesContentStore';
 import ModeShell, { Panel, Btn } from '@/components/modes/ModeShell';
 import ActBoard from '@/components/modes/ActBoard';
+import ActPediGlam from '@/components/modes/ActPediGlam';
+import ActVilla48 from '@/components/modes/ActVilla48';
 import ActMidnight from '@/components/modes/ActMidnight';
 import ActLockdown from '@/components/modes/ActLockdown';
 import ActMorning from '@/components/modes/ActMorning';
 import BeachBarGame from '@/components/modes/BeachBarGame';
 import { modeMeta, ACT_META, MODE_THEMES } from '@/data/modes/modeRegistry';
-import { useModeCtx, useTick } from '@/lib/modeKit';
+import { useModeCtx, useTick, timerStart } from '@/lib/modeKit';
 import { COLLECTIONS, applyScenarioCollections } from '@/lib/modesContentStore';
 
 // Tablet (game master) για τα 4 νέα modes. Κάθε mode = λίστα από acts.
@@ -25,6 +27,9 @@ export default function ModeGame({ state, updateState, onEnd, onQR }) {
   }, [state.mode, state.customScenario?.id]);
   const ctx = useModeCtx(state, updateState);
   const { mg, setMg, log } = ctx;
+  useEffect(() => {
+    if (['pedi_glam', 'villa_48h'].includes(state.mode) && !mg.timer) setMg({ timer: timerStart((state.mode === 'villa_48h' ? 48 * 60 : 90) * 60) });
+  }, [state.mode, mg.timer, setMg]);
   const meta = modeMeta(state.mode);
   const acts = meta.acts;
   const actIndex = Math.min(mg.actIndex || 0, acts.length - 1);
@@ -50,6 +55,8 @@ export default function ModeGame({ state, updateState, onEnd, onQR }) {
 
   const elapsedMin = Math.floor((Date.now() - (mg.startedAt || Date.now())) / 60000);
   const elapsedLabel = `${Math.floor(elapsedMin / 60)}:${String(elapsedMin % 60).padStart(2, '0')}`;
+  const totalMinutes = meta.minutes || 300;
+  const totalLabel = `${Math.floor(totalMinutes / 60)}:${String(totalMinutes % 60).padStart(2, '0')}`;
   const actMinutes = (a) => meta.actDurations?.[a] ?? ACT_META[a].minutes;
 
   return (
@@ -68,7 +75,7 @@ export default function ModeGame({ state, updateState, onEnd, onQR }) {
           ))}
         </div>
       )}
-      <div className="text-xs opacity-60 text-right">Χρόνος παιχνιδιού: {elapsedLabel} / 5:00 ώρες</div>
+      <div className="text-xs opacity-60 text-right">Χρόνος παιχνιδιού: {elapsedLabel} / {totalLabel}</div>
       {state.customScenario && (
         <div className="rounded-lg border px-3 py-2 text-sm" style={{ borderColor: theme.accent, background: `${theme.accent}18` }}>
           <div className="font-heading" style={{ color: theme.accent2 }}>CUSTOM SCENARIO: {state.customScenario.name}</div>
@@ -77,6 +84,8 @@ export default function ModeGame({ state, updateState, onEnd, onQR }) {
         </div>
       )}
 
+      {act === 'villa' && <ActVilla48 ctx={ctx} onDone={finishAll} />}
+      {act === 'pedi_glam' && <ActPediGlam ctx={ctx} onDone={finishAll} />}
       {act === 'board' && <ActBoard ctx={ctx} onDone={nextAct} />}
       {act === 'midnight' && <ActMidnight ctx={ctx} onDone={nextAct} />}
       {act === 'lockdown' && <ActLockdown ctx={ctx} standalone={!multi} onDone={(res) => { setMg({ lockdownResult: res }); if (multi) nextAct(); else finishAll(); }} />}

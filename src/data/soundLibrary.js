@@ -1,10 +1,31 @@
 // Sound effects generated via Web Audio API — no external files needed.
 // Each sound is a function that takes an AudioContext and plays a tone sequence.
 
+const activeContexts = new Set();
+
+export function registerAudioContext(ctx) {
+  activeContexts.add(ctx);
+  return () => activeContexts.delete(ctx);
+}
+
+export function stopAllSounds() {
+  activeContexts.forEach((ctx) => {
+    try { ctx.close().catch(() => {}); } catch { /* already closed */ }
+  });
+  activeContexts.clear();
+}
+
+function closeCtx(ctx) {
+  activeContexts.delete(ctx);
+  return ctx.close().catch(() => {});
+}
+
 function createCtx() {
   const Ctx = window.AudioContext || window.webkitAudioContext;
   if (!Ctx) return null;
-  return new Ctx();
+  const ctx = new Ctx();
+  activeContexts.add(ctx);
+  return ctx;
 }
 
 function tone(ctx, dest, freq, start, duration, type = 'sine', volume = 0.3) {
@@ -28,7 +49,7 @@ export const SOUNDS = {
       const ctx = createCtx(); if (!ctx) return;
       const dest = ctx.destination;
       [220, 330, 440, 550].forEach((f, i) => tone(ctx, dest, f, i * 0.15, 0.4, 'sawtooth', 0.2));
-      setTimeout(() => ctx.close(), 2500);
+      setTimeout(() => closeCtx(ctx), 2500);
     },
   },
   suspense: {

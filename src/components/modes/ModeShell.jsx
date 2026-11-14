@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { MODE_THEMES, modeMeta, ACT_META } from '@/data/modes/modeRegistry';
-import { fmt, timerLeft, useTick } from '@/lib/modeKit';
+import { fmt, timerLeft, useTick, setGameStopActive } from '@/lib/modeKit';
 
 // Κοινό περίβλημα όλων των νέων modes: τίτλος, χρονόμετρο, ΣΤΟΠ για όλες, ημερολόγιο γεγονότων.
 export default function ModeShell({ modeId, ctx, act, children, onQR, onEnd, showTimer = true }) {
@@ -8,6 +8,7 @@ export default function ModeShell({ modeId, ctx, act, children, onQR, onEnd, sho
   const meta = modeMeta(modeId);
   const [showLog, setShowLog] = useState(false);
   const { mg, stopped, toggleStop } = ctx;
+  useEffect(() => { setGameStopActive(stopped); }, [stopped]);
   useTick(!!mg.timer && showTimer);
   const left = timerLeft(mg.timer);
   const danger = mg.timer && left <= 60;

@@ -8,7 +8,7 @@ import { isNewMode, modeMeta } from '@/data/modes/modeRegistry';
 import { MODE_COVERS, MODE_MEDIA } from '@/data/brandArt';
 import { COLLECTIONS } from '@/lib/modesContentStore';
 
-const SHOE_TO_LEVEL = { boots: 4, sneakers: 2, sandals: 1, barefoot: 0 };
+const SHOE_TO_LEVEL = { boots: 3, sneakers: 2, sandals: 1, barefoot: 0 };
 
 const NAIL_COLORS = ['Red', 'Pink', 'White', 'Black', 'Nude', 'French', 'Blue', 'Purple', 'Green', 'Orange', 'Gold', 'Silver', 'None'];
 

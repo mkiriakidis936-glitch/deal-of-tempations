@@ -1,8 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { useGameStopState } from '@/lib/modeKit';
 
 export default function PajamaTimer({ seconds, autoStart = false, onTick, onComplete }) {
   const [left, setLeft] = useState(seconds);
   const [running, setRunning] = useState(autoStart);
+  const gamePaused = useGameStopState();
   const firedRef = useRef(false);
 
   useEffect(() => {
@@ -12,10 +14,10 @@ export default function PajamaTimer({ seconds, autoStart = false, onTick, onComp
   }, [seconds, autoStart]);
 
   useEffect(() => {
-    if (!running || left <= 0) return;
+    if (!running || gamePaused || left <= 0) return;
     const t = setTimeout(() => setLeft((l) => l - 1), 1000);
     return () => clearTimeout(t);
-  }, [running, left]);
+  }, [running, left, gamePaused]);
 
   useEffect(() => {
     if (onTick) onTick(left);

@@ -1,6 +1,6 @@
 import React from 'react';
 import { cn } from '@/lib/utils';
-import { BOARD, SQUARE_TYPES } from '@/data/gameConfig';
+import { CLASSIC_BOARD, SQUARE_TYPES } from '@/data/gameConfig';
 
 const PLAYER_COLORS = [
   '#ef4444', '#3b82f6', '#22c55e', '#a855f7',
@@ -16,7 +16,7 @@ export function getPlayerColor(playerId) {
 export default function BoardView({ players = [], onSquareClick, compact = false }) {
   return (
     <div className={cn('grid gap-1', compact ? 'grid-cols-6 sm:grid-cols-11' : 'grid-cols-6 sm:grid-cols-11')}>
-      {BOARD.map((sq) => {
+      {CLASSIC_BOARD.map((sq) => {
         const typeInfo = SQUARE_TYPES[sq.type] || SQUARE_TYPES.street;
         const here = players.filter((p) => p.position === sq.position);
         return (
@@ -27,7 +27,6 @@ export default function BoardView({ players = [], onSquareClick, compact = false
               'aspect-square border rounded-sm relative flex flex-col items-center justify-center transition-colors duration-300 ease-lux',
               typeInfo.color,
               sq.position === 0 && 'border-primary/40',
-              sq.position === 43 && 'border-destructive/50',
               !sq.position && 'border-primary/12',
               onSquareClick && 'cursor-pointer hover:border-primary/45'
             )}

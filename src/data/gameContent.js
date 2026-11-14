@@ -195,6 +195,11 @@ export const EXTREME_PROTOCOLS = [
   { id: 'EP-10', name: 'The Unbroken Oath', icon: '🥂', duration: 30, desc: 'Κρατάει ποτήρι με νερό/ποτό γεμάτο μέχρι τον κάλυκα ενώ την γαργαλάνε. Αν χυθεί σταγόνα, +1 ποινή. 30″ αντοχής. Αν αντέξει, -1 ποινή.', ultra: { duration: 45, desc: 'ULTRA: 45″ + Διπλό γαργάλημα (2 φίλες). Ποτήρι γεμάτο μέχρι πάνω. Αν χυθεί σταγόνα, +2 ποινές ΚΑΙ ξαναγεμίζει. Αν αντέξει, -2 ποινές.' } },
 ];
 
+export const PDF_WARRANT_CARDS = WARRANT_CARDS.slice(0, 5);
+export const PDF_GLITCH_CARDS = GLITCH_CARDS.slice(0, 5);
+export const PDF_STREET_TRUTHS = STREET_TRUTHS.slice(0, 10);
+export const PDF_STREET_DARES = STREET_DARES.slice(0, 8);
+
 // ===== ARREST & HEIST - 6 DARES (18+) =====
 export const ARREST_HEIST_DARES = [
   { step: 1, name: 'Χορός στην Καρέκλα', text: 'Ανέβα στην καρέκλα στο ένα πόδι. Εκτέλεσε 30" αισθησιακό χορό κρατώντας ένα σφηνάκι αποκλειστικά με τα δόντια χωρίς να χυθεί σταγόνα.' },

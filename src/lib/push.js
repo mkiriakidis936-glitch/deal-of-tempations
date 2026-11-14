@@ -40,6 +40,27 @@ export async function enablePush() {
   await request('POST', '/api/push/subscribe', { subscription: sub.toJSON(), device: deviceLabel() });
 }
 
+export async function enablePlayerPush(sessionCode, playerId) {
+  if (!sessionCode || !playerId) throw new Error('Δεν έχει επιλεγεί συνεδρία και παίκτρια.');
+  if (!pushSupported()) throw new Error('Η συσκευή ή ο browser δεν υποστηρίζει ειδοποιήσεις push.');
+  if (isIOS() && !isStandalone()) throw new Error('Σε iPhone/iPad πρόσθεσε πρώτα το παιχνίδι στην Αφετηρία και άνοιξέ το από το εικονίδιο της εφαρμογής.');
+  const reg = await navigator.serviceWorker.ready;
+  const perm = await Notification.requestPermission();
+  if (perm !== 'granted') throw new Error('Οι ειδοποιήσεις είναι απενεργοποιημένες στις ρυθμίσεις της συσκευής.');
+  const { key } = await request('GET', '/api/push/public-key');
+  let sub = await reg.pushManager.getSubscription();
+  if (!sub) {
+    sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: toKey(key) });
+  }
+  await request('POST', '/api/push/player-subscribe', {
+    subscription: sub.toJSON(),
+    sessionCode,
+    playerId,
+    device: deviceLabel(),
+  });
+  return true;
+}
+
 export async function disablePush() {
   const sub = await currentSubscription();
   if (!sub) return;

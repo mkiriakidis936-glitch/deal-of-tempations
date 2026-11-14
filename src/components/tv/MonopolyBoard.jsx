@@ -3,9 +3,9 @@ import { BOARD, SQUARE_TYPES } from '@/data/gameConfig';
 import { getPlayerColor } from '@/components/shared/BoardView';
 import { cn } from '@/lib/utils';
 
-export default function MonopolyBoard({ players = [], large = false }) {
-  const size = 12;
-  const total = BOARD.length;
+export default function MonopolyBoard({ players = [], large = false, board = BOARD }) {
+  const size = board.length === 24 ? 7 : 12;
+  const total = board.length;
 
   function getPos(i) {
     const bottom = size;
@@ -19,7 +19,7 @@ export default function MonopolyBoard({ players = [], large = false }) {
   }
 
   const grid = Array.from({ length: size }, () => Array.from({ length: size }, () => null));
-  BOARD.forEach((sq, i) => {
+  board.forEach((sq, i) => {
     const { row, col } = getPos(i);
     grid[row][col] = { ...sq, index: i };
   });

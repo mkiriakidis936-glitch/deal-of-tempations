@@ -3,7 +3,7 @@ import { Panel, Btn, RestraintNote } from '@/components/modes/ModeShell';
 import MissionPanel from '@/components/modes/MissionPanel';
 import {
   GATE_TOKENS, EXT_END, EXT_PORTAL, EXT_ZONES, squareType, zoneOf, ROUTES,
-  GLAM_CARDS, CHAOS_CARDS, CHAOS_POWERS, SHOP, SECRET_MISSIONS,
+  EXTENDED_GLAM_CARDS, EXTENDED_CHAOS_CARDS, EXTENDED_CHAOS_MARKET_CARDS, SHOP, EXTENDED_SECRET_MISSIONS,
 } from '@/data/modes/extendedContent';
 import { pick, sfx, useLocalCountdown } from '@/lib/modeKit';
 
@@ -24,6 +24,11 @@ export default function ActBoard({ ctx, onDone }) {
 
   function nextTurn(fromIdx, fin, skipList) {
     const skip = [...skipList];
+    const sockConfiscation = { ...(mg.sockConfiscation || {}) };
+    const silenceCurses = { ...(mg.silenceCurses || {}) };
+    const justPlayed = players[fromIdx]?.id;
+    if (justPlayed && sockConfiscation[justPlayed] > 0) sockConfiscation[justPlayed] -= 1;
+    if (justPlayed && silenceCurses[justPlayed] > 0) silenceCurses[justPlayed] -= 1;
     let idx = fromIdx;
     for (let n = 0; n < players.length * 2; n += 1) {
       idx = (idx + 1) % players.length;
@@ -31,20 +36,23 @@ export default function ActBoard({ ctx, onDone }) {
       if (fin.includes(p.id)) continue;
       const si = skip.indexOf(p.id);
       if (si >= 0) { skip.splice(si, 1); continue; }
-      return { turn: idx, skip };
+      return { turn: idx, skip, sockConfiscation, silenceCurses };
     }
-    return { turn: fromIdx, skip };
+    return { turn: fromIdx, skip, sockConfiscation, silenceCurses };
   }
 
   function draw(player, forcedRoute) {
     const r = routes[player.id];
     const route = forcedRoute || (r && r.left > 0 ? r.route : 'glam');
-    const deck = route === 'chaos' ? CHAOS_CARDS : GLAM_CARDS;
+    const deck = route === 'chaos' ? EXTENDED_CHAOS_CARDS : EXTENDED_GLAM_CARDS;
     let used = mg.usedCards || [];
     let pool = deck.filter((c) => !used.includes(c.id));
     if (!pool.length) { used = used.filter((id) => !deck.some((c) => c.id === id)); pool = deck; }
-    const card = pick(pool);
+    const drawn = pick(pool);
+    const doubled = !!(mg.doublePenaltyNext || {})[player.id] && !!drawn.secs;
+    const card = doubled ? { ...drawn, secs: drawn.secs * 2 } : drawn;
     const patch = { card: { ...card, route, playerId: player.id, at: Date.now() }, usedCards: [...used, card.id] };
+    if (doubled) { const nextDouble = { ...(mg.doublePenaltyNext || {}) }; delete nextDouble[player.id]; patch.doublePenaltyNext = nextDouble; }
     if (forcedRoute) patch.routes = { ...routes, [player.id]: { route: forcedRoute, left: ROUTES[forcedRoute].steps - 1 } };
     else if (r && r.left > 0) patch.routes = { ...routes, [player.id]: { ...r, left: r.left - 1 } };
     if (route === 'chaos') patch.chaosUsed = { ...(mg.chaosUsed || {}), [player.id]: true };
@@ -89,15 +97,18 @@ export default function ActBoard({ ctx, onDone }) {
     const c = mg.card;
     if (!c) return;
     const p = players.find((x) => x.id === c.playerId);
-    const reward = c.free ? 1 : ROUTES[c.route].reward;
+    const reward = c.reward || (c.free ? 1 : ROUTES[c.route].reward);
     const t = { ...tokens };
     const scores = { ...(mg.scores || {}) };
     const patch = { card: null };
+    const immune = [...(mg.immune || [])];
+    const shielded = !ok && immune.includes(p.id);
+    if (shielded) { immune.splice(immune.indexOf(p.id), 1); patch.immune = immune; }
     if (ok) {
       t[p.id] = (t[p.id] || 0) + reward;
       scores[p.id] = (scores[p.id] || 0) + reward * 5;
-      if (c.giveChaos) patch.chaosCards = { ...chaosCards, [p.id]: [...(chaosCards[p.id] || []), pick(CHAOS_POWERS).id] };
-    } else if (c.route === 'chaos') {
+      if (c.giveChaos) patch.chaosCards = { ...chaosCards, [p.id]: [...(chaosCards[p.id] || []), pick(EXTENDED_CHAOS_MARKET_CARDS).id] };
+    } else if (!shielded && c.route === 'chaos') {
       t[p.id] = Math.max(0, (t[p.id] || 0) - 1);
     }
     Object.assign(patch, { tokens: t, scores }, nextTurn(turn, finished, mg.skip || []));
@@ -174,7 +185,7 @@ export default function ActBoard({ ctx, onDone }) {
         </Panel>
       )}
 
-      {mg.card && <CardStage card={mg.card} who={nameOf(mg.card.playerId)} immune={(mg.immune || []).includes(mg.card.playerId)} onResolve={resolve} onImmunity={payImmunity} canPay={(tokens[mg.card.playerId] || 0) >= 2} />}
+      {mg.card && <CardStage card={mg.card} who={nameOf(mg.card.playerId)} players={players} tokens={tokens} immune={(mg.immune || []).includes(mg.card.playerId)} onResolve={resolve} onImmunity={payImmunity} stopped={stopped} onRansom={(buyerId) => { const nextTokens = { ...tokens, [buyerId]: Math.max(0, (tokens[buyerId] || 0) - 2) }; setMg({ card: null, tokens: nextTokens, ...nextTurn(turn, finished, mg.skip || []) }); log(nameOf(buyerId) + ' εξαγόρασε την κάρτα Hogtie Ransom με 2 Tokens.'); }} canPay={(tokens[mg.card.playerId] || 0) >= 2} />}
 
       {!mg.card && !mg.branch && !allDone && (
         <div className="text-center">
@@ -192,7 +203,7 @@ export default function ActBoard({ ctx, onDone }) {
             const r = routes[p.id];
             return (
               <div key={p.id} className={`flex items-center gap-2 text-sm rounded px-2 py-1 ${p.id === cur?.id ? 'bg-primary/20' : 'bg-background/40'}`}>
-                <b className="flex-1 truncate">{p.name}{finished.includes(p.id) ? ' 👑' : ''}</b>
+                <b className="flex-1 truncate">{p.name}{finished.includes(p.id) ? ' 👑' : ''}{(mg.sockConfiscation || {})[p.id] > 0 ? ' 🧦' : ''}{(mg.silenceCurses || {})[p.id] > 0 ? ' 🤫' : ''}</b>
                 <span className="opacity-70 text-xs">#{pos[p.id] || 0}{r?.left > 0 ? ` · ${ROUTES[r.route].icon}` : ''}</span>
                 <span className="font-heading">{t}🪙</span>
                 <span className="w-16 h-2 rounded bg-foreground/10 overflow-hidden"><i className="block h-full bg-yellow-400" style={{ width: `${Math.min(100, (t / GATE_TOKENS) * 100)}%` }} /></span>
@@ -204,7 +215,7 @@ export default function ActBoard({ ctx, onDone }) {
             );
           })}
         </div>
-        <div className="text-xs opacity-70">Πύλη Act 2 / Lockdown: χρειάζονται {GATE_TOKENS} tokens ανά παίκτρια ({gateOpen}/{players.length} έτοιμες).</div>
+        <div className="text-xs opacity-70">Πύλη Act 2 / Lockdown: χρειάζονται {GATE_TOKENS} tokens ανά παίκτρια ({gateOpen}/{players.length} έτοιμες). 🧦 = Sock Confiscation · 🤫 = Silence Curse.</div>
       </Panel>
 
       <Market ctx={ctx} cur={cur} />
@@ -212,7 +223,7 @@ export default function ActBoard({ ctx, onDone }) {
 
       <MissionPanel
         ctx={ctx}
-        pool={SECRET_MISSIONS}
+        pool={EXTENDED_SECRET_MISSIONS}
         onSuccess={(m, pid) => {
           const t = { ...(ctx.mg.tokens || {}) };
           t[pid] = (t[pid] || 0) + m.reward;
@@ -239,8 +250,9 @@ export default function ActBoard({ ctx, onDone }) {
   );
 }
 
-function CardStage({ card, who, immune, onResolve, onImmunity, canPay }) {
+function CardStage({ card, who, players, tokens, immune, onResolve, onImmunity, onRansom, canPay, stopped }) {
   const [run, setRun] = useState(false);
+  const [ransomBuyer, setRansomBuyer] = useState(card.playerId);
   const left = useLocalCountdown(card.secs || 0, run, () => { sfx.alarm(); setRun(false); });
   const r = ROUTES[card.route];
   return (
@@ -251,18 +263,26 @@ function CardStage({ card, who, immune, onResolve, onImmunity, canPay }) {
       {card.restraint && <RestraintNote />}
       {card.secs ? (
         <div className="flex items-center gap-3">
-          <Btn color="bg-sky-700" onClick={() => setRun(true)} disabled={run}>⏱ {Math.ceil(run ? left : card.secs)}″</Btn>
+          <Btn color="bg-sky-700" onClick={() => setRun(true)} disabled={run || stopped}>⏱ {Math.ceil(run ? left : card.secs)}″</Btn>
         </div>
       ) : null}
+      {card.title === 'The Hogtie Ransom' && (
+        <div className="flex flex-wrap gap-2 items-center">
+          <select value={ransomBuyer} onChange={(e) => setRansomBuyer(e.target.value)} disabled={stopped} className="rounded bg-background border border-border p-2 text-sm">
+            {players.map((p) => <option key={p.id} value={p.id}>{p.name} ({tokens[p.id] || 0}🪙)</option>)}
+          </select>
+          <Btn color="bg-yellow-700" disabled={stopped || (tokens[ransomBuyer] || 0) < 2} onClick={() => onRansom(ransomBuyer)}>ΕΞΑΓΟΡΑ · 2 TOKENS</Btn>
+        </div>
+      )}
       {card.trap && (
         <div className="flex flex-wrap gap-2">
-          <Btn color="bg-yellow-600 text-black" disabled={!canPay} onClick={() => onImmunity(false)}>🪙 Πλήρωσε 2 για ασυλία</Btn>
-          {immune && <Btn color="bg-yellow-600 text-black" onClick={() => onImmunity(true)}>🛡️ Χρήση ασυλίας</Btn>}
+          <Btn color="bg-yellow-600 text-black" disabled={stopped || !canPay} onClick={() => onImmunity(false)}>🪙 Πλήρωσε 2 για ασυλία</Btn>
+          {immune && <Btn color="bg-yellow-600 text-black" onClick={() => onImmunity(true)} disabled={stopped}>🛡️ Χρήση ασυλίας</Btn>}
         </div>
       )}
       <div className="flex gap-2">
-        <Btn color="bg-emerald-700" onClick={() => onResolve(true)}>✅ Επιτυχία</Btn>
-        <Btn color="bg-red-800" onClick={() => onResolve(false)}>❌ Αποτυχία</Btn>
+        <Btn color="bg-emerald-700" onClick={() => onResolve(true)} disabled={stopped}>✅ Επιτυχία</Btn>
+        <Btn color="bg-red-800" onClick={() => onResolve(false)} disabled={stopped}>❌ Αποτυχία</Btn>
       </div>
     </Panel>
   );
@@ -280,7 +300,7 @@ function Market({ ctx, cur }) {
     const t = { ...tokens, [b]: tokens[b] - item.cost };
     const patch = { tokens: t };
     if (item.id === 'immunity') patch.immune = [...(mg.immune || []), b];
-    if (item.id === 'chaos') patch.chaosCards = { ...(mg.chaosCards || {}), [b]: [...((mg.chaosCards || {})[b] || []), pick(CHAOS_POWERS).id] };
+    if (item.id === 'chaos') patch.chaosCards = { ...(mg.chaosCards || {}), [b]: [...((mg.chaosCards || {})[b] || []), pick(EXTENDED_CHAOS_MARKET_CARDS).id] };
     if (item.id === 'skip') patch.skips = { ...(mg.skips || {}), [b]: ((mg.skips || {})[b] || 0) + 1 };
     if (item.id === 'hint') patch.hints = { ...(mg.hints || {}), [b]: ((mg.hints || {})[b] || 0) + 1 };
     if (item.id === 'bribe') {
@@ -335,20 +355,37 @@ function ChaosHand({ ctx }) {
 
   function use(owner, idx) {
     const powerId = hands[owner.id][idx];
-    const power = CHAOS_POWERS.find((x) => x.id === powerId);
+    const power = EXTENDED_CHAOS_MARKET_CARDS.find((x) => x.id === powerId);
     const target = targets[owner.id] || players.find((p) => p.id !== owner.id)?.id;
     if (!power || !target) return;
     const rest = hands[owner.id].filter((_, i) => i !== idx);
     const patch = { chaosCards: { ...hands, [owner.id]: rest } };
-    if (power.id === 'skip') patch.skip = [...(mg.skip || []), target];
-    if (power.id === 'swap') {
+    if (power.id === 'reverse') {
+      patch.reverseNextPenalty = { ...(mg.reverseNextPenalty || {}), [owner.id]: true };
+      if (mg.attack?.to === owner.id) patch.attack = { ...mg.attack, from: owner.id, to: mg.attack.from, reversed: true };
+    }
+    if (power.id === 'token_tax') {
+      const richest = players.filter((p) => p.id !== owner.id).sort((a, b) => ((mg.tokens || {})[b.id] || 0) - ((mg.tokens || {})[a.id] || 0))[0];
+      const balances = { ...(mg.tokens || {}) };
+      if (richest) {
+        const taken = Math.min(2, balances[richest.id] || 0);
+        balances[richest.id] = (balances[richest.id] || 0) - taken;
+        balances[owner.id] = (balances[owner.id] || 0) + taken;
+      }
+      patch.tokens = balances;
+    }
+    if (power.id === 'double_tickle') patch.doublePenaltyNext = { ...(mg.doublePenaltyNext || {}), [target]: true };
+    if (power.id === 'forced_route') patch.routes = { ...(mg.routes || {}), [target]: { route: 'chaos', left: 3 } };
+    if (power.id === 'sock_confiscation') patch.sockConfiscation = { ...(mg.sockConfiscation || {}), [target]: 3 };
+    if (power.id === 'hostage_swap') {
       const pos = { ...(mg.pos || {}) };
       const a = pos[owner.id] || 0;
       pos[owner.id] = pos[target] || 0;
       pos[target] = a;
       patch.pos = pos;
     }
-    if (power.id === 'tickle') patch.attack = { from: owner.id, to: target, at: Date.now() };
+    if (power.id === 'silence_curse') patch.silenceCurses = { ...(mg.silenceCurses || {}), [target]: 2 };
+    if (power.id === 'glam_shield') patch.immune = [...(mg.immune || []), owner.id];
     setMg(patch);
     log(`🃏 ${owner.name} έπαιξε «${power.name}» στην ${nameOf(target)}`);
   }
@@ -367,7 +404,7 @@ function ChaosHand({ ctx }) {
             {players.filter((p) => p.id !== o.id).map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
           </select>
           {hands[o.id].map((pid, i) => {
-            const pw = CHAOS_POWERS.find((x) => x.id === pid);
+            const pw = EXTENDED_CHAOS_MARKET_CARDS.find((x) => x.id === pid);
             return <Btn key={i} className="!py-1" color="bg-red-900" onClick={() => use(o, i)}>{pw?.icon} {pw?.name}</Btn>;
           })}
         </div>

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { cn } from '@/lib/utils';
+import { useGameStopState } from '@/lib/modeKit';
 
 export default function Timer({
   duration,
@@ -11,6 +12,7 @@ export default function Timer({
   frozen = false,
 }) {
   const [remaining, setRemaining] = useState(duration);
+  const gamePaused = useGameStopState();
   const intervalRef = useRef(null);
   const onCompleteRef = useRef(onComplete);
 
@@ -19,7 +21,7 @@ export default function Timer({
   useEffect(() => { setRemaining(duration); }, [duration]);
 
   useEffect(() => {
-    if (running && !frozen && remaining > 0) {
+    if (running && !frozen && !gamePaused && remaining > 0) {
       intervalRef.current = setInterval(() => {
         setRemaining((prev) => {
           if (prev <= 0.1) {
@@ -34,7 +36,7 @@ export default function Timer({
       clearInterval(intervalRef.current);
     }
     return () => clearInterval(intervalRef.current);
-  }, [running, frozen]);
+  }, [running, frozen, gamePaused]);
 
   const pct = duration > 0 ? (remaining / duration) * 100 : 0;
   const isDanger = remaining <= 10 && remaining > 0;
