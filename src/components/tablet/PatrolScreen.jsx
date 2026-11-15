@@ -176,7 +176,7 @@ export default function PatrolScreen({ state, updateState, onGoToStage2, playerP
           <ComicPanel className="py-8 text-center">
             <div className="ds-label">Ρίξε ζάρι για</div>
             <div className="ds-title mb-5 mt-2 text-2xl text-foreground">{currentPlayer.name}</div>
-            <ComicButton variant="yellow" size="lg" onClick={handleRollDice} className="text-4xl">
+            <ComicButton variant="yellow" size="lg" onClick={handleRollDice} disabled={!playerProfilesReady} className="text-4xl">
               🎲 ΡΙΞΕ ΖΑΡΙ
             </ComicButton>
           </ComicPanel>
@@ -201,7 +201,7 @@ export default function PatrolScreen({ state, updateState, onGoToStage2, playerP
             {square.type === 'police' && (
               <div className="text-center">
                 <div className="font-heading text-lg mb-2 text-foreground">🚔 ΣΥΛΛΗΨΗ! Πάς για Ανάκριση.</div>
-                <ComicButton variant="red" size="lg" onClick={() => {
+                <ComicButton variant="red" size="lg" disabled={!playerProfilesReady} onClick={() => {
                   if (canAssignVipActivity(vipCtx, currentPlayer, { activityType: 'questions', activityLabel: 'ανάκριση' })) onGoToStage2();
                   else handleNextPlayer();
                 }}>
@@ -251,7 +251,7 @@ export default function PatrolScreen({ state, updateState, onGoToStage2, playerP
                     </button>
                   ))}
                 </div>
-                {state.players.filter((p) => p.id !== currentPlayer.id && isVipActivityAllowed(vipCtx, p)).length === 0 && (
+                {playerProfilesReady && state.players.filter((p) => p.id !== currentPlayer.id && isVipActivityAllowed(vipCtx, p)).length === 0 && (
                   <ComicButton variant="white" size="md" onClick={handleNextPlayer}>ΠΑΡΑΛΕΙΨΗ ΕΝΤΑΛΜΑΤΟΣ</ComicButton>
                 )}
               </div>
