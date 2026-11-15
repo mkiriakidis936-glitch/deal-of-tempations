@@ -31,6 +31,7 @@ import AdminFormsBuilder from '@/components/admin/AdminFormsBuilder';
 import AdminNotifications from '@/components/admin/AdminNotifications';
 import AdminVisits from '@/components/admin/AdminVisits';
 import AdminDigitalInvitations from '@/components/admin/AdminDigitalInvitations';
+import AdminExtra4 from '@/components/admin/AdminExtra4';
 import { setActiveSessionCode } from '@/lib/activeSession';
 
 const NAV_GROUPS = [
@@ -81,6 +82,7 @@ const NAV_GROUPS = [
     id: 'live-control',
     label: '06 · LIVE CONTROL',
     tabs: [
+      { id: 'extra4', label: '✦ EXTRA 4.0' },
       { id: 'live', label: '⏯️ Ζωντανός έλεγχος' },
     ],
   },
@@ -276,6 +278,8 @@ export default function Admin() {
         );
       case 'casting':
         return <AdminShowCasting />;
+      case 'extra4':
+        return <AdminExtra4 sessions={sessions} selectedSession={activeSession} onSelect={selectSession} onNavigate={setTab} />;
       case 'players':
       case 'live':
         return (
