@@ -491,7 +491,9 @@ export function entityRoutes() {
       } else if (role === 'tv' && requestRestart === true) {
         nextFeed = { ...nextFeed, answer: null, restartRequest: (Number(currentFeed.restartRequest) || 0) + 1, status: 'reconnecting' };
       } else if (role === 'source' && connected === true) {
-        nextFeed = { ...nextFeed, status: 'connected' };
+        nextFeed = { ...nextFeed, status: 'connected', cameraEnabled: true };
+      } else if (role === 'source' && connected === false) {
+        nextFeed = { ...nextFeed, status: 'reconnecting', cameraEnabled: false, microphoneEnabled: false, answer: null };
       } else {
         await client.query('ROLLBACK');
         return res.status(400).json({ error: 'Unsupported live feed signal' });
