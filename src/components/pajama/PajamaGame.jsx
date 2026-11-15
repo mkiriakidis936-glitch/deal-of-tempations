@@ -590,7 +590,13 @@ export default function PajamaGame({ state, updateState, onEnd, playerProfiles =
       <PajamaGiftTrial
         players={players.filter((player) => isVipActivityAllowed(vipCtx, player))}
         canAssign={(player) => canAssignVipActivity(vipCtx, player, { activityLabel: 'ομαδική δοκιμασία δώρου' })}
-        canStart={(sacrificedId) => players.filter((player) => player.id !== sacrificedId && isVipActivityAllowed(vipCtx, player)).every((player) => canAssignVipActivity(vipCtx, player, { activityLabel: 'συμμετοχή στην ομαδική δοκιμασία δώρου' }))}
+        canStart={(sacrificedId) => {
+          const approved = [];
+          for (const player of players.filter((item) => item.id !== sacrificedId && isVipActivityAllowed(vipCtx, item))) {
+            if (canAssignVipActivity(vipCtx, player, { activityLabel: 'συμμετοχή στην ομαδική δοκιμασία δώρου' })) approved.push(player);
+          }
+          return approved;
+        }}
         onDone={(gift) => setPj({ gift, phase: 'finale' })}
       />
     );
