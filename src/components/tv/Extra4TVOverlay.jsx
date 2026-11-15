@@ -4,6 +4,7 @@ export default function Extra4TVOverlay({ state }) {
   const extra4 = state?.extra4 || {};
   const status = extra4.control?.status;
   const card = extra4.cards?.activeCard;
+  const activity = extra4.activity?.active?.status === 'active' ? extra4.activity.active : null;
   const feed = extra4.liveFeed;
   const scene = extra4.scenes?.current;
   const [replay, setReplay] = useState(false);
@@ -30,6 +31,7 @@ export default function Extra4TVOverlay({ state }) {
         ISOLATION CHAMBER · ΑΝΑΜΟΝΗ ΣΥΝΑΙΝΕΣΗΣ
       </div>
     )}
+    {activity && status !== 'emergency' && <div className="fixed bottom-4 left-1/2 z-[87] -translate-x-1/2 rounded-xl border border-primary/60 bg-black/90 px-5 py-3 text-center text-sm text-primary">ACTIVITY · {activity.label}{activity.result ? ` · ${activity.result.toUpperCase()}` : ''}</div>}
     {card && (
       <div className="fixed inset-0 z-[90] flex items-center justify-center bg-black/85 p-5">
         <div className="w-full max-w-3xl rounded-2xl border-2 border-primary bg-card p-8 text-center shadow-2xl">
