@@ -48,6 +48,10 @@ export default function FinaleScreen({ state, updateState, onEnd, playerProfiles
     onEnd();
   }
 
+  if (!playerProfilesReady) {
+    return <div className="min-h-screen flex items-center justify-center comic-dots p-6"><div className="font-heading text-xl">Φόρτωση ιδιωτικών VIP προτιμήσεων…</div></div>;
+  }
+
   return (
     <div className="min-h-screen comic-dots p-3 pb-24">
       <div className="mx-auto max-w-3xl space-y-3">
