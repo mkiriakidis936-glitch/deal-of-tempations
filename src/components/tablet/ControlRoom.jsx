@@ -194,6 +194,7 @@ export default function ControlRoom({ state, playerProfiles = [], onStartSurpris
               const answers = profile.vipProfile?.answers || {};
               const preferences = answers.activityPreferences || {};
               const wish = String(answers.surpriseWish || '').trim();
+              const surpriseAllowed = answers.activeParticipation !== 'no' && preferences.surprises === 'yes' && answers.unexpectedChallenge !== 'no';
               return (
                 <div key={profile.playerId} className="rounded-lg border border-primary/20 bg-secondary p-3 space-y-2">
                   <div className="font-heading text-base text-primary">{profile.name}</div>
@@ -221,11 +222,12 @@ export default function ControlRoom({ state, playerProfiles = [], onStartSurpris
                         variant="purple"
                         size="sm"
                         className="mt-2 w-full"
-                        disabled={answers.activeParticipation === 'no' || !onStartSurprise || !onRevealSurprise}
+                        disabled={!surpriseAllowed || !onStartSurprise || !onRevealSurprise}
                         onClick={() => { setPendingProfile(profile); onStartSurprise?.(profile); }}
                       >
                         ΠΡΟΕΤΟΙΜΑΣΙΑ ΠΡΟΣΩΠΙΚΗΣ ΕΚΠΛΗΞΗΣ
                       </ComicButton>
+                      {!surpriseAllowed && <div className="mt-1 text-[10px] text-foreground/50">Δεν έχουν δοθεί όλες οι απαιτούμενες θετικές επιλογές για έκπληξη.</div>}
                     </div>
                   )}
                 </div>
