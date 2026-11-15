@@ -1,4 +1,4 @@
-const normalizeName = (value) => String(value || '').trim().toLocaleLowerCase('el-GR');
+const normalizeName = (value) => String(value || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\s+/g, ' ').trim().toLocaleLowerCase('el-GR');
 
 export function getVipAnswers(ctx, player) {
   const playerId = player?.id || player?.playerId;
