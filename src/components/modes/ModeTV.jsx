@@ -11,7 +11,7 @@ export default function ModeTV({ state }) {
   const theme = MODE_THEMES[state.mode];
   const players = state.players || [];
   const act = meta.acts[Math.min(mg.actIndex || 0, meta.acts.length - 1)];
-  useEffect(() => { setGameStopActive(!!mg.stop); }, [mg.stop]);
+  useEffect(() => { setGameStopActive(!!(mg.stop || state.stopActive || ['paused', 'emergency'].includes(state.extra4?.control?.status))); }, [mg.stop, state.stopActive, state.extra4?.control?.status]);
   useTick(true, 500);
   const left = timerLeft(mg.timer);
   const ld = mg.ld || {};
