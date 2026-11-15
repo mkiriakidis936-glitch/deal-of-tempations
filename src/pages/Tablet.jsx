@@ -120,7 +120,7 @@ export default function Tablet() {
   }, [session?.id]);
 
   const playerProfiles = React.useMemo(() => {
-    const normalize = (value) => String(value || '').trim().toLocaleLowerCase('el-GR');
+    const normalize = (value) => String(value || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\s+/g, ' ').trim().toLocaleLowerCase('el-GR');
     return (state?.players || []).map((player) => {
       const intake = intakeProfiles.find((item) =>
         normalize(item.name) === normalize(player.name) ||
