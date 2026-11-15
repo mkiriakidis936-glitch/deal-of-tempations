@@ -243,6 +243,8 @@ export default function Tablet() {
   const displayState = { ...state, sessionCode: session.sessionCode };
 
   async function startPersonalizedSurprise(profile) {
+    const answers = profile.vipProfile?.answers || {};
+    if (answers.activeParticipation === 'no' || answers.activityPreferences?.surprises !== 'yes' || answers.unexpectedChallenge === 'no') return;
     await trackedUpdate({
       showMode: {
         ...(state.showMode || {}),
@@ -258,7 +260,7 @@ export default function Tablet() {
   async function revealPersonalizedSurprise(profile) {
     const answers = profile.vipProfile?.answers || {};
     const wish = String(answers.surpriseWish || '').trim();
-    if (!wish || answers.activeParticipation === 'no') return;
+    if (!wish || answers.activeParticipation === 'no' || answers.activityPreferences?.surprises !== 'yes' || answers.unexpectedChallenge === 'no') return;
     await trackedUpdate({
       showMode: {
         ...(state.showMode || {}),
