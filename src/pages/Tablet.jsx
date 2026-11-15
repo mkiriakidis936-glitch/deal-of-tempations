@@ -251,6 +251,10 @@ export default function Tablet() {
     });
   }
 
+  async function cancelPersonalizedSurprise() {
+    await trackedUpdate({ showMode: { ...(state.showMode || {}), reveal: null } });
+  }
+
   async function revealPersonalizedSurprise(profile) {
     const answers = profile.vipProfile?.answers || {};
     const wish = String(answers.surpriseWish || '').trim();
@@ -282,6 +286,7 @@ export default function Tablet() {
             playerProfiles={playerProfiles}
             onStartSurprise={startPersonalizedSurprise}
             onRevealSurprise={revealPersonalizedSurprise}
+            onCancelSurprise={cancelPersonalizedSurprise}
             onOpen={(key) => setOverlay(key)}
             onRefresh={refresh}
             onEndGame={() => { setOverlay(null); archiveAndDelete(); }}
@@ -523,6 +528,7 @@ export default function Tablet() {
           playerProfiles={playerProfiles}
           onStartSurprise={startPersonalizedSurprise}
           onRevealSurprise={revealPersonalizedSurprise}
+          onCancelSurprise={cancelPersonalizedSurprise}
           onOpen={(key) => setOverlay(key)}
           onRefresh={refresh}
           onEndGame={() => { setOverlay(null); archiveAndDelete(); }}
