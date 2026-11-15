@@ -305,6 +305,7 @@ export default function PajamaGame({ state, updateState, onEnd, playerProfiles =
   }
 
   function rollAndMove() {
+    if (!playerProfilesReady) return;
     const player = players[pj.turnIndex];
     if (!player || pj.activeCard) return;
 
