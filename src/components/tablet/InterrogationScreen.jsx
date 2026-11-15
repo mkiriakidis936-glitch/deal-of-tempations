@@ -111,6 +111,10 @@ export default function InterrogationScreen({ state, updateState, onRelease, onG
     setShowPrisonBreak(false);
   }
 
+  if (!playerProfilesReady) {
+    return <div className="min-h-screen flex items-center justify-center comic-dots p-6"><div className="font-heading text-xl">Φόρτωση ιδιωτικών VIP προτιμήσεων…</div></div>;
+  }
+
   if (showMugshot && tiedPlayer) {
     return <MugshotScreen player={tiedPlayer} onContinue={() => setShowMugshot(false)} />;
   }
