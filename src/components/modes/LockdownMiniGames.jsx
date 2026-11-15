@@ -269,13 +269,19 @@ const COMPONENTS = {
 };
 
 // Launcher: διαλέγεις mini-game, παίζεται, και η ποινή εφαρμόζεται αυτόματα στο timer.
-export default function LockdownMiniGames({ onPenalty, onWheel, onClose }) {
+export default function LockdownMiniGames({ onPenalty, onWheel, onClose, safeOnly = false, allowedIds = null, onComplete }) {
+  const safeIds = ['glitch', 'memory', 'truth', 'decibel', 'lockpick', 'shake', 'cipher'];
+  const ids = Array.isArray(allowedIds) ? allowedIds : safeIds;
+  const availableGames = safeOnly
+    ? MINI_GAMES.filter((item) => safeIds.includes(item.id) && ids.includes(item.id)).map((item) => ({ ...item, desc: item.id === 'decibel' ? '30″ απόλυτη σιωπή με ενεργό μικρόφωνο μόνο μετά από συναίνεση.' : item.desc, fail: 'Η ψηφιακή πρόκληση δεν ολοκληρώθηκε.', failSecs: 0, wheel: false }))
+    : (Array.isArray(allowedIds) ? MINI_GAMES.filter((item) => allowedIds.includes(item.id)) : MINI_GAMES);
   const [game, setGame] = useState(null);
   const [result, setResult] = useState(null);
   const G = game ? COMPONENTS[game.id] : null;
 
   function done(ok) {
     setResult(ok);
+    onComplete?.(ok, game);
     if (ok) { sfx.ok(); return; }
     sfx.fail();
     if (game.failSecs) onPenalty(game.failSecs, game);
@@ -286,13 +292,13 @@ export default function LockdownMiniGames({ onPenalty, onWheel, onClose }) {
     <Panel title="🎮 Digital Mini-Games" accent="#FF003C">
       {!game && (
         <div className="grid sm:grid-cols-2 gap-2">
-          {MINI_GAMES.map((g) => (
+          {availableGames.map((g) => (
             <button key={g.id} onClick={() => { setGame(g); setResult(null); }} className="comic-boom bg-red-950/70 text-left p-2">
               <div className="font-heading text-sm">{g.icon} {g.name}</div>
               <div className="text-xs opacity-75">{g.desc}</div>
             </button>
           ))}
-          <Btn className="sm:col-span-2" color="bg-secondary" onClick={() => setGame(MINI_GAMES[Math.floor(Math.random() * MINI_GAMES.length)])}>🎲 Τυχαίο mini-game</Btn>
+          <Btn className="sm:col-span-2" color="bg-secondary" onClick={() => setGame(availableGames[Math.floor(Math.random() * availableGames.length)])}>🎲 Τυχαίο mini-game</Btn>
         </div>
       )}
       {game && result === null && (

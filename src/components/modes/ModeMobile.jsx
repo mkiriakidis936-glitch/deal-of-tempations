@@ -19,7 +19,7 @@ export default function ModeMobile({ state, me, updateState, onChangePlayer, ses
   const [alert, setAlert] = useState(false);
   const [pushStatus, setPushStatus] = useState('');
 
-  useEffect(() => { setGameStopActive(!!mg.stop); }, [mg.stop]);
+  useEffect(() => { setGameStopActive(!!(mg.stop || state.stopActive || ['paused', 'emergency'].includes(state.extra4?.control?.status))); }, [mg.stop, state.stopActive, state.extra4?.control?.status]);
 
   useEffect(() => {
     if (!mission || mission.status !== 'active' || seen.current === missionKey) return;

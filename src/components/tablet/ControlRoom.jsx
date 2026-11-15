@@ -4,6 +4,7 @@ import ComicButton from '@/components/comic/ComicButton';
 import { GAME_MODES } from '@/data/gameConfig';
 import { isNewMode, modeMeta, ACT_META } from '@/data/modes/modeRegistry';
 import { PAJAMA_ACTS } from '@/data/pajamaProgram';
+import Extra4Panel from '@/components/tablet/Extra4Panel';
 
 const UNIVERSAL_ACTIONS = [
   { key: 'intro', label: 'Κινηματογραφικό Opening' },
@@ -93,8 +94,9 @@ function scoreFor(state, player) {
   return player.bounty || 0;
 }
 
-export default function ControlRoom({ state, playerProfiles = [], onStartSurprise, onRevealSurprise, onCancelSurprise, onOpen, onRefresh, onEndGame, onClose }) {
+export default function ControlRoom({ state, updateState, playerProfiles = [], playerProfilesReady = true, onStartSurprise, onRevealSurprise, onCancelSurprise, onOpen, onRefresh, onEndGame, onClose }) {
   const [pendingProfile, setPendingProfile] = useState(null);
+  const [extraOpen, setExtraOpen] = useState(false);
   const [now, setNow] = useState(Date.now());
   useEffect(() => {
     const timer = setInterval(() => setNow(Date.now()), 1000);
@@ -134,6 +136,11 @@ export default function ControlRoom({ state, playerProfiles = [], onStartSurpris
             <span>ΓΥΡΟΣ: <strong>{state.round || 1}</strong></span>
           </div>
         </div>
+
+        <div className="flex justify-end">
+          <ComicButton variant="purple" size="md" onClick={() => setExtraOpen(true)}>EXTRA 4.0 — ΚΕΝΤΡΙΚΟΣ ΕΛΕΓΧΟΣ</ComicButton>
+        </div>
+        {extraOpen && <Extra4Panel state={state} updateState={updateState} playerProfiles={playerProfiles} playerProfilesReady={playerProfilesReady} onOpen={onOpen} onEndGame={onEndGame} onClose={() => setExtraOpen(false)} />}
 
         <ComicPanel className="bg-card">
           <div className="ds-label mb-2 text-primary/80">EPISODE TIMELINE · ΕΞΕΛΙΞΗ MODE</div>

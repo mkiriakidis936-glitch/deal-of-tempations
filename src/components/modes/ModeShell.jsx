@@ -7,7 +7,7 @@ export default function ModeShell({ modeId, ctx, act, children, onQR, onEnd, sho
   const theme = MODE_THEMES[modeId] || MODE_THEMES.lockdown;
   const meta = modeMeta(modeId);
   const [showLog, setShowLog] = useState(false);
-  const { mg, stopped, toggleStop } = ctx;
+  const { mg, stopped, toggleStop, centralStopped } = ctx;
   useEffect(() => { setGameStopActive(stopped); }, [stopped]);
   useTick(!!mg.timer && showTimer);
   const left = timerLeft(mg.timer);
@@ -41,10 +41,11 @@ export default function ModeShell({ modeId, ctx, act, children, onQR, onEnd, sho
 
       <button
         onClick={toggleStop}
-        className="fixed top-3 right-3 z-50 comic-boom font-ui text-xs px-5 py-2.5 bg-destructive text-destructive-foreground"
+        disabled={centralStopped}
+        className="fixed top-3 right-3 z-50 comic-boom font-ui text-xs px-5 py-2.5 bg-destructive text-destructive-foreground disabled:opacity-80"
         aria-label="Στοπ"
       >
-        {stopped ? '▶ ΣΥΝΕΧΕΙΑ' : '⏹ ΣΤΟΠ'}
+        {centralStopped ? '⏸ ΠΑΥΣΗ DIRECTOR' : stopped ? '▶ ΣΥΝΕΧΕΙΑ' : '⏹ ΣΤΟΠ'}
       </button>
 
       <div className="fixed bottom-3 left-3 right-3 z-40 flex justify-center gap-2">
@@ -66,7 +67,9 @@ export default function ModeShell({ modeId, ctx, act, children, onQR, onEnd, sho
           <p className="text-lg sm:text-2xl font-body text-white max-w-xl">
             Όλα σταματούν. Λύστε αμέσως κάθε δέσιμο, κατεβάστε τις μάσκες και ελέγξτε ότι όλες είναι ΟΚ πριν συνεχίσετε.
           </p>
-          <button onClick={toggleStop} className="comic-boom font-heading text-xl px-8 py-4 bg-white text-black">▶ ΣΥΝΕΧΕΙΑ ΟΛΕΣ ΟΚ</button>
+          {centralStopped
+            ? <div className="rounded-lg bg-black/40 px-5 py-3 text-sm text-white">Η παύση ελέγχεται αποκλειστικά από τον Director.</div>
+            : <button onClick={toggleStop} className="comic-boom font-heading text-xl px-8 py-4 bg-white text-black">▶ ΣΥΝΕΧΕΙΑ ΟΛΕΣ ΟΚ</button>}
         </div>
       )}
 

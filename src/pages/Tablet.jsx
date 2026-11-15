@@ -54,10 +54,50 @@ import { base44 } from '@/api/base44Client';
 import { awardAchievements } from '@/lib/achievements';
 import { setGameStopActive } from '@/lib/modeKit';
 import { canAssignVipActivity } from '@/lib/playerIntelligence';
+import { getExtra4, pauseExtra4Timers, resumeExtra4Timers, getExtra4SceneItems, getExtra4ModeSceneIndex } from '@/lib/extra4';
+import LockdownMiniGames from '@/components/modes/LockdownMiniGames';
 
 export default function Tablet() {
   const { session, state, loading, updateState, createSession, deleteSession, refresh, joinByCode } = useGameSession();
-  React.useEffect(() => { setGameStopActive(!!(state?.stopActive || state?.mg?.stop)); }, [state?.stopActive, state?.mg?.stop]);
+  React.useEffect(() => {
+    if (!state?.mode) return;
+    const tactical = state.extra4?.tactical || {};
+    if (tactical.modeId !== state.mode) {
+      updateState({
+        ...(state.mg ? { mg: { ...state.mg, intensity: 'standard' } } : { intensity: 'standard' }),
+        extra4: {
+          ...(state.extra4 || {}),
+          tactical: { ...tactical, level: 'standard', modeId: state.mode },
+        },
+      });
+    }
+  }, [state?.mode, state?.extra4?.tactical?.modeId, updateState]);
+
+  React.useEffect(() => {
+    if (!state?.mode) return;
+    const extra4 = getExtra4(state);
+    const items = getExtra4SceneItems(state);
+    if (!items.length) return;
+    const defaultOrder = items.map((item) => item.id);
+    const modeIndex = Math.max(0, Math.min(items.length - 1, getExtra4ModeSceneIndex(state)));
+    const modeChanged = extra4.scenes.modeId !== state.mode;
+    const savedOrder = !modeChanged && Array.isArray(extra4.scenes.order) ? extra4.scenes.order : [];
+    const order = [...savedOrder.filter((id) => defaultOrder.includes(id)), ...defaultOrder.filter((id) => !savedOrder.includes(id))];
+    if (modeChanged) {
+      updateState({ extra4: { scenes: { ...extra4.scenes, auto: true, modeId: state.mode, order: defaultOrder, currentIndex: modeIndex, current: items[modeIndex]?.label || items[0].label } } });
+      return;
+    }
+    if (extra4.scenes.auto === false) return;
+    const index = Math.max(0, order.indexOf(items[modeIndex]?.id));
+    const current = items.find((item) => item.id === order[index])?.label || items[0].label;
+    if (extra4.scenes.current === current && extra4.scenes.currentIndex === index && JSON.stringify(extra4.scenes.order || []) === JSON.stringify(order)) return;
+    updateState({ extra4: { scenes: { ...extra4.scenes, modeId: state.mode, order, currentIndex: index, current } } });
+  }, [state?.mode, state?.mg?.actIndex, state?.pajama?.actIndex, state?.stage, state?.marathonStage, state?.extra4?.scenes?.auto, state?.extra4?.scenes?.modeId, state?.extra4?.scenes?.current, state?.extra4?.scenes?.currentIndex, state?.extra4?.scenes?.order, updateState]);
+
+  React.useEffect(() => {
+    const extraStatus = state?.extra4?.control?.status;
+    setGameStopActive(!!(state?.stopActive || state?.mg?.stop || extraStatus === 'paused' || extraStatus === 'emergency'));
+  }, [state?.stopActive, state?.mg?.stop, state?.extra4?.control?.status]);
 
   // Sync με Admin & links: κωδικός στο URL ή η ενεργή συνεδρία του Admin ανοίγει πάντα εδώ.
   React.useEffect(() => {
@@ -333,7 +373,9 @@ export default function Tablet() {
         {overlay === 'controlroom' && (
           <ControlRoom
             state={displayState}
+            updateState={trackedUpdate}
             playerProfiles={playerProfiles}
+            playerProfilesReady={intakeProfilesReady}
             onStartSurprise={startPersonalizedSurprise}
             onRevealSurprise={revealPersonalizedSurprise}
             onCancelSurprise={cancelPersonalizedSurprise}
@@ -343,10 +385,53 @@ export default function Tablet() {
             onClose={() => setOverlay(null)}
           />
         )}
+        {['extra4sensory', 'extra4reaction'].includes(overlay) && (
+         <div className="fixed inset-0 z-[85] overflow-y-auto bg-black/95 p-3">
+           <div className="mx-auto max-w-3xl pt-4">
+             <LockdownMiniGames
+               safeOnly
+               allowedIds={overlay === 'extra4sensory' ? ['decibel', 'memory'] : ['shake', 'memory']}
+               onPenalty={() => {}}
+               onWheel={() => {}}
+               onComplete={(ok, game) => {
+                 const current = liveRef.current;
+                 const extra4 = getExtra4(current || {});
+                 const active = extra4.activity.active;
+                 if (active?.status !== 'active') return;
+                 trackedUpdate({
+                   extra4: {
+                     activity: {
+                       ...extra4.activity,
+                       active: { ...active, result: ok ? 'success' : 'failed', resultGame: game?.id || null, miniGameCompletedAt: Date.now() },
+                     },
+                   },
+                 });
+               }}
+               onClose={() => setOverlay('controlroom')}
+             />
+           </div>
+         </div>
+       )}
+       {overlay === 'trial' && <JuryTrial state={displayState} updateState={trackedUpdate} onClose={() => setOverlay(null)} />}
+        {overlay === 'shoe' && <ShoeRoulette state={displayState} updateState={trackedUpdate} onClose={() => setOverlay(null)} />}
+        {overlay === 'slots' && <TemptationSlots state={displayState} updateState={trackedUpdate} onClose={() => setOverlay(null)} />}
+        {overlay === 'karmaslots' && <KarmaSlots state={displayState} updateState={trackedUpdate} onClose={() => setOverlay(null)} />}
+        {overlay === 'wish' && <LastWish state={displayState} updateState={trackedUpdate} onClose={() => setOverlay(null)} />}
+        {overlay === 'oracle' && <BlindOracle state={displayState} updateState={trackedUpdate} onClose={() => setOverlay(null)} />}
+        {overlay === 'crypt' && <BarefootCrypt state={displayState} updateState={trackedUpdate} onClose={() => setOverlay(null)} />}
+        {overlay === 'pact' && <MidnightPact state={displayState} updateState={trackedUpdate} onClose={() => setOverlay(null)} />}
+        {overlay === 'grandjury' && <GrandJuryControl state={displayState} updateState={trackedUpdate} onClose={() => setOverlay(null)} />}
         {overlay === 'showdirector' && <ShowDirector state={displayState} updateState={trackedUpdate} onClose={() => setOverlay(null)} />}
+        {overlay === 'privatemsg' && <PrivateMessageSender state={displayState} updateState={trackedUpdate} onClose={() => setOverlay(null)} />}
+        {overlay === 'sealedvote' && <SealedVoteControl state={displayState} updateState={trackedUpdate} onClose={() => setOverlay(null)} />}
         {overlay === 'eventqueue' && <EventQueue state={displayState} updateState={trackedUpdate} onClose={() => setOverlay(null)} />}
         {overlay === 'audio' && <AudioControl state={displayState} updateState={trackedUpdate} onClose={() => setOverlay(null)} />}
         {overlay === 'synctimer' && <SyncTimerControl state={displayState} updateState={trackedUpdate} onClose={() => setOverlay(null)} />}
+        {overlay === 'turnorder' && <TurnOrderPanel state={displayState} updateState={trackedUpdate} onClose={() => setOverlay(null)} />}
+        {overlay === 'poker' && <LiarsPoker state={displayState} updateState={trackedUpdate} onClose={() => setOverlay(null)} />}
+        {overlay === 'trivia' && <TriviaKnowMe state={displayState} updateState={trackedUpdate} onClose={() => setOverlay(null)} />}
+        {overlay === 'finaldeal' && <FinalDeal state={displayState} updateState={trackedUpdate} onClose={() => setOverlay(null)} />}
+        {overlay === 'market' && <BlackmailMarket state={displayState} updateState={trackedUpdate} onClose={() => setOverlay(null)} />}
         {overlay === 'finalepres' && (
           <div className="fixed inset-0 z-[80] bg-background overflow-y-auto">
             <FinalePresentation state={displayState} updateState={trackedUpdate} onEnd={() => { setOverlay(null); archiveAndDelete(); }} />
@@ -395,31 +480,24 @@ export default function Tablet() {
 
   // Παύση: παγώνει και το συγχρονισμένο χρονόμετρο, και το ξαναξεκινά με το ίδιο υπόλοιπο.
   async function handleStop() {
-    const pausing = !state.stopActive;
-    const timer = state.syncTimer;
-    if (pausing) {
-      if (timer?.running) {
-        const remaining = Math.max(0, Math.ceil(((timer.endsAt || 0) - Date.now()) / 1000));
-        await trackedUpdate({
-          stopActive: true,
-          pausedTimerRemaining: remaining,
-          syncTimer: { ...timer, running: false, remaining },
-        });
-        return;
-      }
-      await trackedUpdate({ stopActive: true });
-      return;
-    }
-    if (state.pausedTimerRemaining != null && state.syncTimer && !state.syncTimer.running) {
-      const remaining = state.pausedTimerRemaining;
+    const extra4 = getExtra4(state);
+    if (extra4.control.status === 'emergency') return;
+    if (extra4.control.status === 'paused') {
+      const timers = resumeExtra4Timers(state);
       await trackedUpdate({
+        ...timers,
         stopActive: false,
         pausedTimerRemaining: null,
-        syncTimer: { ...state.syncTimer, running: true, endsAt: Date.now() + remaining * 1000, remaining },
+        extra4: { ...extra4, control: { ...extra4.control, status: 'running', pausedAt: null, resumedAt: Date.now() } },
       });
       return;
     }
-    await trackedUpdate({ stopActive: false, pausedTimerRemaining: null });
+    const timers = pauseExtra4Timers(state);
+    await trackedUpdate({
+      ...timers,
+      stopActive: true,
+      extra4: { ...extra4, control: { ...extra4.control, status: 'paused', pausedAt: Date.now() } },
+    });
   }
 
   async function handleUndo() {

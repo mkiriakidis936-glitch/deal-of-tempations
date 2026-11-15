@@ -25,6 +25,7 @@ import MobileStatus from '@/components/play/MobileStatus';
 import SyncTimerDisplay from '@/components/shared/SyncTimerDisplay';
 import WaitingRoom from '@/components/play/WaitingRoom';
 import PajamaMobile from '@/components/play/PajamaMobile';
+import Extra4MobileCard from '@/components/play/Extra4MobileCard';
 
 export default function Play() {
   const { session, state, loading, updateState: saveState, joinByCode } = useGameSession({ autoLoad: false });
@@ -52,6 +53,22 @@ export default function Play() {
       joinByCode(session.sessionCode, saved);
     }
   }, [session?.sessionCode, state?.players]);
+
+  // QR Terminal: επιλέγει μόνο τον παίκτη που αντιστοιχεί σε ενεργό terminal της συνεδρίας.
+  const terminalCode = new URLSearchParams(window.location.search).get('terminal');
+  const terminalPlayer = new URLSearchParams(window.location.search).get('player');
+  const terminalActivity = new URLSearchParams(window.location.search).get('activity');
+  React.useEffect(() => {
+    if (!session?.sessionCode || !state?.players?.length || selectedPlayerId || !terminalCode || !terminalPlayer) return;
+    const terminal = state.extra4?.cards?.terminals?.[terminalCode];
+    const playerExists = state.players.some((player) => player.id === terminalPlayer);
+    const activityMatches = (terminal?.activityId || null) === (terminalActivity || null) && (!terminal?.activityId || (state.extra4?.activity?.active?.id === terminal.activityId && (state.extra4?.activity?.active?.participantIds || []).includes(terminalPlayer) && !state.extra4?.economy?.restrictions?.[terminalPlayer]));
+    if (terminal?.active && terminal.playerId === terminalPlayer && playerExists && activityMatches) {
+      setSelectedPlayerId(terminalPlayer);
+      localStorage.setItem(`dot_player_${session.sessionCode}`, terminalPlayer);
+      joinByCode(session.sessionCode, terminalPlayer);
+    }
+  }, [session?.sessionCode, state?.players, state?.extra4?.cards?.terminals, selectedPlayerId, terminalCode, terminalPlayer, joinByCode]);
 
   // Δόνηση όταν έρχεται η σειρά της.
   React.useEffect(() => {
@@ -127,6 +144,7 @@ export default function Play() {
 
   if (isNewMode(state.mode) && myPlayer) {
     return (
+      <>
       <ModeMobile
         state={state}
         me={myPlayer}
@@ -140,11 +158,14 @@ export default function Play() {
           }
         }}
       />
+      <Extra4MobileCard state={state} playerId={selectedPlayerId} />
+      </>
     );
   }
 
   if (state.mode === 'pajama' && myPlayer) {
     return (
+      <>
       <PajamaMobile
         pj={state.pajama || {}}
         players={state.players || []}
@@ -158,6 +179,8 @@ export default function Play() {
           }
         }}
       />
+      <Extra4MobileCard state={state} />
+      </>
     );
   }
 
@@ -197,6 +220,7 @@ export default function Play() {
   return (
     <div className="min-h-screen comic-dots p-3 pb-8">
       {state.stopActive && <div className="fixed inset-0 z-[100] bg-destructive/85 flex items-center justify-center text-center pointer-events-auto"><div className="font-heading text-5xl text-white">⏸ ΣΤΟΠ</div></div>}
+      <Extra4MobileCard state={state} />
       <div className="max-w-md mx-auto space-y-3">
         <div className="sticky top-0 z-20 -mx-3 px-3 py-2 comic-dots border-b-2 border-border">
           <ComicPanel className="bg-card">
@@ -219,6 +243,18 @@ export default function Play() {
 
             <SyncTimerDisplay state={state} variant="mobile" />
 
+            {state.extra4?.cards?.activeCard && (
+              <ComicPanel className="comic-pop border border-primary/40 bg-primary/10">
+                <div className="flex items-center gap-2">
+                  <span className="text-3xl">{state.extra4.cards.activeCard.icon || '🎴'}</span>
+                  <div className="min-w-0 flex-1">
+                    <div className="font-heading text-lg text-primary">{state.extra4.cards.activeCard.name || state.extra4.cards.activeCard.title}</div>
+                    <div className="text-[10px] font-bold uppercase text-foreground/55">EXTRA 4.0 · {state.extra4.cards.activeCard.category || 'DIGITAL CARD'} · {state.extra4.cards.activeCard.rarity || '—'}</div>
+                  </div>
+                </div>
+                <p className="mt-2 text-sm text-foreground">{state.extra4.cards.activeCard.desc || state.extra4.cards.activeCard.text || ''}</p>
+              </ComicPanel>
+            )}
             {state.activeCard && (
               <ComicPanel className={`comic-pop ${isMyTurn ? 'bg-primary/20 ring-4 ring-destructive' : 'bg-secondary'}`}>
                 <div className="flex items-center gap-2 mb-2">

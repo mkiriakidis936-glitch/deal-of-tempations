@@ -198,7 +198,9 @@ export function useModeCtx(state, updateState) {
     return setMg({ scores });
   }, [setMg]);
 
+  const centralStopped = !!state.stopActive;
   const toggleStop = useCallback(() => {
+    if (centralStopped) return;
     const cur = mgRef.current;
     if (cur.stop) {
       const pausedFor = Math.max(0, Date.now() - (cur.stopAt || Date.now()));
@@ -220,11 +222,11 @@ export function useModeCtx(state, updateState) {
     } else {
       setMg({ stop: true, stopAt: Date.now(), timer: timerPause(cur.timer) });
     }
-  }, [setMg]);
+  }, [setMg, centralStopped]);
 
   const nameOf = useCallback((id) => players.find((p) => p.id === id)?.name || '—', [players]);
 
-  return { players, mg, setMg, log, addTokens, addScore, toggleStop, nameOf, stopped: !!mg.stop };
+  return { players, mg, setMg, log, addTokens, addScore, toggleStop, nameOf, centralStopped, stopped: !!mg.stop || centralStopped };
 }
 
 export function initialMg(modeId, extra = {}) {
