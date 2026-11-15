@@ -55,6 +55,7 @@ import { awardAchievements } from '@/lib/achievements';
 import { setGameStopActive } from '@/lib/modeKit';
 import { canAssignVipActivity } from '@/lib/playerIntelligence';
 import { getExtra4, pauseExtra4Timers, resumeExtra4Timers, getExtra4SceneItems, getExtra4ModeSceneIndex } from '@/lib/extra4';
+import LockdownMiniGames from '@/components/modes/LockdownMiniGames';
 
 export default function Tablet() {
   const { session, state, loading, updateState, createSession, deleteSession, refresh, joinByCode } = useGameSession();
@@ -384,7 +385,33 @@ export default function Tablet() {
             onClose={() => setOverlay(null)}
           />
         )}
-        {overlay === 'showdirector' && <ShowDirector state={displayState} updateState={trackedUpdate} onClose={() => setOverlay(null)} />}
+        {overlay === 'extra4minigames' && (
+         <div className="fixed inset-0 z-[85] overflow-y-auto bg-black/95 p-3">
+           <div className="mx-auto max-w-3xl pt-4">
+             <LockdownMiniGames
+               safeOnly
+               onPenalty={() => {}}
+               onWheel={() => {}}
+               onComplete={(ok, game) => {
+                 const current = liveRef.current;
+                 const extra4 = getExtra4(current || {});
+                 const active = extra4.activity.active;
+                 if (active?.status !== 'active') return;
+                 trackedUpdate({
+                   extra4: {
+                     activity: {
+                       ...extra4.activity,
+                       active: { ...active, result: ok ? 'success' : 'failed', resultGame: game?.id || null, miniGameCompletedAt: Date.now() },
+                     },
+                   },
+                 });
+               }}
+               onClose={() => setOverlay('controlroom')}
+             />
+           </div>
+         </div>
+       )}
+       {overlay === 'showdirector' && <ShowDirector state={displayState} updateState={trackedUpdate} onClose={() => setOverlay(null)} />}
         {overlay === 'eventqueue' && <EventQueue state={displayState} updateState={trackedUpdate} onClose={() => setOverlay(null)} />}
         {overlay === 'audio' && <AudioControl state={displayState} updateState={trackedUpdate} onClose={() => setOverlay(null)} />}
         {overlay === 'synctimer' && <SyncTimerControl state={displayState} updateState={trackedUpdate} onClose={() => setOverlay(null)} />}
