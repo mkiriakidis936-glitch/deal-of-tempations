@@ -269,10 +269,12 @@ const COMPONENTS = {
 };
 
 // Launcher: διαλέγεις mini-game, παίζεται, και η ποινή εφαρμόζεται αυτόματα στο timer.
-export default function LockdownMiniGames({ onPenalty, onWheel, onClose, safeOnly = false, onComplete }) {
+export default function LockdownMiniGames({ onPenalty, onWheel, onClose, safeOnly = false, allowedIds = null, onComplete }) {
+  const safeIds = ['glitch', 'memory', 'truth', 'decibel', 'lockpick', 'shake', 'cipher'];
+  const ids = Array.isArray(allowedIds) ? allowedIds : safeIds;
   const availableGames = safeOnly
-    ? MINI_GAMES.filter((item) => ['glitch', 'memory', 'truth', 'decibel', 'lockpick', 'shake', 'cipher'].includes(item.id)).map((item) => ({ ...item, desc: item.id === 'decibel' ? '30″ απόλυτη σιωπή με ενεργό μικρόφωνο μόνο μετά από συναίνεση.' : item.desc, fail: 'Η ψηφιακή πρόκληση δεν ολοκληρώθηκε.', failSecs: 0, wheel: false }))
-    : MINI_GAMES;
+    ? MINI_GAMES.filter((item) => safeIds.includes(item.id) && ids.includes(item.id)).map((item) => ({ ...item, desc: item.id === 'decibel' ? '30″ απόλυτη σιωπή με ενεργό μικρόφωνο μόνο μετά από συναίνεση.' : item.desc, fail: 'Η ψηφιακή πρόκληση δεν ολοκληρώθηκε.', failSecs: 0, wheel: false }))
+    : (Array.isArray(allowedIds) ? MINI_GAMES.filter((item) => allowedIds.includes(item.id)) : MINI_GAMES);
   const [game, setGame] = useState(null);
   const [result, setResult] = useState(null);
   const G = game ? COMPONENTS[game.id] : null;
