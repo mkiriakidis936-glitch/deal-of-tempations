@@ -12,6 +12,7 @@ import AdminOverview from '@/components/admin/AdminOverview';
 import AdminSettings from '@/components/admin/AdminSettings';
 import AdminSessions from '@/components/admin/AdminSessions';
 import AdminSessionRecovery from '@/components/admin/AdminSessionRecovery';
+import AdminEpisodeArchive from '@/components/admin/AdminEpisodeArchive';
 import AdminPlayers from '@/components/admin/AdminPlayers';
 import AdminGuide from '@/components/admin/AdminGuide';
 import AdminIntakes from '@/components/admin/AdminIntakes';
@@ -96,6 +97,7 @@ const NAV_GROUPS = [
     label: '08 · ΙΣΤΟΡΙΚΟ & ΑΝΑΚΤΗΣΗ',
     tabs: [
       { id: 'sessions', label: '🎲 Ιστορικό παρτίδων' },
+      { id: 'archive', label: '🎬 Αρχείο επεισοδίων' },
       { id: 'recovery', label: '🛟 Ανάκτηση παρτίδων' },
     ],
   },
@@ -259,6 +261,8 @@ export default function Admin() {
         return <AdminSettings />;
       case 'recovery':
         return <AdminSessionRecovery />;
+      case 'archive':
+        return <AdminEpisodeArchive />;
       case 'sessions':
         return (
           <AdminSessions
