@@ -20,7 +20,7 @@ export function getExtra4(state = {}) {
     control: { status: state.stopActive ? 'paused' : 'running', ...(saved.control || {}) },
     tactical: { level: 'standard', ...(saved.tactical || {}) },
     activity: { active: null, queue: [], auto: true, queueIndex: -1, ...(saved.activity || {}) },
-    economy: { tokens: {}, keys: {}, loot: {}, restrictions: {}, ...(saved.economy || {}) },
+    economy: { tokens: {}, keys: {}, loot: {}, restrictions: {}, lootPool: [], inventory: {}, ...(saved.economy || {}) },
     cards: { activeCard: null, ...(saved.cards || {}) },
     liveFeed: { status: 'off', requestedAt: null, cameraEnabled: false, microphoneEnabled: false, ...(saved.liveFeed || {}) },
     scenes: { current: null, queue: [], ...(saved.scenes || {}) },
