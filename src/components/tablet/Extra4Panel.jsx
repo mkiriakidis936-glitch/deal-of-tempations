@@ -41,6 +41,11 @@ export default function Extra4Panel({ state, updateState, playerProfiles = [], p
   const updateExtra = (patch, rootPatch = {}) => updateState({ ...rootPatch, extra4: { ...extra4, ...patch } });
   const eventLog = extra4.eventLog.slice().reverse();
   const currentMode = state.mode || '—';
+  React.useEffect(() => {
+    if (extra4.scenes.auto === false || extra4.scenes.current === currentScene) return;
+    updateExtra({ scenes: { ...extra4.scenes, current: currentScene, updatedAt: Date.now() } });
+  }, [extra4.scenes.auto, extra4.scenes.current, currentScene]);
+
   const currentScene = currentSceneLabel(state);
   const activeTimers = [
     state.syncTimer ? { label: 'Κεντρικό', timer: state.syncTimer } : null,
@@ -70,7 +75,6 @@ export default function Extra4Panel({ state, updateState, playerProfiles = [], p
   async function emergencyStop() {
     if (extra4.control.status === 'emergency') return;
     const timers = pauseExtra4Timers(state);
-    const log = addExtra4Event(extra4, 'emergency_stop', 'Ενεργοποιήθηκε EMERGENCY STOP.');
     await updateExtra(
       {
         control: {
@@ -86,7 +90,6 @@ export default function Extra4Panel({ state, updateState, playerProfiles = [], p
           },
         },
         liveFeed: { ...extra4.liveFeed, status: 'off', requestedAt: null, cameraEnabled: false, microphoneEnabled: false, sourceToken: null, tvToken: null, offer: null, answer: null },
-        eventLog: log,
       },
       { ...timers, stopActive: true },
     );
