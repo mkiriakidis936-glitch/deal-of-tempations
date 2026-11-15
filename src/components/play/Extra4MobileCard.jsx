@@ -1,9 +1,9 @@
 import React from 'react';
 
-export default function Extra4MobileCard({ state, playerId }) {
+export default function Extra4MobileCard({ state, playerId: selectedPlayerId }) {
   const params = new URLSearchParams(window.location.search);
   const terminalCode = params.get('terminal');
-  const playerId = params.get('player');
+  const playerId = selectedPlayerId || params.get('player');
   const activityId = params.get('activity');
   const terminal = terminalCode ? state?.extra4?.cards?.terminals?.[terminalCode] : null;
   const activity = terminal?.active && terminal.playerId === playerId && terminal.activityId === activityId && activityId && state?.extra4?.activity?.active?.id === activityId && (state.extra4.activity.active.participantIds || []).includes(playerId) && !state?.extra4?.economy?.restrictions?.[playerId]
