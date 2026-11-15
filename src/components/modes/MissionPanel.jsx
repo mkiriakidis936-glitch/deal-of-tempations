@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Panel, Btn } from '@/components/modes/ModeShell';
 import { pick, useTick, fmt } from '@/lib/modeKit';
-import { getVipAnswers, isVipActivityAllowed, canAssignVipActivity } from '@/lib/playerIntelligence';
+import { getVipAnswers, isVipActivityAllowed } from '@/lib/playerIntelligence';
 
 // Real-Time Secret Missions: ξεκινούν από το tablet και εμφανίζονται κρυφά στο κινητό της παίκτριας.
 export default function MissionPanel({ ctx, pool, onSuccess, onFail, title = '📲 Secret Missions' }) {
@@ -43,8 +43,11 @@ export default function MissionPanel({ ctx, pool, onSuccess, onFail, title = '�
       return;
     }
     const m = pick(suitablePool);
-    if (!auto && !canAssignVipActivity(ctx, p, { activityType: 'missions', activityLabel: 'μυστικές αποστολές' })) return;
-    if (!auto && !window.confirm(`Αποστολή στη ${p.name}: «${m.title}»\n\n${m.text}\n\nΈλεγξε τα δηλωμένα όρια πριν συνεχίσεις.`)) return;
+    if (!auto) {
+      const boundaries = String(answers?.boundaries || '').trim();
+      const review = `Αποστολή στη ${p.name}: «${m.title}»\\n\\n${m.text}${boundaries ? `\\n\\nΠΡΟΣΩΠΙΚΑ ΟΡΙΑ: ${boundaries}\\n\\nΕπιβεβαίωσε ότι η αποστολή δεν παραβιάζει τα όρια.` : ''}`;
+      if (!window.confirm(review)) return;
+    }
     setMg({
       missions: {
         ...cur,
