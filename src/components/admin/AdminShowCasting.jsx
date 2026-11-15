@@ -130,7 +130,6 @@ export default function AdminShowCasting() {
         toenailPerk: TOENAIL_PERKS[index % TOENAIL_PERKS.length].id,
         slipperType: item.slipperType || '',
         nailColor: item.nailColor || 'Pink',
-        ...(item.vipProfile ? { vipProfile: item.vipProfile } : {}),
       }));
       const value = {
         mode,
