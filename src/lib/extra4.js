@@ -23,7 +23,7 @@ export function getExtra4(state = {}) {
     economy: { tokens: {}, keys: {}, loot: {}, restrictions: {}, lootPool: [], inventory: {}, ...(saved.economy || {}) },
     cards: { activeCard: null, ...(saved.cards || {}) },
     liveFeed: { status: 'off', requestedAt: null, cameraEnabled: false, microphoneEnabled: false, ...(saved.liveFeed || {}) },
-    scenes: { current: null, queue: [], auto: true, ...(saved.scenes || {}) },
+    scenes: { current: null, currentIndex: 0, modeId: null, order: [], queue: [], auto: true, ...(saved.scenes || {}) },
     eventLog: Array.isArray(saved.eventLog) ? saved.eventLog : [],
   };
 }
