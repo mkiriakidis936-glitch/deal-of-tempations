@@ -59,13 +59,6 @@ export default function Extra4Panel({ state, updateState, playerProfiles = [], p
     : autoSceneIndex;
   const currentSceneId = sceneOrder[currentSceneIndex];
   const currentScene = sceneItems.find((item) => item.id === currentSceneId)?.label || sceneItems[0]?.label || '—';
-  React.useEffect(() => {
-    if (extra4.scenes.auto === false) return;
-    if (extra4.scenes.current === currentScene && extra4.scenes.modeId === currentMode &&
-        extra4.scenes.currentIndex === currentSceneIndex && JSON.stringify(extra4.scenes.order || []) === JSON.stringify(sceneOrder)) return;
-    updateExtra({ scenes: { ...extra4.scenes, current: currentScene, currentIndex: currentSceneIndex, modeId: currentMode, order: sceneOrder, updatedAt: Date.now() } });
-  }, [extra4.scenes.auto, extra4.scenes.current, extra4.scenes.modeId, extra4.scenes.currentIndex, extra4.scenes.order, currentScene, currentMode, currentSceneIndex, sceneOrder, updateExtra]);
-
   const activeTimers = [
     state.syncTimer ? { label: 'Κεντρικό', timer: state.syncTimer } : null,
     state.mg?.timer ? { label: 'Mode', timer: state.mg.timer } : null,
