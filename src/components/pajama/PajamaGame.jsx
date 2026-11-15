@@ -515,6 +515,10 @@ export default function PajamaGame({ state, updateState, onEnd, playerProfiles =
     );
   }
 
+  if (!playerProfilesReady && ['wheel', 'confessions', 'morning', 'gift'].includes(pj.phase)) {
+    return <div className="min-h-screen flex items-center justify-center bg-slate-950 text-pink-100"><div className="font-heading text-xl">ΦΟΡΤΩΣΗ ΙΔΙΩΤΙΚΩΝ VIP ΠΡΟΤΙΜΗΣΕΩΝ…</div></div>;
+  }
+
   if (pj.penalty) return <PajamaPenalty penalty={pj.penalty} onDone={penaltyDone} />;
 
   if (pj.phase === 'setup') return <PajamaSetup players={players} sessionCode={state.sessionCode} onStart={startGame} />;
