@@ -59,6 +59,30 @@ function phaseLabel(state) {
   return ({ 0: 'Προετοιμασία', 1: 'Περιπολία', 2: 'Ανάκριση', 3: 'Φινάλε' })[state.stage] || 'Σε εξέλιξη';
 }
 
+function episodeTimeline(state) {
+  if (isNewMode(state.mode)) {
+    const meta = modeMeta(state.mode);
+    return (meta?.acts || []).map((id, index) => ({
+      id,
+      label: ACT_META[id]?.title || id,
+      active: id === meta?.acts?.[state.mg?.actIndex || 0],
+    }));
+  }
+  if (state.mode === 'pajama') {
+    return PAJAMA_ACTS.map((act, index) => ({ id: act.id, label: act.title, active: index === (state.pajama?.actIndex || 0) }));
+  }
+  if (state.mode === 'marathon') {
+    const stages = ['INFILTRATION', 'VAULT', 'RAIDS', 'LOCKDOWN'];
+    return stages.map((label, index) => ({ id: `marathon_${index + 1}`, label, active: index + 1 === (state.marathonStage || 1) }));
+  }
+  if (state.mode === 'arrest_heist') {
+    const stages = ['ARREST & HEIST', 'GRAND HEIST', 'FINALE'];
+    return stages.map((label, index) => ({ id: `arrest_${index + 1}`, label, active: index + 1 === (state.stage || 1) }));
+  }
+  const stages = ['OPENING', 'PATROL', 'INTERROGATION', 'FINALE'];
+  return stages.map((label, index) => ({ id: `classic_${index}`, label, active: index === (state.stage || 0) }));
+}
+
 function scoreFor(state, player) {
   if (state.mode === 'pajama') return state.pajama?.scores?.[player.id] || 0;
   if (isNewMode(state.mode)) return (state.mg?.scores?.[player.id] || 0) + (state.mg?.tokens?.[player.id] || 0);
@@ -83,6 +107,7 @@ export default function ControlRoom({ state, playerProfiles = [], onStartSurpris
     ? Math.ceil((syncTimer.endsAt - now) / 1000)
     : syncTimer?.remaining;
   const night = state.night;
+  const timeline = episodeTimeline(state);
   const availableActions = isNewMode(state.mode) || state.mode === 'pajama' ? UNIVERSAL_ACTIONS : ACTIONS;
 
   return (
@@ -98,6 +123,18 @@ export default function ControlRoom({ state, playerProfiles = [], onStartSurpris
             <span>ΓΥΡΟΣ: <strong>{state.round || 1}</strong></span>
           </div>
         </div>
+
+        <ComicPanel className="bg-card">
+          <div className="ds-label mb-2 text-primary/80">EPISODE TIMELINE · ΕΞΕΛΙΞΗ MODE</div>
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+            {timeline.map((item, index) => (
+              <div key={item.id} className={`rounded-lg border p-2 text-xs ${item.active ? 'border-primary bg-primary/15 text-primary' : 'border-border/50 bg-secondary text-foreground/55'}`}>
+                <div className="font-heading">{index + 1}. {item.label}</div>
+                <div className="mt-1 text-[9px]">{item.active ? 'ΤΡΕΧΟΥΣΑ ΦΑΣΗ' : 'ΣΤΑΔΙΟ'}</div>
+              </div>
+            ))}
+          </div>
+        </ComicPanel>
 
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
           <ComicPanel className="bg-card p-3">
