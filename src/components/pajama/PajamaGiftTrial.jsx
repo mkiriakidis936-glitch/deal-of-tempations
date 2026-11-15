@@ -103,9 +103,9 @@ export default function PajamaGiftTrial({ players, onDone, canAssign, canStart }
             <div className="h-full bg-fuchsia-400 transition-all" style={{ width: `${(left / 30) * 100}%` }} />
           </div>
           {!sacrificedId && <div className="text-[11px] text-pink-300 mt-2">Διάλεξε πρώτα τη θυσία.</div>}
-        </div>
+        </div>}
 
-        {!result && (
+        {players.length > 0 && !result && (
           <div className="grid grid-cols-2 gap-2">
             <button
               onClick={() => finish(true)}
