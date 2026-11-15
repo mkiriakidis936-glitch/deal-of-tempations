@@ -109,7 +109,7 @@ export default function MarathonVault({ state, updateState, onAdvance, playerPro
               {eligibleTeamPlayers.map((p) => (
                 <button
                   key={p.id}
-                  onClick={() => { if (canAssignVipActivity(vipCtx, p, { activityLabel: 'ατομική δοκιμασία Vault' })) setSelectedPlayerId(p.id); }}
+                  onClick={() => { if (canAssignVipActivity(vipCtx, p, { activityType: currentTrial.id === 'MT-03' ? 'questions' : null, activityLabel: currentTrial.id === 'MT-03' ? 'Speed Trivia' : 'ατομική δοκιμασία Vault' })) setSelectedPlayerId(p.id); }}
                   disabled={!isVipActivityAllowed(vipCtx, p)}
                   className={`comic-panel-sm p-2 ${selectedPlayerId === p.id ? 'bg-primary ring-2 ring-primary' : 'bg-card'}`}
                 >
