@@ -61,7 +61,8 @@ function scoreFor(state, player) {
   return player.bounty || 0;
 }
 
-export default function ControlRoom({ state, onOpen, onRefresh, onEndGame, onClose }) {
+export default function ControlRoom({ state, playerProfiles = [], onStartSurprise, onRevealSurprise, onOpen, onRefresh, onEndGame, onClose }) {
+  const [pendingProfile, setPendingProfile] = useState(null);
   const [now, setNow] = useState(Date.now());
   useEffect(() => {
     const timer = setInterval(() => setNow(Date.now()), 1000);
@@ -136,6 +137,68 @@ export default function ControlRoom({ state, onOpen, onRefresh, onEndGame, onClo
             ))}
           </div>
         </ComicPanel>
+
+        {playerProfiles.length > 0 && (
+          <ComicPanel className="bg-card space-y-3">
+            <div>
+              <div className="ds-label text-primary/80">PLAYER INTELLIGENCE · ΙΔΙΩΤΙΚΑ ΣΤΟΙΧΕΙΑ</div>
+              <div className="text-xs text-foreground/50">Οι απαντήσεις εμφανίζονται μόνο στο Tablet του παρουσιαστή. Τα προσωπικά όρια δεν χρησιμοποιούνται για τη δημιουργία δοκιμασιών.</div>
+            </div>
+            {playerProfiles.map((profile) => {
+              const answers = profile.vipProfile?.answers || {};
+              const preferences = answers.activityPreferences || {};
+              const wish = String(answers.surpriseWish || '').trim();
+              return (
+                <div key={profile.playerId} className="rounded-lg border border-primary/20 bg-secondary p-3 space-y-2">
+                  <div className="font-heading text-base text-primary">{profile.name}</div>
+                  <div className="grid grid-cols-2 gap-2 text-xs">
+                    <div>Προσωπικότητα: <strong>{answers.personality === 'bold' ? 'Τολμηρή' : answers.personality === 'reserved' ? 'Συγκρατημένη' : '—'}</strong></div>
+                    <div>Ανταγωνιστικότητα: <strong>{answers.competitiveness || '—'}/5</strong></div>
+                    <div>Δυσκολία: <strong>{answers.difficulty || '—'}/5</strong></div>
+                    <div>Απρόβλεπτη πρόκληση: <strong>{answers.unexpectedChallenge === 'yes' ? 'ΝΑΙ' : answers.unexpectedChallenge === 'no' ? 'ΟΧΙ' : '—'}</strong></div>
+                  </div>
+                  {answers.preferredTestType && <div className="text-xs">Προτιμώμενο είδος: <strong>{answers.preferredTestType}</strong></div>}
+                  <div className="text-xs text-foreground/65">
+                    Προτιμήσεις: {['questions', 'missions', 'surprises'].filter((key) => preferences[key] === 'yes').map((key) => ({ questions: 'Ερωτήσεις', missions: 'Αποστολές', surprises: 'Εκπλήξεις' }[key])).join(' · ') || 'Δεν δήλωσε'}
+                  </div>
+                  {answers.boundaries && (
+                    <div className="rounded border border-amber-500/30 bg-amber-500/5 p-2 text-xs">
+                      <strong className="text-amber-300">ΠΡΟΣΩΠΙΚΑ ΟΡΙΑ – ΜΟΝΟ ΓΙΑ ΤΟΝ ΠΑΡΟΥΣΙΑΣΤΗ</strong>
+                      <div className="mt-1 whitespace-pre-wrap">{answers.boundaries}</div>
+                    </div>
+                  )}
+                  {wish && (
+                    <div className="rounded border border-primary/20 p-2 text-xs">
+                      <strong>Επιθυμητή έκπληξη:</strong>
+                      <div className="mt-1 whitespace-pre-wrap">{wish}</div>
+                      <ComicButton
+                        variant="purple"
+                        size="sm"
+                        className="mt-2 w-full"
+                        disabled={answers.activeParticipation === 'no' || !onStartSurprise || !onRevealSurprise}
+                        onClick={() => { setPendingProfile(profile); onStartSurprise?.(profile); }}
+                      >
+                        ΠΡΟΕΤΟΙΜΑΣΙΑ ΠΡΟΣΩΠΙΚΗΣ ΕΚΠΛΗΞΗΣ
+                      </ComicButton>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+            {pendingProfile && (
+              <div className="rounded-lg border-2 border-primary bg-primary/10 p-3 space-y-2">
+                <div className="font-heading text-sm text-primary">ΕΤΟΙΜΗ ΓΙΑ ΑΠΟΚΑΛΥΨΗ · {pendingProfile.name}</div>
+                <div className="text-xs text-foreground/70">Η TV βρίσκεται σε φάση build-up. Η απάντηση θα εμφανιστεί μόνο όταν πατήσεις αποκάλυψη.</div>
+                <div className="flex gap-2">
+                  <ComicButton variant="yellow" size="md" className="flex-1" onClick={() => { onRevealSurprise?.(pendingProfile); setPendingProfile(null); }}>
+                    ΑΠΟΚΑΛΥΨΕ ΤΩΡΑ
+                  </ComicButton>
+                  <ComicButton variant="dark" size="md" onClick={() => setPendingProfile(null)}>ΑΚΥΡΩΣΗ</ComicButton>
+                </div>
+              </div>
+            )}
+          </ComicPanel>
+        )}
 
         {night?.program?.length > 0 && (
           <ComicPanel className="bg-card space-y-2">
