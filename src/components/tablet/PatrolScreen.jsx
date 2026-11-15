@@ -20,11 +20,11 @@ import {
 } from '@/lib/gameLogic';
 import { canAssignVipActivity } from '@/lib/playerIntelligence';
 
-export default function PatrolScreen({ state, updateState, onGoToStage2, playerProfiles = [] }) {
+export default function PatrolScreen({ state, updateState, onGoToStage2, playerProfiles = [], playerProfilesReady = true }) {
   const [uiPhase, setUiPhase] = useState('idle');
 
   const currentPlayer = state.players[state.currentPlayerIndex];
-  const vipCtx = { playerProfiles };
+  const vipCtx = { playerProfiles, playerProfilesReady };
   const square = getBoardSquare(currentPlayer.position);
   const squareType = SQUARE_TYPES[square.type] || SQUARE_TYPES.street;
 
