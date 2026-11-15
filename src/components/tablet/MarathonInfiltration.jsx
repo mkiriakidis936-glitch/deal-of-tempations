@@ -308,6 +308,9 @@ export default function MarathonInfiltration({ state, updateState, onAdvance, pl
                 </button>
               ))}
             </div>
+            <div className="text-center">
+              <ComicButton variant="white" size="md" onClick={handleNextTurn}>ΠΑΡΑΛΕΙΨΗ ΚΟΝΤΡΑΣ ΧΩΡΙΣ ΠΟΙΝΗ</ComicButton>
+            </div>
           </ComicPanel>
         )}
 
