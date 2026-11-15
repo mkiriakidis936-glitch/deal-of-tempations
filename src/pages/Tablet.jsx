@@ -81,6 +81,7 @@ export default function Tablet() {
   const [showQR, setShowQR] = React.useState(false);
   const [intakeProfiles, setIntakeProfiles] = React.useState([]);
   const [intakeProfilesReady, setIntakeProfilesReady] = React.useState(false);
+  const [intakeProfilesError, setIntakeProfilesError] = React.useState('');
   const [showSplash, setShowSplash] = React.useState(() => !sessionStorage.getItem('dotSplash'));
   const [overlay, setOverlay] = React.useState(null);
   const endingRef = React.useRef(false);
@@ -97,20 +98,23 @@ export default function Tablet() {
     let active = true;
     if (!session?.id) {
       setIntakeProfiles([]);
+      setIntakeProfilesError('');
       setIntakeProfilesReady(true);
       return undefined;
     }
     setIntakeProfilesReady(false);
+    setIntakeProfilesError('');
     base44.entities.PlayerIntake.filter({}, { sort: '-created_date', limit: 500 })
       .then((result) => {
         if (active) {
           setIntakeProfiles(result.items || []);
+          setIntakeProfilesError('');
           setIntakeProfilesReady(true);
         }
       })
       .catch((error) => {
         console.error('Private player profile load failed', error);
-        if (active) setIntakeProfilesReady(true);
+        if (active) setIntakeProfilesError('Δεν φορτώθηκαν οι ιδιωτικές VIP προτιμήσεις. Ανανεώστε το Tablet πριν ξεκινήσει το παιχνίδι.');
       });
     return () => { active = false; };
   }, [session?.id]);
@@ -464,6 +468,7 @@ export default function Tablet() {
         <BountyMultiplier state={state} />
       </div>
       <TabletStatusStrip state={displayState} />
+      {intakeProfilesError && <div role="alert" className="mx-auto max-w-7xl rounded-lg border border-red-500 bg-red-950/80 p-3 text-center text-sm text-red-100">{intakeProfilesError} <button className="ml-2 underline font-bold" onClick={() => window.location.reload()}>ΑΝΑΝΕΩΣΗ</button></div>}
       {state.stopActive && (
         <div className="fixed inset-0 z-40 bg-destructive/20 pointer-events-auto flex items-center justify-center">
           <div className="font-heading text-6xl text-destructive comic-text-stroke comic-pulse">⏸ ΠΑΥΣΗ</div>
