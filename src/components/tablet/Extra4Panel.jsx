@@ -490,7 +490,7 @@ export default function Extra4Panel({ state, updateState, playerProfiles = [], p
         {tab === 'live' && <ComicPanel className="bg-card space-y-3">
           <div className="ds-label text-primary/80">ISOLATION CHAMBER — LIVE FEED</div>
           <div className="text-sm">Κατάσταση: <strong>{extra4.liveFeed.status === 'requested' ? 'ΑΝΑΜΟΝΗ ΣΥΝΑΙΝΕΣΗΣ' : extra4.liveFeed.status === 'connected' ? 'ΣΥΝΔΕΔΕΜΕΝΟ' : extra4.liveFeed.status === 'connecting' || extra4.liveFeed.status === 'reconnecting' ? 'ΣΥΝΔΕΣΗ' : 'ΑΝΕΝΕΡΓΟ'}</strong></div>
-          <div className="flex flex-wrap gap-2"><ComicButton onClick={requestLiveFeed} disabled={extra4.control.status !== 'running' || extra4.liveFeed.status !== 'off'}>ΑΙΤΗΜΑ ΕΝΑΡΞΗΣ LIVE FEED</ComicButton><ComicButton variant="red" onClick={stopLiveFeed} disabled={extra4.liveFeed.status === 'off'}>STOP FEED</ComicButton></div>
+          <div className="flex flex-wrap gap-2"><ComicButton onClick={requestLiveFeed} disabled={extra4.control.status !== 'running' || !['off', 'reconnecting'].includes(extra4.liveFeed.status)}>{extra4.liveFeed.status === 'reconnecting' ? 'ΝΕΟ ΑΙΤΗΜΑ DIRECTOR — ΕΠΑΝΕΝΑΡΞΗ' : 'ΑΙΤΗΜΑ ΕΝΑΡΞΗΣ LIVE FEED'}</ComicButton><ComicButton variant="red" onClick={stopLiveFeed} disabled={extra4.liveFeed.status === 'off'}>STOP FEED</ComicButton></div>
           {extra4.liveFeed.sourceToken && extra4.liveFeed.tvToken && <div className="grid gap-3 sm:grid-cols-2">
             <div className="rounded-lg border border-border bg-secondary p-3 space-y-2">
               <div className="font-heading text-sm text-primary">ΣΥΣΚΕΥΗ ISOLATION CHAMBER</div>
