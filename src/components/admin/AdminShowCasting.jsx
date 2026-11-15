@@ -50,7 +50,7 @@ export default function AdminShowCasting() {
         base44.entities.AppSetting.filter({ key: CAST_KEY }, { limit: 1 }),
       ]);
       setPlayerIntakes(players.items || []);
-      setPajamaIntakes((pajama.items || []).filter((item) => item.approved === true || item.formType === 'modes'));
+      setPajamaIntakes((pajama.items || []).filter((item) => item.approved === true));
       const record = settings.items?.[0] || null;
       const current = record?.value && typeof record.value === 'object' ? record.value : null;
       setPlan(current ? { ...current, settingId: record.id } : null);
@@ -87,7 +87,7 @@ export default function AdminShowCasting() {
       previous.slipperType = item.slipperType || previous.slipperType;
       previous.nailColor = item.nailColor || previous.nailColor;
       previous.vipProfile = item.vipProfile || previous.vipProfile;
-      previous.accommodation = item.accommodation || item.stayAtVilla || previous.accommodation;
+      previous.accommodation = item.accommodation || item.stayAtVilla || item.vipProfile?.stayAtVilla || previous.accommodation;
       previous.preferredModes = [...new Set([...previous.preferredModes, ...modes])];
       byName.set(key, previous);
     };
