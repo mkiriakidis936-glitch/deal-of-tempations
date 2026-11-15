@@ -5,8 +5,9 @@ import Timer from '@/components/comic/Timer';
 import { MARATHON_LOCKDOWN } from '@/data/gameContent';
 import LockdownCommands from '@/components/tablet/LockdownCommands';
 import SpeakButton from '@/components/comic/VoiceReader';
+import { canAssignVipActivity, isVipActivityAllowed } from '@/lib/playerIntelligence';
 
-export default function MarathonLockdown({ state, updateState, onEnd }) {
+export default function MarathonLockdown({ state, updateState, onEnd, playerProfiles = [] }) {
   const [phase, setPhase] = useState('intro');
 
   const lootA = state.teamAlpha?.loot || 0;
@@ -18,7 +19,17 @@ export default function MarathonLockdown({ state, updateState, onEnd }) {
   const loser = winner === 'alpha' ? 'beta' : 'alpha';
   const winnerName = winner === 'alpha' ? '💖 TEAM ALPHA' : '💎 TEAM BETA';
   const loserName = loser === 'alpha' ? '💖 TEAM ALPHA' : '💎 TEAM BETA';
+  const vipCtx = { playerProfiles };
   const loserPlayers = state.players.filter((p) => p.team === loser);
+  const participatingLosers = loserPlayers.filter((p) => isVipActivityAllowed(vipCtx, p));
+
+  function startExecution() {
+    if (!participatingLosers.length) { setPhase('victory'); return; }
+    for (const player of participatingLosers) {
+      if (!canAssignVipActivity(vipCtx, player, { activityLabel: 'τελική ομαδική δοκιμασία Lockdown' })) return;
+    }
+    setPhase('execution');
+  }
 
   useEffect(() => {
     updateState({ marathonStage: 4, winner, gameOver: false });
@@ -64,7 +75,7 @@ export default function MarathonLockdown({ state, updateState, onEnd }) {
             </ComicPanel>
 
             <div className="text-center">
-              <ComicButton variant="red" size="lg" onClick={() => setPhase('execution')}>▶ ΕΝΑΡΞΗ ΤΕΛΙΚΗΣ ΕΚΤΕΛΕΣΗΣ (120″)</ComicButton>
+              <ComicButton variant="red" size="lg" onClick={startExecution}>▶ ΕΝΑΡΞΗ ΤΕΛΙΚΗΣ ΕΚΤΕΛΕΣΗΣ (120″)</ComicButton>
             </div>
           </>
         )}
@@ -74,9 +85,9 @@ export default function MarathonLockdown({ state, updateState, onEnd }) {
             <div className="font-heading text-3xl mb-4">⏱ 120″ ΤΕΛΙΚΗ ΕΚΤΕΛΕΣΗ</div>
             <Timer duration={120} running={true} frozen={state.stopActive} onComplete={() => setPhase('victory')} label="LOCKDOWN" size="lg" />
             <div className="mt-4 text-sm">
-              Ηττημένη ομάδα: {loserName} ({loserPlayers.map((p) => p.name).join(', ')})
+              Ηττημένη ομάδα: {loserName} ({participatingLosers.map((p) => p.name).join(', ') || 'χωρίς ενεργή συμμετοχή'})
             </div>
-            <LockdownCommands players={loserPlayers} />
+            <LockdownCommands players={participatingLosers} />
             <div className="mt-4">
               <ComicButton variant="green" size="lg" onClick={() => setPhase('victory')}>✅ ΛΗΞΗ</ComicButton>
             </div>
