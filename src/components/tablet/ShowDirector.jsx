@@ -12,6 +12,13 @@ const BASE_ACTS = [
   { id: 'awards', label: 'ΒΡΑΒΕΙΑ', icon: '🏅', subtitle: 'Απολογισμός & Βραβεία' },
 ];
 
+const DECISION_PRESETS = [
+  'Η ΑΠΟΦΑΣΗ ΕΙΝΑΙ...',
+  'ΑΠΟΤΕΛΕΣΜΑ ΨΗΦΟΦΟΡΙΑΣ',
+  'Η ΤΕΛΙΚΗ ΑΝΑΚΟΙΝΩΣΗ',
+  'Ο ΝΙΚΗΤΗΣ ΤΟΥ ΕΠΕΙΣΟΔΙΟΥ',
+];
+
 export default function ShowDirector({ state, updateState, onClose }) {
   const showMode = state.showMode || {};
   const modeName = GAME_MODES.find((mode) => mode.id === state.mode)?.name || state.mode || 'LIVE SHOW';
@@ -129,6 +136,14 @@ export default function ShowDirector({ state, updateState, onClose }) {
             </div>
           ) : (
             <div className="space-y-2">
+              <div className="text-xs font-bold text-foreground/55">ΕΤΟΙΜΕΣ ΣΚΗΝΕΣ ΣΗΜΑΝΤΙΚΩΝ ΑΠΟΦΑΣΕΩΝ</div>
+              <div className="grid grid-cols-2 gap-2">
+                {DECISION_PRESETS.map((preset) => (
+                  <ComicButton key={preset} variant="dark" size="sm" onClick={() => setRevealTitle(preset)}>
+                    {preset}
+                  </ComicButton>
+                ))}
+              </div>
               <input
                 type="text"
                 value={revealTitle}
