@@ -5,8 +5,22 @@ import ComicButton from '@/components/comic/ComicButton';
 import { DIGITAL_CARDS } from '@/data/gameContent';
 import { isVipActivityAllowed, canAssignVipActivity } from '@/lib/playerIntelligence';
 import { INTENSITY_LEVELS, EXTRA4_CATEGORIES, getExtra4, addExtra4Event, pauseExtra4Timers, resumeExtra4Timers } from '@/lib/extra4';
+import { isNewMode, modeMeta, ACT_META } from '@/data/modes/modeRegistry';
+import { PAJAMA_ACTS } from '@/data/pajamaProgram';
 
 const money = (value) => Math.max(0, Number(value) || 0);
+
+function currentSceneLabel(state) {
+  if (isNewMode(state.mode)) {
+    const meta = modeMeta(state.mode);
+    const act = meta?.acts?.[state.mg?.actIndex || 0];
+    return ACT_META[act]?.title || act || 'Προετοιμασία';
+  }
+  if (state.mode === 'pajama') return PAJAMA_ACTS[state.pajama?.actIndex || 0]?.title || 'Pajama Show';
+  if (state.mode === 'marathon') return ['INFILTRATION', 'THE VAULT', 'POLICE RAIDS', 'TOTAL LOCKDOWN'][(state.marathonStage || 1) - 1] || 'Marathon';
+  if (state.mode === 'arrest_heist') return ['ARREST & HEIST', 'GRAND HEIST', 'FINALE'][(state.stage || 1) - 1] || 'Arrest & Heist';
+  return ({ 0: 'Προετοιμασία', 1: 'Περιπολία', 2: 'Ανάκριση', 3: 'Φινάλε' })[state.stage || 0] || 'Σε εξέλιξη';
+}
 
 export default function Extra4Panel({ state, updateState, playerProfiles = [], playerProfilesReady = true, onOpen, onEndGame, onClose }) {
   const [tab, setTab] = useState('overview');
@@ -27,6 +41,11 @@ export default function Extra4Panel({ state, updateState, playerProfiles = [], p
   const updateExtra = (patch, rootPatch = {}) => updateState({ ...rootPatch, extra4: { ...extra4, ...patch } });
   const eventLog = extra4.eventLog.slice().reverse();
   const currentMode = state.mode || '—';
+  const currentScene = currentSceneLabel(state);
+  const activeTimers = [
+    state.syncTimer ? { label: 'Κεντρικό', timer: state.syncTimer } : null,
+    state.mg?.timer ? { label: 'Mode', timer: state.mg.timer } : null,
+  ].filter(Boolean);
   const activityType = ['guessing', 'trivia'].includes(category) ? 'questions' : category === 'vip' ? 'surprises' : 'missions';
   const eligiblePlayers = players.filter((player) => isVipActivityAllowed({ playerProfiles, playerProfilesReady }, player, activityType));
   const activityCatalog = EXTRA4_CATEGORIES.flatMap((group) => group.actions.map((action) => ({ ...action, categoryId: group.id, categoryLabel: group.label })));
@@ -242,6 +261,14 @@ export default function Extra4Panel({ state, updateState, playerProfiles = [], p
     setTerminalUrl(url);
   }
 
+  async function deleteTerminal(code) {
+    const terminal = extra4.cards.terminals?.[code];
+    if (!terminal || terminal.active) return;
+    const terminals = { ...(extra4.cards.terminals || {}) };
+    delete terminals[code];
+    await updateExtra({ cards: { ...extra4.cards, terminals } });
+  }
+
   async function deactivateTerminal(code) {
     const terminals = { ...(extra4.cards.terminals || {}) };
     if (terminals[code]) terminals[code] = { ...terminals[code], active: false, deactivatedAt: Date.now() };
@@ -269,7 +296,7 @@ export default function Extra4Panel({ state, updateState, playerProfiles = [], p
         <div className="flex flex-wrap gap-2">
           {[
             ['overview', 'ΕΠΙΣΚΟΠΗΣΗ'], ['tactical', 'TACTICAL LEVELS'], ['games', 'MINI-GAMES'],
-            ['economy', 'KEY HEIST & ECONOMY'], ['cards', 'CARDS & QR'], ['live', 'LIVE FEED'],
+            ['scenes', 'SCENE DIRECTOR'], ['economy', 'KEY HEIST & ECONOMY'], ['cards', 'CARDS & QR'], ['live', 'LIVE FEED'],
           ].map(([id, label]) => <button key={id} onClick={() => setTab(id)} className={`rounded-lg border px-3 py-2 text-xs font-bold ${tab === id ? 'border-primary bg-primary text-tarot-dark' : 'border-border bg-card text-foreground'}`}>{label}</button>)}
         </div>
 
@@ -292,6 +319,13 @@ export default function Extra4Panel({ state, updateState, playerProfiles = [], p
               <div className="flex gap-2"><ComicButton variant="green" onClick={continueAfterEmergency}>ΣΥΝΕΧΙΣΗ ΕΠΕΙΣΟΔΙΟΥ</ComicButton><ComicButton variant="red" onClick={onEndGame}>ΤΕΡΜΑΤΙΣΜΟΣ</ComicButton></div>
             </div>}
             <div className="text-xs text-foreground/55">Το PAUSE διατηρεί το υπόλοιπο χρόνου. Το EMERGENCY STOP απαιτεί απόφαση του Director και δεν επανεκκινεί αυτόματα.</div>
+          </ComicPanel>
+          <ComicPanel className="bg-card space-y-2">
+            <div className="ds-label text-primary/80">ΕΝΕΡΓΑ ΧΡΟΝΟΜΕΤΡΑ</div>
+            {activeTimers.length ? activeTimers.map((entry) => {
+              const remaining = entry.timer.running === false ? entry.timer.remaining : entry.timer.endsAt ? Math.max(0, Math.ceil((entry.timer.endsAt - Date.now()) / 1000)) : entry.timer.remaining;
+              return <div key={entry.label} className="flex items-center justify-between border-b border-border/40 py-2 text-sm"><span>{entry.label}</span><strong>{Math.floor(Math.max(0, remaining || 0) / 60)}:{String(Math.max(0, remaining || 0) % 60).padStart(2, '0')}</strong></div>;
+            }) : <div className="text-xs text-foreground/50">Δεν υπάρχουν ενεργά χρονόμετρα.</div>}
           </ComicPanel>
           <ComicPanel className="bg-card space-y-2">
             <div className="ds-label text-primary/80">ΠΑΙΚΤΕΣ — LIVE STATUS</div>
@@ -322,6 +356,22 @@ export default function Extra4Panel({ state, updateState, playerProfiles = [], p
             {activeActivity?.status === 'active' && <div className="rounded-lg border border-primary/40 bg-primary/5 p-3 space-y-2"><div className="font-heading text-primary">ΕΝΕΡΓΗ ΔΡΑΣΤΗΡΙΟΤΗΤΑ: {activeActivity.label}</div><div className="text-xs text-foreground/60">Συμμετέχοντες: {(activeActivity.participantIds || []).map((id) => players.find((player) => player.id === id)?.name || id).join(', ') || '—'}</div><div className="flex flex-wrap gap-2"><ComicButton variant="green" onClick={() => finishActivity('completed')}>ΟΛΟΚΛΗΡΩΘΗΚΕ</ComicButton><ComicButton variant="yellow" onClick={() => finishActivity('success')}>ΕΠΙΤΥΧΙΑ</ComicButton><ComicButton variant="red" onClick={() => finishActivity('failed')}>ΑΠΟΤΥΧΙΑ</ComicButton><ComicButton variant="dark" onClick={() => finishActivity('skipped')}>ΠΑΡΑΛΕΙΨΗ</ComicButton><ComicButton variant="red" onClick={() => finishActivity('cancelled')}>ΑΚΥΡΩΣΗ</ComicButton></div></div>}
           </ComicPanel>
         </div>}
+
+        {tab === 'scenes' && <ComicPanel className="bg-card space-y-3">
+          <div className="ds-label text-primary/80">HYBRID SCENE DIRECTOR</div>
+          <div className="rounded-lg border border-primary/30 bg-primary/5 p-4">
+            <div className="text-xs text-foreground/50">ΕΝΕΡΓΟ MODE · ΤΡΕΧΟΥΣΑ ΣΚΗΝΗ</div>
+            <div className="mt-1 font-heading text-2xl text-primary">{currentScene}</div>
+            <div className="mt-1 text-xs text-foreground/55">Η σκηνή ακολουθεί αυτόματα τη φάση του ενεργού Mode. Οι υπάρχοντες κανόνες και οι μεταβάσεις του Mode παραμένουν ενεργοί.</div>
+          </div>
+          <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={extra4.scenes.auto !== false} onChange={(e) => updateExtra({ scenes: { ...extra4.scenes, auto: e.target.checked, current: currentScene } })} /> Αυτόματη παρακολούθηση εξέλιξης σκηνών</label>
+          <div className="grid gap-2 sm:grid-cols-3">
+            <ComicButton onClick={() => onOpen?.('showdirector')}>SCENE DIRECTOR</ComicButton>
+            <ComicButton variant="yellow" onClick={() => onOpen?.('eventqueue')}>ΑΝΑΚΟΙΝΩΣΗ / EVENT QUEUE</ComicButton>
+            <ComicButton variant="purple" onClick={() => onOpen?.('finalepres')}>SPECIAL SCENE / FINALE</ComicButton>
+          </div>
+          <div className="text-xs text-foreground/55">Οι χειροκίνητες αλλαγές, οι αποκαλύψεις και οι ανακοινώσεις γίνονται από τα υπάρχοντα εργαλεία Show Director και Event Queue.</div>
+        </ComicPanel>}
 
         {tab === 'economy' && <div className="grid gap-3 lg:grid-cols-2">
           <ComicPanel className="bg-card space-y-3">
@@ -365,7 +415,7 @@ export default function Extra4Panel({ state, updateState, playerProfiles = [], p
             <label className="block text-xs">Σύνδεση με παίκτη<select className="mt-1 w-full rounded-lg border border-border bg-background p-2" value={terminalPlayer} onChange={(e) => setTerminalPlayer(e.target.value)}>{players.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}</select></label>
             <ComicButton onClick={issueTerminal} disabled={!terminalPlayer || !state.sessionCode}>ΔΗΜΙΟΥΡΓΙΑ QR TERMINAL</ComicButton>
             {terminalUrl && <div className="rounded-lg bg-white p-3 text-center"><QRCodeSVG value={terminalUrl} size={180} /><div className="mt-2 break-all text-xs text-black">{terminalUrl}</div></div>}
-            {terminalEntries.map((terminal) => <div key={terminal.code} className="flex items-center justify-between gap-2 border-b border-border py-2 text-xs"><span>{players.find((p) => p.id === terminal.playerId)?.name || 'Παίκτης'} · {terminal.active ? 'ΕΝΕΡΓΟ' : 'ΑΝΕΝΕΡΓΟ'}</span><ComicButton size="sm" variant="red" disabled={!terminal.active} onClick={() => deactivateTerminal(terminal.code)}>ΑΠΕΝΕΡΓΟΠΟΙΗΣΗ</ComicButton></div>)}
+            {terminalEntries.map((terminal) => <div key={terminal.code} className="flex items-center justify-between gap-2 border-b border-border py-2 text-xs"><span>{players.find((p) => p.id === terminal.playerId)?.name || 'Παίκτης'} · {terminal.active ? 'ΕΝΕΡΓΟ' : 'ΑΝΕΝΕΡΓΟ'}</span>{terminal.active ? <ComicButton size="sm" variant="red" onClick={() => deactivateTerminal(terminal.code)}>ΑΠΕΝΕΡΓΟΠΟΙΗΣΗ</ComicButton> : <ComicButton size="sm" variant="red" onClick={() => deleteTerminal(terminal.code)}>ΔΙΑΓΡΑΦΗ QR</ComicButton>}</div>)}
           </ComicPanel>
           <div className="text-xs text-foreground/55">Οι υπάρχουσες VIP προσκλήσεις και οι φόρμες διαχειρίζονται από την ενότητα Admin → Digital Invitations.</div>
         </div>}
