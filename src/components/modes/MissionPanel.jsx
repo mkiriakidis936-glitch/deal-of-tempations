@@ -9,15 +9,41 @@ export default function MissionPanel({ ctx, pool, onSuccess, onFail, title = '�
   const [target, setTarget] = useState('random');
   const [auto, setAuto] = useState(false);
   const [everyMin, setEveryMin] = useState(6);
+  const [message, setMessage] = useState('');
   useTick(true, 1000);
+
+  function profileFor(playerId) {
+    return ctx.playerProfiles?.find((profile) => profile.playerId === playerId)?.vipProfile?.answers || null;
+  }
+
+  function canReceiveMissions(player) {
+    const answers = profileFor(player.id);
+    return !answers || (answers.activeParticipation !== 'no' && answers.activityPreferences?.missions !== 'no');
+  }
 
   function send() {
     if (stopped) return;
+    setMessage('');
     const cur = ctx.mg.missions || {};
-    const free = players.filter((p) => !cur[p.id] || cur[p.id].status !== 'active');
-    const p = target === 'random' ? pick(free.length ? free : players) : players.find((x) => x.id === target);
-    if (!p) return;
-    const m = pick(pool);
+    const free = players.filter((player) => canReceiveMissions(player) && (!cur[player.id] || cur[player.id].status !== 'active'));
+    const eligible = players.filter(canReceiveMissions);
+    const p = target === 'random' ? pick(free.length ? free : eligible) : players.find((player) => player.id === target);
+    if (!p || !canReceiveMissions(p)) {
+      setMessage('Η παίκτρια δεν έχει επιλέξει συμμετοχή σε μυστικές αποστολές.');
+      return;
+    }
+    const answers = profileFor(p.id);
+    const suitablePool = pool;
+    if (!suitablePool.length) {
+      setMessage('Δεν υπάρχουν διαθέσιμες αποστολές σε αυτό το Mode.');
+      return;
+    }
+    if (auto && answers?.boundaries?.trim()) {
+      setMessage('Η παίκτρια έχει δηλώσει προσωπικά όρια. Απαιτείται χειροκίνητος έλεγχος πριν από την αποστολή.');
+      return;
+    }
+    const m = pick(suitablePool);
+    if (!auto && !window.confirm(`Αποστολή στη ${p.name}: «${m.title}»\n\n${m.text}\n\nΈλεγξε τα δηλωμένα όρια πριν συνεχίσεις.`)) return;
     setMg({
       missions: {
         ...cur,
@@ -51,7 +77,7 @@ export default function MissionPanel({ ctx, pool, onSuccess, onFail, title = '�
       <div className="flex flex-wrap items-center gap-2">
         <select value={target} onChange={(e) => setTarget(e.target.value)} className="px-2 py-2 rounded bg-background border border-border text-sm">
           <option value="random">🎲 Τυχαία παίκτρια</option>
-          {players.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
+          {players.map((p) => <option key={p.id} value={p.id} disabled={!canReceiveMissions(p)}>{p.name}{canReceiveMissions(p) ? '' : ' · χωρίς αποστολές'}</option>)}
         </select>
         <Btn color="bg-fuchsia-700" onClick={send} disabled={stopped}>📲 Στείλε αποστολή</Btn>
         <label className="flex items-center gap-1 text-xs">
@@ -65,6 +91,7 @@ export default function MissionPanel({ ctx, pool, onSuccess, onFail, title = '�
           λεπτά
         </label>
       </div>
+      {message && <div role="status" className="rounded border border-amber-500/30 bg-amber-500/10 p-2 text-xs">{message}</div>}
       {active.length === 0 && <div className="text-xs opacity-60">Καμία ενεργή αποστολή. Οι αποστολές εμφανίζονται στο κινητό της παίκτριας (άνοιγμα /play).</div>}
       {active.map((m) => {
         const name = players.find((p) => p.id === m.playerId)?.name;

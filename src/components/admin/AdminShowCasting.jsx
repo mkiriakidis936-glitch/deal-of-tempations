@@ -91,7 +91,7 @@ export default function AdminShowCasting() {
       previous.slipperType = item.slipperType || previous.slipperType;
       previous.nailColor = item.nailColor || previous.nailColor;
       previous.vipProfile = item.vipProfile || previous.vipProfile;
-      previous.accommodation = item.accommodation || item.stayAtVilla || item.vipProfile?.stayAtVilla || previous.accommodation;
+      previous.accommodation = item.accommodation || item.stayAtVilla || item.vipProfile?.answers?.stayAtVilla || previous.accommodation;
       previous.preferredModes = [...new Set([...previous.preferredModes, ...modes])];
       byName.set(key, previous);
     };
@@ -99,6 +99,21 @@ export default function AdminShowCasting() {
     pajamaIntakes.forEach((item) => add(item, 'pajama'));
     return [...byName.values()].sort((a, b) => a.name.localeCompare(b.name, 'el'));
   }, [mode, playerIntakes, pajamaIntakes]);
+
+  const modeCounts = useMemo(() => {
+    const counts = new Map();
+    const add = (item, source) => {
+      const key = normalizeName(item.name);
+      if (!key) return;
+      modesForIntake(item, source).forEach((modeId) => {
+        if (!counts.has(modeId)) counts.set(modeId, new Set());
+        counts.get(modeId).add(key);
+      });
+    };
+    playerIntakes.forEach((item) => add(item, 'player'));
+    pajamaIntakes.forEach((item) => add(item, 'pajama'));
+    return GAME_MODES.map((item) => ({ ...item, count: counts.get(item.id)?.size || 0 }));
+  }, [playerIntakes, pajamaIntakes]);
 
   const limits = playerLimits(mode);
   const selectedCandidates = candidates.filter((item) => selected.includes(normalizeName(item.name)));
@@ -162,6 +177,23 @@ export default function AdminShowCasting() {
           <div className="font-heading text-xl text-primary">SHOW CASTING · ΕΠΙΛΟΓΗ ΕΠΕΙΣΟΔΙΟΥ</div>
           <p className="text-sm text-foreground/65">Οι υπάρχουσες φόρμες συγκεντρώνονται εδώ. Επίλεξε το Mode που θα πραγματοποιηθεί και τις παίκτριες του συγκεκριμένου επεισοδίου.</p>
         </div>
+        <div className="space-y-2">
+          <div className="text-xs font-bold text-foreground/60">ΕΠΙΛΟΓΕΣ ΠΑΙΚΤΡΙΩΝ ΑΝΑ MODE</div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+            {modeCounts.map((item) => (
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => { setMode(item.id); setSelected([]); }}
+                className={`rounded-lg border p-2 text-left ${mode === item.id ? 'border-primary bg-primary/10' : 'border-border/60 bg-secondary'}`}
+              >
+                <div className="text-xs font-bold">{item.name}</div>
+                <div className="font-heading text-xl text-primary">{item.count}</div>
+                <div className="text-[10px] text-foreground/50">ενδιαφερόμενες</div>
+              </button>
+            ))}
+          </div>
+        </div>
         <label className="block space-y-1 text-sm font-bold">
           ΤΕΛΙΚΟ MODE
           <select value={mode} onChange={(event) => { setMode(event.target.value); setSelected([]); }} className="w-full rounded-lg border-2 border-border bg-background px-3 py-2">
@@ -185,7 +217,7 @@ export default function AdminShowCasting() {
                     <span className="block font-bold">{item.name}</span>
                     <span className="block text-xs text-foreground/55">
                       {item.sourceIds.map((source) => source.source === 'player' ? 'Player Intake' : 'Pajama / Modes Form').join(' · ')}
-                      {item.accommodation ? ` · Διαμονή: ${item.accommodation === true ? 'Ναι' : item.accommodation === false ? 'Όχι' : item.accommodation}` : ''}
+                      {item.accommodation ? ` · ${item.accommodation === 'yes' || item.accommodation === true ? 'Παραμονή στο σπίτι' : item.accommodation === 'no' || item.accommodation === false ? 'Μόνο μία βραδιά Game Show' : item.accommodation}` : ''}
                     </span>
                   </span>
                   {checked && <span className="text-xs font-bold text-primary">ΕΠΙΛΕΓΜΕΝΗ</span>}

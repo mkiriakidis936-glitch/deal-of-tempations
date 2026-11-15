@@ -85,7 +85,7 @@ export default function SetupScreen({ onStart }) {
 
       const castingRecord = castingRes.items?.[0] || null;
       const savedCastingPlan = castingRecord?.value;
-      if (savedCastingPlan?.mode && Array.isArray(savedCastingPlan.players) && savedCastingPlan.players.length) {
+      if (savedCastingPlan?.mode && !savedCastingPlan.usedAt && Array.isArray(savedCastingPlan.players) && savedCastingPlan.players.length) {
         const activePlan = { ...savedCastingPlan, settingId: castingRecord.id };
         setCastingPlan(activePlan);
         setMode(activePlan.mode);
@@ -254,6 +254,13 @@ export default function SetupScreen({ onStart }) {
 
         <ComicPanel>
           <h2 className="font-heading text-2xl mb-3 text-primary">1. ΕΠΙΛΟΓΗ MODE</h2>
+          {castingPlan?.mode && (
+            <div className="mb-3 rounded-lg border border-primary/50 bg-primary/10 p-3 text-sm">
+              <div className="font-heading text-primary">MODE ΕΠΙΛΕΓΜΕΝΟ ΑΠΟ ΤΟ ADMIN</div>
+              <div>{GAME_MODES.find((item) => item.id === castingPlan.mode)?.name || castingPlan.mode}</div>
+              <div className="mt-1 text-xs text-foreground/55">Για αλλαγή Mode, ενημέρωσε πρώτα την επιλογή επεισοδίου στο Admin.</div>
+            </div>
+          )}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className={`comic-panel-sm p-3 transition-all sm:col-span-2 ${mode === 'classic' || mode === 'marathon' ? 'ring-2 ring-primary bg-primary/10' : 'bg-secondary'}`}>
               <div className="font-heading text-xl text-foreground">🎲 ΚΛΑΣΣΙΚΗ / MEGA MARATHON</div>
@@ -265,7 +272,8 @@ export default function SetupScreen({ onStart }) {
                     <button
                       key={v.id}
                       onClick={() => handleModeChange(v)}
-                      className={`rounded-md border p-2 text-left transition-all ${on ? 'border-primary bg-primary/15' : 'border-border/60 bg-surface-1 hover:border-primary/50'}`}
+                      disabled={!!castingPlan}
+                      className={`rounded-md border p-2 text-left transition-all ${on ? 'border-primary bg-primary/15' : 'border-border/60 bg-surface-1 hover:border-primary/50'} ${castingPlan ? 'cursor-not-allowed opacity-75' : ''}`}
                     >
                       <img src={MODE_COVERS["modeCover_" + v.id] || ""} alt={v.name} className="w-full aspect-[16/9] object-cover rounded-md mb-2 bg-black/30" />
                       <div className="font-heading text-base text-foreground leading-tight">{v.icon} {v.name}</div>
@@ -279,7 +287,8 @@ export default function SetupScreen({ onStart }) {
               <button
                 key={m.id}
                 onClick={() => handleModeChange(m)}
-                className={`comic-panel-sm p-3 text-left transition-all ${mode === m.id ? 'ring-2 ring-primary bg-primary/10' : 'bg-secondary'}`}
+                disabled={!!castingPlan}
+                className={`comic-panel-sm p-3 text-left transition-all ${mode === m.id ? 'ring-2 ring-primary bg-primary/10' : 'bg-secondary'} ${castingPlan ? 'cursor-not-allowed opacity-75' : ''}`}
               >
                 <img src={MODE_COVERS["modeCover_" + m.id] || ""} alt={m.name} className="w-full aspect-[16/9] object-cover rounded-md mb-2 bg-black/30" />
                 <div className="font-heading text-xl text-foreground">{m.icon} {m.name}</div>

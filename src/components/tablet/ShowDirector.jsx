@@ -3,6 +3,7 @@ import ComicPanel from '@/components/comic/ComicPanel';
 import ComicButton from '@/components/comic/ComicButton';
 import { GAME_MODES } from '@/data/gameConfig';
 import { isNewMode, modeMeta, ACT_META } from '@/data/modes/modeRegistry';
+import { PAJAMA_ACTS } from '@/data/pajamaProgram';
 
 const BASE_ACTS = [
   { id: 'intro', label: 'ΕΙΣΑΓΩΓΗ', icon: '🎬', subtitle: 'Η βραδιά ξεκινά' },
@@ -10,6 +11,13 @@ const BASE_ACTS = [
   { id: 'interrogation', label: 'ΑΝΑΚΡΙΣΗ', icon: '🔍', subtitle: 'Στάδιο 2 — Ανάκριση' },
   { id: 'finale', label: 'ΦΙΝΑΛΕ', icon: '🏆', subtitle: 'Στάδιο 3 — Φινάλε' },
   { id: 'awards', label: 'ΒΡΑΒΕΙΑ', icon: '🏅', subtitle: 'Απολογισμός & Βραβεία' },
+];
+
+const DECISION_PRESETS = [
+  'Η ΑΠΟΦΑΣΗ ΕΙΝΑΙ...',
+  'ΑΠΟΤΕΛΕΣΜΑ ΨΗΦΟΦΟΡΙΑΣ',
+  'Η ΤΕΛΙΚΗ ΑΝΑΚΟΙΝΩΣΗ',
+  'Ο ΝΙΚΗΤΗΣ ΤΟΥ ΕΠΕΙΣΟΔΙΟΥ',
 ];
 
 export default function ShowDirector({ state, updateState, onClose }) {
@@ -22,7 +30,32 @@ export default function ShowDirector({ state, updateState, onClose }) {
       icon: '🎬',
       subtitle: `Φάση ${index + 1} από ${modeMeta(state.mode).acts.length}`,
     }))
+    : state.mode === 'pajama'
+    ? PAJAMA_ACTS.map((act, index) => ({ id: act.id, label: act.title, icon: '🎬', subtitle: act.subtitle || `Πράξη ${index + 1}` }))
+    : state.mode === 'marathon'
+    ? [
+      { id: 'marathon_1', label: 'INFILTRATION', icon: '🚔', subtitle: 'Στάδιο 1 · Infiltration' },
+      { id: 'marathon_2', label: 'VAULT', icon: '🔐', subtitle: 'Στάδιο 2 · Vault' },
+      { id: 'marathon_3', label: 'RAIDS', icon: '⚡', subtitle: 'Στάδιο 3 · Raids' },
+      { id: 'marathon_4', label: 'LOCKDOWN', icon: '🚨', subtitle: 'Στάδιο 4 · Lockdown' },
+    ]
+    : state.mode === 'arrest_heist'
+    ? [
+      { id: 'arrest_1', label: 'ARREST & HEIST', icon: '🚨', subtitle: 'Στάδιο 1 · Κύριο παιχνίδι' },
+      { id: 'arrest_2', label: 'GRAND HEIST', icon: '🔐', subtitle: 'Στάδιο 2 · Vault' },
+      { id: 'arrest_3', label: 'FINALE', icon: '🏆', subtitle: 'Στάδιο 3 · Αποτέλεσμα' },
+    ]
     : BASE_ACTS;
+
+  const currentActId = isNewMode(state.mode)
+    ? modeMeta(state.mode)?.acts?.[state.mg?.actIndex || 0]
+    : state.mode === 'pajama'
+    ? PAJAMA_ACTS[state.pajama?.actIndex || 0]?.id
+    : state.mode === 'marathon'
+    ? `marathon_${state.marathonStage || 1}`
+    : state.mode === 'arrest_heist'
+    ? `arrest_${state.stage || 1}`
+    : ({ 0: 'intro', 1: 'patrol', 2: 'interrogation', 3: 'finale' })[state.stage] || 'intro';
   const [revealTitle, setRevealTitle] = useState('');
   const [revealContent, setRevealContent] = useState('');
   const [autoSpeak, setAutoSpeak] = useState(showMode.autoSpeak !== false);
@@ -77,6 +110,7 @@ export default function ShowDirector({ state, updateState, onClose }) {
         <ComicPanel className="bg-tarot-royal text-center py-4">
           <div className="font-heading text-3xl comic-text-stroke text-tarot-gold">🎬 SHOW DIRECTOR</div>
           <div className="text-sm font-bold text-foreground/80 font-body">{modeName} · Σκηνοθεσία επεισοδίου</div>
+          <div className="mt-1 text-xs text-foreground/55">Τρέχουσα φάση: {acts.find((act) => act.id === currentActId)?.label || '—'}</div>
         </ComicPanel>
 
         <ComicPanel className="bg-card flex items-center justify-between">
@@ -92,7 +126,7 @@ export default function ShowDirector({ state, updateState, onClose }) {
             {acts.map((a) => (
               <ComicButton
                 key={a.id}
-                variant={showMode.act === a.id ? 'magenta' : 'white'}
+                variant={showMode.act === a.id ? 'magenta' : currentActId === a.id ? 'yellow' : 'white'}
                 size="sm"
                 onClick={() => triggerTransition(a.id)}
                 className="w-full flex items-center gap-2"
@@ -129,6 +163,14 @@ export default function ShowDirector({ state, updateState, onClose }) {
             </div>
           ) : (
             <div className="space-y-2">
+              <div className="text-xs font-bold text-foreground/55">ΕΤΟΙΜΕΣ ΣΚΗΝΕΣ ΣΗΜΑΝΤΙΚΩΝ ΑΠΟΦΑΣΕΩΝ</div>
+              <div className="grid grid-cols-2 gap-2">
+                {DECISION_PRESETS.map((preset) => (
+                  <ComicButton key={preset} variant="dark" size="sm" onClick={() => setRevealTitle(preset)}>
+                    {preset}
+                  </ComicButton>
+                ))}
+              </div>
               <input
                 type="text"
                 value={revealTitle}

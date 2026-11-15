@@ -78,6 +78,7 @@ export default function Tablet() {
   }
 
   const [showQR, setShowQR] = React.useState(false);
+  const [intakeProfiles, setIntakeProfiles] = React.useState([]);
   const [showSplash, setShowSplash] = React.useState(() => !sessionStorage.getItem('dotSplash'));
   const [overlay, setOverlay] = React.useState(null);
   const endingRef = React.useRef(false);
@@ -88,6 +89,35 @@ export default function Tablet() {
   const [undoDepth, setUndoDepth] = React.useState(0);
 
   React.useEffect(() => { liveRef.current = state; }, [state]);
+
+  // Personal answers stay local to the authenticated Tablet; they are never copied into the public session state.
+  React.useEffect(() => {
+    let active = true;
+    if (!session?.id) {
+      setIntakeProfiles([]);
+      return undefined;
+    }
+    base44.entities.PlayerIntake.filter({}, { sort: '-created_date', limit: 500 })
+      .then((result) => { if (active) setIntakeProfiles(result.items || []); })
+      .catch((error) => console.error('Private player profile load failed', error));
+    return () => { active = false; };
+  }, [session?.id]);
+
+  const playerProfiles = React.useMemo(() => {
+    const normalize = (value) => String(value || '').trim().toLocaleLowerCase('el-GR');
+    return (state?.players || []).map((player) => {
+      const intake = intakeProfiles.find((item) =>
+        normalize(item.name) === normalize(player.name) ||
+        normalize(item.legalName) === normalize(player.name)
+      );
+      return {
+        playerId: player.id,
+        name: player.name,
+        vipProfile: intake?.vipProfile || null,
+      };
+    }).filter((profile) => profile.vipProfile?.answers);
+  }, [state?.players, intakeProfiles]);
+
 
   const trackedUpdate = React.useCallback(async (patch) => {
     if (liveRef.current) historyRef.current = [...historyRef.current.slice(-9), liveRef.current];
@@ -212,11 +242,78 @@ export default function Tablet() {
 
   const displayState = { ...state, sessionCode: session.sessionCode };
 
+  async function startPersonalizedSurprise(profile) {
+    const answers = profile.vipProfile?.answers || {};
+    if (answers.activeParticipation === 'no' || answers.activityPreferences?.surprises !== 'yes' || answers.unexpectedChallenge === 'no') return;
+    await trackedUpdate({
+      showMode: {
+        ...(state.showMode || {}),
+        reveal: { active: true, title: `ΜΥΣΤΙΚΗ ΕΚΠΛΗΞΗ · ${profile.name}`, content: '', phase: 'buildup', timestamp: Date.now() },
+      },
+    });
+  }
+
+  async function cancelPersonalizedSurprise() {
+    await trackedUpdate({ showMode: { ...(state.showMode || {}), reveal: null } });
+  }
+
+  async function revealPersonalizedSurprise(profile) {
+    const answers = profile.vipProfile?.answers || {};
+    const wish = String(answers.surpriseWish || '').trim();
+    if (!wish || answers.activeParticipation === 'no' || answers.activityPreferences?.surprises !== 'yes' || answers.unexpectedChallenge === 'no') return;
+    await trackedUpdate({
+      showMode: {
+        ...(state.showMode || {}),
+        reveal: { active: true, title: `ΜΥΣΤΙΚΗ ΕΚΠΛΗΞΗ · ${profile.name}`, content: wish, phase: 'reveal', timestamp: Date.now() },
+      },
+      history: [
+        { type: 'personalized_surprise', player: profile.name, detail: 'Αποκαλύφθηκε προσωπική έκπληξη από τη VIP φόρμα', timestamp: Date.now() },
+        ...(state.history || []),
+      ],
+    });
+  }
+
+  function renderProductionControls() {
+    return (
+      <>
+        <button
+          onClick={() => setOverlay('controlroom')}
+          className="fixed bottom-24 right-3 z-[65] comic-boom bg-tarot-royal text-tarot-gold px-3 py-2 font-heading text-xs shadow-xl"
+        >
+          MASTER CONTROL ROOM
+        </button>
+        {overlay === 'controlroom' && (
+          <ControlRoom
+            state={displayState}
+            playerProfiles={playerProfiles}
+            onStartSurprise={startPersonalizedSurprise}
+            onRevealSurprise={revealPersonalizedSurprise}
+            onCancelSurprise={cancelPersonalizedSurprise}
+            onOpen={(key) => key === 'intro' ? handleIntro() : setOverlay(key)}
+            onRefresh={refresh}
+            onEndGame={() => { setOverlay(null); archiveAndDelete(); }}
+            onClose={() => setOverlay(null)}
+          />
+        )}
+        {overlay === 'showdirector' && <ShowDirector state={displayState} updateState={trackedUpdate} onClose={() => setOverlay(null)} />}
+        {overlay === 'eventqueue' && <EventQueue state={displayState} updateState={trackedUpdate} onClose={() => setOverlay(null)} />}
+        {overlay === 'audio' && <AudioControl state={displayState} updateState={trackedUpdate} onClose={() => setOverlay(null)} />}
+        {overlay === 'synctimer' && <SyncTimerControl state={displayState} updateState={trackedUpdate} onClose={() => setOverlay(null)} />}
+        {overlay === 'finalepres' && (
+          <div className="fixed inset-0 z-[80] bg-background overflow-y-auto">
+            <FinalePresentation state={displayState} updateState={trackedUpdate} onEnd={() => { setOverlay(null); archiveAndDelete(); }} />
+          </div>
+        )}
+      </>
+    );
+  }
+
   if (isNewMode(state.mode)) {
     return (
       <>
-        <ModeGame state={displayState} updateState={trackedUpdate} onEnd={archiveAndDelete} onQR={() => setShowQR(true)} />
+        <ModeGame state={displayState} updateState={trackedUpdate} onEnd={archiveAndDelete} onQR={() => setShowQR(true)} playerProfiles={playerProfiles} />
         <NightDirectorHost state={displayState} updateState={trackedUpdate} />
+        {renderProductionControls()}
         {renderQR()}
       </>
     );
@@ -242,6 +339,7 @@ export default function Tablet() {
             <div className="font-heading text-6xl text-destructive comic-text-stroke comic-pulse">⏸ ΠΑΥΣΗ</div>
           </div>
         )}
+        {renderProductionControls()}
         {renderQR()}
       </>
     );
@@ -429,7 +527,11 @@ export default function Tablet() {
       {overlay === 'controlroom' && (
         <ControlRoom
           state={displayState}
-          onOpen={(key) => setOverlay(key)}
+          playerProfiles={playerProfiles}
+          onStartSurprise={startPersonalizedSurprise}
+          onRevealSurprise={revealPersonalizedSurprise}
+          onCancelSurprise={cancelPersonalizedSurprise}
+          onOpen={(key) => key === 'intro' ? handleIntro() : setOverlay(key)}
           onRefresh={refresh}
           onEndGame={() => { setOverlay(null); archiveAndDelete(); }}
           onClose={() => setOverlay(null)}
