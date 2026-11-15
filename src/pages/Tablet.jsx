@@ -109,7 +109,9 @@ export default function Tablet() {
     return (state?.players || []).map((player) => {
       const intake = intakeProfiles.find((item) =>
         normalize(item.name) === normalize(player.name) ||
-        normalize(item.legalName) === normalize(player.name)
+        normalize(item.legalName) === normalize(player.name) ||
+        normalize(item.displayName) === normalize(player.name) ||
+        normalize(item.vipProfile?.displayName) === normalize(player.name)
       );
       return {
         playerId: player.id,
