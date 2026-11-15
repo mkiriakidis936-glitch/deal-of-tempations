@@ -83,7 +83,7 @@ export default function PajamaGame({ state, updateState, onEnd, playerProfiles =
 
   useEffect(() => {
     if (!players.length || pj.phase === 'setup' || pj.saboteurId) return;
-    const eligible = players.filter((player) => isVipActivityAllowed(vipCtx, player));
+    const eligible = players.filter((player) => isVipActivityAllowed(vipCtx, player, 'missions'));
     if (!eligible.length) return;
     const pick = eligible[Math.floor(Math.random() * eligible.length)];
     updateState({ pajama: { ...pj, saboteurId: pick.id } });
@@ -126,7 +126,7 @@ export default function PajamaGame({ state, updateState, onEnd, playerProfiles =
           nailColor: prev?.nailColor || '',
         };
       });
-    const eligibleRoster = roster.filter((player) => isVipActivityAllowed(vipCtx, player));
+    const eligibleRoster = roster.filter((player) => isVipActivityAllowed(vipCtx, player, 'missions'));
     const saboteurId = eligibleRoster.length ? eligibleRoster[Math.floor(Math.random() * eligibleRoster.length)].id : null;
     const teamMode = !!wantTeams && roster.length >= 4;
     const teams = {};
@@ -150,7 +150,7 @@ export default function PajamaGame({ state, updateState, onEnd, playerProfiles =
   }
 
   function rematch() {
-    const eligiblePlayers = players.filter((player) => isVipActivityAllowed(vipCtx, player));
+    const eligiblePlayers = players.filter((player) => isVipActivityAllowed(vipCtx, player, 'missions'));
     const saboteurId = eligiblePlayers.length ? eligiblePlayers[Math.floor(Math.random() * eligiblePlayers.length)].id : null;
     const teams = {};
     const teamMode = !!pj.teamMode && players.length >= 4;
@@ -238,6 +238,10 @@ export default function PajamaGame({ state, updateState, onEnd, playerProfiles =
       lastResult: null,
     };
     if (target.kind === 'confessions') {
+      if (!players.some((player) => isVipActivityAllowed(vipCtx, player, 'questions'))) {
+        setPj({ ...base, ...advancePatch() });
+        return;
+      }
       setPj({ ...base, phase: 'confessions', confessions: [], order: [], confessionIndex: 0, guesserIndex: 0 });
       return;
     }
@@ -581,6 +585,7 @@ export default function PajamaGame({ state, updateState, onEnd, playerProfiles =
       <PajamaGiftTrial
         players={players.filter((player) => isVipActivityAllowed(vipCtx, player))}
         canAssign={(player) => canAssignVipActivity(vipCtx, player, { activityLabel: 'ομαδική δοκιμασία δώρου' })}
+        canStart={(sacrificedId) => players.filter((player) => player.id !== sacrificedId && isVipActivityAllowed(vipCtx, player)).every((player) => canAssignVipActivity(vipCtx, player, { activityLabel: 'συμμετοχή στην ομαδική δοκιμασία δώρου' }))}
         onDone={(gift) => setPj({ gift, phase: 'finale' })}
       />
     );
