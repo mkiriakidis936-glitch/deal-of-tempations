@@ -65,6 +65,7 @@ export default function AdminEpisodeArchive() {
         const schedule = Array.isArray(archive.episodeSchedule) ? archive.episodeSchedule : [];
         const players = Array.isArray(archive.playerNames) ? archive.playerNames : [];
         const highlights = Array.isArray(archive.highlights) ? archive.highlights : [];
+        const eventHistory = Array.isArray(archive.eventHistory) ? archive.eventHistory : [];
         const stats = archive.stats && typeof archive.stats === 'object' ? Object.entries(archive.stats) : [];
         const open = expanded === archive.id;
         return (
@@ -82,6 +83,7 @@ export default function AdminEpisodeArchive() {
               <span className="rounded bg-background/60 px-2 py-1">👥 {players.length} παίκτριες</span>
               <span className="rounded bg-background/60 px-2 py-1">🎬 {scenes.length} σκηνές</span>
               <span className="rounded bg-background/60 px-2 py-1">✨ {highlights.length} highlights</span>
+              <span className="rounded bg-background/60 px-2 py-1">📜 {eventHistory.length} συμβάντα</span>
             </div>
 
             {open && (
@@ -129,6 +131,22 @@ export default function AdminEpisodeArchive() {
                           {scene.subtitle && <div className="mt-1 text-xs text-foreground/55">{scene.subtitle}</div>}
                           {scene.content && <div className="mt-2 whitespace-pre-wrap text-xs text-foreground/75">{scene.content}</div>}
                           <div className="mt-2 text-[10px] text-foreground/40">{dateLabel(scene.revealedAt || scene.timestamp)}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {eventHistory.length > 0 && (
+                  <div>
+                    <div className="mb-2 text-xs font-bold text-primary">LIVE EVENT HISTORY</div>
+                    <div className="max-h-72 space-y-1 overflow-y-auto rounded-lg bg-background/50 p-2">
+                      {eventHistory.map((event, index) => (
+                        <div key={`${event.timestamp || index}-${index}`} className="flex flex-wrap gap-x-2 border-b border-border/30 py-1 text-xs last:border-0">
+                          <span className="shrink-0 text-foreground/40">{dateLabel(event.timestamp)}</span>
+                          <strong>{event.type}</strong>
+                          {event.player && <span>{event.player}</span>}
+                          {event.detail && <span className="text-foreground/60">{event.detail}</span>}
                         </div>
                       ))}
                     </div>
