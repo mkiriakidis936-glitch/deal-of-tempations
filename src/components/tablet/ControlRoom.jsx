@@ -3,6 +3,7 @@ import ComicPanel from '@/components/comic/ComicPanel';
 import ComicButton from '@/components/comic/ComicButton';
 import { GAME_MODES } from '@/data/gameConfig';
 import { isNewMode, modeMeta, ACT_META } from '@/data/modes/modeRegistry';
+import { PAJAMA_ACTS } from '@/data/pajamaProgram';
 
 const UNIVERSAL_ACTIONS = [
   { key: 'showdirector', label: 'Σκηνές / Show Director' },
@@ -51,7 +52,10 @@ function phaseLabel(state) {
   }
   if (state.mode === 'marathon') return `Στάδιο ${state.marathonStage || 1} · ${state.round || 1}ος γύρος`;
   if (state.mode === 'arrest_heist') return `Στάδιο ${state.stage || 0} · ${state.round || 1}ος γύρος`;
-  if (state.mode === 'pajama') return state.pajama?.phase || 'Pajama Show';
+  if (state.mode === 'pajama') {
+    const act = PAJAMA_ACTS[state.pajama?.actIndex || 0];
+    return act ? `${act.title} · ${state.pajama?.phase || 'σε εξέλιξη'}` : 'Pajama Show';
+  }
   return ({ 0: 'Προετοιμασία', 1: 'Περιπολία', 2: 'Ανάκριση', 3: 'Φινάλε' })[state.stage] || 'Σε εξέλιξη';
 }
 
@@ -72,9 +76,10 @@ export default function ControlRoom({ state, playerProfiles = [], onStartSurpris
   const players = state.players || [];
   const log = (state.history || []).slice(0, 12);
   const modeName = GAME_MODES.find((mode) => mode.id === state.mode)?.name || state.mode || '—';
-  const currentPlayer = players[state.currentPlayerIndex || 0];
-  const syncTimer = state.syncTimer;
-  const timerRemaining = syncTimer?.running && syncTimer.endsAt
+  const currentIndex = isNewMode(state.mode) ? (state.mg?.turn || 0) : state.mode === 'pajama' ? (state.pajama?.turnIndex || 0) : (state.currentPlayerIndex || 0);
+  const currentPlayer = players.length ? players[currentIndex % players.length] : null;
+  const syncTimer = state.syncTimer || state.mg?.timer || null;
+  const timerRemaining = syncTimer?.endsAt
     ? Math.ceil((syncTimer.endsAt - now) / 1000)
     : syncTimer?.remaining;
   const night = state.night;
@@ -102,7 +107,7 @@ export default function ControlRoom({ state, playerProfiles = [], onStartSurpris
           <ComicPanel className="bg-card p-3">
             <div className="ds-label text-foreground/50">ΧΡΟΝΟΜΕΤΡΟ</div>
             <div className="mt-1 font-heading text-2xl text-primary">{syncTimer ? formatSeconds(timerRemaining) : '—'}</div>
-            <div className="text-[10px] text-foreground/45">{syncTimer?.running ? 'ΕΝΕΡΓΟ' : syncTimer ? 'ΠΑΥΣΗ' : 'ΑΝΕΝΕΡΓΟ'}</div>
+            <div className="text-[10px] text-foreground/45">{syncTimer?.running || syncTimer?.endsAt > now ? 'ΕΝΕΡΓΟ' : syncTimer ? 'ΠΑΥΣΗ' : 'ΑΝΕΝΕΡΓΟ'}</div>
           </ComicPanel>
           <ComicPanel className="bg-card p-3">
             <div className="ds-label text-foreground/50">ΣΥΜΒΑΝΤΑ</div>
