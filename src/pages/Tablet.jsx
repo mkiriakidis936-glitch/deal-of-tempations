@@ -203,6 +203,7 @@ export default function Tablet() {
         highlights,
         showScenes: state.showMode?.sceneHistory || [],
         episodeSchedule: state.night?.program || [],
+        eventHistory: state.history || [],
       });
     } catch (e) {
       console.error('Archive failed', e);
