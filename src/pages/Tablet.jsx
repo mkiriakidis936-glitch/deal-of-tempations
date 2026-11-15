@@ -54,7 +54,7 @@ import { base44 } from '@/api/base44Client';
 import { awardAchievements } from '@/lib/achievements';
 import { setGameStopActive } from '@/lib/modeKit';
 import { canAssignVipActivity } from '@/lib/playerIntelligence';
-import { getExtra4, pauseExtra4Timers, resumeExtra4Timers } from '@/lib/extra4';
+import { getExtra4, pauseExtra4Timers, resumeExtra4Timers, getExtra4SceneItems, getExtra4ModeSceneIndex } from '@/lib/extra4';
 
 export default function Tablet() {
   const { session, state, loading, updateState, createSession, deleteSession, refresh, joinByCode } = useGameSession();
@@ -71,6 +71,27 @@ export default function Tablet() {
       });
     }
   }, [state?.mode, state?.extra4?.tactical?.modeId, updateState]);
+
+  React.useEffect(() => {
+    if (!state?.mode) return;
+    const extra4 = getExtra4(state);
+    const items = getExtra4SceneItems(state);
+    if (!items.length) return;
+    const defaultOrder = items.map((item) => item.id);
+    const modeIndex = Math.max(0, Math.min(items.length - 1, getExtra4ModeSceneIndex(state)));
+    const modeChanged = extra4.scenes.modeId !== state.mode;
+    const savedOrder = !modeChanged && Array.isArray(extra4.scenes.order) ? extra4.scenes.order : [];
+    const order = [...savedOrder.filter((id) => defaultOrder.includes(id)), ...defaultOrder.filter((id) => !savedOrder.includes(id))];
+    if (modeChanged) {
+      updateState({ extra4: { scenes: { ...extra4.scenes, auto: true, modeId: state.mode, order: defaultOrder, currentIndex: modeIndex, current: items[modeIndex]?.label || items[0].label } } });
+      return;
+    }
+    if (extra4.scenes.auto === false) return;
+    const index = Math.max(0, order.indexOf(items[modeIndex]?.id));
+    const current = items.find((item) => item.id === order[index])?.label || items[0].label;
+    if (extra4.scenes.current === current && extra4.scenes.currentIndex === index && JSON.stringify(extra4.scenes.order || []) === JSON.stringify(order)) return;
+    updateState({ extra4: { scenes: { ...extra4.scenes, modeId: state.mode, order, currentIndex: index, current } } });
+  }, [state?.mode, state?.mg?.actIndex, state?.pajama?.actIndex, state?.stage, state?.marathonStage, state?.extra4?.scenes?.auto, state?.extra4?.scenes?.modeId, state?.extra4?.scenes?.current, state?.extra4?.scenes?.currentIndex, state?.extra4?.scenes?.order, updateState]);
 
   React.useEffect(() => {
     const extraStatus = state?.extra4?.control?.status;
