@@ -136,7 +136,7 @@ export default function Extra4Panel({ state, updateState, playerProfiles = [], p
     const eligible = players.filter((player) => !extra4.economy.restrictions[player.id] && isVipActivityAllowed({ playerProfiles, playerProfilesReady }, player, type) && canAssignVipActivity({ playerProfiles, playerProfilesReady }, player, { activityType: type, activityLabel: groupLabel }));
     if (state.stopActive || extra4.control.status !== 'running' || activeActivity?.status === 'active' || eligible.length === 0) return;
     const catalogIndex = activityCatalog.findIndex((item) => item.id === action.id && item.categoryId === groupId);
-    const item = { id: `activity-${Date.now()}`, actionId: action.id, label: action.label, category: groupLabel, status: 'active', startedAt: Date.now(), endedAt: null, result: null, mode: currentMode, participantIds: eligible.map((player) => player.id) };
+    const item = { id: `activity-${Date.now()}`, actionId: action.id, label: action.label, category: groupLabel, status: 'active', startedAt: Date.now(), endedAt: null, result: null, resultGame: null, miniGameCompletedAt: null, responseStartAt: action.id === 'extra4reaction' ? Date.now() + 3000 : null, responses: Object.fromEntries(Object.keys(extra4.activity.active?.responses || {}).map((id) => [id, null])), mode: currentMode, participantIds: eligible.map((player) => player.id) };
     const eventLog = addExtra4Event(extra4, 'activity_started', `Έναρξη: ${item.label}`, { activityId: item.id, result: null });
     await updateExtra({ activity: { ...extra4.activity, active: item, queueIndex: catalogIndex >= 0 ? catalogIndex : extra4.activity.queueIndex }, eventLog });
     onOpen?.(action.id);
@@ -157,7 +157,7 @@ export default function Extra4Panel({ state, updateState, playerProfiles = [], p
         if (eligible.length) { next = { candidate, eligible }; break; }
       }
       if (next && extra4.control.status === 'running') {
-        const nextActivity = { id: `activity-${Date.now()}`, actionId: next.candidate.id, label: next.candidate.label, category: next.candidate.categoryLabel, status: 'active', startedAt: Date.now(), endedAt: null, result: null, mode: currentMode, participantIds: next.eligible.map((player) => player.id) };
+        const nextActivity = { id: `activity-${Date.now()}`, actionId: next.candidate.id, label: next.candidate.label, category: next.candidate.categoryLabel, status: 'active', startedAt: Date.now(), endedAt: null, result: null, resultGame: null, miniGameCompletedAt: null, responseStartAt: next.candidate.id === 'extra4reaction' ? Date.now() + 3000 : null, responses: Object.fromEntries(Object.keys(activeActivity.responses || {}).map((id) => [id, null])), mode: currentMode, participantIds: next.eligible.map((player) => player.id) };
         eventLog = addExtra4Event({ ...extra4, eventLog }, 'activity_started', `Αυτόματη επόμενη δραστηριότητα: ${nextActivity.label}`, { activityId: nextActivity.id, result: null });
         await updateExtra({ activity: { ...extra4.activity, active: nextActivity, queueIndex: activityCatalog.indexOf(next.candidate) }, eventLog });
         onOpen?.(next.candidate.id);
