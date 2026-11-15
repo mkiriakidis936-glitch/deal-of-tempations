@@ -61,7 +61,7 @@ const EMPTY = {
 
 const DEFAULT_BINDING = 'Χέρια δεμένα πίσω από την πλάτη · πόδια ενωμένα με κορδέλες';
 
-export default function PajamaGame({ state, updateState, onEnd, playerProfiles = [] }) {
+export default function PajamaGame({ state, updateState, onEnd, playerProfiles = [], playerProfilesReady = true }) {
   const [content, setContent] = useState(null);
 
   useEffect(() => {
@@ -76,7 +76,7 @@ export default function PajamaGame({ state, updateState, onEnd, playerProfiles =
   }, []);
 
   const players = state.players || [];
-  const vipCtx = { playerProfiles };
+  const vipCtx = { playerProfiles, playerProfilesReady };
   const pj = { ...EMPTY, ...(state.pajama || {}) };
   const setPj = (patch) => updateState({ pajama: { ...pj, ...patch } });
   const act = PAJAMA_ACTS[Math.min(pj.actIndex || 0, PAJAMA_ACTS.length - 1)];
@@ -87,7 +87,7 @@ export default function PajamaGame({ state, updateState, onEnd, playerProfiles =
     if (!eligible.length) return;
     const pick = eligible[Math.floor(Math.random() * eligible.length)];
     updateState({ pajama: { ...pj, saboteurId: pick.id } });
-  }, [players.length, pj.phase, pj.saboteurId]);
+  }, [players.length, pj.phase, pj.saboteurId, playerProfiles, playerProfilesReady]);
 
   function awards(list) {
     const scores = { ...pj.scores };
