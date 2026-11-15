@@ -63,6 +63,10 @@ export default function Extra4Panel({ state, updateState, playerProfiles = [], p
   const activeTimers = [
     state.syncTimer ? { label: 'Κεντρικό', timer: state.syncTimer } : null,
     state.mg?.timer ? { label: 'Mode', timer: state.mg.timer } : null,
+    ...Object.entries(state.mg?.missions || {}).filter(([, mission]) => mission?.expiresAt || mission?.extra4RemainingMs).map(([id, mission]) => ({
+      label: mission.title || mission.label || `Mission ${id}`,
+      timer: { running: !!mission.expiresAt, endsAt: mission.expiresAt || null, remaining: Math.ceil((mission.extra4RemainingMs || 0) / 1000) },
+    })),
   ].filter(Boolean);
   const activityType = ['guessing', 'trivia'].includes(category) ? 'questions' : category === 'vip' ? 'surprises' : 'missions';
   const eligiblePlayers = players.filter((player) => !extra4.economy.restrictions[player.id] && isVipActivityAllowed({ playerProfiles, playerProfilesReady }, player, activityType));
@@ -143,7 +147,7 @@ export default function Extra4Panel({ state, updateState, playerProfiles = [], p
     const endedAt = Date.now();
     const completed = { ...activeActivity, status: 'completed', endedAt, result };
     let eventLog = addExtra4Event(extra4, 'activity_completed', `Ολοκλήρωση: ${activeActivity.label}`, { activityId: activeActivity.id, result });
-    if (extra4.activity.auto && result !== 'cancelled' && result !== 'skipped') {
+    if (extra4.activity.auto && result !== 'cancelled') {
       const startIndex = Math.max(-1, activityCatalog.findIndex((item) => item.id === activeActivity.actionId && item.categoryId === (EXTRA4_CATEGORIES.find((group) => group.label === activeActivity.category)?.id || category)));
       let next = null;
       for (let step = 1; step <= activityCatalog.length; step += 1) {
