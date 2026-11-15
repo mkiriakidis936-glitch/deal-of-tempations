@@ -4,6 +4,14 @@ import ComicButton from '@/components/comic/ComicButton';
 import { GAME_MODES } from '@/data/gameConfig';
 import { isNewMode, modeMeta, ACT_META } from '@/data/modes/modeRegistry';
 
+const UNIVERSAL_ACTIONS = [
+  { key: 'showdirector', label: 'Σκηνές / Show Director' },
+  { key: 'finalepres', label: 'Παρουσίαση Finale' },
+  { key: 'eventqueue', label: 'Ουρά συμβάντων' },
+  { key: 'synctimer', label: 'Χρονόμετρο' },
+  { key: 'audio', label: 'Ήχος' },
+];
+
 const ACTIONS = [
   { key: 'showdirector', label: 'Σκηνές / Show Director' },
   { key: 'finalepres', label: 'Παρουσίαση Finale' },
@@ -69,6 +77,7 @@ export default function ControlRoom({ state, onOpen, onRefresh, onEndGame, onClo
     ? Math.ceil((syncTimer.endsAt - now) / 1000)
     : syncTimer?.remaining;
   const night = state.night;
+  const availableActions = isNewMode(state.mode) || state.mode === 'pajama' ? UNIVERSAL_ACTIONS : ACTIONS;
 
   return (
     <div className="fixed inset-0 z-[70] overflow-y-auto bg-background/95 p-3 backdrop-blur-sm" onClick={onClose}>
@@ -146,7 +155,7 @@ export default function ControlRoom({ state, onOpen, onRefresh, onEndGame, onClo
         <ComicPanel>
           <div className="ds-label mb-2 text-primary/80">ΣΚΗΝΕΣ & ΕΝΕΡΓΕΙΕΣ</div>
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-            {ACTIONS.map((action) => (
+            {availableActions.map((action) => (
               <button key={action.key} onClick={() => onOpen(action.key)} className="comic-boom bg-secondary px-2 py-3 text-left text-xs leading-tight text-foreground">
                 {action.label}
               </button>
