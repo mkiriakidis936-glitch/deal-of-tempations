@@ -44,7 +44,7 @@ export default function Extra4Panel({ state, updateState, playerProfiles = [], p
   React.useEffect(() => {
     if (extra4.scenes.auto === false || extra4.scenes.current === currentScene) return;
     updateExtra({ scenes: { ...extra4.scenes, current: currentScene, updatedAt: Date.now() } });
-  }, [extra4.scenes.auto, extra4.scenes.current, currentScene]);
+  }, [extra4.scenes.auto, extra4.scenes.current, currentScene, updateExtra]);
 
   const currentScene = currentSceneLabel(state);
   const activeTimers = [
