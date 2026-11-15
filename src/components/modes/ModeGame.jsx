@@ -13,7 +13,7 @@ import { useModeCtx, useTick, timerStart } from '@/lib/modeKit';
 import { COLLECTIONS, applyScenarioCollections } from '@/lib/modesContentStore';
 
 // Tablet (game master) για τα 4 νέα modes. Κάθε mode = λίστα από acts.
-export default function ModeGame({ state, updateState, onEnd, onQR }) {
+export default function ModeGame({ state, updateState, onEnd, onQR, playerProfiles = [] }) {
   const [, setContentReady] = useState(false);
   useEffect(() => {
     let active = true;
@@ -25,7 +25,8 @@ export default function ModeGame({ state, updateState, onEnd, onQR }) {
     });
     return () => { active = false; restoreScenario?.(); };
   }, [state.mode, state.customScenario?.id]);
-  const ctx = useModeCtx(state, updateState);
+  const modeContext = useModeCtx(state, updateState);
+  const ctx = { ...modeContext, playerProfiles };
   const { mg, setMg, log } = ctx;
   useEffect(() => {
     if (['pedi_glam', 'villa_48h'].includes(state.mode) && !mg.timer) setMg({ timer: timerStart((state.mode === 'villa_48h' ? 48 * 60 : 90) * 60) });
