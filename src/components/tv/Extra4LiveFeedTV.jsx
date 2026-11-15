@@ -112,7 +112,7 @@ export default function Extra4LiveFeedTV({ sessionCode, token, feed = {} }) {
     setStatus('ΑΝΕΝΕΡΓΟ');
   }, [feed.status]);
 
-  if (!token) return null;
+  if (!token || !['connecting', 'connected', 'reconnecting'].includes(feed.status)) return null;
   const pip = !!feed.tvPip;
   const audioRequested = !!feed.tvAudio;
 
