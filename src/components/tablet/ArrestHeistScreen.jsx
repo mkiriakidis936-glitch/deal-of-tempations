@@ -96,10 +96,6 @@ export default function ArrestHeistScreen({ state, updateState, onEnd, playerPro
   }
 
   async function handleDareTruthResult(answered) {
-    if (!canAssignVipActivity(vipCtx, oppLeader, { activityType: 'questions', activityLabel: 'αλήθειες' })) {
-      setPhase('round_result');
-      return;
-    }
     if (answered) {
       const history = addHistory(state, { type: 'truth_answered', player: oppLeader?.name, team: oppTeam });
       await updateState({ history, [oppTeamKey]: { ...state[oppTeamKey], points: (state[oppTeamKey]?.points || 0) + 1 } });
@@ -110,10 +106,6 @@ export default function ArrestHeistScreen({ state, updateState, onEnd, playerPro
   }
 
   async function handleTruthResult(answered) {
-    if (!canAssignVipActivity(vipCtx, leader, { activityType: 'questions', activityLabel: 'αλήθειες' })) {
-      setPhase('round_result');
-      return;
-    }
     if (answered) {
       const history = addHistory(state, { type: 'truth_answered', player: leader?.name, team: currentTeam });
       await updateState({ history, [teamKey]: { ...state[teamKey], points: (state[teamKey]?.points || 0) + 1 } });
