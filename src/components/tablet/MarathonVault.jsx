@@ -5,11 +5,13 @@ import { MARATHON_TRIALS } from '@/data/gameContent';
 import { addHistory } from '@/lib/gameLogic';
 import VaultTrialChallenge from '@/components/tablet/VaultTrialChallenge';
 import SpeakButton from '@/components/comic/VoiceReader';
+import { canAssignVipActivity, isVipActivityAllowed } from '@/lib/playerIntelligence';
 
-export default function MarathonVault({ state, updateState, onAdvance }) {
+export default function MarathonVault({ state, updateState, onAdvance, playerProfiles = [] }) {
   const [phase, setPhase] = useState('intro');
   const [selectedPlayerId, setSelectedPlayerId] = useState(null);
   const [result, setResult] = useState(null);
+  const vipCtx = { playerProfiles };
 
   const trialIndex = state.trialIndex || 0;
   const currentTrial = MARATHON_TRIALS[trialIndex];
@@ -94,7 +96,8 @@ export default function MarathonVault({ state, updateState, onAdvance }) {
               {teamPlayers.map((p) => (
                 <button
                   key={p.id}
-                  onClick={() => setSelectedPlayerId(p.id)}
+                  onClick={() => { if (canAssignVipActivity(vipCtx, p, { activityLabel: 'ατομική δοκιμασία Vault' })) setSelectedPlayerId(p.id); }}
+                  disabled={!isVipActivityAllowed(vipCtx, p)}
                   className={`comic-panel-sm p-2 ${selectedPlayerId === p.id ? 'bg-primary ring-2 ring-primary' : 'bg-card'}`}
                 >
                   <div className="font-bold">{p.name}</div>
