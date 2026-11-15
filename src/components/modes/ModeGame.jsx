@@ -28,10 +28,12 @@ export default function ModeGame({ state, updateState, onEnd, onQR, playerProfil
   const modeContext = useModeCtx(state, updateState);
   const ctx = { ...modeContext, playerProfiles, playerProfilesReady };
   const { mg, setMg, log } = ctx;
-  useEffect(() => {
-    if (['pedi_glam', 'villa_48h'].includes(state.mode) && !mg.timer) setMg({ timer: timerStart((state.mode === 'villa_48h' ? 48 * 60 : 90) * 60) });
-  }, [state.mode, mg.timer, setMg]);
   const meta = modeMeta(state.mode);
+  const configuredDurationMinutes = meta?.minutes || 0;
+  useEffect(() => {
+    if (!configuredDurationMinutes || mg.timerModeId === state.mode) return;
+    setMg({ timer: timerStart(configuredDurationMinutes * 60), timerModeId: state.mode });
+  }, [state.mode, configuredDurationMinutes, mg.timerModeId, setMg]);
   const acts = meta.acts;
   const actIndex = Math.min(mg.actIndex || 0, acts.length - 1);
   const act = acts[actIndex];
