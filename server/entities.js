@@ -101,7 +101,7 @@ function validatePlayerPatch(current, patch, playerId) {
     'mobileVotes', 'electricChairVotes', 'juryTrial', 'grandJury', 'privateMessages',
     'sealedVotes', 'miniGameVolunteers', 'miniGameVotes', 'miniGameRatings',
     'snitchVotes', 'history', 'timeCapsule', 'lastWish', 'midnightPact',
-    'pajama', 'mg', 'players',
+    'pajama', 'mg', 'players', 'extra4',
   ]);
   if (Object.keys(patch).some((key) => !allowed.has(key))) return false;
   const player = (current.players || []).find((item) => item.id === playerId);
@@ -227,6 +227,20 @@ function validatePlayerPatch(current, patch, playerId) {
       );
     });
     if (!otherEntriesUnchanged || (before.length > 0 && after.length === 0) || (own && (typeof own.text !== 'string' || own.text.length > 1000))) return false;
+  }
+
+  if ('extra4' in patch) {
+    const oldActivity = current.extra4?.activity?.active || {};
+    const nextExtra4 = patch.extra4;
+    const nextActivity = nextExtra4?.activity;
+    if (!isObject(nextExtra4) || Object.keys(nextExtra4).some((key) => key !== 'activity') ||
+        !isObject(nextActivity) || Object.keys(nextActivity).some((key) => key !== 'responses') ||
+        !isObject(nextActivity.responses) ||
+        !onlyOwnMapEntryChanged(oldActivity.responses || {}, nextActivity.responses, playerId) ||
+        oldActivity.status !== 'active' || oldActivity.actionId !== 'extra4reaction' ||
+        !(oldActivity.participantIds || []).includes(playerId) ||
+        oldActivity.responses?.[playerId] != null || nextActivity.responses[playerId] !== true ||
+        !Number.isFinite(oldActivity.responseStartAt) || Date.now() < oldActivity.responseStartAt) return false;
   }
 
   if ('mg' in patch) {
@@ -1050,6 +1064,16 @@ export function entityRoutes() {
           return res.status(403).json({ error: 'Player update is not permitted' });
         }
         const safePlayerPatch = { ...statePatch };
+        if (safePlayerPatch.extra4?.activity?.responses?.[playerId] === true) {
+          const currentResponses = current.state?.extra4?.activity?.active?.responses || {};
+          safePlayerPatch.extra4 = {
+            activity: {
+              active: {
+                responses: { ...currentResponses, [playerId]: { tappedAt: Date.now() } },
+              },
+            },
+          };
+        }
         if (isObject(safePlayerPatch.pajama)) {
           safePlayerPatch.pajama = { ...safePlayerPatch.pajama };
           delete safePlayerPatch.pajama.saboteurId;
