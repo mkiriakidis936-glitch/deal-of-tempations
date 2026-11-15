@@ -1,0 +1,270 @@
+import React, { useMemo, useState } from 'react';
+import { QRCodeSVG } from 'qrcode.react';
+import ComicPanel from '@/components/comic/ComicPanel';
+import ComicButton from '@/components/comic/ComicButton';
+import { DIGITAL_CARDS } from '@/data/gameContent';
+import { INTENSITY_LEVELS, EXTRA4_CATEGORIES, getExtra4, addExtra4Event, pauseExtra4Timers, resumeExtra4Timers } from '@/lib/extra4';
+
+const money = (value) => Math.max(0, Number(value) || 0);
+
+export default function Extra4Panel({ state, updateState, onOpen, onEndGame, onClose }) {
+  const [tab, setTab] = useState('overview');
+  const [category, setCategory] = useState('sensory');
+  const [playerId, setPlayerId] = useState(state.players?.[0]?.id || '');
+  const [amount, setAmount] = useState('1');
+  const [lootAmount, setLootAmount] = useState('1');
+  const [keyTarget, setKeyTarget] = useState('');
+  const [terminalPlayer, setTerminalPlayer] = useState(state.players?.[0]?.id || '');
+  const [terminalUrl, setTerminalUrl] = useState('');
+  const extra4 = getExtra4(state);
+  const activeCategory = EXTRA4_CATEGORIES.find((item) => item.id === category) || EXTRA4_CATEGORIES[0];
+  const players = state.players || [];
+  const activeActivity = extra4.activity.active;
+  const activeTimer = state.syncTimer || state.mg?.timer || null;
+  const timerRemaining = activeTimer?.endsAt ? Math.max(0, Math.ceil((activeTimer.endsAt - Date.now()) / 1000)) : activeTimer?.remaining;
+  const updateExtra = (patch, rootPatch = {}) => updateState({ ...rootPatch, extra4: { ...extra4, ...patch } });
+  const eventLog = extra4.eventLog.slice().reverse();
+  const currentMode = state.mode || '—';
+
+  async function pause() {
+    if (extra4.control.status === 'paused') {
+      const timers = resumeExtra4Timers(state);
+      await updateExtra(
+        { control: { ...extra4.control, status: 'running', resumedAt: Date.now(), pausedAt: null } },
+        { ...timers, stopActive: false },
+      );
+      return;
+    }
+    if (extra4.control.status === 'emergency') return;
+    const timers = pauseExtra4Timers(state);
+    await updateExtra(
+      { control: { ...extra4.control, status: 'paused', pausedAt: Date.now() } },
+      { ...timers, stopActive: true },
+    );
+  }
+
+  async function emergencyStop() {
+    if (extra4.control.status === 'emergency') return;
+    const timers = pauseExtra4Timers(state);
+    const log = addExtra4Event(extra4, 'emergency_stop', 'Ενεργοποιήθηκε EMERGENCY STOP.');
+    await updateExtra(
+      {
+        control: {
+          ...extra4.control,
+          status: 'emergency',
+          emergencyAt: Date.now(),
+          requiresDirectorDecision: true,
+          interrupted: {
+            mode: state.mode || null,
+            stage: state.stage ?? null,
+            activeActivity: activeActivity || null,
+            syncTimer: state.syncTimer || null,
+          },
+        },
+        liveFeed: { ...extra4.liveFeed, status: 'off', requestedAt: null, cameraEnabled: false, microphoneEnabled: false },
+        eventLog: log,
+      },
+      { ...timers, stopActive: true },
+    );
+  }
+
+  async function continueAfterEmergency() {
+    const timers = resumeExtra4Timers(state);
+    await updateExtra(
+      {
+        control: { ...extra4.control, status: 'running', requiresDirectorDecision: false, continuedAt: Date.now(), emergencyAt: null },
+        liveFeed: { ...extra4.liveFeed, status: 'off', requestedAt: null, cameraEnabled: false, microphoneEnabled: false },
+      },
+      { ...timers, stopActive: false },
+    );
+  }
+
+  async function setLevel(level) {
+    if (activeActivity?.status === 'active') return;
+    await updateExtra({ tactical: { ...extra4.tactical, level, changedAt: Date.now() } });
+  }
+
+  async function startActivity(action) {
+    if (state.stopActive || extra4.control.status !== 'running' || activeActivity?.status === 'active') return;
+    const item = { id: `activity-${Date.now()}`, actionId: action.id, label: action.label, category: activeCategory.label, status: 'active', startedAt: Date.now(), mode: currentMode };
+    const eventLog = addExtra4Event(extra4, 'activity_started', `Έναρξη: ${item.label}`, { activityId: item.id, result: null });
+    await updateExtra({ activity: { ...extra4.activity, active: item }, eventLog });
+    onOpen?.(action.id);
+  }
+
+  async function finishActivity(result) {
+    if (!activeActivity || activeActivity.status !== 'active') return;
+    const endedAt = Date.now();
+    const completed = { ...activeActivity, status: 'completed', endedAt, result };
+    const eventLog = addExtra4Event(extra4, 'activity_completed', `Ολοκλήρωση: ${activeActivity.label}`, { activityId: activeActivity.id, result });
+    await updateExtra({ activity: { ...extra4.activity, active: completed }, eventLog });
+  }
+
+  async function addTokens() {
+    const value = money(amount);
+    if (!playerId || !value) return;
+    const tokens = { ...extra4.economy.tokens, [playerId]: money(extra4.economy.tokens[playerId]) + value };
+    await updateExtra({ economy: { ...extra4.economy, tokens } });
+    setAmount('1');
+  }
+
+  async function awardKey() {
+    if (!playerId) return;
+    const keys = { ...extra4.economy.keys, [playerId]: money(extra4.economy.keys[playerId]) + 1 };
+    await updateExtra({ economy: { ...extra4.economy, keys } });
+  }
+
+  async function tradeKey(kind) {
+    if (!playerId || money(extra4.economy.keys[playerId]) < 1) return;
+    const value = money(kind === 'tokens' ? amount : lootAmount);
+    if (!value) return;
+    const keys = { ...extra4.economy.keys, [playerId]: money(extra4.economy.keys[playerId]) - 1 };
+    const target = { ...extra4.economy[kind], [playerId]: money(extra4.economy[kind][playerId]) + value };
+    await updateExtra({ economy: { ...extra4.economy, keys, [kind]: target } });
+  }
+
+  async function releaseRestriction() {
+    if (!playerId || !keyTarget || money(extra4.economy.keys[playerId]) < 1) return;
+    const keys = { ...extra4.economy.keys, [playerId]: money(extra4.economy.keys[playerId]) - 1 };
+    const restrictions = { ...extra4.economy.restrictions };
+    delete restrictions[keyTarget];
+    await updateExtra({ economy: { ...extra4.economy, keys, restrictions } });
+    setKeyTarget('');
+  }
+
+  async function issueTerminal() {
+    if (!terminalPlayer) return;
+    const code = globalThis.crypto?.randomUUID?.() || `terminal-${Date.now()}`;
+    const url = `${window.location.origin}/play?code=${encodeURIComponent(state.sessionCode || '')}&terminal=${encodeURIComponent(code)}&player=${encodeURIComponent(terminalPlayer)}`;
+    const terminals = { ...(extra4.cards.terminals || {}), [code]: { code, playerId: terminalPlayer, url, active: true, createdAt: Date.now() } };
+    await updateExtra({ cards: { ...extra4.cards, terminals } });
+    setTerminalUrl(url);
+  }
+
+  async function deactivateTerminal(code) {
+    const terminals = { ...(extra4.cards.terminals || {}) };
+    if (terminals[code]) terminals[code] = { ...terminals[code], active: false, deactivatedAt: Date.now() };
+    await updateExtra({ cards: { ...extra4.cards, terminals } });
+    if (terminalUrl.includes(code)) setTerminalUrl('');
+  }
+
+  async function selectCard(card) {
+    await updateExtra({ cards: { ...extra4.cards, activeCard: { ...card, selectedAt: Date.now() } } });
+  }
+
+  const terminalEntries = useMemo(() => Object.values(extra4.cards.terminals || {}).sort((a, b) => b.createdAt - a.createdAt), [extra4.cards.terminals]);
+
+  return (
+    <div className="fixed inset-0 z-[90] overflow-y-auto bg-background/98 p-3 backdrop-blur-sm">
+      <div className="mx-auto max-w-5xl space-y-3 pb-8">
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <div className="ds-eyebrow text-primary/80">DEAL OF TEMPTATION</div>
+            <div className="ds-title text-2xl">EXTRA 4.0 CONTROL</div>
+          </div>
+          <ComicButton variant="red" size="sm" onClick={onClose}>ΚΛΕΙΣΙΜΟ</ComicButton>
+        </div>
+
+        <div className="flex flex-wrap gap-2">
+          {[
+            ['overview', 'ΕΠΙΣΚΟΠΗΣΗ'], ['tactical', 'TACTICAL LEVELS'], ['games', 'MINI-GAMES'],
+            ['economy', 'KEY HEIST & ECONOMY'], ['cards', 'CARDS & QR'], ['live', 'LIVE FEED'],
+          ].map(([id, label]) => <button key={id} onClick={() => setTab(id)} className={`rounded-lg border px-3 py-2 text-xs font-bold ${tab === id ? 'border-primary bg-primary text-tarot-dark' : 'border-border bg-card text-foreground'}`}>{label}</button>)}
+        </div>
+
+        {tab === 'overview' && <>
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+            <ComicPanel className="bg-card p-3"><div className="ds-label text-foreground/50">MODE</div><div className="font-heading text-lg text-primary">{currentMode}</div></ComicPanel>
+            <ComicPanel className="bg-card p-3"><div className="ds-label text-foreground/50">ΠΑΙΚΤΕΣ</div><div className="font-heading text-2xl">{players.length}</div></ComicPanel>
+            <ComicPanel className="bg-card p-3"><div className="ds-label text-foreground/50">ΧΡΟΝΟΜΕΤΡΟ</div><div className="font-heading text-2xl">{timerRemaining == null ? '—' : `${Math.floor(timerRemaining / 60)}:${String(timerRemaining % 60).padStart(2, '0')}`}</div></ComicPanel>
+            <ComicPanel className="bg-card p-3"><div className="ds-label text-foreground/50">ΚΑΤΑΣΤΑΣΗ</div><div className="font-heading text-lg">{extra4.control.status === 'emergency' ? 'EMERGENCY STOP' : extra4.control.status === 'paused' ? 'PAUSE' : 'LIVE'}</div></ComicPanel>
+          </div>
+          <ComicPanel className="bg-card space-y-3">
+            <div className="ds-label text-primary/80">ΚΕΝΤΡΙΚΟΣ ΕΛΕΓΧΟΣ</div>
+            <div className="grid grid-cols-2 gap-2">
+              <ComicButton variant={extra4.control.status === 'paused' ? 'green' : 'yellow'} onClick={pause} disabled={extra4.control.status === 'emergency'}>{extra4.control.status === 'paused' ? '▶ ΣΥΝΕΧΕΙΑ' : '⏸ PAUSE'}</ComicButton>
+              <ComicButton variant="red" onClick={emergencyStop} disabled={extra4.control.status === 'emergency'}>EMERGENCY STOP</ComicButton>
+            </div>
+            {extra4.control.status === 'emergency' && <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-3 space-y-2">
+              <div className="font-heading text-destructive">ΕΠΕΙΓΟΥΣΑ ΔΙΑΚΟΠΗ — ΑΠΑΙΤΕΙΤΑΙ ΑΠΟΦΑΣΗ DIRECTOR</div>
+              <div className="text-xs text-foreground/70">Mode: {extra4.control.interrupted?.mode || '—'} · Στάδιο: {extra4.control.interrupted?.stage ?? '—'}</div>
+              <div className="flex gap-2"><ComicButton variant="green" onClick={continueAfterEmergency}>ΣΥΝΕΧΙΣΗ ΕΠΕΙΣΟΔΙΟΥ</ComicButton><ComicButton variant="red" onClick={onEndGame}>ΤΕΡΜΑΤΙΣΜΟΣ</ComicButton></div>
+            </div>}
+            <div className="text-xs text-foreground/55">Το PAUSE διατηρεί το υπόλοιπο χρόνου. Το EMERGENCY STOP απαιτεί απόφαση του Director και δεν επανεκκινεί αυτόματα.</div>
+          </ComicPanel>
+          <ComicPanel className="bg-card space-y-2">
+            <div className="ds-label text-primary/80">ΠΑΙΚΤΕΣ — LIVE STATUS</div>
+            {players.map((player) => <div key={player.id} className="flex items-center justify-between border-b border-border/50 py-2 text-sm"><span>{player.name}</span><span className="text-xs text-foreground/60">{player.team || '—'} · {extra4.economy.tokens[player.id] || 0} Tokens · {extra4.economy.keys[player.id] || 0} Keys</span></div>)}
+          </ComicPanel>
+          <ComicPanel className="bg-card space-y-2">
+            <div className="ds-label text-primary/80">BASIC EVENT LOG</div>
+            {eventLog.length ? eventLog.slice(0, 8).map((event) => <div key={event.id} className="flex justify-between gap-2 border-b border-border/40 py-1 text-xs"><span>{event.detail}</span><span className="shrink-0 text-foreground/45">{new Date(event.timestamp).toLocaleTimeString('el-GR')}</span></div>) : <div className="text-xs text-foreground/50">Δεν υπάρχουν καταγεγραμμένες δραστηριότητες.</div>}
+          </ComicPanel>
+        </>}
+
+        {tab === 'tactical' && <ComicPanel className="bg-card space-y-3">
+          <div className="ds-label text-primary/80">TACTICAL LEVEL — ΚΟΙΝΟ ΓΙΑ ΟΛΟΥΣ</div>
+          <div className="text-sm">Ενεργό επίπεδο: <strong className="text-primary">{INTENSITY_LEVELS.find((item) => item.id === extra4.tactical.level)?.name || extra4.tactical.level}</strong></div>
+          <div className="grid gap-2 sm:grid-cols-3">
+            {INTENSITY_LEVELS.map((item) => <button key={item.id} disabled={activeActivity?.status === 'active' || extra4.control.status !== 'running'} onClick={() => setLevel(item.id)} className={`rounded-xl border-2 p-3 text-left disabled:opacity-40 ${extra4.tactical.level === item.id ? 'border-primary bg-primary/10' : 'border-border bg-secondary'}`}><div className="font-heading text-lg">{item.icon} {item.name}</div><div className="mt-1 text-xs text-foreground/60">{item.desc}</div></button>)}
+          </div>
+          <div className="text-xs text-foreground/55">Η δυσκολία είναι κοινή για όλους. Αλλάζει μόνο από τον Director και μόνο μεταξύ δραστηριοτήτων. Με αλλαγή Mode επανέρχεται στο STANDARD.</div>
+        </ComicPanel>}
+
+        {tab === 'games' && <div className="space-y-3">
+          <ComicPanel className="bg-card space-y-3">
+            <div className="ds-label text-primary/80">INTERACTIVE MINI-GAMES</div>
+            <div className="flex flex-wrap gap-2">{EXTRA4_CATEGORIES.map((item) => <button key={item.id} onClick={() => setCategory(item.id)} className={`rounded-lg border px-3 py-2 text-xs ${category === item.id ? 'border-primary bg-primary text-tarot-dark' : 'border-border bg-secondary'}`}>{item.label}</button>)}</div>
+            <div className="grid gap-2 sm:grid-cols-2">{activeCategory.actions.map((action) => <ComicButton key={action.id} disabled={!!(activeActivity?.status === 'active') || extra4.control.status !== 'running'} onClick={() => startActivity(action)}>{action.label}</ComicButton>)}</div>
+            {activeActivity?.status === 'active' && <div className="rounded-lg border border-primary/40 bg-primary/5 p-3 space-y-2"><div className="font-heading text-primary">ΕΝΕΡΓΗ ΔΡΑΣΤΗΡΙΟΤΗΤΑ: {activeActivity.label}</div><div className="flex flex-wrap gap-2"><ComicButton variant="green" onClick={() => finishActivity('completed')}>ΟΛΟΚΛΗΡΩΘΗΚΕ</ComicButton><ComicButton variant="yellow" onClick={() => finishActivity('success')}>ΕΠΙΤΥΧΙΑ</ComicButton><ComicButton variant="red" onClick={() => finishActivity('failed')}>ΑΠΟΤΥΧΙΑ</ComicButton></div></div>}
+          </ComicPanel>
+        </div>}
+
+        {tab === 'economy' && <div className="grid gap-3 lg:grid-cols-2">
+          <ComicPanel className="bg-card space-y-3">
+            <div className="ds-label text-primary/80">GLAM TOKENS & KEY HEIST</div>
+            <label className="block text-xs">Παίκτης<select className="mt-1 w-full rounded-lg border border-border bg-background p-2" value={playerId} onChange={(e) => setPlayerId(e.target.value)}>{players.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}</select></label>
+            <div className="grid grid-cols-2 gap-2"><div className="rounded bg-secondary p-3"><div className="text-xs text-foreground/50">TOKENS</div><div className="font-heading text-2xl">{extra4.economy.tokens[playerId] || 0}</div></div><div className="rounded bg-secondary p-3"><div className="text-xs text-foreground/50">KEYS</div><div className="font-heading text-2xl">{extra4.economy.keys[playerId] || 0}</div></div></div>
+            <label className="block text-xs">Ποσότητα Tokens<input type="number" min="1" value={amount} onChange={(e) => setAmount(e.target.value)} className="mt-1 w-full rounded-lg border border-border bg-background p-2" /></label>
+            <div className="flex flex-wrap gap-2"><ComicButton onClick={addTokens} disabled={!playerId || money(amount) < 1}>ΑΠΟΝΟΜΗ TOKENS</ComicButton><ComicButton variant="yellow" onClick={awardKey} disabled={!playerId}>ΑΠΟΝΟΜΗ KEY</ComicButton></div>
+          </ComicPanel>
+          <ComicPanel className="bg-card space-y-3">
+            <div className="ds-label text-primary/80">ΧΡΗΣΗ ΚΛΕΙΔΙΟΥ</div>
+            <label className="block text-xs">Παίκτης που διαθέτει Key<select className="mt-1 w-full rounded-lg border border-border bg-background p-2" value={playerId} onChange={(e) => setPlayerId(e.target.value)}>{players.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}</select></label>
+            <label className="block text-xs">Σύμμαχος για ψηφιακή απελευθέρωση<select className="mt-1 w-full rounded-lg border border-border bg-background p-2" value={keyTarget} onChange={(e) => setKeyTarget(e.target.value)}><option value="">Επίλεξε παίκτη</option>{players.filter((p) => p.id !== playerId && extra4.economy.restrictions[p.id]).map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}</select></label>
+            <ComicButton variant="green" onClick={releaseRestriction} disabled={!keyTarget || money(extra4.economy.keys[playerId]) < 1}>ΑΠΕΛΕΥΘΕΡΩΣΗ ΣΥΜΜΑΧΟΥ</ComicButton>
+            <label className="block text-xs">Ποσότητα Loot<input type="number" min="1" value={lootAmount} onChange={(e) => setLootAmount(e.target.value)} className="mt-1 w-full rounded-lg border border-border bg-background p-2" /></label>
+            <div className="flex flex-wrap gap-2"><ComicButton variant="yellow" onClick={() => tradeKey('tokens')} disabled={money(extra4.economy.keys[playerId]) < 1 || money(amount) < 1}>ΑΝΤΑΛΛΑΓΗ KEY → TOKENS</ComicButton><ComicButton variant="purple" onClick={() => tradeKey('loot')} disabled={money(extra4.economy.keys[playerId]) < 1 || money(lootAmount) < 1}>ΑΝΤΑΛΛΑΓΗ KEY → LOOT</ComicButton></div>
+            <div className="text-xs text-foreground/50">Η ποσότητα ανταλλαγής ορίζεται από τον Director. Δεν εφαρμόζεται αυτόματη ισοτιμία.</div>
+          </ComicPanel>
+        </div>}
+
+        {tab === 'cards' && <div className="space-y-3">
+          <ComicPanel className="bg-card space-y-3">
+            <div className="ds-label text-primary/80">DIGITAL CARDS</div>
+            <div className="grid gap-2 sm:grid-cols-2">{(DIGITAL_CARDS || []).map((card) => <div key={card.id} className="rounded-lg border border-border bg-secondary p-3"><div className="font-heading">{card.icon} {card.name}</div><div className="mt-1 text-xs text-foreground/60">{card.desc}</div><ComicButton size="sm" className="mt-2 w-full" onClick={() => selectCard(card)}>ΕΠΙΛΟΓΗ ΚΑΡΤΑΣ</ComicButton></div>)}</div>
+            {extra4.cards.activeCard && <div className="rounded-lg border border-primary/40 bg-primary/5 p-3"><div className="font-heading text-primary">ΕΠΙΛΕΓΜΕΝΗ ΚΑΡΤΑ: {extra4.cards.activeCard.name}</div><div className="text-sm">{extra4.cards.activeCard.desc}</div><ComicButton size="sm" variant="red" onClick={() => updateExtra({ cards: { ...extra4.cards, activeCard: null } })}>ΚΑΘΑΡΙΣΜΟΣ TV ΚΑΡΤΑΣ</ComicButton></div>}
+          </ComicPanel>
+          <ComicPanel className="bg-card space-y-3">
+            <div className="ds-label text-primary/80">QR TERMINALS</div>
+            <label className="block text-xs">Σύνδεση με παίκτη<select className="mt-1 w-full rounded-lg border border-border bg-background p-2" value={terminalPlayer} onChange={(e) => setTerminalPlayer(e.target.value)}>{players.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}</select></label>
+            <ComicButton onClick={issueTerminal} disabled={!terminalPlayer || !state.sessionCode}>ΔΗΜΙΟΥΡΓΙΑ QR TERMINAL</ComicButton>
+            {terminalUrl && <div className="rounded-lg bg-white p-3 text-center"><QRCodeSVG value={terminalUrl} size={180} /><div className="mt-2 break-all text-xs text-black">{terminalUrl}</div></div>}
+            {terminalEntries.map((terminal) => <div key={terminal.code} className="flex items-center justify-between gap-2 border-b border-border py-2 text-xs"><span>{players.find((p) => p.id === terminal.playerId)?.name || 'Παίκτης'} · {terminal.active ? 'ΕΝΕΡΓΟ' : 'ΑΝΕΝΕΡΓΟ'}</span><ComicButton size="sm" variant="red" disabled={!terminal.active} onClick={() => deactivateTerminal(terminal.code)}>ΑΠΕΝΕΡΓΟΠΟΙΗΣΗ</ComicButton></div>)}
+          </ComicPanel>
+          <div className="text-xs text-foreground/55">Οι υπάρχουσες VIP προσκλήσεις και οι φόρμες διαχειρίζονται από την ενότητα Admin → Digital Invitations.</div>
+        </div>}
+
+        {tab === 'live' && <ComicPanel className="bg-card space-y-3">
+          <div className="ds-label text-primary/80">ISOLATION CHAMBER — LIVE FEED</div>
+          <div className="text-sm">Κατάσταση: <strong>{extra4.liveFeed.status === 'requested' ? 'ΑΝΑΜΟΝΗ ΠΗΓΗΣ' : extra4.liveFeed.status === 'connected' ? 'ΣΥΝΔΕΔΕΜΕΝΟ' : 'ΑΝΕΝΕΡΓΟ'}</strong></div>
+          <div className="flex flex-wrap gap-2"><ComicButton onClick={() => updateExtra({ liveFeed: { ...extra4.liveFeed, status: 'requested', requestedAt: Date.now(), cameraEnabled: false, microphoneEnabled: false } })} disabled={extra4.control.status !== 'running'}>ΑΙΤΗΜΑ ΕΝΑΡΞΗΣ LIVE FEED</ComicButton><ComicButton variant="red" onClick={() => updateExtra({ liveFeed: { ...extra4.liveFeed, status: 'off', requestedAt: null, cameraEnabled: false, microphoneEnabled: false } })}>STOP FEED</ComicButton></div>
+          <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={!!extra4.liveFeed.tvPip} onChange={(e) => updateExtra({ liveFeed: { ...extra4.liveFeed, tvPip: e.target.checked } })} /> Picture-in-Picture στην TV</label>
+          <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={!!extra4.liveFeed.tvAudio} onChange={(e) => updateExtra({ liveFeed: { ...extra4.liveFeed, tvAudio: e.target.checked } })} /> Ήχος στην TV (επιλογή Director)</label>
+          <div className="text-xs text-foreground/55">Η μετάδοση ενεργοποιείται μόνο από τη συσκευή πηγής μετά από ρητή συναίνεση. Η πραγματική σύνδεση WebRTC θα ολοκληρωθεί στο επόμενο τμήμα ενσωμάτωσης.</div>
+        </ComicPanel>}
+
+      </div>
+    </div>
+  );
+}
