@@ -16,11 +16,6 @@ export default function Extra4TVOverlay({ state }) {
         </div>
       </div>
     )}
-    {status === 'paused' && state?.stopActive && (
-      <div className="fixed inset-0 z-[105] flex items-center justify-center bg-black/75 p-6 text-center pointer-events-none">
-        <div className="font-heading text-5xl sm:text-7xl text-white">⏸ PAUSE</div>
-      </div>
-    )}
     {feed?.status === 'requested' && status !== 'emergency' && (
       <div className="fixed top-20 left-1/2 z-[95] -translate-x-1/2 rounded-xl border border-primary/60 bg-black/90 px-5 py-3 text-center text-sm text-primary">
         ISOLATION CHAMBER · ΑΝΑΜΟΝΗ ΣΥΝΑΙΝΕΣΗΣ
