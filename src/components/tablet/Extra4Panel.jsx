@@ -45,7 +45,7 @@ export default function Extra4Panel({ state, updateState, playerProfiles = [], p
   const activeActivity = extra4.activity.active;
   const activeTimer = state.syncTimer || state.mg?.timer || null;
   const timerRemaining = activeTimer?.endsAt ? Math.max(0, Math.ceil((activeTimer.endsAt - Date.now()) / 1000)) : activeTimer?.remaining;
-  const updateExtra = (patch, rootPatch = {}) => updateState({ ...rootPatch, extra4: { ...extra4, ...patch } });
+  const updateExtra = (patch, rootPatch = {}) => updateState({ ...rootPatch, extra4: patch });
   const eventLog = extra4.eventLog.slice().reverse();
   const currentMode = state.mode || '—';
   const sceneItems = getSceneItems(state);
@@ -138,7 +138,7 @@ export default function Extra4Panel({ state, updateState, playerProfiles = [], p
     const eligible = players.filter((player) => canAssignVipActivity({ playerProfiles, playerProfilesReady }, player, { activityType: type, activityLabel: groupLabel }));
     if (state.stopActive || extra4.control.status !== 'running' || activeActivity?.status === 'active' || eligible.length === 0) return;
     const catalogIndex = activityCatalog.findIndex((item) => item.id === action.id && item.categoryId === groupId);
-    const item = { id: `activity-${Date.now()}`, actionId: action.id, label: action.label, category: groupLabel, status: 'active', startedAt: Date.now(), mode: currentMode, participantIds: eligible.map((player) => player.id) };
+    const item = { id: `activity-${Date.now()}`, actionId: action.id, label: action.label, category: groupLabel, status: 'active', startedAt: Date.now(), endedAt: null, result: null, mode: currentMode, participantIds: eligible.map((player) => player.id) };
     const eventLog = addExtra4Event(extra4, 'activity_started', `Έναρξη: ${item.label}`, { activityId: item.id, result: null });
     await updateExtra({ activity: { ...extra4.activity, active: item, queueIndex: catalogIndex >= 0 ? catalogIndex : extra4.activity.queueIndex }, eventLog });
     onOpen?.(action.id);
@@ -159,7 +159,7 @@ export default function Extra4Panel({ state, updateState, playerProfiles = [], p
         if (eligible.length) { next = { candidate, eligible }; break; }
       }
       if (next && extra4.control.status === 'running') {
-        const nextActivity = { id: `activity-${Date.now()}`, actionId: next.candidate.id, label: next.candidate.label, category: next.candidate.categoryLabel, status: 'active', startedAt: Date.now(), mode: currentMode, participantIds: next.eligible.map((player) => player.id) };
+        const nextActivity = { id: `activity-${Date.now()}`, actionId: next.candidate.id, label: next.candidate.label, category: next.candidate.categoryLabel, status: 'active', startedAt: Date.now(), endedAt: null, result: null, mode: currentMode, participantIds: next.eligible.map((player) => player.id) };
         eventLog = addExtra4Event({ ...extra4, eventLog }, 'activity_started', `Αυτόματη επόμενη δραστηριότητα: ${nextActivity.label}`, { activityId: nextActivity.id, result: null });
         await updateExtra({ activity: { ...extra4.activity, active: nextActivity, queueIndex: activityCatalog.indexOf(next.candidate) }, eventLog });
         onOpen?.(next.candidate.id);
@@ -200,11 +200,11 @@ export default function Extra4Panel({ state, updateState, playerProfiles = [], p
   async function rollLoot() {
     if (!playerId) return;
     const pool = extra4.economy.lootPool || [];
-    const available = pool.filter((item) => item.mode === currentMode || item.mode === 'all');
+    const available = pool.filter((item) => !item.removedAt && !item.consumedAt && (item.mode === currentMode || item.mode === 'all'));
     if (!available.length) return;
     const selected = available[Math.floor(Math.random() * available.length)];
     const inventory = { ...extra4.economy.inventory, [playerId]: [...(extra4.economy.inventory[playerId] || []), { ...selected, awardedAt: Date.now() }] };
-    const lootPool = pool.filter((item) => item.id !== selected.id);
+    const lootPool = pool.map((item) => item.id === selected.id ? { ...item, consumedAt: Date.now() } : item);
     await updateExtra({ economy: { ...extra4.economy, inventory, lootPool } });
   }
 
@@ -221,7 +221,7 @@ export default function Extra4Panel({ state, updateState, playerProfiles = [], p
   }
 
   async function removeLootFromPool(id) {
-    await updateExtra({ economy: { ...extra4.economy, lootPool: (extra4.economy.lootPool || []).filter((item) => item.id !== id) } });
+    await updateExtra({ economy: { ...extra4.economy, lootPool: (extra4.economy.lootPool || []).map((item) => item.id === id ? { ...item, removedAt: Date.now() } : item) } });
   }
 
   async function releaseRestriction() {
@@ -287,7 +287,7 @@ export default function Extra4Panel({ state, updateState, playerProfiles = [], p
     const terminal = extra4.cards.terminals?.[code];
     if (!terminal || terminal.active) return;
     const terminals = { ...(extra4.cards.terminals || {}) };
-    delete terminals[code];
+    terminals[code] = null;
     await updateExtra({ cards: { ...extra4.cards, terminals } });
   }
 
@@ -302,7 +302,7 @@ export default function Extra4Panel({ state, updateState, playerProfiles = [], p
     await updateExtra({ cards: { ...extra4.cards, activeCard: { ...card, selectedAt: Date.now() } } });
   }
 
-  const terminalEntries = useMemo(() => Object.values(extra4.cards.terminals || {}).sort((a, b) => b.createdAt - a.createdAt), [extra4.cards.terminals]);
+  const terminalEntries = useMemo(() => Object.values(extra4.cards.terminals || {}).filter(Boolean).sort((a, b) => b.createdAt - a.createdAt), [extra4.cards.terminals]);
 
   return (
     <div className="fixed inset-0 z-[90] overflow-y-auto bg-background/98 p-3 backdrop-blur-sm">
@@ -436,7 +436,7 @@ export default function Extra4Panel({ state, updateState, playerProfiles = [], p
             </div>
             <ComicButton size="sm" onClick={addLootToPool} disabled={!lootName.trim()}>ΠΡΟΣΘΗΚΗ ΣΤΟ LOOT POOL</ComicButton>
             <ComicButton variant="yellow" onClick={rollLoot} disabled={!playerId || !(extra4.economy.lootPool || []).some((item) => item.mode === currentMode || item.mode === 'all')}>LOOT ROULETTE ΓΙΑ {players.find((player) => player.id === playerId)?.name || 'ΠΑΙΚΤΗ'}</ComicButton>
-            {(extra4.economy.lootPool || []).filter((item) => item.mode === currentMode || item.mode === 'all').map((item) => <div key={item.id} className="flex items-center justify-between gap-2 border-b border-border/50 py-2 text-xs"><span>{item.name} · {item.rarity.toUpperCase()}</span><ComicButton size="sm" variant="red" onClick={() => removeLootFromPool(item.id)}>ΑΦΑΙΡΕΣΗ</ComicButton></div>)}
+            {(extra4.economy.lootPool || []).filter((item) => !item.removedAt && !item.consumedAt && (item.mode === currentMode || item.mode === 'all')).map((item) => <div key={item.id} className="flex items-center justify-between gap-2 border-b border-border/50 py-2 text-xs"><span>{item.name} · {item.rarity.toUpperCase()}</span><ComicButton size="sm" variant="red" onClick={() => removeLootFromPool(item.id)}>ΑΦΑΙΡΕΣΗ</ComicButton></div>)}
             <div className="border-t border-border/50 pt-2"><div className="ds-label mb-2">INVENTORY</div>{players.map((player) => <div key={player.id} className="py-1 text-xs"><strong>{player.name}:</strong> {(extra4.economy.inventory[player.id] || []).map((item) => `${item.name} (${item.rarity})`).join(', ') || '—'}</div>)}</div>
           </ComicPanel>
         </div>}
