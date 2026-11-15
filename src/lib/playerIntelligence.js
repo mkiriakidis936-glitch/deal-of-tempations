@@ -11,6 +11,7 @@ export function getVipAnswers(ctx, player) {
 }
 
 export function isVipActivityAllowed(ctx, player, activityType = null) {
+  if (ctx?.playerProfilesReady === false) return false;
   const answers = getVipAnswers(ctx, player);
   if (!answers) return true;
   if (answers.activeParticipation === 'no') return false;
@@ -22,6 +23,10 @@ export function isVipActivityAllowed(ctx, player, activityType = null) {
 // Presenter-side consent and boundary check. Private answers stay outside shared GameSession state.
 export function canAssignVipActivity(ctx, player, { activityType = null, activityLabel = 'δοκιμασία' } = {}) {
   if (!player) return false;
+  if (ctx?.playerProfilesReady === false) {
+    window.alert('Η φόρτωση των ιδιωτικών προτιμήσεων δεν ολοκληρώθηκε ακόμη. Δοκίμασε ξανά σε λίγο.');
+    return false;
+  }
   const answers = getVipAnswers(ctx, player);
   if (!answers) return true;
   if (answers.activeParticipation === 'no') {
