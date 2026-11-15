@@ -197,7 +197,7 @@ export default function ControlRoom({ state, playerProfiles = [], onStartSurpris
           <ComicPanel className="bg-card space-y-3">
             <div>
               <div className="ds-label text-primary/80">PLAYER INTELLIGENCE · ΙΔΙΩΤΙΚΑ ΣΤΟΙΧΕΙΑ</div>
-              <div className="text-xs text-foreground/50">Οι απαντήσεις εμφανίζονται μόνο στο Tablet του παρουσιαστή. Τα προσωπικά όρια δεν χρησιμοποιούνται για τη δημιουργία δοκιμασιών.</div>
+              <div className="text-xs text-foreground/50">Οι απαντήσεις εμφανίζονται μόνο στο Tablet του παρουσιαστή. Τα προσωπικά όρια ελέγχονται πριν από κάθε σχετική ανάθεση.</div>
             </div>
             {playerProfiles.map((profile) => {
               const answers = profile.vipProfile?.answers || {};
@@ -214,10 +214,11 @@ export default function ControlRoom({ state, playerProfiles = [], onStartSurpris
                     <div>Ανταγωνιστικότητα: <strong>{answers.competitiveness || '—'}/5</strong></div>
                     <div>Δυσκολία: <strong>{answers.difficulty || '—'}/5</strong></div>
                     <div>Απρόβλεπτη πρόκληση: <strong>{answers.unexpectedChallenge === 'yes' ? 'ΝΑΙ' : answers.unexpectedChallenge === 'no' ? 'ΟΧΙ' : '—'}</strong></div>
+                    <div>Ενεργή συμμετοχή: <strong>{answers.activeParticipation === 'yes' ? 'ΝΑΙ' : answers.activeParticipation === 'no' ? 'ΟΧΙ' : '—'}</strong></div>
                   </div>
                   {answers.preferredTestType && <div className="text-xs">Προτιμώμενο είδος: <strong>{answers.preferredTestType}</strong></div>}
                   <div className="text-xs text-foreground/65">
-                    Προτιμήσεις: {['questions', 'missions', 'surprises'].filter((key) => preferences[key] === 'yes').map((key) => ({ questions: 'Ερωτήσεις', missions: 'Αποστολές', surprises: 'Εκπλήξεις' }[key])).join(' · ') || 'Δεν δήλωσε'}
+                    Προτιμήσεις: Ερωτήσεις <strong>{preferences.questions === 'yes' ? 'ΝΑΙ' : 'ΟΧΙ'}</strong> · Αποστολές <strong>{preferences.missions === 'yes' ? 'ΝΑΙ' : 'ΟΧΙ'}</strong> · Εκπλήξεις <strong>{preferences.surprises === 'yes' ? 'ΝΑΙ' : 'ΟΧΙ'}</strong>
                   </div>
                   {answers.boundaries && (
                     <div className="rounded border border-amber-500/30 bg-amber-500/5 p-2 text-xs">
