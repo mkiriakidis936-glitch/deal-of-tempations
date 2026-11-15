@@ -75,7 +75,8 @@ export default function MarathonLockdown({ state, updateState, onEnd, playerProf
             </ComicPanel>
 
             <div className="text-center">
-              <ComicButton variant="red" size="lg" onClick={startExecution}>▶ ΕΝΑΡΞΗ ΤΕΛΙΚΗΣ ΕΚΤΕΛΕΣΗΣ (120″)</ComicButton>
+              {!playerProfilesReady && <div className="text-sm opacity-70">Φόρτωση ιδιωτικών VIP προτιμήσεων…</div>}
+              <ComicButton variant="red" size="lg" disabled={!playerProfilesReady} onClick={startExecution}>▶ ΕΝΑΡΞΗ ΤΕΛΙΚΗΣ ΕΚΤΕΛΕΣΗΣ (120″)</ComicButton>
             </div>
           </>
         )}
