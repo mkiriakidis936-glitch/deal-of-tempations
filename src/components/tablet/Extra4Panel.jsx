@@ -13,7 +13,8 @@ export default function Extra4Panel({ state, updateState, playerProfiles = [], p
   const [category, setCategory] = useState('sensory');
   const [playerId, setPlayerId] = useState(state.players?.[0]?.id || '');
   const [amount, setAmount] = useState('1');
-  const [lootAmount, setLootAmount] = useState('1');
+  const [lootName, setLootName] = useState('');
+  const [lootRarity, setLootRarity] = useState('common');
   const [keyTarget, setKeyTarget] = useState('');
   const [terminalPlayer, setTerminalPlayer] = useState(state.players?.[0]?.id || '');
   const [terminalUrl, setTerminalUrl] = useState('');
@@ -141,13 +142,45 @@ export default function Extra4Panel({ state, updateState, playerProfiles = [], p
     await updateExtra({ economy: { ...extra4.economy, keys } });
   }
 
-  async function tradeKey(kind) {
-    if (!playerId || money(extra4.economy.keys[playerId]) < 1) return;
-    const value = money(kind === 'tokens' ? amount : lootAmount);
-    if (!value) return;
+  async function tradeKeyForTokens() {
+    if (!playerId || money(extra4.economy.keys[playerId]) < 1 || money(amount) < 1) return;
     const keys = { ...extra4.economy.keys, [playerId]: money(extra4.economy.keys[playerId]) - 1 };
-    const target = { ...extra4.economy[kind], [playerId]: money(extra4.economy[kind][playerId]) + value };
-    await updateExtra({ economy: { ...extra4.economy, keys, [kind]: target } });
+    const tokens = { ...extra4.economy.tokens, [playerId]: money(extra4.economy.tokens[playerId]) + money(amount) };
+    await updateExtra({ economy: { ...extra4.economy, keys, tokens } });
+  }
+
+  async function addLootToPool() {
+    if (!lootName.trim()) return;
+    const item = { id: globalThis.crypto?.randomUUID?.() || `loot-${Date.now()}`, name: lootName.trim(), rarity: lootRarity, mode: currentMode, createdAt: Date.now() };
+    await updateExtra({ economy: { ...extra4.economy, lootPool: [...(extra4.economy.lootPool || []), item] } });
+    setLootName('');
+  }
+
+  async function rollLoot() {
+    if (!playerId) return;
+    const pool = extra4.economy.lootPool || [];
+    const available = pool.filter((item) => item.mode === currentMode || item.mode === 'all');
+    if (!available.length) return;
+    const selected = available[Math.floor(Math.random() * available.length)];
+    const inventory = { ...extra4.economy.inventory, [playerId]: [...(extra4.economy.inventory[playerId] || []), { ...selected, awardedAt: Date.now() }] };
+    const lootPool = pool.filter((item) => item.id !== selected.id);
+    await updateExtra({ economy: { ...extra4.economy, inventory, lootPool } });
+  }
+
+  async function tradeKeyForLoot() {
+    if (!playerId || money(extra4.economy.keys[playerId]) < 1) return;
+    const pool = extra4.economy.lootPool || [];
+    const available = pool.filter((item) => item.mode === currentMode || item.mode === 'all');
+    if (!available.length) return;
+    const selected = available[Math.floor(Math.random() * available.length)];
+    const keys = { ...extra4.economy.keys, [playerId]: money(extra4.economy.keys[playerId]) - 1 };
+    const inventory = { ...extra4.economy.inventory, [playerId]: [...(extra4.economy.inventory[playerId] || []), { ...selected, awardedAt: Date.now() }] };
+    const lootPool = pool.filter((item) => item.id !== selected.id);
+    await updateExtra({ economy: { ...extra4.economy, keys, inventory, lootPool } });
+  }
+
+  async function removeLootFromPool(id) {
+    await updateExtra({ economy: { ...extra4.economy, lootPool: (extra4.economy.lootPool || []).filter((item) => item.id !== id) } });
   }
 
   async function releaseRestriction() {
@@ -303,9 +336,21 @@ export default function Extra4Panel({ state, updateState, playerProfiles = [], p
             <label className="block text-xs">Παίκτης που διαθέτει Key<select className="mt-1 w-full rounded-lg border border-border bg-background p-2" value={playerId} onChange={(e) => setPlayerId(e.target.value)}>{players.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}</select></label>
             <label className="block text-xs">Σύμμαχος για ψηφιακή απελευθέρωση<select className="mt-1 w-full rounded-lg border border-border bg-background p-2" value={keyTarget} onChange={(e) => setKeyTarget(e.target.value)}><option value="">Επίλεξε παίκτη</option>{players.filter((p) => p.id !== playerId && extra4.economy.restrictions[p.id]).map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}</select></label>
             <ComicButton variant="green" onClick={releaseRestriction} disabled={!keyTarget || money(extra4.economy.keys[playerId]) < 1}>ΑΠΕΛΕΥΘΕΡΩΣΗ ΣΥΜΜΑΧΟΥ</ComicButton>
-            <label className="block text-xs">Ποσότητα Loot<input type="number" min="1" value={lootAmount} onChange={(e) => setLootAmount(e.target.value)} className="mt-1 w-full rounded-lg border border-border bg-background p-2" /></label>
-            <div className="flex flex-wrap gap-2"><ComicButton variant="yellow" onClick={() => tradeKey('tokens')} disabled={money(extra4.economy.keys[playerId]) < 1 || money(amount) < 1}>ΑΝΤΑΛΛΑΓΗ KEY → TOKENS</ComicButton><ComicButton variant="purple" onClick={() => tradeKey('loot')} disabled={money(extra4.economy.keys[playerId]) < 1 || money(lootAmount) < 1}>ΑΝΤΑΛΛΑΓΗ KEY → LOOT</ComicButton></div>
-            <div className="text-xs text-foreground/50">Η ποσότητα ανταλλαγής ορίζεται από τον Director. Δεν εφαρμόζεται αυτόματη ισοτιμία.</div>
+            <div className="flex flex-wrap gap-2"><ComicButton variant="yellow" onClick={tradeKeyForTokens} disabled={money(extra4.economy.keys[playerId]) < 1 || money(amount) < 1}>ΑΝΤΑΛΛΑΓΗ KEY → TOKENS</ComicButton><ComicButton variant="purple" onClick={tradeKeyForLoot} disabled={money(extra4.economy.keys[playerId]) < 1 || !(extra4.economy.lootPool || []).some((item) => item.mode === currentMode || item.mode === 'all')}>ΑΝΤΑΛΛΑΓΗ KEY → LOOT</ComicButton></div>
+            <div className="text-xs text-foreground/50">Η ανταλλαγή Tokens γίνεται με ποσότητα που ορίζει ο Director. Το Loot επιλέγεται τυχαία από το διαθέσιμο pool του ενεργού Mode.</div>
+          </ComicPanel>
+          <ComicPanel className="bg-card space-y-3">
+            <div className="ds-label text-primary/80">LOOT POOL — {currentMode}</div>
+            <div className="grid grid-cols-2 gap-2">
+              <input value={lootName} onChange={(e) => setLootName(e.target.value)} placeholder="Όνομα Loot" className="rounded-lg border border-border bg-background p-2 text-sm" />
+              <select value={lootRarity} onChange={(e) => setLootRarity(e.target.value)} className="rounded-lg border border-border bg-background p-2 text-sm">
+                <option value="common">Common</option><option value="rare">Rare</option><option value="epic">Epic</option><option value="legendary">Legendary</option>
+              </select>
+            </div>
+            <ComicButton size="sm" onClick={addLootToPool} disabled={!lootName.trim()}>ΠΡΟΣΘΗΚΗ ΣΤΟ LOOT POOL</ComicButton>
+            <ComicButton variant="yellow" onClick={rollLoot} disabled={!playerId || !(extra4.economy.lootPool || []).some((item) => item.mode === currentMode || item.mode === 'all')}>LOOT ROULETTE ΓΙΑ {players.find((player) => player.id === playerId)?.name || 'ΠΑΙΚΤΗ'}</ComicButton>
+            {(extra4.economy.lootPool || []).filter((item) => item.mode === currentMode || item.mode === 'all').map((item) => <div key={item.id} className="flex items-center justify-between gap-2 border-b border-border/50 py-2 text-xs"><span>{item.name} · {item.rarity.toUpperCase()}</span><ComicButton size="sm" variant="red" onClick={() => removeLootFromPool(item.id)}>ΑΦΑΙΡΕΣΗ</ComicButton></div>)}
+            <div className="border-t border-border/50 pt-2"><div className="ds-label mb-2">INVENTORY</div>{players.map((player) => <div key={player.id} className="py-1 text-xs"><strong>{player.name}:</strong> {(extra4.economy.inventory[player.id] || []).map((item) => `${item.name} (${item.rarity})`).join(', ') || '—'}</div>)}</div>
           </ComicPanel>
         </div>}
 
