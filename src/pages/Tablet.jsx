@@ -274,7 +274,7 @@ export default function Tablet() {
   async function startPersonalizedSurprise(profile) {
     const answers = profile.vipProfile?.answers || {};
     if (answers.activeParticipation === 'no' || answers.activityPreferences?.surprises !== 'yes' || answers.unexpectedChallenge === 'no') return;
-    if (!canAssignVipActivity({ playerProfiles }, profile, { activityType: 'surprises', activityLabel: 'προσωπικές εκπλήξεις' })) return;
+    if (!canAssignVipActivity({ playerProfiles, playerProfilesReady: intakeProfilesReady }, profile, { activityType: 'surprises', activityLabel: 'προσωπικές εκπλήξεις' })) return;
     const sceneId = Date.now();
     const showMode = state.showMode || {};
     await trackedUpdate({
