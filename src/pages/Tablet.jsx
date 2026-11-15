@@ -289,7 +289,7 @@ export default function Tablet() {
             onStartSurprise={startPersonalizedSurprise}
             onRevealSurprise={revealPersonalizedSurprise}
             onCancelSurprise={cancelPersonalizedSurprise}
-            onOpen={(key) => setOverlay(key)}
+            onOpen={(key) => key === 'intro' ? handleIntro() : setOverlay(key)}
             onRefresh={refresh}
             onEndGame={() => { setOverlay(null); archiveAndDelete(); }}
             onClose={() => setOverlay(null)}
@@ -531,7 +531,7 @@ export default function Tablet() {
           onStartSurprise={startPersonalizedSurprise}
           onRevealSurprise={revealPersonalizedSurprise}
           onCancelSurprise={cancelPersonalizedSurprise}
-          onOpen={(key) => setOverlay(key)}
+          onOpen={(key) => key === 'intro' ? handleIntro() : setOverlay(key)}
           onRefresh={refresh}
           onEndGame={() => { setOverlay(null); archiveAndDelete(); }}
           onClose={() => setOverlay(null)}
