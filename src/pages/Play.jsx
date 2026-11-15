@@ -53,6 +53,20 @@ export default function Play() {
     }
   }, [session?.sessionCode, state?.players]);
 
+  // QR Terminal: επιλέγει μόνο τον παίκτη που αντιστοιχεί σε ενεργό terminal της συνεδρίας.
+  const terminalCode = new URLSearchParams(window.location.search).get('terminal');
+  const terminalPlayer = new URLSearchParams(window.location.search).get('player');
+  React.useEffect(() => {
+    if (!session?.sessionCode || !state?.players?.length || selectedPlayerId || !terminalCode || !terminalPlayer) return;
+    const terminal = state.extra4?.cards?.terminals?.[terminalCode];
+    const playerExists = state.players.some((player) => player.id === terminalPlayer);
+    if (terminal?.active && terminal.playerId === terminalPlayer && playerExists) {
+      setSelectedPlayerId(terminalPlayer);
+      localStorage.setItem(`dot_player_${session.sessionCode}`, terminalPlayer);
+      joinByCode(session.sessionCode, terminalPlayer);
+    }
+  }, [session?.sessionCode, state?.players, state?.extra4?.cards?.terminals, selectedPlayerId, terminalCode, terminalPlayer, joinByCode]);
+
   // Δόνηση όταν έρχεται η σειρά της.
   React.useEffect(() => {
     const turnId = state?.players?.[state?.currentPlayerIndex ?? 0]?.id;
