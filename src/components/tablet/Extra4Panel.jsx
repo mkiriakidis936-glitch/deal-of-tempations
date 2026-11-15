@@ -85,7 +85,8 @@ export default function Extra4Panel({ state, updateState, playerProfiles = [], p
 
   async function setLevel(level) {
     if (activeActivity?.status === 'active') return;
-    await updateExtra({ tactical: { ...extra4.tactical, level, modeId: currentMode, changedAt: Date.now() } });
+    const modePatch = state.mg ? { mg: { ...state.mg, intensity: level } } : { intensity: level };
+    await updateExtra({ tactical: { ...extra4.tactical, level, modeId: currentMode, changedAt: Date.now() } }, modePatch);
   }
 
   async function startActivity(action, group = activeCategory) {
