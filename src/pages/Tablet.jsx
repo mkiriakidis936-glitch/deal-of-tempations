@@ -59,6 +59,19 @@ import { getExtra4, pauseExtra4Timers, resumeExtra4Timers } from '@/lib/extra4';
 export default function Tablet() {
   const { session, state, loading, updateState, createSession, deleteSession, refresh, joinByCode } = useGameSession();
   React.useEffect(() => {
+    if (!state?.mode) return;
+    const tactical = state.extra4?.tactical || {};
+    if (tactical.modeId !== state.mode) {
+      updateState({
+        extra4: {
+          ...(state.extra4 || {}),
+          tactical: { ...tactical, level: 'standard', modeId: state.mode },
+        },
+      });
+    }
+  }, [state?.mode, state?.extra4?.tactical?.modeId, updateState]);
+
+  React.useEffect(() => {
     const extraStatus = state?.extra4?.control?.status;
     setGameStopActive(!!(state?.stopActive || state?.mg?.stop || extraStatus === 'paused' || extraStatus === 'emergency'));
   }, [state?.stopActive, state?.mg?.stop, state?.extra4?.control?.status]);
