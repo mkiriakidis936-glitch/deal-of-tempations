@@ -9,19 +9,21 @@ import { calculateMostWanted, addHistory } from '@/lib/gameLogic';
 import { TimeCapsuleReveal } from '@/components/tablet/TimeCapsulePanel';
 import { canAssignVipActivity } from '@/lib/playerIntelligence';
 
-export default function FinaleScreen({ state, updateState, onEnd, playerProfiles = [] }) {
+export default function FinaleScreen({ state, updateState, onEnd, playerProfiles = [], playerProfilesReady = true }) {
   const [truthIndex, setTruthIndex] = useState(0);
   const [timerActive, setTimerActive] = useState(false);
   const [done, setDone] = useState(false);
   const [showCapsule, setShowCapsule] = useState(false);
+  const [consentCheckedFor, setConsentCheckedFor] = useState(null);
 
   const mostWanted = calculateMostWanted(state.players);
   const currentTruth = ULTIMATE_TRUTHS[truthIndex];
 
   useEffect(() => {
-    if (!mostWanted) return;
-    if (!canAssignVipActivity({ playerProfiles }, mostWanted, { activityType: 'questions', activityLabel: 'τελικές αλήθειες' })) setDone(true);
-  }, [mostWanted?.id, playerProfiles]);
+    if (!mostWanted || !playerProfilesReady || consentCheckedFor === mostWanted.id) return;
+    setConsentCheckedFor(mostWanted.id);
+    if (!canAssignVipActivity({ playerProfiles, playerProfilesReady }, mostWanted, { activityType: 'questions', activityLabel: 'τελικές αλήθειες' })) setDone(true);
+  }, [mostWanted?.id, playerProfiles, playerProfilesReady, consentCheckedFor]);
 
   function handleAnswer() {
     const next = truthIndex + 1;
