@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Panel, Btn } from '@/components/modes/ModeShell';
 import { PEDI_GLAM_CARDS } from '@/data/modes/pediGlamContent';
 import { pick, timerLeft, useTick } from '@/lib/modeKit';
+import { canAssignVipActivity } from '@/lib/playerIntelligence';
 
 export default function ActPediGlam({ ctx, onDone }) {
   const { players, mg, setMg, log, stopped } = ctx;
@@ -17,6 +18,8 @@ export default function ActPediGlam({ ctx, onDone }) {
 
   const draw = () => {
     if (stopped || active || !remainingDeck.length) return;
+    const selectedPlayer = players.find((player) => player.id === selectedPlayerId);
+    if (!canAssignVipActivity(ctx, selectedPlayer, { activityLabel: 'Pedi-Glam κάρτα' })) return;
     const card = pick(remainingDeck);
     const nextUsed = [...usedIds, card.id];
     setMg({
