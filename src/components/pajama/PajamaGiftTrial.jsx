@@ -112,7 +112,17 @@ export default function PajamaGiftTrial({ players, onDone, canAssign, canStart }
           {!sacrificedId && <div className="text-[11px] text-pink-300 mt-2">Διάλεξε πρώτα τη θυσία.</div>}
         </div>}
 
-        {players.length >= 2 && !result && (
+        {consentDeclined && !consentConfirmed && (
+          <div className="rounded-xl border border-amber-400/50 bg-amber-950/30 p-3 text-center space-y-2">
+            <p className="text-sm">Δεν εγκρίθηκε συμμετοχή από την υπόλοιπη ομάδα βάσει των δηλωμένων ορίων.</p>
+            <button onClick={() => onDone({ success: false, sacrificedName: '', skipped: true, unlockedAt: Date.now() })} className="w-full py-3 rounded-lg font-heading text-lg bg-pink-600 text-white">ΠΑΡΑΛΕΙΨΗ ΧΩΡΙΣ ΠΟΙΝΗ → ΦΙΝΑΛΕ</button>
+          </div>
+        )}
+        {consentConfirmed && groupPlayers.length > 0 && (
+          <div className="text-xs text-pink-200 rounded-lg border border-fuchsia-400/30 p-2">Εγκεκριμένοι συμμετέχοντες: {groupPlayers.map((player) => player.name).join(', ')}</div>
+        )}
+
+        {players.length >= 2 && !result && !consentDeclined && (
           <div className="grid grid-cols-2 gap-2">
             <button
               onClick={() => finish(true)}
