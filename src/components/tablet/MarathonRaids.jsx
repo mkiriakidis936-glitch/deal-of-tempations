@@ -7,10 +7,10 @@ import { addHistory } from '@/lib/gameLogic';
 import SpeakButton from '@/components/comic/VoiceReader';
 import { canAssignVipActivity, isVipActivityAllowed } from '@/lib/playerIntelligence';
 
-export default function MarathonRaids({ state, updateState, onAdvance, playerProfiles = [] }) {
+export default function MarathonRaids({ state, updateState, onAdvance, playerProfiles = [], playerProfilesReady = true }) {
   const [phase, setPhase] = useState('intro');
   const [picked, setPicked] = useState([]);
-  const vipCtx = { playerProfiles };
+  const vipCtx = { playerProfiles, playerProfilesReady };
 
   const penaltyIndex = state.penaltyIndex || 0;
   const currentPenalty = MARATHON_GROUP_PENALTIES[penaltyIndex];
