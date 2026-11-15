@@ -32,6 +32,7 @@ export default function MissionPanel({ ctx, pool, onSuccess, onFail, title = '�
       setMessage('Η παίκτρια δεν έχει επιλέξει συμμετοχή σε μυστικές αποστολές.');
       return;
     }
+    const answers = profileFor(p.id);
     const suitablePool = pool;
     if (!suitablePool.length) {
       setMessage('Δεν υπάρχουν διαθέσιμες αποστολές σε αυτό το Mode.');
