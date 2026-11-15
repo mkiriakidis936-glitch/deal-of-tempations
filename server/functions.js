@@ -5,7 +5,7 @@ import { entityApi } from './entities.js';
 import { pool } from './db.js';
 
 // ---- port of base44/shared/archiveLogic.ts ----
-async function archiveSessionData({ sessionCode, mode, winner, playerNames, stats, confessions, highlights, showScenes, episodeSchedule }) {
+async function archiveSessionData({ sessionCode, mode, winner, playerNames, stats, confessions, highlights, showScenes, episodeSchedule, eventHistory }) {
   const eventDate = new Date().toISOString().split('T')[0];
   const names = [...new Set((Array.isArray(playerNames) ? playerNames : []).filter((name) => typeof name === 'string' && name.trim()).map((name) => name.trim()))];
   const safeStats = stats && typeof stats === 'object' && !Array.isArray(stats) ? stats : {};
@@ -23,6 +23,17 @@ async function archiveSessionData({ sessionCode, mode, winner, playerNames, stat
       phase: String(scene.phase ?? '').slice(0, 30),
       timestamp: Number.isFinite(Number(scene.timestamp)) ? Number(scene.timestamp) : null,
       revealedAt: Number.isFinite(Number(scene.revealedAt)) ? Number(scene.revealedAt) : null,
+    }));
+  const safeEventHistory = (Array.isArray(eventHistory) ? eventHistory : [])
+    .filter((event) => event && typeof event === 'object' && !Array.isArray(event))
+    .slice(0, 200)
+    .map((event) => ({
+      type: String(event.type ?? 'event').slice(0, 60),
+      player: String(event.player ?? '').slice(0, 120),
+      team: String(event.team ?? '').slice(0, 40),
+      detail: String(event.detail ?? event.description ?? event.message ?? '').slice(0, 1000),
+      timestamp: Number.isFinite(Number(event.timestamp)) ? Number(event.timestamp) : null,
+      round: Number.isFinite(Number(event.round)) ? Number(event.round) : null,
     }));
   const safeEpisodeSchedule = (Array.isArray(episodeSchedule) ? episodeSchedule : [])
     .filter((item) => item && typeof item === 'object' && !Array.isArray(item))
@@ -57,7 +68,7 @@ async function archiveSessionData({ sessionCode, mode, winner, playerNames, stat
     const archiveId = archives[0]?.id || await insertRecord('SessionArchive', {
       sessionCode, mode, winner: winner || '', playerNames: names, stats: safeStats,
       confessions: safeConfessions, highlights: safeHighlights, showScenes: safeShowScenes,
-      episodeSchedule: safeEpisodeSchedule, eventDate, volume: 1,
+      episodeSchedule: safeEpisodeSchedule, eventHistory: safeEventHistory, eventDate, volume: 1,
     });
 
     const { rows: chronicles } = await client.query(
@@ -78,6 +89,7 @@ async function archiveSessionData({ sessionCode, mode, winner, playerNames, stat
         safeHighlights.length ? `Έμειναν: ${safeHighlights.join(' · ')}.` : '',
         safeConfessions.length ? `Καταγράφηκαν ${safeConfessions.length} εξομολογήσεις στο Vault.` : '',
         safeShowScenes.length ? `Καταγράφηκαν ${safeShowScenes.length} σκηνές τηλεοπτικής παραγωγής.` : '',
+        safeEventHistory.length ? `Αποθηκεύτηκαν ${safeEventHistory.length} συμβάντα του επεισοδίου.` : '',
       ].filter(Boolean).join(' ');
       await insertRecord('Chronicle', {
         volume: 1, chapter, sessionCode, title: chronicleTitle, content: chronicleText,
