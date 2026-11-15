@@ -32,10 +32,21 @@ export default function AdminExtra4({ sessions = [], selectedSession, onSelect, 
     if (!selectedPlayerId) return;
     const current = numberValue(extra4.economy?.[kind]?.[selectedPlayerId]);
     const next = Math.max(0, current + delta);
+    if (next === current) return;
+    const transaction = {
+      id: globalThis.crypto?.randomUUID?.() || `admin-economy-${Date.now()}`,
+      type: kind === 'tokens' ? 'admin_tokens_adjustment' : 'admin_keys_adjustment',
+      playerId: selectedPlayerId,
+      mode: state.mode || null,
+      amount: next - current,
+      timestamp: Date.now(),
+      source: 'central_admin',
+    };
     await saveExtra({
       economy: {
         ...(extra4.economy || {}),
         [kind]: { ...(extra4.economy?.[kind] || {}), [selectedPlayerId]: next },
+        transactions: [transaction, ...(extra4.economy?.transactions || [])].slice(0, 100),
       },
     });
   }
