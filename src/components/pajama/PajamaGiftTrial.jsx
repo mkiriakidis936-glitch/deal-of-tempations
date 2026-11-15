@@ -6,6 +6,7 @@ export default function PajamaGiftTrial({ players, onDone, canAssign, canStart }
   const [left, setLeft] = useState(30);
   const [running, setRunning] = useState(false);
   const [result, setResult] = useState(null);
+  const [consentConfirmed, setConsentConfirmed] = useState(false);
 
   useEffect(() => {
     if (!running || left <= 0) return;
@@ -17,8 +18,15 @@ export default function PajamaGiftTrial({ players, onDone, canAssign, canStart }
   const done = left <= 0;
   const link = `${window.location.origin}/gift-unlock`;
 
+  function confirmGroupConsent() {
+    if (consentConfirmed) return true;
+    if (canStart && !canStart(sacrificedId)) return false;
+    setConsentConfirmed(true);
+    return true;
+  }
+
   function finish(ok) {
-    if (canStart && !canStart()) return;
+    if (!confirmGroupConsent()) return;
     setRunning(false);
     setResult(ok ? 'success' : 'fail');
   }
@@ -66,7 +74,7 @@ export default function PajamaGiftTrial({ players, onDone, canAssign, canStart }
               <button
                 key={p.id}
                 onClick={() => { if (!canAssign || canAssign(p)) setSacrificedId(p.id); }}
-                disabled={!!result}
+                disabled={!!result || running || consentConfirmed}
                 className={`py-2 rounded-lg text-sm font-bold border ${sacrificedId === p.id ? 'bg-fuchsia-600 border-fuchsia-300 text-white' : 'bg-slate-900/60 border-pink-500/30 text-pink-200'} disabled:opacity-60`}
               >
                 {p.name}
@@ -82,7 +90,7 @@ export default function PajamaGiftTrial({ players, onDone, canAssign, canStart }
             </span>
             <button
               onClick={() => {
-                if (!running && canStart && !canStart()) return;
+                if (!running && !confirmGroupConsent()) return;
                 setRunning((r) => !r);
               }}
               disabled={done || !!result || !sacrificedId}
