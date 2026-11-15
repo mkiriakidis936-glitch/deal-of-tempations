@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { GIFT_CODE } from '@/data/giftVault';
 
-export default function PajamaGiftTrial({ players, onDone }) {
+export default function PajamaGiftTrial({ players, onDone, canAssign }) {
   const [sacrificedId, setSacrificedId] = useState('');
   const [left, setLeft] = useState(30);
   const [running, setRunning] = useState(false);
@@ -59,7 +59,7 @@ export default function PajamaGiftTrial({ players, onDone }) {
             {players.map((p) => (
               <button
                 key={p.id}
-                onClick={() => setSacrificedId(p.id)}
+                onClick={() => { if (!canAssign || canAssign(p)) setSacrificedId(p.id); }}
                 disabled={!!result}
                 className={`py-2 rounded-lg text-sm font-bold border ${sacrificedId === p.id ? 'bg-fuchsia-600 border-fuchsia-300 text-white' : 'bg-slate-900/60 border-pink-500/30 text-pink-200'} disabled:opacity-60`}
               >
