@@ -1,7 +1,7 @@
 // Presenter-side VIP consent and boundary gate. Private answers are never copied into GameSession.
 export function canAssignVipActivity(ctx, player, { activityType = null, activityLabel = 'δοκιμασία' } = {}) {
-  if (!player?.id) return false;
-  const playerId = player.id || player.playerId;
+  const playerId = player?.id || player?.playerId;
+  if (!playerId) return false;
   const answers = ctx.playerProfiles?.find((profile) => profile.playerId === playerId)?.vipProfile?.answers;
   if (!answers) return true;
 
