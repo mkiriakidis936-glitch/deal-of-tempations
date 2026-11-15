@@ -6,6 +6,7 @@ import { isNewMode, modeMeta, ACT_META } from '@/data/modes/modeRegistry';
 import { PAJAMA_ACTS } from '@/data/pajamaProgram';
 
 const UNIVERSAL_ACTIONS = [
+  { key: 'intro', label: 'Κινηματογραφικό Opening' },
   { key: 'showdirector', label: 'Σκηνές / Show Director' },
   { key: 'finalepres', label: 'Παρουσίαση Finale' },
   { key: 'eventqueue', label: 'Ουρά συμβάντων' },
@@ -14,6 +15,7 @@ const UNIVERSAL_ACTIONS = [
 ];
 
 const ACTIONS = [
+  { key: 'intro', label: 'Κινηματογραφικό Opening' },
   { key: 'showdirector', label: 'Σκηνές / Show Director' },
   { key: 'finalepres', label: 'Παρουσίαση Finale' },
   { key: 'eventqueue', label: 'Ουρά συμβάντων' },
