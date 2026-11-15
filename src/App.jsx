@@ -11,6 +11,7 @@ import GlobalDesignProvider from '@/components/GlobalDesignProvider';
 // Add page imports here
 import Tablet from '@/pages/Tablet';
 import TVScreen from '@/pages/TV';
+import Isolation from '@/pages/Isolation';
 import Play from '@/pages/Play';
 import Intake from '@/pages/Intake';
 import Admin from '@/pages/Admin';
@@ -56,6 +57,7 @@ const AuthenticatedApp = () => {
       {/* Add your page Route elements here */}
       <Route path="/" element={<RequireAdmin><Tablet /></RequireAdmin>} />
       <Route path="/tv" element={<TVScreen />} />
+      <Route path="/isolation" element={<Isolation />} />
       <Route path="/play" element={<Play />} />
       <Route path="/intake" element={<Intake />} />
       <Route path="/admin" element={<RequireAdmin><Admin /></RequireAdmin>} />
