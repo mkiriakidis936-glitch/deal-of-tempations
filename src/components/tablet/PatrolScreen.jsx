@@ -201,10 +201,7 @@ export default function PatrolScreen({ state, updateState, onGoToStage2, playerP
             {square.type === 'police' && (
               <div className="text-center">
                 <div className="font-heading text-lg mb-2 text-foreground">🚔 ΣΥΛΛΗΨΗ! Πάς για Ανάκριση.</div>
-                <ComicButton variant="red" size="lg" disabled={!playerProfilesReady} onClick={() => {
-                  if (canAssignVipActivity(vipCtx, currentPlayer, { activityType: 'questions', activityLabel: 'ανάκριση' })) onGoToStage2();
-                  else handleNextPlayer();
-                }}>
+                <ComicButton variant="red" size="lg" disabled={!playerProfilesReady} onClick={onGoToStage2}>
                   ⚡ ΠΡΟΣ ΑΝΑΚΡΙΣΗ
                 </ComicButton>
               </div>
