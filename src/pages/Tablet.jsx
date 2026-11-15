@@ -412,10 +412,26 @@ export default function Tablet() {
            </div>
          </div>
        )}
-       {overlay === 'showdirector' && <ShowDirector state={displayState} updateState={trackedUpdate} onClose={() => setOverlay(null)} />}
+       {overlay === 'trial' && <JuryTrial state={displayState} updateState={trackedUpdate} onClose={() => setOverlay(null)} />}
+        {overlay === 'shoe' && <ShoeRoulette state={displayState} updateState={trackedUpdate} onClose={() => setOverlay(null)} />}
+        {overlay === 'slots' && <TemptationSlots state={displayState} updateState={trackedUpdate} onClose={() => setOverlay(null)} />}
+        {overlay === 'karmaslots' && <KarmaSlots state={displayState} updateState={trackedUpdate} onClose={() => setOverlay(null)} />}
+        {overlay === 'wish' && <LastWish state={displayState} updateState={trackedUpdate} onClose={() => setOverlay(null)} />}
+        {overlay === 'oracle' && <BlindOracle state={displayState} updateState={trackedUpdate} onClose={() => setOverlay(null)} />}
+        {overlay === 'crypt' && <BarefootCrypt state={displayState} updateState={trackedUpdate} onClose={() => setOverlay(null)} />}
+        {overlay === 'pact' && <MidnightPact state={displayState} updateState={trackedUpdate} onClose={() => setOverlay(null)} />}
+        {overlay === 'grandjury' && <GrandJuryControl state={displayState} updateState={trackedUpdate} onClose={() => setOverlay(null)} />}
+        {overlay === 'showdirector' && <ShowDirector state={displayState} updateState={trackedUpdate} onClose={() => setOverlay(null)} />}
+        {overlay === 'privatemsg' && <PrivateMessageSender state={displayState} updateState={trackedUpdate} onClose={() => setOverlay(null)} />}
+        {overlay === 'sealedvote' && <SealedVoteControl state={displayState} updateState={trackedUpdate} onClose={() => setOverlay(null)} />}
         {overlay === 'eventqueue' && <EventQueue state={displayState} updateState={trackedUpdate} onClose={() => setOverlay(null)} />}
         {overlay === 'audio' && <AudioControl state={displayState} updateState={trackedUpdate} onClose={() => setOverlay(null)} />}
         {overlay === 'synctimer' && <SyncTimerControl state={displayState} updateState={trackedUpdate} onClose={() => setOverlay(null)} />}
+        {overlay === 'turnorder' && <TurnOrderPanel state={displayState} updateState={trackedUpdate} onClose={() => setOverlay(null)} />}
+        {overlay === 'poker' && <LiarsPoker state={displayState} updateState={trackedUpdate} onClose={() => setOverlay(null)} />}
+        {overlay === 'trivia' && <TriviaKnowMe state={displayState} updateState={trackedUpdate} onClose={() => setOverlay(null)} />}
+        {overlay === 'finaldeal' && <FinalDeal state={displayState} updateState={trackedUpdate} onClose={() => setOverlay(null)} />}
+        {overlay === 'market' && <BlackmailMarket state={displayState} updateState={trackedUpdate} onClose={() => setOverlay(null)} />}
         {overlay === 'finalepres' && (
           <div className="fixed inset-0 z-[80] bg-background overflow-y-auto">
             <FinalePresentation state={displayState} updateState={trackedUpdate} onEnd={() => { setOverlay(null); archiveAndDelete(); }} />
