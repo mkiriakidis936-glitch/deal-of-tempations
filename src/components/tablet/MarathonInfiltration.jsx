@@ -8,6 +8,7 @@ import BountyMultiplier from '@/components/shared/BountyMultiplier';
 import { MARATHON_SQUARE_TYPES, getMarathonSquare, MARATHON_FINISH_POSITION } from '@/data/marathonBoard';
 import { rollDice, addHistory } from '@/lib/gameLogic';
 import SpeakButton from '@/components/comic/VoiceReader';
+import { canAssignVipActivity } from '@/lib/playerIntelligence';
 
 function applySquareEffect(player, effect) {
   if (!effect) return player;
@@ -25,12 +26,13 @@ function applySquareEffect(player, effect) {
   }
 }
 
-export default function MarathonInfiltration({ state, updateState, onAdvance }) {
+export default function MarathonInfiltration({ state, updateState, onAdvance, playerProfiles = [] }) {
   const [phase, setPhase] = useState('idle');
   const [duelOpponentId, setDuelOpponentId] = useState(null);
   const [lastResult, setLastResult] = useState(null);
 
   const currentPlayer = state.players[state.currentPlayerIndex];
+  const vipCtx = { playerProfiles };
   const currentTeam = currentPlayer?.team || 'alpha';
   const teamKey = currentTeam === 'alpha' ? 'teamAlpha' : 'teamBeta';
   const oppTeamKey = currentTeam === 'alpha' ? 'teamBeta' : 'teamAlpha';
@@ -85,11 +87,16 @@ export default function MarathonInfiltration({ state, updateState, onAdvance }) 
       p.id === currentPlayer.id ? { ...p, position: newPos, mustRollSix: false } : p
     );
     const sq = getMarathonSquare(newPos);
-    await updateState({
-      players: updatedPlayers,
-      diceValue: dice,
-      history: addHistory(state, { type: 'move', player: currentPlayer.name, team: currentTeam, dice, position: newPos, squareType: sq.type }),
-    });
+    const moveHistory = addHistory(state, { type: 'move', player: currentPlayer.name, team: currentTeam, dice, position: newPos, squareType: sq.type });
+    if (['challenge', 'command', 'duel'].includes(sq.type) && !canAssignVipActivity(vipCtx, currentPlayer, { activityLabel: sq.type === 'duel' ? 'κόντρα Marathon' : sq.type === 'command' ? 'εντολή Marathon' : 'δοκιμασία Marathon' })) {
+      const nextIdx = (state.currentPlayerIndex + 1) % state.players.length;
+      await updateState({ players: updatedPlayers, diceValue: null, currentPlayerIndex: nextIdx, activeCard: null, history: addHistory({ ...state, players: updatedPlayers }, { type: 'activity_skipped', player: currentPlayer.name, team: currentTeam, square: sq.name, reason: 'VIP consent' }) });
+      setPhase('idle');
+      setDuelOpponentId(null);
+      setLastResult(null);
+      return;
+    }
+    await updateState({ players: updatedPlayers, diceValue: dice, history: moveHistory });
 
     if (newPos >= MARATHON_FINISH_POSITION) {
       await updateState({ winner: currentTeam });
@@ -291,7 +298,7 @@ export default function MarathonInfiltration({ state, updateState, onAdvance }) 
               {oppPlayers.map((p) => (
                 <button
                   key={p.id}
-                  onClick={() => setDuelOpponentId(p.id)}
+                  onClick={() => { if (canAssignVipActivity(vipCtx, p, { activityLabel: 'αντίπαλος σε κόντρα Marathon' })) setDuelOpponentId(p.id); }}
                   className="comic-panel-sm p-2 bg-card hover:bg-primary/20"
                 >
                   <div className="font-bold">{p.name}</div>
