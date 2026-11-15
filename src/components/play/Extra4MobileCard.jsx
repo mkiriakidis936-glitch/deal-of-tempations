@@ -6,7 +6,7 @@ export default function Extra4MobileCard({ state, playerId }) {
   const playerId = params.get('player');
   const activityId = params.get('activity');
   const terminal = terminalCode ? state?.extra4?.cards?.terminals?.[terminalCode] : null;
-  const activity = terminal?.active && terminal.playerId === playerId && terminal.activityId === activityId && activityId && state?.extra4?.activity?.active?.id === activityId
+  const activity = terminal?.active && terminal.playerId === playerId && terminal.activityId === activityId && activityId && state?.extra4?.activity?.active?.id === activityId && (state.extra4.activity.active.participantIds || []).includes(playerId) && !state?.extra4?.economy?.restrictions?.[playerId]
     ? state.extra4.activity.active
     : null;
   const card = state?.extra4?.cards?.activeCard;
