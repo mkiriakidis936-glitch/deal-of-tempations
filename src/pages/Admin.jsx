@@ -15,6 +15,7 @@ import AdminSessionRecovery from '@/components/admin/AdminSessionRecovery';
 import AdminPlayers from '@/components/admin/AdminPlayers';
 import AdminGuide from '@/components/admin/AdminGuide';
 import AdminIntakes from '@/components/admin/AdminIntakes';
+import AdminShowCasting from '@/components/admin/AdminShowCasting';
 import AdminLinks from '@/components/admin/AdminLinks';
 import AdminRSVP from '@/components/admin/AdminRSVP';
 import AdminEventInfo from '@/components/admin/AdminEventInfo';
@@ -51,6 +52,7 @@ const NAV_GROUPS = [
     id: 'players',
     label: '03 · ΔΙΑΧΕΙΡΙΣΗ ΠΑΙΚΤΩΝ',
     tabs: [
+      { id: 'casting', label: '🎬 Επιλογή Επεισοδίου' },
       { id: 'players', label: '👥 Παίκτες & Ρόλοι' },
       { id: 'achievements', label: '🏅 Επιτεύγματα' },
     ],
@@ -268,6 +270,8 @@ export default function Admin() {
             onRefresh={loadSessions}
           />
         );
+      case 'casting':
+        return <AdminShowCasting />;
       case 'players':
       case 'live':
         return (

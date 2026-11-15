@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import ComicPanel from '@/components/comic/ComicPanel';
 import ComicButton from '@/components/comic/ComicButton';
+import { GAME_MODES } from '@/data/gameConfig';
+import { isNewMode, modeMeta, ACT_META } from '@/data/modes/modeRegistry';
 
-const ACTS = [
+const BASE_ACTS = [
   { id: 'intro', label: 'ΕΙΣΑΓΩΓΗ', icon: '🎬', subtitle: 'Η βραδιά ξεκινά' },
   { id: 'patrol', label: 'ΠΕΡΙΠΟΛΙΑ', icon: '🚔', subtitle: 'Στάδιο 1 — Περιπολία' },
   { id: 'interrogation', label: 'ΑΝΑΚΡΙΣΗ', icon: '🔍', subtitle: 'Στάδιο 2 — Ανάκριση' },
@@ -12,12 +14,21 @@ const ACTS = [
 
 export default function ShowDirector({ state, updateState, onClose }) {
   const showMode = state.showMode || {};
+  const modeName = GAME_MODES.find((mode) => mode.id === state.mode)?.name || state.mode || 'LIVE SHOW';
+  const acts = isNewMode(state.mode)
+    ? (modeMeta(state.mode)?.acts || []).map((act, index) => ({
+      id: act,
+      label: ACT_META[act]?.title || act,
+      icon: '🎬',
+      subtitle: `Φάση ${index + 1} από ${modeMeta(state.mode).acts.length}`,
+    }))
+    : BASE_ACTS;
   const [revealTitle, setRevealTitle] = useState('');
   const [revealContent, setRevealContent] = useState('');
   const [autoSpeak, setAutoSpeak] = useState(showMode.autoSpeak !== false);
 
   async function triggerTransition(act) {
-    const actDef = ACTS.find((a) => a.id === act);
+    const actDef = acts.find((a) => a.id === act);
     await updateState({
       showMode: {
         ...showMode,
@@ -65,7 +76,7 @@ export default function ShowDirector({ state, updateState, onClose }) {
       <div onClick={(e) => e.stopPropagation()} className="max-w-lg w-full space-y-3 max-h-[85vh] overflow-y-auto">
         <ComicPanel className="bg-tarot-royal text-center py-4">
           <div className="font-heading text-3xl comic-text-stroke text-tarot-gold">🎬 SHOW DIRECTOR</div>
-          <div className="text-sm font-bold text-foreground/80 font-body">Σκηνοθέτησε την βραδιά</div>
+          <div className="text-sm font-bold text-foreground/80 font-body">{modeName} · Σκηνοθεσία επεισοδίου</div>
         </ComicPanel>
 
         <ComicPanel className="bg-card flex items-center justify-between">
@@ -78,7 +89,7 @@ export default function ShowDirector({ state, updateState, onClose }) {
         <ComicPanel className="bg-card">
           <div className="font-heading text-lg mb-2 text-primary">🎭 ΦΑΣΕΙΣ SHOW</div>
           <div className="grid grid-cols-1 gap-2">
-            {ACTS.map((a) => (
+            {acts.map((a) => (
               <ComicButton
                 key={a.id}
                 variant={showMode.act === a.id ? 'magenta' : 'white'}
