@@ -62,7 +62,7 @@ export default function Play() {
     if (!session?.sessionCode || !state?.players?.length || selectedPlayerId || !terminalCode || !terminalPlayer) return;
     const terminal = state.extra4?.cards?.terminals?.[terminalCode];
     const playerExists = state.players.some((player) => player.id === terminalPlayer);
-    const activityMatches = (terminal?.activityId || null) === (terminalActivity || null) && (!terminal?.activityId || state.extra4?.activity?.active?.id === terminal.activityId);
+    const activityMatches = (terminal?.activityId || null) === (terminalActivity || null) && (!terminal?.activityId || (state.extra4?.activity?.active?.id === terminal.activityId && (state.extra4?.activity?.active?.participantIds || []).includes(terminalPlayer) && !state.extra4?.economy?.restrictions?.[terminalPlayer]));
     if (terminal?.active && terminal.playerId === terminalPlayer && playerExists && activityMatches) {
       setSelectedPlayerId(terminalPlayer);
       localStorage.setItem(`dot_player_${session.sessionCode}`, terminalPlayer);
