@@ -232,7 +232,7 @@ export default function ControlRoom({ state, playerProfiles = [], onStartSurpris
                         size="sm"
                         className="mt-2 w-full"
                         disabled={!surpriseAllowed || !onStartSurprise || !onRevealSurprise}
-                        onClick={() => { setPendingProfile(profile); onStartSurprise?.(profile); }}
+                        onClick={async () => { await onStartSurprise?.(profile); setPendingProfile(profile); }}
                       >
                         ΠΡΟΕΤΟΙΜΑΣΙΑ ΠΡΟΣΩΠΙΚΗΣ ΕΚΠΛΗΞΗΣ
                       </ComicButton>
@@ -247,7 +247,7 @@ export default function ControlRoom({ state, playerProfiles = [], onStartSurpris
                 <div className="font-heading text-sm text-primary">ΕΤΟΙΜΗ ΓΙΑ ΑΠΟΚΑΛΥΨΗ · {pendingProfile.name}</div>
                 <div className="text-xs text-foreground/70">Η TV βρίσκεται σε φάση build-up. Η απάντηση θα εμφανιστεί μόνο όταν πατήσεις αποκάλυψη.</div>
                 <div className="flex gap-2">
-                  <ComicButton variant="yellow" size="md" className="flex-1" onClick={() => { onRevealSurprise?.(pendingProfile); setPendingProfile(null); }}>
+                  <ComicButton variant="yellow" size="md" className="flex-1" onClick={async () => { await onRevealSurprise?.(pendingProfile); setPendingProfile(null); }}>
                     ΑΠΟΚΑΛΥΨΕ ΤΩΡΑ
                   </ComicButton>
                   <ComicButton variant="dark" size="md" onClick={() => { onCancelSurprise?.(); setPendingProfile(null); }}>ΑΚΥΡΩΣΗ</ComicButton>
