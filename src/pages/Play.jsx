@@ -57,11 +57,13 @@ export default function Play() {
   // QR Terminal: επιλέγει μόνο τον παίκτη που αντιστοιχεί σε ενεργό terminal της συνεδρίας.
   const terminalCode = new URLSearchParams(window.location.search).get('terminal');
   const terminalPlayer = new URLSearchParams(window.location.search).get('player');
+  const terminalActivity = new URLSearchParams(window.location.search).get('activity');
   React.useEffect(() => {
     if (!session?.sessionCode || !state?.players?.length || selectedPlayerId || !terminalCode || !terminalPlayer) return;
     const terminal = state.extra4?.cards?.terminals?.[terminalCode];
     const playerExists = state.players.some((player) => player.id === terminalPlayer);
-    if (terminal?.active && terminal.playerId === terminalPlayer && playerExists) {
+    const activityMatches = (terminal?.activityId || null) === (terminalActivity || null) && (!terminal?.activityId || state.extra4?.activity?.active?.id === terminal.activityId);
+    if (terminal?.active && terminal.playerId === terminalPlayer && playerExists && activityMatches) {
       setSelectedPlayerId(terminalPlayer);
       localStorage.setItem(`dot_player_${session.sessionCode}`, terminalPlayer);
       joinByCode(session.sessionCode, terminalPlayer);
