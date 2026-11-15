@@ -103,7 +103,10 @@ export default function ControlRoom({ state, playerProfiles = [], onStartSurpris
   const currentIndex = isNewMode(state.mode) ? (state.mg?.turn || 0) : state.mode === 'pajama' ? (state.pajama?.turnIndex || 0) : (state.currentPlayerIndex || 0);
   const currentPlayer = players.length ? players[currentIndex % players.length] : null;
   const syncTimer = state.syncTimer || state.mg?.timer || null;
-  const timerRemaining = syncTimer?.endsAt
+  const timerActive = typeof syncTimer?.running === 'boolean' ? syncTimer.running : !!(syncTimer?.endsAt && syncTimer.endsAt > now);
+  const timerRemaining = syncTimer?.running === false
+    ? syncTimer.remaining
+    : syncTimer?.endsAt
     ? Math.ceil((syncTimer.endsAt - now) / 1000)
     : syncTimer?.remaining;
   const night = state.night;
@@ -144,7 +147,7 @@ export default function ControlRoom({ state, playerProfiles = [], onStartSurpris
           <ComicPanel className="bg-card p-3">
             <div className="ds-label text-foreground/50">ΧΡΟΝΟΜΕΤΡΟ</div>
             <div className="mt-1 font-heading text-2xl text-primary">{syncTimer ? formatSeconds(timerRemaining) : '—'}</div>
-            <div className="text-[10px] text-foreground/45">{syncTimer?.running || syncTimer?.endsAt > now ? 'ΕΝΕΡΓΟ' : syncTimer ? 'ΠΑΥΣΗ' : 'ΑΝΕΝΕΡΓΟ'}</div>
+            <div className="text-[10px] text-foreground/45">{timerActive ? 'ΕΝΕΡΓΟ' : syncTimer ? 'ΠΑΥΣΗ' : 'ΑΝΕΝΕΡΓΟ'}</div>
           </ComicPanel>
           <ComicPanel className="bg-card p-3">
             <div className="ds-label text-foreground/50">ΣΥΜΒΑΝΤΑ</div>
