@@ -37,6 +37,7 @@ export default function Extra4Panel({ state, updateState, playerProfiles = [], p
   const [lootName, setLootName] = useState('');
   const [lootRarity, setLootRarity] = useState('common');
   const [keyTarget, setKeyTarget] = useState('');
+  const [restrictionLabel, setRestrictionLabel] = useState('');
   const [terminalPlayer, setTerminalPlayer] = useState(state.players?.[0]?.id || '');
   const [terminalUrl, setTerminalUrl] = useState('');
   const extra4 = getExtra4(state);
@@ -64,7 +65,7 @@ export default function Extra4Panel({ state, updateState, playerProfiles = [], p
     state.mg?.timer ? { label: 'Mode', timer: state.mg.timer } : null,
   ].filter(Boolean);
   const activityType = ['guessing', 'trivia'].includes(category) ? 'questions' : category === 'vip' ? 'surprises' : 'missions';
-  const eligiblePlayers = players.filter((player) => isVipActivityAllowed({ playerProfiles, playerProfilesReady }, player, activityType));
+  const eligiblePlayers = players.filter((player) => !extra4.economy.restrictions[player.id] && isVipActivityAllowed({ playerProfiles, playerProfilesReady }, player, activityType));
   const activityCatalog = EXTRA4_CATEGORIES.flatMap((group) => group.actions.map((action) => ({ ...action, categoryId: group.id, categoryLabel: group.label })));
 
   async function pause() {
@@ -128,7 +129,7 @@ export default function Extra4Panel({ state, updateState, playerProfiles = [], p
     const groupId = typeof group === 'string' ? group : group.id;
     const groupLabel = typeof group === 'string' ? (EXTRA4_CATEGORIES.find((item) => item.id === group)?.label || group) : group.label;
     const type = ['guessing', 'trivia'].includes(groupId) ? 'questions' : groupId === 'vip' ? 'surprises' : 'missions';
-    const eligible = players.filter((player) => isVipActivityAllowed({ playerProfiles, playerProfilesReady }, player, type) && canAssignVipActivity({ playerProfiles, playerProfilesReady }, player, { activityType: type, activityLabel: groupLabel }));
+    const eligible = players.filter((player) => !extra4.economy.restrictions[player.id] && isVipActivityAllowed({ playerProfiles, playerProfilesReady }, player, type) && canAssignVipActivity({ playerProfiles, playerProfilesReady }, player, { activityType: type, activityLabel: groupLabel }));
     if (state.stopActive || extra4.control.status !== 'running' || activeActivity?.status === 'active' || eligible.length === 0) return;
     const catalogIndex = activityCatalog.findIndex((item) => item.id === action.id && item.categoryId === groupId);
     const item = { id: `activity-${Date.now()}`, actionId: action.id, label: action.label, category: groupLabel, status: 'active', startedAt: Date.now(), endedAt: null, result: null, mode: currentMode, participantIds: eligible.map((player) => player.id) };
@@ -148,7 +149,7 @@ export default function Extra4Panel({ state, updateState, playerProfiles = [], p
       for (let step = 1; step <= activityCatalog.length; step += 1) {
         const candidate = activityCatalog[(startIndex + step) % activityCatalog.length];
         const type = ['guessing', 'trivia'].includes(candidate.categoryId) ? 'questions' : candidate.categoryId === 'vip' ? 'surprises' : 'missions';
-        const eligible = players.filter((player) => isVipActivityAllowed({ playerProfiles, playerProfilesReady }, player, type) && canAssignVipActivity({ playerProfiles, playerProfilesReady }, player, { activityType: type, activityLabel: candidate.label }));
+        const eligible = players.filter((player) => !extra4.economy.restrictions[player.id] && isVipActivityAllowed({ playerProfiles, playerProfilesReady }, player, type) && canAssignVipActivity({ playerProfiles, playerProfilesReady }, player, { activityType: type, activityLabel: candidate.label }));
         if (eligible.length) { next = { candidate, eligible }; break; }
       }
       if (next && extra4.control.status === 'running') {
@@ -217,8 +218,15 @@ export default function Extra4Panel({ state, updateState, playerProfiles = [], p
     await updateExtra({ economy: { ...extra4.economy, lootPool: (extra4.economy.lootPool || []).map((item) => item.id === id ? { ...item, removedAt: Date.now() } : item) } });
   }
 
+  async function applyRestriction() {
+    if (!keyTarget || !restrictionLabel.trim()) return;
+    const restrictions = { ...extra4.economy.restrictions, [keyTarget]: { label: restrictionLabel.trim(), active: true, createdAt: Date.now() } };
+    await updateExtra({ economy: { ...extra4.economy, restrictions } });
+    setRestrictionLabel('');
+  }
+
   async function releaseRestriction() {
-    if (!playerId || !keyTarget || money(extra4.economy.keys[playerId]) < 1) return;
+    if (!playerId || !keyTarget || !extra4.economy.restrictions[keyTarget] || money(extra4.economy.keys[playerId]) < 1) return;
     const keys = { ...extra4.economy.keys, [playerId]: money(extra4.economy.keys[playerId]) - 1 };
     const restrictions = { ...extra4.economy.restrictions };
     restrictions[keyTarget] = null;
@@ -416,8 +424,10 @@ export default function Extra4Panel({ state, updateState, playerProfiles = [], p
           <ComicPanel className="bg-card space-y-3">
             <div className="ds-label text-primary/80">ΧΡΗΣΗ ΚΛΕΙΔΙΟΥ</div>
             <label className="block text-xs">Παίκτης που διαθέτει Key<select className="mt-1 w-full rounded-lg border border-border bg-background p-2" value={playerId} onChange={(e) => setPlayerId(e.target.value)}>{players.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}</select></label>
-            <label className="block text-xs">Σύμμαχος για ψηφιακή απελευθέρωση<select className="mt-1 w-full rounded-lg border border-border bg-background p-2" value={keyTarget} onChange={(e) => setKeyTarget(e.target.value)}><option value="">Επίλεξε παίκτη</option>{players.filter((p) => p.id !== playerId && extra4.economy.restrictions[p.id]).map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}</select></label>
-            <ComicButton variant="green" onClick={releaseRestriction} disabled={!keyTarget || money(extra4.economy.keys[playerId]) < 1}>ΑΠΕΛΕΥΘΕΡΩΣΗ ΣΥΜΜΑΧΟΥ</ComicButton>
+            <label className="block text-xs">Σύμμαχος / Παίκτης<select className="mt-1 w-full rounded-lg border border-border bg-background p-2" value={keyTarget} onChange={(e) => setKeyTarget(e.target.value)}><option value="">Επίλεξε παίκτη</option>{players.filter((p) => p.id !== playerId).map((p) => <option key={p.id} value={p.id}>{p.name}{extra4.economy.restrictions[p.id] ? ' · RESTRICTED' : ''}</option>)}</select></label>
+            <label className="block text-xs">Ψηφιακό restriction<input value={restrictionLabel} onChange={(e) => setRestrictionLabel(e.target.value)} placeholder="Περιγραφή περιορισμού" className="mt-1 w-full rounded-lg border border-border bg-background p-2" /></label>
+            <div className="text-xs text-foreground/60">{keyTarget && extra4.economy.restrictions[keyTarget] ? `Ενεργό: ${extra4.economy.restrictions[keyTarget].label}` : 'Δεν υπάρχει ενεργός περιορισμός στον επιλεγμένο παίκτη.'}</div>
+            <div className="flex flex-wrap gap-2"><ComicButton variant="yellow" onClick={applyRestriction} disabled={!keyTarget || !restrictionLabel.trim()}>ΕΦΑΡΜΟΓΗ DIGITAL RESTRICTION</ComicButton><ComicButton variant="green" onClick={releaseRestriction} disabled={!keyTarget || !extra4.economy.restrictions[keyTarget] || money(extra4.economy.keys[playerId]) < 1}>ΑΠΕΛΕΥΘΕΡΩΣΗ ΣΥΜΜΑΧΟΥ ΜΕ KEY</ComicButton></div>
             <div className="flex flex-wrap gap-2"><ComicButton variant="yellow" onClick={tradeKeyForTokens} disabled={money(extra4.economy.keys[playerId]) < 1 || money(amount) < 1}>ΑΝΤΑΛΛΑΓΗ KEY → TOKENS</ComicButton><ComicButton variant="purple" onClick={tradeKeyForLoot} disabled={money(extra4.economy.keys[playerId]) < 1 || !(extra4.economy.lootPool || []).some((item) => !item.removedAt && !item.consumedAt && (item.mode === currentMode || item.mode === 'all'))}>ΑΝΤΑΛΛΑΓΗ KEY → LOOT</ComicButton></div>
             <div className="text-xs text-foreground/50">Η ανταλλαγή Tokens γίνεται με ποσότητα που ορίζει ο Director. Το Loot επιλέγεται τυχαία από το διαθέσιμο pool του ενεργού Mode.</div>
           </ComicPanel>
