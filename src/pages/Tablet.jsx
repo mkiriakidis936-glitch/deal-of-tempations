@@ -497,6 +497,7 @@ export default function Tablet() {
               updateState={trackedUpdate}
               onRelease={() => trackedUpdate({ stage: 1 })}
               onGoToFinale={() => trackedUpdate({ stage: 3 })}
+              playerProfiles={playerProfiles}
             />
           )}
           {state.stage === 3 && (
@@ -504,6 +505,7 @@ export default function Tablet() {
               state={displayState}
               updateState={trackedUpdate}
               onEnd={archiveAndDelete}
+              playerProfiles={playerProfiles}
             />
           )}
         </>
