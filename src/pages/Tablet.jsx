@@ -339,6 +339,7 @@ export default function Tablet() {
             state={displayState}
             updateState={trackedUpdate}
             playerProfiles={playerProfiles}
+            playerProfilesReady={intakeProfilesReady}
             onStartSurprise={startPersonalizedSurprise}
             onRevealSurprise={revealPersonalizedSurprise}
             onCancelSurprise={cancelPersonalizedSurprise}
