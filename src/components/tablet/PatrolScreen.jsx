@@ -248,9 +248,7 @@ export default function PatrolScreen({ state, updateState, onGoToStage2, playerP
                     </button>
                   ))}
                 </div>
-                {playerProfilesReady && state.players.filter((p) => p.id !== currentPlayer.id && isVipActivityAllowed(vipCtx, p)).length === 0 && (
-                  <ComicButton variant="white" size="md" onClick={handleNextPlayer}>ΠΑΡΑΛΕΙΨΗ ΕΝΤΑΛΜΑΤΟΣ</ComicButton>
-                )}
+                {playerProfilesReady && <ComicButton variant="white" size="md" onClick={handleNextPlayer}>ΠΑΡΑΛΕΙΨΗ ΕΝΤΑΛΜΑΤΟΣ ΧΩΡΙΣ ΠΟΙΝΗ</ComicButton>}
               </div>
             )}
             {square.type === 'glitch' && state.glitchCard && (
