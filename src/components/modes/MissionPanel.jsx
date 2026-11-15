@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Panel, Btn } from '@/components/modes/ModeShell';
 import { pick, useTick, fmt } from '@/lib/modeKit';
+import { getVipAnswers, isVipActivityAllowed, canAssignVipActivity } from '@/lib/playerIntelligence';
 
 // Real-Time Secret Missions: ξεκινούν από το tablet και εμφανίζονται κρυφά στο κινητό της παίκτριας.
 export default function MissionPanel({ ctx, pool, onSuccess, onFail, title = '📲 Secret Missions' }) {
@@ -12,13 +13,12 @@ export default function MissionPanel({ ctx, pool, onSuccess, onFail, title = '�
   const [message, setMessage] = useState('');
   useTick(true, 1000);
 
-  function profileFor(playerId) {
-    return ctx.playerProfiles?.find((profile) => profile.playerId === playerId)?.vipProfile?.answers || null;
+  function profileFor(player) {
+    return getVipAnswers(ctx, player);
   }
 
   function canReceiveMissions(player) {
-    const answers = profileFor(player.id);
-    return !answers || (answers.activeParticipation !== 'no' && answers.activityPreferences?.missions !== 'no');
+    return isVipActivityAllowed(ctx, player, 'missions');
   }
 
   function send() {
@@ -32,7 +32,7 @@ export default function MissionPanel({ ctx, pool, onSuccess, onFail, title = '�
       setMessage('Η παίκτρια δεν έχει επιλέξει συμμετοχή σε μυστικές αποστολές.');
       return;
     }
-    const answers = profileFor(p.id);
+    const answers = profileFor(p);
     const suitablePool = pool;
     if (!suitablePool.length) {
       setMessage('Δεν υπάρχουν διαθέσιμες αποστολές σε αυτό το Mode.');
@@ -43,6 +43,7 @@ export default function MissionPanel({ ctx, pool, onSuccess, onFail, title = '�
       return;
     }
     const m = pick(suitablePool);
+    if (!auto && !canAssignVipActivity(ctx, p, { activityType: 'missions', activityLabel: 'μυστικές αποστολές' })) return;
     if (!auto && !window.confirm(`Αποστολή στη ${p.name}: «${m.title}»\n\n${m.text}\n\nΈλεγξε τα δηλωμένα όρια πριν συνεχίσεις.`)) return;
     setMg({
       missions: {
