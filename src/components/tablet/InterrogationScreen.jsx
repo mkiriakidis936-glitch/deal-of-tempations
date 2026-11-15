@@ -19,7 +19,7 @@ function SectionHeader({ children, aside }) {
   );
 }
 
-export default function InterrogationScreen({ state, updateState, onRelease, onGoToFinale, playerProfiles = [] }) {
+export default function InterrogationScreen({ state, updateState, onRelease, onGoToFinale, playerProfiles = [], playerProfilesReady = true }) {
   const [question, setQuestion] = useState(null);
   const [truths, setTruths] = useState(0);
   const [rounds, setRounds] = useState(0);
@@ -30,18 +30,20 @@ export default function InterrogationScreen({ state, updateState, onRelease, onG
   const [iceTickle, setIceTickle] = useState(false);
   const [showMugshot, setShowMugshot] = useState(true);
   const [showPrisonBreak, setShowPrisonBreak] = useState(false);
+  const [consentCheckedFor, setConsentCheckedFor] = useState(null);
 
   const tiedPlayer = state.players.find((p) => isFullyRestrained(p)) || state.players[state.currentPlayerIndex];
   const timerDuration = confessed ? 10 : iceTickle ? 60 : 30;
 
   useEffect(() => {
-    if (!tiedPlayer) return;
-    if (canAssignVipActivity({ playerProfiles }, tiedPlayer, { activityType: 'questions', activityLabel: 'ανάκριση / σκληρές αλήθειες' })) {
+    if (!tiedPlayer || !playerProfilesReady || consentCheckedFor === tiedPlayer.id) return;
+    setConsentCheckedFor(tiedPlayer.id);
+    if (canAssignVipActivity({ playerProfiles, playerProfilesReady }, tiedPlayer, { activityType: 'questions', activityLabel: 'ανάκριση / σκληρές αλήθειες' })) {
       setQuestion(drawCard('hardcore'));
     } else {
       setReleased(true);
     }
-  }, [tiedPlayer?.id, playerProfiles]);
+  }, [tiedPlayer?.id, playerProfiles, playerProfilesReady, consentCheckedFor]);
 
   function handleTruthful() {
     const newTruths = truths + 1;
