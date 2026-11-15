@@ -8,13 +8,15 @@ const AUDIT_OPTIONS = [
   { id: 'tampered', label: 'Κόμπος / γκλίτερ', delta: -1, tone: 'bg-fuchsia-800' },
 ];
 
-export default function PajamaMorning({ players, pj, onScore, onFinish }) {
+export default function PajamaMorning({ players, pj, onScore, onFinish, canAssign }) {
   const [step, setStep] = useState('walk');
   const [judged, setJudged] = useState({});
 
   function judge(playerId, key, delta) {
     const tag = `${step}-${playerId}`;
     if (judged[tag]) return;
+    const player = players.find((item) => item.id === playerId);
+    if (canAssign && !canAssign(player)) return;
     setJudged({ ...judged, [tag]: key });
     onScore(playerId, delta);
   }
