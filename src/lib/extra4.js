@@ -1,4 +1,6 @@
 import { INTENSITY_LEVELS } from '@/data/gameConfig';
+import { isNewMode, modeMeta, ACT_META } from '@/data/modes/modeRegistry';
+import { PAJAMA_ACTS } from '@/data/pajamaProgram';
 
 export const EXTRA4_VERSION = '4.0';
 
@@ -68,6 +70,26 @@ export function resumeExtra4Timers(state, now = Date.now()) {
     ...(syncTimer !== state.syncTimer ? { syncTimer } : {}),
     ...(state.mg ? { mg: { ...state.mg, ...(mgTimer !== state.mg.timer ? { timer: mgTimer } : {}), ...(Object.keys(missions).length ? { missions } : {}) } } : {}),
   };
+}
+
+
+export function getExtra4SceneItems(state = {}) {
+  if (isNewMode(state.mode)) {
+    const meta = modeMeta(state.mode);
+    return (meta?.acts || []).map((id) => ({ id, label: ACT_META[id]?.title || id }));
+  }
+  if (state.mode === 'pajama') return PAJAMA_ACTS.map((act) => ({ id: act.id, label: act.title }));
+  if (state.mode === 'marathon') return ['INFILTRATION', 'THE VAULT', 'POLICE RAIDS', 'TOTAL LOCKDOWN'].map((label, index) => ({ id: `marathon-${index + 1}`, label }));
+  if (state.mode === 'arrest_heist') return ['ARREST & HEIST', 'GRAND HEIST', 'FINALE'].map((label, index) => ({ id: `arrest-${index + 1}`, label }));
+  return ['Προετοιμασία', 'Περιπολία', 'Ανάκριση', 'Φινάλε'].map((label, index) => ({ id: `classic-${index}`, label }));
+}
+
+export function getExtra4ModeSceneIndex(state = {}) {
+  if (isNewMode(state.mode)) return state.mg?.actIndex || 0;
+  if (state.mode === 'pajama') return state.pajama?.actIndex || 0;
+  if (state.mode === 'marathon') return Math.max(0, (state.marathonStage || 1) - 1);
+  if (state.mode === 'arrest_heist') return Math.max(0, (state.stage || 1) - 1);
+  return state.stage || 0;
 }
 
 export { INTENSITY_LEVELS };
