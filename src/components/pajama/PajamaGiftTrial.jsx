@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { GIFT_CODE } from '@/data/giftVault';
 
-export default function PajamaGiftTrial({ players, onDone, canAssign }) {
+export default function PajamaGiftTrial({ players, onDone, canAssign, canStart }) {
   const [sacrificedId, setSacrificedId] = useState('');
   const [left, setLeft] = useState(30);
   const [running, setRunning] = useState(false);
@@ -18,6 +18,7 @@ export default function PajamaGiftTrial({ players, onDone, canAssign }) {
   const link = `${window.location.origin}/gift-unlock`;
 
   function finish(ok) {
+    if (canStart && !canStart()) return;
     setRunning(false);
     setResult(ok ? 'success' : 'fail');
   }
@@ -53,7 +54,12 @@ export default function PajamaGiftTrial({ players, onDone, canAssign }) {
           </p>
         </div>
 
-        <div className="rounded-xl border border-pink-500/40 bg-pink-950/50 p-3">
+        {players.length === 0 ? (
+          <div className="rounded-xl border border-amber-500/40 bg-amber-950/30 p-3 text-center space-y-3">
+            <p className="text-sm">Δεν υπάρχει διαθέσιμη ενεργή συμμετοχή για αυτή τη δοκιμασία.</p>
+            <button onClick={() => onDone({ success: false, sacrificedName: '', skipped: true, unlockedAt: Date.now() })} className="w-full py-3 rounded-lg font-heading text-lg bg-pink-600 text-white">ΠΑΡΑΛΕΙΨΗ ΔΟΚΙΜΑΣΙΑΣ → ΦΙΝΑΛΕ</button>
+          </div>
+        ) : <div className="rounded-xl border border-pink-500/40 bg-pink-950/50 p-3">
           <div className="text-xs font-bold uppercase tracking-widest text-pink-300 mb-2">Η θυσία</div>
           <div className="grid grid-cols-2 gap-2">
             {players.map((p) => (
@@ -67,15 +73,18 @@ export default function PajamaGiftTrial({ players, onDone, canAssign }) {
               </button>
             ))}
           </div>
-        </div>
+        </div>}
 
-        <div className="rounded-xl border border-pink-500/40 bg-pink-950/50 p-3">
+        {players.length > 0 && <div className="rounded-xl border border-pink-500/40 bg-pink-950/50 p-3">
           <div className="flex items-center justify-between">
             <span className={`font-heading text-4xl ${done ? 'text-rose-400 animate-pulse' : 'text-pink-100'}`}>
               {String(Math.floor(left / 60)).padStart(2, '0')}:{String(left % 60).padStart(2, '0')}
             </span>
             <button
-              onClick={() => setRunning((r) => !r)}
+              onClick={() => {
+                if (!running && canStart && !canStart()) return;
+                setRunning((r) => !r);
+              }}
               disabled={done || !!result || !sacrificedId}
               className="px-4 py-2 rounded-lg font-heading text-sm bg-fuchsia-600 text-white disabled:opacity-40"
             >
@@ -139,7 +148,7 @@ export default function PajamaGiftTrial({ players, onDone, canAssign }) {
           </div>
         )}
 
-        {result && (
+        {players.length > 0 && result && (
           <button
             onClick={handOver}
             className="w-full py-3 rounded-lg font-heading text-lg bg-pink-600 text-white"
@@ -147,7 +156,7 @@ export default function PajamaGiftTrial({ players, onDone, canAssign }) {
             ΣΥΝΕΧΕΙΑ: ΦΙΝΑΛΕ →
           </button>
         )}
-        {!result && done && (
+        {players.length > 0 && !result && done && (
           <div className="text-center text-sm text-rose-200 font-bold bg-rose-950/60 border border-rose-500/40 rounded-lg p-2">
             ⏱ Ο χρόνος τελείωσε — πάτα «ΕΣΠΑΣΕ».
           </div>
