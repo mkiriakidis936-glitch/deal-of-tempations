@@ -26,13 +26,13 @@ function applySquareEffect(player, effect) {
   }
 }
 
-export default function MarathonInfiltration({ state, updateState, onAdvance, playerProfiles = [] }) {
+export default function MarathonInfiltration({ state, updateState, onAdvance, playerProfiles = [], playerProfilesReady = true }) {
   const [phase, setPhase] = useState('idle');
   const [duelOpponentId, setDuelOpponentId] = useState(null);
   const [lastResult, setLastResult] = useState(null);
 
   const currentPlayer = state.players[state.currentPlayerIndex];
-  const vipCtx = { playerProfiles };
+  const vipCtx = { playerProfiles, playerProfilesReady };
   const currentTeam = currentPlayer?.team || 'alpha';
   const teamKey = currentTeam === 'alpha' ? 'teamAlpha' : 'teamBeta';
   const oppTeamKey = currentTeam === 'alpha' ? 'teamBeta' : 'teamAlpha';
