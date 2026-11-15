@@ -119,8 +119,9 @@ export default function MarathonRaids({ state, updateState, onAdvance, playerPro
             ) : !playerProfilesReady ? (
               <div className="text-center text-sm opacity-70">Φόρτωση ιδιωτικών προτιμήσεων…</div>
             ) : (
-              <div className="text-center">
+              <div className="text-center space-y-2">
                 <ComicButton variant="red" size="lg" disabled={picked.length < 2} onClick={() => setPhase('active')}>▶ ΕΚΤΕΛΕΣΗ ΠΟΙΝΗΣ</ComicButton>
+                {picked.length < 2 && <ComicButton variant="white" size="md" onClick={skipPenalty}>ΠΑΡΑΛΕΙΨΗ ΧΩΡΙΣ ΠΟΙΝΗ</ComicButton>}
               </div>
             )}
           </ComicPanel>
