@@ -102,6 +102,16 @@ export default function Extra4LiveFeedTV({ sessionCode, token, feed = {} }) {
     };
   }, [sessionCode, token]);
 
+  useEffect(() => {
+    if (feed.status !== 'off' || !pcRef.current) return;
+    pcRef.current.ontrack = null;
+    pcRef.current.onconnectionstatechange = null;
+    pcRef.current.close();
+    pcRef.current = null;
+    if (videoRef.current) videoRef.current.srcObject = null;
+    setStatus('ΑΝΕΝΕΡΓΟ');
+  }, [feed.status]);
+
   if (!token) return null;
   const pip = !!feed.tvPip;
   const audioRequested = !!feed.tvAudio;
