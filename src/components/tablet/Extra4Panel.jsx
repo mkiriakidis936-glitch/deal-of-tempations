@@ -3,7 +3,7 @@ import { QRCodeSVG } from 'qrcode.react';
 import ComicPanel from '@/components/comic/ComicPanel';
 import ComicButton from '@/components/comic/ComicButton';
 import { DIGITAL_CARDS } from '@/data/gameContent';
-import { isVipActivityAllowed } from '@/lib/playerIntelligence';
+import { isVipActivityAllowed, canAssignVipActivity } from '@/lib/playerIntelligence';
 import { INTENSITY_LEVELS, EXTRA4_CATEGORIES, getExtra4, addExtra4Event, pauseExtra4Timers, resumeExtra4Timers } from '@/lib/extra4';
 
 const money = (value) => Math.max(0, Number(value) || 0);
@@ -85,14 +85,14 @@ export default function Extra4Panel({ state, updateState, playerProfiles = [], p
 
   async function setLevel(level) {
     if (activeActivity?.status === 'active') return;
-    await updateExtra({ tactical: { ...extra4.tactical, level, changedAt: Date.now() } });
+    await updateExtra({ tactical: { ...extra4.tactical, level, modeId: currentMode, changedAt: Date.now() } });
   }
 
   async function startActivity(action, group = activeCategory) {
     const groupId = typeof group === 'string' ? group : group.id;
     const groupLabel = typeof group === 'string' ? (EXTRA4_CATEGORIES.find((item) => item.id === group)?.label || group) : group.label;
     const type = ['guessing', 'trivia'].includes(groupId) ? 'questions' : groupId === 'vip' ? 'surprises' : 'missions';
-    const eligible = players.filter((player) => isVipActivityAllowed({ playerProfiles, playerProfilesReady }, player, type));
+    const eligible = players.filter((player) => canAssignVipActivity({ playerProfiles, playerProfilesReady }, player, { activityType: type, activityLabel: groupLabel }));
     if (state.stopActive || extra4.control.status !== 'running' || activeActivity?.status === 'active' || eligible.length === 0) return;
     const catalogIndex = activityCatalog.findIndex((item) => item.id === action.id && item.categoryId === groupId);
     const item = { id: `activity-${Date.now()}`, actionId: action.id, label: action.label, category: groupLabel, status: 'active', startedAt: Date.now(), mode: currentMode, participantIds: eligible.map((player) => player.id) };
@@ -112,7 +112,7 @@ export default function Extra4Panel({ state, updateState, playerProfiles = [], p
       for (let step = 1; step <= activityCatalog.length; step += 1) {
         const candidate = activityCatalog[(startIndex + step) % activityCatalog.length];
         const type = ['guessing', 'trivia'].includes(candidate.categoryId) ? 'questions' : candidate.categoryId === 'vip' ? 'surprises' : 'missions';
-        const eligible = players.filter((player) => isVipActivityAllowed({ playerProfiles, playerProfilesReady }, player, type));
+        const eligible = players.filter((player) => canAssignVipActivity({ playerProfiles, playerProfilesReady }, player, { activityType: type, activityLabel: candidate.label }));
         if (eligible.length) { next = { candidate, eligible }; break; }
       }
       if (next && extra4.control.status === 'running') {
