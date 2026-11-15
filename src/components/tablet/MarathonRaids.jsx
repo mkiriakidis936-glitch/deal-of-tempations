@@ -5,17 +5,25 @@ import Timer from '@/components/comic/Timer';
 import { MARATHON_GROUP_PENALTIES } from '@/data/gameContent';
 import { addHistory } from '@/lib/gameLogic';
 import SpeakButton from '@/components/comic/VoiceReader';
+import { canAssignVipActivity, isVipActivityAllowed } from '@/lib/playerIntelligence';
 
-export default function MarathonRaids({ state, updateState, onAdvance }) {
+export default function MarathonRaids({ state, updateState, onAdvance, playerProfiles = [] }) {
   const [phase, setPhase] = useState('intro');
   const [picked, setPicked] = useState([]);
+  const vipCtx = { playerProfiles };
 
   const penaltyIndex = state.penaltyIndex || 0;
   const currentPenalty = MARATHON_GROUP_PENALTIES[penaltyIndex];
   const pickedPlayers = state.players.filter((p) => picked.includes(p.id));
 
   function toggle(id) {
-    setPicked((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : prev.length < 3 ? [...prev, id] : prev));
+    const player = state.players.find((item) => item.id === id);
+    if (picked.includes(id)) {
+      setPicked((prev) => prev.filter((x) => x !== id));
+      return;
+    }
+    if (!player || !canAssignVipActivity(vipCtx, player, { activityLabel: 'ομαδική δοκιμασία Police Raids' })) return;
+    setPicked((prev) => prev.length < 3 ? [...prev, id] : prev);
   }
 
   async function handleResult(success) {
@@ -84,7 +92,7 @@ export default function MarathonRaids({ state, updateState, onAdvance }) {
             <div className="font-bold text-sm mb-2 text-center">Διάλεξε 2-3 παίκτριες:</div>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-4">
               {state.players.map((p) => (
-                <button key={p.id} onClick={() => toggle(p.id)} className={`comic-panel-sm p-2 ${picked.includes(p.id) ? 'bg-primary ring-2 ring-primary' : 'bg-card'}`}>
+                <button key={p.id} onClick={() => toggle(p.id)} disabled={!picked.includes(p.id) && !isVipActivityAllowed(vipCtx, p)} className={`comic-panel-sm p-2 ${picked.includes(p.id) ? 'bg-primary ring-2 ring-primary' : 'bg-card'}`}>
                   <div className="font-bold">{p.name}</div>
                   <div className="text-xs">{p.team === 'alpha' ? '💖 Alpha' : '💎 Beta'} · Ποινή {p.penaltyStep || 0}</div>
                 </button>
