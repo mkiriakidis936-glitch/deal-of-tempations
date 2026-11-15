@@ -6,6 +6,7 @@ import {
   EXTENDED_GLAM_CARDS, EXTENDED_CHAOS_CARDS, EXTENDED_CHAOS_MARKET_CARDS, SHOP, EXTENDED_SECRET_MISSIONS,
 } from '@/data/modes/extendedContent';
 import { pick, sfx, useLocalCountdown } from '@/lib/modeKit';
+import { canAssignVipActivity } from '@/lib/playerIntelligence';
 
 const ICON = { start: '🚩', card: '🎴', rest: '🛋️', branch: '🔀', portal: '🚪', finish: '👑' };
 
@@ -42,6 +43,7 @@ export default function ActBoard({ ctx, onDone }) {
   }
 
   function draw(player, forcedRoute) {
+    if (!canAssignVipActivity(ctx, player, { activityLabel: 'κάρτα Glam / Chaos' })) return null;
     const r = routes[player.id];
     const route = forcedRoute || (r && r.left > 0 ? r.route : 'glam');
     const deck = route === 'chaos' ? EXTENDED_CHAOS_CARDS : EXTENDED_GLAM_CARDS;
@@ -68,7 +70,7 @@ export default function ActBoard({ ctx, onDone }) {
   }
 
   function roll() {
-    if (!cur || mg.card || mg.branch || allDone || stopped) return;
+    if (!ctx.playerProfilesReady || !cur || mg.card || mg.branch || allDone || stopped) return;
     const d = 1 + Math.floor(Math.random() * 6);
     const from = pos[cur.id] || 0;
     let np = from + d;
@@ -79,17 +81,27 @@ export default function ActBoard({ ctx, onDone }) {
     const t = squareType(np);
     sfx.click();
     if (t === 'branch') patch.branch = cur.id;
-    else if (t === 'card' || t === 'portal') Object.assign(patch, draw(cur));
-    else if (t === 'finish') Object.assign(patch, finishFor(cur));
+    else if (t === 'card' || t === 'portal') {
+      const cardPatch = draw(cur);
+      if (cardPatch) Object.assign(patch, cardPatch);
+      else Object.assign(patch, nextTurn(turn, finished, mg.skip || []));
+    } else if (t === 'finish') Object.assign(patch, finishFor(cur));
     else Object.assign(patch, nextTurn(turn, finished, mg.skip || []));
     setMg(patch);
     log(`${cur.name} 🎲 ${d}${gated ? ` — η πύλη θέλει ${GATE_TOKENS} tokens` : ''}`);
   }
 
   function chooseRoute(route) {
+    if (!ctx.playerProfilesReady) return;
     const p = players.find((x) => x.id === mg.branch);
     if (!p) return;
-    setMg({ branch: null, ...draw(p, route) });
+    const cardPatch = draw(p, route);
+    if (!cardPatch) {
+      setMg({ branch: null, ...nextTurn(turn, finished, mg.skip || []) });
+      log(`⏭️ ${p.name}: η κάρτα παραλείφθηκε βάσει VIP προτιμήσεων`);
+      return;
+    }
+    setMg({ branch: null, ...cardPatch });
     log(`🔀 ${p.name} διάλεξε «${ROUTES[route].name}»`);
   }
 
@@ -189,7 +201,7 @@ export default function ActBoard({ ctx, onDone }) {
 
       {!mg.card && !mg.branch && !allDone && (
         <div className="text-center">
-          <Btn color="bg-primary text-black" className="!text-lg !px-8 !py-4" onClick={roll}>
+          <Btn color="bg-primary text-black" className="!text-lg !px-8 !py-4" onClick={roll} disabled={!ctx.playerProfilesReady}>
             🎲 ΖΑΡΙ — {cur?.name}
           </Btn>
           {mg.lastRoll && <div className="text-sm mt-1 opacity-80">Τελευταίο: {nameOf(mg.lastRoll.id)} → {mg.lastRoll.d}</div>}
