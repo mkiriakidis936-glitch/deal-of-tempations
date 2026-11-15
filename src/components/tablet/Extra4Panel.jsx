@@ -128,7 +128,7 @@ export default function Extra4Panel({ state, updateState, playerProfiles = [], p
     const groupId = typeof group === 'string' ? group : group.id;
     const groupLabel = typeof group === 'string' ? (EXTRA4_CATEGORIES.find((item) => item.id === group)?.label || group) : group.label;
     const type = ['guessing', 'trivia'].includes(groupId) ? 'questions' : groupId === 'vip' ? 'surprises' : 'missions';
-    const eligible = players.filter((player) => canAssignVipActivity({ playerProfiles, playerProfilesReady }, player, { activityType: type, activityLabel: groupLabel }));
+    const eligible = players.filter((player) => isVipActivityAllowed({ playerProfiles, playerProfilesReady }, player, type) && canAssignVipActivity({ playerProfiles, playerProfilesReady }, player, { activityType: type, activityLabel: groupLabel }));
     if (state.stopActive || extra4.control.status !== 'running' || activeActivity?.status === 'active' || eligible.length === 0) return;
     const catalogIndex = activityCatalog.findIndex((item) => item.id === action.id && item.categoryId === groupId);
     const item = { id: `activity-${Date.now()}`, actionId: action.id, label: action.label, category: groupLabel, status: 'active', startedAt: Date.now(), endedAt: null, result: null, mode: currentMode, participantIds: eligible.map((player) => player.id) };
@@ -148,7 +148,7 @@ export default function Extra4Panel({ state, updateState, playerProfiles = [], p
       for (let step = 1; step <= activityCatalog.length; step += 1) {
         const candidate = activityCatalog[(startIndex + step) % activityCatalog.length];
         const type = ['guessing', 'trivia'].includes(candidate.categoryId) ? 'questions' : candidate.categoryId === 'vip' ? 'surprises' : 'missions';
-        const eligible = players.filter((player) => canAssignVipActivity({ playerProfiles, playerProfilesReady }, player, { activityType: type, activityLabel: candidate.label }));
+        const eligible = players.filter((player) => isVipActivityAllowed({ playerProfiles, playerProfilesReady }, player, type) && canAssignVipActivity({ playerProfiles, playerProfilesReady }, player, { activityType: type, activityLabel: candidate.label }));
         if (eligible.length) { next = { candidate, eligible }; break; }
       }
       if (next && extra4.control.status === 'running') {
@@ -418,7 +418,7 @@ export default function Extra4Panel({ state, updateState, playerProfiles = [], p
             <label className="block text-xs">Παίκτης που διαθέτει Key<select className="mt-1 w-full rounded-lg border border-border bg-background p-2" value={playerId} onChange={(e) => setPlayerId(e.target.value)}>{players.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}</select></label>
             <label className="block text-xs">Σύμμαχος για ψηφιακή απελευθέρωση<select className="mt-1 w-full rounded-lg border border-border bg-background p-2" value={keyTarget} onChange={(e) => setKeyTarget(e.target.value)}><option value="">Επίλεξε παίκτη</option>{players.filter((p) => p.id !== playerId && extra4.economy.restrictions[p.id]).map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}</select></label>
             <ComicButton variant="green" onClick={releaseRestriction} disabled={!keyTarget || money(extra4.economy.keys[playerId]) < 1}>ΑΠΕΛΕΥΘΕΡΩΣΗ ΣΥΜΜΑΧΟΥ</ComicButton>
-            <div className="flex flex-wrap gap-2"><ComicButton variant="yellow" onClick={tradeKeyForTokens} disabled={money(extra4.economy.keys[playerId]) < 1 || money(amount) < 1}>ΑΝΤΑΛΛΑΓΗ KEY → TOKENS</ComicButton><ComicButton variant="purple" onClick={tradeKeyForLoot} disabled={money(extra4.economy.keys[playerId]) < 1 || !(extra4.economy.lootPool || []).some((item) => item.mode === currentMode || item.mode === 'all')}>ΑΝΤΑΛΛΑΓΗ KEY → LOOT</ComicButton></div>
+            <div className="flex flex-wrap gap-2"><ComicButton variant="yellow" onClick={tradeKeyForTokens} disabled={money(extra4.economy.keys[playerId]) < 1 || money(amount) < 1}>ΑΝΤΑΛΛΑΓΗ KEY → TOKENS</ComicButton><ComicButton variant="purple" onClick={tradeKeyForLoot} disabled={money(extra4.economy.keys[playerId]) < 1 || !(extra4.economy.lootPool || []).some((item) => !item.removedAt && !item.consumedAt && (item.mode === currentMode || item.mode === 'all'))}>ΑΝΤΑΛΛΑΓΗ KEY → LOOT</ComicButton></div>
             <div className="text-xs text-foreground/50">Η ανταλλαγή Tokens γίνεται με ποσότητα που ορίζει ο Director. Το Loot επιλέγεται τυχαία από το διαθέσιμο pool του ενεργού Mode.</div>
           </ComicPanel>
           <ComicPanel className="bg-card space-y-3">
@@ -430,7 +430,7 @@ export default function Extra4Panel({ state, updateState, playerProfiles = [], p
               </select>
             </div>
             <ComicButton size="sm" onClick={addLootToPool} disabled={!lootName.trim()}>ΠΡΟΣΘΗΚΗ ΣΤΟ LOOT POOL</ComicButton>
-            <ComicButton variant="yellow" onClick={rollLoot} disabled={!playerId || !(extra4.economy.lootPool || []).some((item) => item.mode === currentMode || item.mode === 'all')}>LOOT ROULETTE ΓΙΑ {players.find((player) => player.id === playerId)?.name || 'ΠΑΙΚΤΗ'}</ComicButton>
+            <ComicButton variant="yellow" onClick={rollLoot} disabled={!playerId || !(extra4.economy.lootPool || []).some((item) => !item.removedAt && !item.consumedAt && (item.mode === currentMode || item.mode === 'all'))}>LOOT ROULETTE ΓΙΑ {players.find((player) => player.id === playerId)?.name || 'ΠΑΙΚΤΗ'}</ComicButton>
             {(extra4.economy.lootPool || []).filter((item) => !item.removedAt && !item.consumedAt && (item.mode === currentMode || item.mode === 'all')).map((item) => <div key={item.id} className="flex items-center justify-between gap-2 border-b border-border/50 py-2 text-xs"><span>{item.name} · {item.rarity.toUpperCase()}</span><ComicButton size="sm" variant="red" onClick={() => removeLootFromPool(item.id)}>ΑΦΑΙΡΕΣΗ</ComicButton></div>)}
             <div className="border-t border-border/50 pt-2"><div className="ds-label mb-2">INVENTORY</div>{players.map((player) => <div key={player.id} className="py-1 text-xs"><strong>{player.name}:</strong> {(extra4.economy.inventory[player.id] || []).map((item) => `${item.name} (${item.rarity})`).join(', ') || '—'}</div>)}</div>
           </ComicPanel>
