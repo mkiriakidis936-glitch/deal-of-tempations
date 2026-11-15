@@ -4,13 +4,13 @@ import MarathonVault from '@/components/tablet/MarathonVault';
 import MarathonRaids from '@/components/tablet/MarathonRaids';
 import MarathonLockdown from '@/components/tablet/MarathonLockdown';
 
-export default function MarathonScreen({ state, updateState, onEnd, playerProfiles = [] }) {
+export default function MarathonScreen({ state, updateState, onEnd, playerProfiles = [], playerProfilesReady = true }) {
   const stage = state.marathonStage || 1;
   let screen = null;
-  if (stage === 1) screen = <MarathonInfiltration state={state} updateState={updateState} onAdvance={() => updateState({ marathonStage: 2 })} playerProfiles={playerProfiles} />;
-  else if (stage === 2) screen = <MarathonVault state={state} updateState={updateState} onAdvance={() => updateState({ marathonStage: 3 })} playerProfiles={playerProfiles} />;
-  else if (stage === 3) screen = <MarathonRaids state={state} updateState={updateState} onAdvance={() => updateState({ marathonStage: 4 })} playerProfiles={playerProfiles} />;
-  else if (stage === 4) screen = <MarathonLockdown state={state} updateState={updateState} onEnd={onEnd} playerProfiles={playerProfiles} />;
+  if (stage === 1) screen = <MarathonInfiltration state={state} updateState={updateState} onAdvance={() => updateState({ marathonStage: 2 })} playerProfiles={playerProfiles} playerProfilesReady={playerProfilesReady} />;
+  else if (stage === 2) screen = <MarathonVault state={state} updateState={updateState} onAdvance={() => updateState({ marathonStage: 3 })} playerProfiles={playerProfiles} playerProfilesReady={playerProfilesReady} />;
+  else if (stage === 3) screen = <MarathonRaids state={state} updateState={updateState} onAdvance={() => updateState({ marathonStage: 4 })} playerProfiles={playerProfiles} playerProfilesReady={playerProfilesReady} />;
+  else if (stage === 4) screen = <MarathonLockdown state={state} updateState={updateState} onEnd={onEnd} playerProfiles={playerProfiles} playerProfilesReady={playerProfilesReady} />;
   return (
     <div className="space-y-3">
       {screen}
