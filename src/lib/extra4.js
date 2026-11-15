@@ -8,7 +8,7 @@ export const EXTRA4_CATEGORIES = [
   { id: 'sensory', label: 'Sensory Challenges', actions: [{ id: 'oracle', label: 'Blind Oracle' }, { id: 'audio', label: 'Audio Challenge' }] },
   { id: 'guessing', label: 'Guessing Games', actions: [{ id: 'trivia', label: 'Trivia Know Me' }] },
   { id: 'roulette', label: 'Roulette Challenges', actions: [{ id: 'shoe', label: 'Shoe Roulette' }, { id: 'slots', label: 'Temptation Slots' }, { id: 'karmaslots', label: 'Karma Slots' }] },
-  { id: 'reaction', label: 'Reaction & Reflex', actions: [{ id: 'extra4minigames', label: 'Digital Reaction & Reflex Games' }] },
+  { id: 'reaction', label: 'Reaction & Reflex', actions: [{ id: 'extra4reaction', label: 'Digital Reaction & Reflex Games' }] },
   { id: 'trivia', label: 'Trivia & Questions', actions: [{ id: 'trivia', label: 'Trivia Know Me' }, { id: 'poker', label: 'Liars Poker' }] },
   { id: 'team', label: 'Team Challenges', actions: [{ id: 'grandjury', label: 'Grand Jury' }, { id: 'sealedvote', label: 'Sealed Vote' }] },
   { id: 'vip', label: 'VIP Challenges', actions: [{ id: 'privatemsg', label: 'Private Message' }, { id: 'showdirector', label: 'Show Director' }] },
