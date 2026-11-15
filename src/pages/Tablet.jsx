@@ -193,7 +193,17 @@ export default function Tablet() {
         .filter((e) => ['bomb_exploded', 'bomb_timeout', 'midnight_pact', 'warrant', 'trial_verdict', 'plot_twist', 'arrest', 'heist', 'glitch'].includes(e.type))
         .map((e) => e.description || e.message || e.text || e.type)
         .slice(0, 10);
-      await base44.functions.invoke('archiveSession', { sessionCode: session.sessionCode, mode: state.mode, winner, playerNames, stats, confessions, highlights });
+      await base44.functions.invoke('archiveSession', {
+        sessionCode: session.sessionCode,
+        mode: state.mode,
+        winner,
+        playerNames,
+        stats,
+        confessions,
+        highlights,
+        showScenes: state.showMode?.sceneHistory || [],
+        episodeSchedule: state.night?.program || [],
+      });
     } catch (e) {
       console.error('Archive failed', e);
       window.alert('Η αρχειοθέτηση απέτυχε. Η συνεδρία διατηρήθηκε και δεν διαγράφηκε. Έλεγξε τη σύνδεση και δοκίμασε ξανά.');
@@ -245,26 +255,44 @@ export default function Tablet() {
   async function startPersonalizedSurprise(profile) {
     const answers = profile.vipProfile?.answers || {};
     if (answers.activeParticipation === 'no' || answers.activityPreferences?.surprises !== 'yes' || answers.unexpectedChallenge === 'no') return;
+    const sceneId = Date.now();
+    const showMode = state.showMode || {};
     await trackedUpdate({
       showMode: {
-        ...(state.showMode || {}),
-        reveal: { active: true, title: `ΜΥΣΤΙΚΗ ΕΚΠΛΗΞΗ · ${profile.name}`, content: '', phase: 'buildup', timestamp: Date.now() },
+        ...showMode,
+        reveal: { active: true, title: `ΜΥΣΤΙΚΗ ΕΚΠΛΗΞΗ · ${profile.name}`, content: '', phase: 'buildup', timestamp: sceneId },
+        sceneHistory: [...(showMode.sceneHistory || []), { id: sceneId, type: 'personalized_surprise', title: `ΜΥΣΤΙΚΗ ΕΚΠΛΗΞΗ · ${profile.name}`, phase: 'buildup', timestamp: sceneId }].slice(-100),
       },
     });
   }
 
   async function cancelPersonalizedSurprise() {
-    await trackedUpdate({ showMode: { ...(state.showMode || {}), reveal: null } });
+    const showMode = state.showMode || {};
+    const sceneId = showMode.reveal?.timestamp;
+    await trackedUpdate({
+      showMode: {
+        ...showMode,
+        reveal: null,
+        sceneHistory: (showMode.sceneHistory || []).filter((scene) => !(scene.id === sceneId && scene.type === 'personalized_surprise' && scene.phase === 'buildup')),
+      },
+    });
   }
 
   async function revealPersonalizedSurprise(profile) {
     const answers = profile.vipProfile?.answers || {};
     const wish = String(answers.surpriseWish || '').trim();
     if (!wish || answers.activeParticipation === 'no' || answers.activityPreferences?.surprises !== 'yes' || answers.unexpectedChallenge === 'no') return;
+    const showMode = state.showMode || {};
+    const sceneId = showMode.reveal?.timestamp;
+    const revealedAt = Date.now();
+    const sceneHistory = [...(showMode.sceneHistory || [])];
+    const sceneIndex = sceneHistory.findIndex((scene) => scene.id === sceneId);
+    if (sceneIndex >= 0) sceneHistory[sceneIndex] = { ...sceneHistory[sceneIndex], content: wish, phase: 'reveal', revealedAt };
     await trackedUpdate({
       showMode: {
-        ...(state.showMode || {}),
-        reveal: { active: true, title: `ΜΥΣΤΙΚΗ ΕΚΠΛΗΞΗ · ${profile.name}`, content: wish, phase: 'reveal', timestamp: Date.now() },
+        ...showMode,
+        reveal: { active: true, title: `ΜΥΣΤΙΚΗ ΕΚΠΛΗΞΗ · ${profile.name}`, content: wish, phase: 'reveal', timestamp: revealedAt },
+        sceneHistory,
       },
       history: [
         { type: 'personalized_surprise', player: profile.name, detail: 'Αποκαλύφθηκε προσωπική έκπληξη από τη VIP φόρμα', timestamp: Date.now() },
