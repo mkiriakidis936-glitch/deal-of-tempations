@@ -94,7 +94,7 @@ function scoreFor(state, player) {
   return player.bounty || 0;
 }
 
-export default function ControlRoom({ state, updateState, playerProfiles = [], onStartSurprise, onRevealSurprise, onCancelSurprise, onOpen, onRefresh, onEndGame, onClose }) {
+export default function ControlRoom({ state, updateState, playerProfiles = [], playerProfilesReady = true, onStartSurprise, onRevealSurprise, onCancelSurprise, onOpen, onRefresh, onEndGame, onClose }) {
   const [pendingProfile, setPendingProfile] = useState(null);
   const [extraOpen, setExtraOpen] = useState(false);
   const [now, setNow] = useState(Date.now());
@@ -140,7 +140,7 @@ export default function ControlRoom({ state, updateState, playerProfiles = [], o
         <div className="flex justify-end">
           <ComicButton variant="purple" size="md" onClick={() => setExtraOpen(true)}>EXTRA 4.0 — ΚΕΝΤΡΙΚΟΣ ΕΛΕΓΧΟΣ</ComicButton>
         </div>
-        {extraOpen && <Extra4Panel state={state} updateState={updateState} onOpen={onOpen} onEndGame={onEndGame} onClose={() => setExtraOpen(false)} />}
+        {extraOpen && <Extra4Panel state={state} updateState={updateState} playerProfiles={playerProfiles} playerProfilesReady={playerProfilesReady} onOpen={onOpen} onEndGame={onEndGame} onClose={() => setExtraOpen(false)} />}
 
         <ComicPanel className="bg-card">
           <div className="ds-label mb-2 text-primary/80">EPISODE TIMELINE · ΕΞΕΛΙΞΗ MODE</div>
