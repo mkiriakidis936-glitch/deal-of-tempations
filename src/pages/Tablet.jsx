@@ -78,6 +78,7 @@ export default function Tablet() {
   }
 
   const [showQR, setShowQR] = React.useState(false);
+  const [intakeProfiles, setIntakeProfiles] = React.useState([]);
   const [showSplash, setShowSplash] = React.useState(() => !sessionStorage.getItem('dotSplash'));
   const [overlay, setOverlay] = React.useState(null);
   const endingRef = React.useRef(false);
@@ -88,6 +89,35 @@ export default function Tablet() {
   const [undoDepth, setUndoDepth] = React.useState(0);
 
   React.useEffect(() => { liveRef.current = state; }, [state]);
+
+  // Personal answers stay local to the authenticated Tablet; they are never copied into the public session state.
+  React.useEffect(() => {
+    let active = true;
+    if (!session?.id) {
+      setIntakeProfiles([]);
+      return undefined;
+    }
+    base44.entities.PlayerIntake.filter({}, { sort: '-created_date', limit: 500 })
+      .then((result) => { if (active) setIntakeProfiles(result.items || []); })
+      .catch((error) => console.error('Private player profile load failed', error));
+    return () => { active = false; };
+  }, [session?.id]);
+
+  const playerProfiles = React.useMemo(() => {
+    const normalize = (value) => String(value || '').trim().toLocaleLowerCase('el-GR');
+    return (state?.players || []).map((player) => {
+      const intake = intakeProfiles.find((item) =>
+        normalize(item.name) === normalize(player.name) ||
+        normalize(item.legalName) === normalize(player.name)
+      );
+      return {
+        playerId: player.id,
+        name: player.name,
+        vipProfile: intake?.vipProfile || null,
+      };
+    }).filter((profile) => profile.vipProfile?.answers);
+  }, [state?.players, intakeProfiles]);
+
 
   const trackedUpdate = React.useCallback(async (patch) => {
     if (liveRef.current) historyRef.current = [...historyRef.current.slice(-9), liveRef.current];
@@ -212,6 +242,31 @@ export default function Tablet() {
 
   const displayState = { ...state, sessionCode: session.sessionCode };
 
+  async function startPersonalizedSurprise(profile) {
+    await trackedUpdate({
+      showMode: {
+        ...(state.showMode || {}),
+        reveal: { active: true, title: `ΜΥΣΤΙΚΗ ΕΚΠΛΗΞΗ · ${profile.name}`, content: '', phase: 'buildup', timestamp: Date.now() },
+      },
+    });
+  }
+
+  async function revealPersonalizedSurprise(profile) {
+    const answers = profile.vipProfile?.answers || {};
+    const wish = String(answers.surpriseWish || '').trim();
+    if (!wish || answers.activeParticipation === 'no') return;
+    await trackedUpdate({
+      showMode: {
+        ...(state.showMode || {}),
+        reveal: { active: true, title: `ΜΥΣΤΙΚΗ ΕΚΠΛΗΞΗ · ${profile.name}`, content: wish, phase: 'reveal', timestamp: Date.now() },
+      },
+      history: [
+        { type: 'personalized_surprise', player: profile.name, detail: 'Αποκαλύφθηκε προσωπική έκπληξη από τη VIP φόρμα', timestamp: Date.now() },
+        ...(state.history || []),
+      ],
+    });
+  }
+
   function renderProductionControls() {
     return (
       <>
@@ -224,6 +279,9 @@ export default function Tablet() {
         {overlay === 'controlroom' && (
           <ControlRoom
             state={displayState}
+            playerProfiles={playerProfiles}
+            onStartSurprise={startPersonalizedSurprise}
+            onRevealSurprise={revealPersonalizedSurprise}
             onOpen={(key) => setOverlay(key)}
             onRefresh={refresh}
             onEndGame={() => { setOverlay(null); archiveAndDelete(); }}
@@ -462,6 +520,9 @@ export default function Tablet() {
       {overlay === 'controlroom' && (
         <ControlRoom
           state={displayState}
+          playerProfiles={playerProfiles}
+          onStartSurprise={startPersonalizedSurprise}
+          onRevealSurprise={revealPersonalizedSurprise}
           onOpen={(key) => setOverlay(key)}
           onRefresh={refresh}
           onEndGame={() => { setOverlay(null); archiveAndDelete(); }}
