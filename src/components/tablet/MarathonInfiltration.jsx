@@ -8,7 +8,7 @@ import BountyMultiplier from '@/components/shared/BountyMultiplier';
 import { MARATHON_SQUARE_TYPES, getMarathonSquare, MARATHON_FINISH_POSITION } from '@/data/marathonBoard';
 import { rollDice, addHistory } from '@/lib/gameLogic';
 import SpeakButton from '@/components/comic/VoiceReader';
-import { canAssignVipActivity } from '@/lib/playerIntelligence';
+import { canAssignVipActivity, isVipActivityAllowed } from '@/lib/playerIntelligence';
 
 function applySquareEffect(player, effect) {
   if (!effect) return player;
@@ -37,6 +37,7 @@ export default function MarathonInfiltration({ state, updateState, onAdvance, pl
   const teamKey = currentTeam === 'alpha' ? 'teamAlpha' : 'teamBeta';
   const oppTeamKey = currentTeam === 'alpha' ? 'teamBeta' : 'teamAlpha';
   const oppPlayers = state.players.filter((p) => p.team !== currentTeam);
+  const eligibleOppPlayers = oppPlayers.filter((p) => isVipActivityAllowed(vipCtx, p));
   const square = getMarathonSquare(currentPlayer?.position || 0);
   const squareType = MARATHON_SQUARE_TYPES[square.type] || MARATHON_SQUARE_TYPES.dead;
   const teamLoot = state[teamKey]?.loot || 0;
@@ -88,7 +89,8 @@ export default function MarathonInfiltration({ state, updateState, onAdvance, pl
     );
     const sq = getMarathonSquare(newPos);
     const moveHistory = addHistory(state, { type: 'move', player: currentPlayer.name, team: currentTeam, dice, position: newPos, squareType: sq.type });
-    if (['challenge', 'command', 'duel'].includes(sq.type) && !canAssignVipActivity(vipCtx, currentPlayer, { activityLabel: sq.type === 'duel' ? 'κόντρα Marathon' : sq.type === 'command' ? 'εντολή Marathon' : 'δοκιμασία Marathon' })) {
+    const duelHasOpponent = sq.type !== 'duel' || eligibleOppPlayers.length > 0;
+    if (['challenge', 'command', 'duel'].includes(sq.type) && (!duelHasOpponent || !canAssignVipActivity(vipCtx, currentPlayer, { activityLabel: sq.type === 'duel' ? 'κόντρα Marathon' : sq.type === 'command' ? 'εντολή Marathon' : 'δοκιμασία Marathon' }))) {
       const nextIdx = (state.currentPlayerIndex + 1) % state.players.length;
       await updateState({ players: updatedPlayers, diceValue: null, currentPlayerIndex: nextIdx, activeCard: null, history: addHistory({ ...state, players: updatedPlayers }, { type: 'activity_skipped', player: currentPlayer.name, team: currentTeam, square: sq.name, reason: 'VIP consent' }) });
       setPhase('idle');
@@ -201,7 +203,7 @@ export default function MarathonInfiltration({ state, updateState, onAdvance, pl
         {phase === 'idle' && !mustSkip && !needsSix && (
           <ComicPanel className="text-center py-8 bg-card">
             <div className="font-heading text-2xl mb-4">ΡΙΞΕ ΖΑΡΙ ΓΙΑ {currentPlayer?.name}</div>
-            <ComicButton variant="yellow" size="lg" onClick={handleRollDice} className="text-4xl">🎲 ΡΙΞΕ ΖΑΡΙ</ComicButton>
+            <ComicButton variant="yellow" size="lg" onClick={handleRollDice} disabled={!playerProfilesReady} className="text-4xl">🎲 ΡΙΞΕ ΖΑΡΙ</ComicButton>
           </ComicPanel>
         )}
 
@@ -217,7 +219,7 @@ export default function MarathonInfiltration({ state, updateState, onAdvance, pl
           <ComicPanel className="text-center py-8 bg-tarot-crimson text-foreground">
             <div className="font-heading text-2xl mb-2">🎲 ΠΑΓΙΔΑ ΚΕΛΙΟΥ — ΧΡΕΙΑΖΕΤΑΙ 6ΑΡΙ</div>
             <div className="text-sm mb-4">{currentPlayer?.name} είναι παγιδευμένη. Μόνο 6άρι την ελευθερώνει!</div>
-            <ComicButton variant="yellow" size="lg" onClick={handleRollDice} className="text-4xl">🎲 ΡΙΞΕ ΖΑΡΙ</ComicButton>
+            <ComicButton variant="yellow" size="lg" onClick={handleRollDice} disabled={!playerProfilesReady} className="text-4xl">🎲 ΡΙΞΕ ΖΑΡΙ</ComicButton>
           </ComicPanel>
         )}
 
@@ -295,7 +297,7 @@ export default function MarathonInfiltration({ state, updateState, onAdvance, pl
             </div>
             <div className="font-bold text-sm mb-2 text-center">Διάλεξε αντίπαλη από την άλλη ομάδα:</div>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-4">
-              {oppPlayers.map((p) => (
+              {eligibleOppPlayers.map((p) => (
                 <button
                   key={p.id}
                   onClick={() => { if (canAssignVipActivity(vipCtx, p, { activityLabel: 'αντίπαλος σε κόντρα Marathon' })) setDuelOpponentId(p.id); }}
