@@ -4,8 +4,9 @@ import { PAJAMA_SECRETS, PAJAMA_SCORING } from '@/data/pajamaContent';
 export default function PajamaConfessions({ players, pj, secretIdeas, onSubmit, onStartGuessing, onGuess, canParticipate }) {
   const [drafts, setDrafts] = useState({});
   const ideas = secretIdeas && secretIdeas.length > 0 ? secretIdeas : PAJAMA_SECRETS;
-
-  const done = pj.confessions.length >= players.length;
+  const eligiblePlayers = players.filter((p) => !canParticipate || canParticipate(p));
+  const eligibleConfessions = pj.confessions.filter((c) => eligiblePlayers.some((p) => p.id === c.playerId));
+  const done = eligibleConfessions.length >= eligiblePlayers.length;
   const guessing = pj.order.length > 0;
 
   if (!guessing) {
@@ -14,7 +15,7 @@ export default function PajamaConfessions({ players, pj, secretIdeas, onSubmit, 
         <div className="max-w-xl mx-auto space-y-3">
           <div className="text-center">
             <div className="font-heading text-2xl text-pink-100">🤫 SECRET CONFESSIONS</div>
-            <div className="text-sm text-pink-300">{pj.confessions.length}/{players.length} μυστικά γράφτηκαν</div>
+            <div className="text-sm text-pink-300">{eligibleConfessions.length}/{eligiblePlayers.length} μυστικά γράφτηκαν</div>
             </div>
 
             {pj.boardFinish && (
@@ -27,7 +28,7 @@ export default function PajamaConfessions({ players, pj, secretIdeas, onSubmit, 
             Ιδέες: {ideas[0]} · {ideas[5] || ideas[1]}
           </div>
 
-          {players.filter((p) => !canParticipate || canParticipate(p)).map((p) => {
+          {eligiblePlayers.map((p) => {
             const mine = pj.confessions.find((c) => c.playerId === p.id);
             return (
               <div key={p.id} className="rounded-xl border border-pink-500/40 bg-pink-950/50 p-3 space-y-2">
