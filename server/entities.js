@@ -232,8 +232,9 @@ function validatePlayerPatch(current, patch, playerId) {
   if ('extra4' in patch) {
     const oldActivity = current.extra4?.activity?.active || {};
     const nextExtra4 = patch.extra4;
-    const nextActivity = nextExtra4?.activity;
+    const nextActivity = nextExtra4?.activity?.active;
     if (!isObject(nextExtra4) || Object.keys(nextExtra4).some((key) => key !== 'activity') ||
+        !isObject(nextExtra4.activity) || Object.keys(nextExtra4.activity).some((key) => key !== 'active') ||
         !isObject(nextActivity) || Object.keys(nextActivity).some((key) => key !== 'responses') ||
         !isObject(nextActivity.responses) ||
         !onlyOwnMapEntryChanged(oldActivity.responses || {}, nextActivity.responses, playerId) ||
