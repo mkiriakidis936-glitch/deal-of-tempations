@@ -7,11 +7,11 @@ import VaultTrialChallenge from '@/components/tablet/VaultTrialChallenge';
 import SpeakButton from '@/components/comic/VoiceReader';
 import { canAssignVipActivity, isVipActivityAllowed } from '@/lib/playerIntelligence';
 
-export default function MarathonVault({ state, updateState, onAdvance, playerProfiles = [] }) {
+export default function MarathonVault({ state, updateState, onAdvance, playerProfiles = [], playerProfilesReady = true }) {
   const [phase, setPhase] = useState('intro');
   const [selectedPlayerId, setSelectedPlayerId] = useState(null);
   const [result, setResult] = useState(null);
-  const vipCtx = { playerProfiles };
+  const vipCtx = { playerProfiles, playerProfilesReady };
 
   const trialIndex = state.trialIndex || 0;
   const currentTrial = MARATHON_TRIALS[trialIndex];
