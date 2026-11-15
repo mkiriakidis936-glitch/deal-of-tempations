@@ -45,7 +45,7 @@ export default function MissionPanel({ ctx, pool, onSuccess, onFail, title = '�
     const m = pick(suitablePool);
     if (!auto) {
       const boundaries = String(answers?.boundaries || '').trim();
-      const review = `Αποστολή στη ${p.name}: «${m.title}»\\n\\n${m.text}${boundaries ? `\\n\\nΠΡΟΣΩΠΙΚΑ ΟΡΙΑ: ${boundaries}\\n\\nΕπιβεβαίωσε ότι η αποστολή δεν παραβιάζει τα όρια.` : ''}`;
+      const review = `Αποστολή στη ${p.name}: «${m.title}»\n\n${m.text}${boundaries ? `\n\nΠΡΟΣΩΠΙΚΑ ΟΡΙΑ: ${boundaries}\n\nΕπιβεβαίωσε ότι η αποστολή δεν παραβιάζει τα όρια.` : ''}`;
       if (!window.confirm(review)) return;
     }
     setMg({
