@@ -355,7 +355,7 @@ export default function Tablet() {
   if (isNewMode(state.mode)) {
     return (
       <>
-        <ModeGame state={displayState} updateState={trackedUpdate} onEnd={archiveAndDelete} onQR={() => setShowQR(true)} playerProfiles={playerProfiles} />
+        <ModeGame state={displayState} updateState={trackedUpdate} onEnd={archiveAndDelete} onQR={() => setShowQR(true)} playerProfiles={playerProfiles} playerProfilesReady={intakeProfilesReady} />
         <NightDirectorHost state={displayState} updateState={trackedUpdate} />
         {renderProductionControls()}
         {renderQR()}
@@ -366,7 +366,7 @@ export default function Tablet() {
   if (state.mode === 'pajama') {
     return (
       <>
-        <PajamaGame state={displayState} updateState={trackedUpdate} onEnd={archiveAndDelete} playerProfiles={playerProfiles} />
+        <PajamaGame state={displayState} updateState={trackedUpdate} onEnd={archiveAndDelete} playerProfiles={playerProfiles} playerProfilesReady={intakeProfilesReady} />
         <NightDirectorHost state={displayState} updateState={trackedUpdate} />
         <PajamaTVPreview players={state.players || []} pj={state.pajama || {}} />
         <PajamaForcePhase pj={state.pajama || {}} updateState={trackedUpdate} />
@@ -484,6 +484,7 @@ export default function Tablet() {
           updateState={trackedUpdate}
           onEnd={archiveAndDelete}
           playerProfiles={playerProfiles}
+          playerProfilesReady={intakeProfilesReady}
         />
       ) : state.mode === 'marathon' ? (
         <MarathonScreen
@@ -491,6 +492,7 @@ export default function Tablet() {
           updateState={trackedUpdate}
           onEnd={archiveAndDelete}
           playerProfiles={playerProfiles}
+          playerProfilesReady={intakeProfilesReady}
         />
       ) : (
         <>
@@ -500,6 +502,7 @@ export default function Tablet() {
               updateState={trackedUpdate}
               onGoToStage2={() => trackedUpdate({ stage: 2 })}
               playerProfiles={playerProfiles}
+              playerProfilesReady={intakeProfilesReady}
             />
           )}
           {state.stage === 2 && (
@@ -509,6 +512,7 @@ export default function Tablet() {
               onRelease={() => trackedUpdate({ stage: 1 })}
               onGoToFinale={() => trackedUpdate({ stage: 3 })}
               playerProfiles={playerProfiles}
+              playerProfilesReady={intakeProfilesReady}
             />
           )}
           {state.stage === 3 && (
@@ -517,6 +521,7 @@ export default function Tablet() {
               updateState={trackedUpdate}
               onEnd={archiveAndDelete}
               playerProfiles={playerProfiles}
+              playerProfilesReady={intakeProfilesReady}
             />
           )}
         </>
