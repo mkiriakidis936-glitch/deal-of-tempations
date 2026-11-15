@@ -85,7 +85,7 @@ export default function SetupScreen({ onStart }) {
 
       const castingRecord = castingRes.items?.[0] || null;
       const savedCastingPlan = castingRecord?.value;
-      if (savedCastingPlan?.mode && Array.isArray(savedCastingPlan.players) && savedCastingPlan.players.length) {
+      if (savedCastingPlan?.mode && !savedCastingPlan.usedAt && Array.isArray(savedCastingPlan.players) && savedCastingPlan.players.length) {
         const activePlan = { ...savedCastingPlan, settingId: castingRecord.id };
         setCastingPlan(activePlan);
         setMode(activePlan.mode);
