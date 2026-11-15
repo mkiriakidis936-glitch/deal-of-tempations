@@ -91,7 +91,7 @@ export default function AdminShowCasting() {
       previous.slipperType = item.slipperType || previous.slipperType;
       previous.nailColor = item.nailColor || previous.nailColor;
       previous.vipProfile = item.vipProfile || previous.vipProfile;
-      previous.accommodation = item.accommodation || item.stayAtVilla || item.vipProfile?.stayAtVilla || previous.accommodation;
+      previous.accommodation = item.accommodation || item.stayAtVilla || item.vipProfile?.answers?.stayAtVilla || previous.accommodation;
       previous.preferredModes = [...new Set([...previous.preferredModes, ...modes])];
       byName.set(key, previous);
     };
@@ -185,7 +185,7 @@ export default function AdminShowCasting() {
                     <span className="block font-bold">{item.name}</span>
                     <span className="block text-xs text-foreground/55">
                       {item.sourceIds.map((source) => source.source === 'player' ? 'Player Intake' : 'Pajama / Modes Form').join(' · ')}
-                      {item.accommodation ? ` · Διαμονή: ${item.accommodation === true ? 'Ναι' : item.accommodation === false ? 'Όχι' : item.accommodation}` : ''}
+                      {item.accommodation ? ` · ${item.accommodation === 'yes' || item.accommodation === true ? 'Παραμονή στο σπίτι' : item.accommodation === 'no' || item.accommodation === false ? 'Μόνο μία βραδιά Game Show' : item.accommodation}` : ''}
                     </span>
                   </span>
                   {checked && <span className="text-xs font-bold text-primary">ΕΠΙΛΕΓΜΕΝΗ</span>}
