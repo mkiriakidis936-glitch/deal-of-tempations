@@ -5,17 +5,38 @@ import Timer from '@/components/comic/Timer';
 import { MARATHON_GROUP_PENALTIES } from '@/data/gameContent';
 import { addHistory } from '@/lib/gameLogic';
 import SpeakButton from '@/components/comic/VoiceReader';
+import { canAssignVipActivity, isVipActivityAllowed } from '@/lib/playerIntelligence';
 
-export default function MarathonRaids({ state, updateState, onAdvance }) {
+export default function MarathonRaids({ state, updateState, onAdvance, playerProfiles = [], playerProfilesReady = true }) {
   const [phase, setPhase] = useState('intro');
   const [picked, setPicked] = useState([]);
+  const vipCtx = { playerProfiles, playerProfilesReady };
 
   const penaltyIndex = state.penaltyIndex || 0;
   const currentPenalty = MARATHON_GROUP_PENALTIES[penaltyIndex];
   const pickedPlayers = state.players.filter((p) => picked.includes(p.id));
+  const eligiblePlayers = state.players.filter((p) => isVipActivityAllowed(vipCtx, p));
 
   function toggle(id) {
-    setPicked((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : prev.length < 3 ? [...prev, id] : prev));
+    const player = state.players.find((item) => item.id === id);
+    if (picked.includes(id)) {
+      setPicked((prev) => prev.filter((x) => x !== id));
+      return;
+    }
+    if (!player || !canAssignVipActivity(vipCtx, player, { activityLabel: 'ομαδική δοκιμασία Police Raids' })) return;
+    setPicked((prev) => prev.length < 3 ? [...prev, id] : prev);
+  }
+
+  async function skipPenalty() {
+    const history = addHistory(state, { type: 'group_penalty_skipped', penalty: currentPenalty?.name, reason: 'Fewer than two eligible participants' });
+    setPicked([]);
+    if (penaltyIndex + 1 >= MARATHON_GROUP_PENALTIES.length) {
+      await updateState({ history });
+      onAdvance();
+      return;
+    }
+    await updateState({ history, penaltyIndex: penaltyIndex + 1 });
+    setPhase('intro');
   }
 
   async function handleResult(success) {
@@ -83,16 +104,26 @@ export default function MarathonRaids({ state, updateState, onAdvance }) {
             </div>
             <div className="font-bold text-sm mb-2 text-center">Διάλεξε 2-3 παίκτριες:</div>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-4">
-              {state.players.map((p) => (
-                <button key={p.id} onClick={() => toggle(p.id)} className={`comic-panel-sm p-2 ${picked.includes(p.id) ? 'bg-primary ring-2 ring-primary' : 'bg-card'}`}>
+              {eligiblePlayers.map((p) => (
+                <button key={p.id} onClick={() => toggle(p.id)} disabled={!picked.includes(p.id) && !isVipActivityAllowed(vipCtx, p)} className={`comic-panel-sm p-2 ${picked.includes(p.id) ? 'bg-primary ring-2 ring-primary' : 'bg-card'}`}>
                   <div className="font-bold">{p.name}</div>
                   <div className="text-xs">{p.team === 'alpha' ? '💖 Alpha' : '💎 Beta'} · Ποινή {p.penaltyStep || 0}</div>
                 </button>
               ))}
             </div>
-            <div className="text-center">
-              <ComicButton variant="red" size="lg" disabled={picked.length < 2} onClick={() => setPhase('active')}>▶ ΕΚΤΕΛΕΣΗ ΠΟΙΝΗΣ</ComicButton>
-            </div>
+            {playerProfilesReady && eligiblePlayers.length < 2 ? (
+              <div className="text-center space-y-2">
+                <div className="text-sm">Δεν υπάρχουν δύο διαθέσιμες συμμετοχές. Η ομαδική ποινή παραλείπεται χωρίς επιβάρυνση.</div>
+                <ComicButton variant="white" size="md" onClick={skipPenalty}>ΠΑΡΑΛΕΙΨΗ ΟΜΑΔΙΚΗΣ ΠΟΙΝΗΣ</ComicButton>
+              </div>
+            ) : !playerProfilesReady ? (
+              <div className="text-center text-sm opacity-70">Φόρτωση ιδιωτικών προτιμήσεων…</div>
+            ) : (
+              <div className="text-center space-y-2">
+                <ComicButton variant="red" size="lg" disabled={picked.length < 2} onClick={() => setPhase('active')}>▶ ΕΚΤΕΛΕΣΗ ΠΟΙΝΗΣ</ComicButton>
+                {picked.length < 2 && <ComicButton variant="white" size="md" onClick={skipPenalty}>ΠΑΡΑΛΕΙΨΗ ΧΩΡΙΣ ΠΟΙΝΗ</ComicButton>}
+              </div>
+            )}
           </ComicPanel>
         )}
 

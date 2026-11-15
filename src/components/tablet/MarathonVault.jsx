@@ -5,20 +5,35 @@ import { MARATHON_TRIALS } from '@/data/gameContent';
 import { addHistory } from '@/lib/gameLogic';
 import VaultTrialChallenge from '@/components/tablet/VaultTrialChallenge';
 import SpeakButton from '@/components/comic/VoiceReader';
+import { canAssignVipActivity, isVipActivityAllowed } from '@/lib/playerIntelligence';
 
-export default function MarathonVault({ state, updateState, onAdvance }) {
+export default function MarathonVault({ state, updateState, onAdvance, playerProfiles = [], playerProfilesReady = true }) {
   const [phase, setPhase] = useState('intro');
   const [selectedPlayerId, setSelectedPlayerId] = useState(null);
   const [result, setResult] = useState(null);
+  const vipCtx = { playerProfiles, playerProfilesReady };
 
   const trialIndex = state.trialIndex || 0;
   const currentTrial = MARATHON_TRIALS[trialIndex];
   const currentTeam = trialIndex % 2 === 0 ? 'alpha' : 'beta';
   const teamKey = currentTeam === 'alpha' ? 'teamAlpha' : 'teamBeta';
   const teamPlayers = state.players.filter((p) => p.team === currentTeam);
+  const eligibleTeamPlayers = teamPlayers.filter((p) => isVipActivityAllowed(vipCtx, p, currentTrial?.id === 'MT-03' ? 'questions' : null));
   const teamLoot = state[teamKey]?.loot || 0;
   const teamStars = state[teamKey]?.stars || 0;
   const selectedPlayer = state.players.find((p) => p.id === selectedPlayerId);
+
+  async function skipTrial() {
+    const history = addHistory(state, { type: 'trial_skipped', trial: currentTrial?.name, team: currentTeam, reason: 'No eligible VIP participant' });
+    if (trialIndex + 1 >= MARATHON_TRIALS.length) {
+      await updateState({ history });
+      onAdvance();
+      return;
+    }
+    await updateState({ history, trialIndex: trialIndex + 1 });
+    setSelectedPlayerId(null);
+    setPhase('intro');
+  }
 
   async function handleTrialResult(success) {
     const lootGain = success ? 10000 : 0;
@@ -91,10 +106,11 @@ export default function MarathonVault({ state, updateState, onAdvance }) {
             </div>
             <div className="font-bold text-sm mb-2 text-center">Διάλεξε παίκτρια από Team {currentTeam === 'alpha' ? 'Alpha' : 'Beta'}:</div>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-              {teamPlayers.map((p) => (
+              {eligibleTeamPlayers.map((p) => (
                 <button
                   key={p.id}
-                  onClick={() => setSelectedPlayerId(p.id)}
+                  onClick={() => { if (canAssignVipActivity(vipCtx, p, { activityType: currentTrial.id === 'MT-03' ? 'questions' : null, activityLabel: currentTrial.id === 'MT-03' ? 'Speed Trivia' : 'ατομική δοκιμασία Vault' })) setSelectedPlayerId(p.id); }}
+                  disabled={!isVipActivityAllowed(vipCtx, p, currentTrial.id === 'MT-03' ? 'questions' : null)}
                   className={`comic-panel-sm p-2 ${selectedPlayerId === p.id ? 'bg-primary ring-2 ring-primary' : 'bg-card'}`}
                 >
                   <div className="font-bold">{p.name}</div>
@@ -102,12 +118,22 @@ export default function MarathonVault({ state, updateState, onAdvance }) {
                 </button>
               ))}
             </div>
+            {playerProfilesReady && eligibleTeamPlayers.length === 0 && (
+              <div className="text-center rounded border border-amber-500/30 p-3 space-y-2">
+                <div className="text-sm">Δεν υπάρχει διαθέσιμη συμμετοχή σε αυτή την ομάδα. Η δοκιμασία παραλείπεται χωρίς ποινή.</div>
+                <ComicButton variant="white" size="md" onClick={skipTrial}>ΠΑΡΑΛΕΙΨΗ ΔΟΚΙΜΑΣΙΑΣ</ComicButton>
+              </div>
+            )}
+            {!playerProfilesReady && <div className="text-center text-sm opacity-70">Φόρτωση ιδιωτικών προτιμήσεων…</div>}
+            {playerProfilesReady && !selectedPlayerId && eligibleTeamPlayers.length > 0 && (
+              <div className="text-center mt-3"><ComicButton variant="white" size="md" onClick={skipTrial}>ΠΑΡΑΛΕΙΨΗ ΧΩΡΙΣ ΠΟΙΝΗ</ComicButton></div>
+            )}
             <div className="text-center mt-4">
               <ComicButton
                 variant="green"
                 size="lg"
                 onClick={() => setPhase('trial')}
-                disabled={!selectedPlayerId}
+                disabled={!selectedPlayerId || !playerProfilesReady || eligibleTeamPlayers.length === 0}
               >
                 ▶ ΕΚΤΕΛΕΣΗ ΔΟΚΙΜΑΣΙΑΣ
               </ComicButton>

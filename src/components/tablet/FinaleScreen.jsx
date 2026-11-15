@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import ComicPanel from '@/components/comic/ComicPanel';
 import ComicButton from '@/components/comic/ComicButton';
 import Timer from '@/components/comic/Timer';
@@ -7,15 +7,23 @@ import { ULTIMATE_TRUTHS } from '@/data/gameContent';
 import SpeakButton from '@/components/comic/VoiceReader';
 import { calculateMostWanted, addHistory } from '@/lib/gameLogic';
 import { TimeCapsuleReveal } from '@/components/tablet/TimeCapsulePanel';
+import { canAssignVipActivity } from '@/lib/playerIntelligence';
 
-export default function FinaleScreen({ state, updateState, onEnd }) {
+export default function FinaleScreen({ state, updateState, onEnd, playerProfiles = [], playerProfilesReady = true }) {
   const [truthIndex, setTruthIndex] = useState(0);
   const [timerActive, setTimerActive] = useState(false);
   const [done, setDone] = useState(false);
   const [showCapsule, setShowCapsule] = useState(false);
+  const [consentCheckedFor, setConsentCheckedFor] = useState(null);
 
   const mostWanted = calculateMostWanted(state.players);
   const currentTruth = ULTIMATE_TRUTHS[truthIndex];
+
+  useEffect(() => {
+    if (!mostWanted || !playerProfilesReady || consentCheckedFor === mostWanted.id) return;
+    setConsentCheckedFor(mostWanted.id);
+    if (!canAssignVipActivity({ playerProfiles, playerProfilesReady }, mostWanted, { activityType: 'questions', activityLabel: 'τελικές αλήθειες' })) setDone(true);
+  }, [mostWanted?.id, playerProfiles, playerProfilesReady, consentCheckedFor]);
 
   function handleAnswer() {
     const next = truthIndex + 1;
@@ -38,6 +46,10 @@ export default function FinaleScreen({ state, updateState, onEnd }) {
     const history = addHistory(state, { type: 'finale_complete', player: mostWanted?.name });
     await updateState({ history, stage: 0 });
     onEnd();
+  }
+
+  if (!playerProfilesReady) {
+    return <div className="min-h-screen flex items-center justify-center comic-dots p-6"><div className="font-heading text-xl">Φόρτωση ιδιωτικών VIP προτιμήσεων…</div></div>;
   }
 
   return (

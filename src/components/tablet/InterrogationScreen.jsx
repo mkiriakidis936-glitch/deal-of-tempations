@@ -8,6 +8,7 @@ import DecibelMeter from '@/components/comic/DecibelMeter';
 import { drawCard, isFullyRestrained, getCurrentPenalty, addHistory, calculateMostWanted, applyPenaltyStep, reducePenaltyStep } from '@/lib/gameLogic';
 import MugshotScreen from '@/components/tablet/MugshotScreen';
 import PrisonBreak from '@/components/tablet/PrisonBreak';
+import { canAssignVipActivity } from '@/lib/playerIntelligence';
 
 function SectionHeader({ children, aside }) {
   return (
@@ -18,7 +19,7 @@ function SectionHeader({ children, aside }) {
   );
 }
 
-export default function InterrogationScreen({ state, updateState, onRelease, onGoToFinale }) {
+export default function InterrogationScreen({ state, updateState, onRelease, onGoToFinale, playerProfiles = [], playerProfilesReady = true }) {
   const [question, setQuestion] = useState(null);
   const [truths, setTruths] = useState(0);
   const [rounds, setRounds] = useState(0);
@@ -29,13 +30,20 @@ export default function InterrogationScreen({ state, updateState, onRelease, onG
   const [iceTickle, setIceTickle] = useState(false);
   const [showMugshot, setShowMugshot] = useState(true);
   const [showPrisonBreak, setShowPrisonBreak] = useState(false);
+  const [consentCheckedFor, setConsentCheckedFor] = useState(null);
 
   const tiedPlayer = state.players.find((p) => isFullyRestrained(p)) || state.players[state.currentPlayerIndex];
   const timerDuration = confessed ? 10 : iceTickle ? 60 : 30;
 
   useEffect(() => {
-    setQuestion(drawCard('hardcore'));
-  }, []);
+    if (!tiedPlayer || !playerProfilesReady || consentCheckedFor === tiedPlayer.id) return;
+    setConsentCheckedFor(tiedPlayer.id);
+    if (canAssignVipActivity({ playerProfiles, playerProfilesReady }, tiedPlayer, { activityType: 'questions', activityLabel: 'ανάκριση / σκληρές αλήθειες' })) {
+      setQuestion(drawCard('hardcore'));
+    } else {
+      setReleased(true);
+    }
+  }, [tiedPlayer?.id, playerProfiles, playerProfilesReady, consentCheckedFor]);
 
   function handleTruthful() {
     const newTruths = truths + 1;
@@ -101,6 +109,10 @@ export default function InterrogationScreen({ state, updateState, onRelease, onG
     }
     await updateState({ players: updatedPlayers, history });
     setShowPrisonBreak(false);
+  }
+
+  if (!playerProfilesReady) {
+    return <div className="min-h-screen flex items-center justify-center comic-dots p-6"><div className="font-heading text-xl">Φόρτωση ιδιωτικών VIP προτιμήσεων…</div></div>;
   }
 
   if (showMugshot && tiedPlayer) {

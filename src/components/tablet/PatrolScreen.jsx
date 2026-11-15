@@ -18,11 +18,13 @@ import {
   isFullyRestrained, getCurrentPenalty, addHistory, assignChief,
   applyGlitchEffect,
 } from '@/lib/gameLogic';
+import { canAssignVipActivity, isVipActivityAllowed } from '@/lib/playerIntelligence';
 
-export default function PatrolScreen({ state, updateState, onGoToStage2 }) {
+export default function PatrolScreen({ state, updateState, onGoToStage2, playerProfiles = [], playerProfilesReady = true }) {
   const [uiPhase, setUiPhase] = useState('idle');
 
   const currentPlayer = state.players[state.currentPlayerIndex];
+  const vipCtx = { playerProfiles, playerProfilesReady };
   const square = getBoardSquare(currentPlayer.position);
   const squareType = SQUARE_TYPES[square.type] || SQUARE_TYPES.street;
 
@@ -34,18 +36,29 @@ export default function PatrolScreen({ state, updateState, onGoToStage2 }) {
     );
     const sq = getBoardSquare(newPos);
     const fixed = getSquareChallenge(newPos);
+    const fixedAllowed = !fixed || canAssignVipActivity(vipCtx, currentPlayer, {
+      activityType: fixed.type === 'truth' ? 'questions' : null,
+      activityLabel: fixed.type === 'truth' ? 'ερωτήσεις' : 'δοκιμασία δρόμου',
+    });
     await updateState({
       players: updatedPlayers,
       diceValue: dice,
-      activeCard: fixed ? { name: fixed.title, text: fixed.text, duration: fixed.duration, icon: fixed.type === 'truth' ? '💬' : '🔥' } : null,
-      cardAction: fixed ? (fixed.type === 'truth' ? 'street_truth' : 'street_dare') : null,
+      activeCard: fixed && fixedAllowed ? { name: fixed.title, text: fixed.text, duration: fixed.duration, icon: fixed.type === 'truth' ? '💬' : '🔥' } : null,
+      cardAction: fixed && fixedAllowed ? (fixed.type === 'truth' ? 'street_truth' : 'street_dare') : null,
       glitchCard: sq.type === 'glitch' ? drawCard('glitch') : null,
       history: addHistory(state, { type: 'move', player: currentPlayer.name, dice, position: newPos, squareType: sq.type }),
     });
-    setUiPhase(fixed ? 'card' : 'rolled');
+    setUiPhase(fixed && fixedAllowed ? 'card' : fixed ? 'result' : 'rolled');
   }
 
   async function handleChooseAction(choice) {
+    if (!canAssignVipActivity(vipCtx, currentPlayer, {
+      activityType: choice === 'truth' ? 'questions' : null,
+      activityLabel: choice === 'truth' ? 'ερωτήσεις' : 'δοκιμασία δρόμου',
+    })) {
+      setUiPhase('result');
+      return;
+    }
     const cardType = choice === 'truth' ? 'street_truth' : 'street_dare';
     const card = drawCard(cardType);
     await updateState({ activeCard: card, cardAction: cardType });
@@ -92,6 +105,7 @@ export default function PatrolScreen({ state, updateState, onGoToStage2 }) {
 
   async function handleWarrantTarget(idx, card) {
     const target = state.players[idx];
+    if (!canAssignVipActivity(vipCtx, target, { activityLabel: 'στόχος εντάλματος' })) return;
     const history = addHistory(state, { type: 'warrant', card: card?.name, player: currentPlayer.name, target: target.name });
     await updateState({ activeCard: card, history });
     setUiPhase('result');
@@ -162,7 +176,7 @@ export default function PatrolScreen({ state, updateState, onGoToStage2 }) {
           <ComicPanel className="py-8 text-center">
             <div className="ds-label">Ρίξε ζάρι για</div>
             <div className="ds-title mb-5 mt-2 text-2xl text-foreground">{currentPlayer.name}</div>
-            <ComicButton variant="yellow" size="lg" onClick={handleRollDice} className="text-4xl">
+            <ComicButton variant="yellow" size="lg" onClick={handleRollDice} disabled={!playerProfilesReady} className="text-4xl">
               🎲 ΡΙΞΕ ΖΑΡΙ
             </ComicButton>
           </ComicPanel>
@@ -187,7 +201,7 @@ export default function PatrolScreen({ state, updateState, onGoToStage2 }) {
             {square.type === 'police' && (
               <div className="text-center">
                 <div className="font-heading text-lg mb-2 text-foreground">🚔 ΣΥΛΛΗΨΗ! Πάς για Ανάκριση.</div>
-                <ComicButton variant="red" size="lg" onClick={onGoToStage2}>
+                <ComicButton variant="red" size="lg" disabled={!playerProfilesReady} onClick={onGoToStage2}>
                   ⚡ ΠΡΟΣ ΑΝΑΚΡΙΣΗ
                 </ComicButton>
               </div>
@@ -223,7 +237,7 @@ export default function PatrolScreen({ state, updateState, onGoToStage2 }) {
               <div className="space-y-2">
                 <div className="font-heading text-lg text-center text-primary">📜 ΕΝΤΑΛΜΑ — Διάλεξε Στόχο</div>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                  {state.players.filter((p) => p.id !== currentPlayer.id).map((p) => (
+                  {state.players.filter((p) => p.id !== currentPlayer.id && isVipActivityAllowed(vipCtx, p)).map((p) => (
                     <button
                       key={p.id}
                       onClick={() => handleWarrantTarget(state.players.indexOf(p), drawCard('warrant'))}
@@ -234,6 +248,7 @@ export default function PatrolScreen({ state, updateState, onGoToStage2 }) {
                     </button>
                   ))}
                 </div>
+                {playerProfilesReady && <ComicButton variant="white" size="md" onClick={handleNextPlayer}>ΠΑΡΑΛΕΙΨΗ ΕΝΤΑΛΜΑΤΟΣ ΧΩΡΙΣ ΠΟΙΝΗ</ComicButton>}
               </div>
             )}
             {square.type === 'glitch' && state.glitchCard && (

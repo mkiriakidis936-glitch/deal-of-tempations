@@ -80,6 +80,8 @@ export default function Tablet() {
 
   const [showQR, setShowQR] = React.useState(false);
   const [intakeProfiles, setIntakeProfiles] = React.useState([]);
+  const [intakeProfilesReady, setIntakeProfilesReady] = React.useState(false);
+  const [intakeProfilesError, setIntakeProfilesError] = React.useState('');
   const [showSplash, setShowSplash] = React.useState(() => !sessionStorage.getItem('dotSplash'));
   const [overlay, setOverlay] = React.useState(null);
   const endingRef = React.useRef(false);
@@ -96,20 +98,35 @@ export default function Tablet() {
     let active = true;
     if (!session?.id) {
       setIntakeProfiles([]);
+      setIntakeProfilesError('');
+      setIntakeProfilesReady(true);
       return undefined;
     }
+    setIntakeProfilesReady(false);
+    setIntakeProfilesError('');
     base44.entities.PlayerIntake.filter({}, { sort: '-created_date', limit: 500 })
-      .then((result) => { if (active) setIntakeProfiles(result.items || []); })
-      .catch((error) => console.error('Private player profile load failed', error));
+      .then((result) => {
+        if (active) {
+          setIntakeProfiles(result.items || []);
+          setIntakeProfilesError('');
+          setIntakeProfilesReady(true);
+        }
+      })
+      .catch((error) => {
+        console.error('Private player profile load failed', error);
+        if (active) setIntakeProfilesError('Δεν φορτώθηκαν οι ιδιωτικές VIP προτιμήσεις. Ανανεώστε το Tablet πριν ξεκινήσει το παιχνίδι.');
+      });
     return () => { active = false; };
   }, [session?.id]);
 
   const playerProfiles = React.useMemo(() => {
-    const normalize = (value) => String(value || '').trim().toLocaleLowerCase('el-GR');
+    const normalize = (value) => String(value || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\s+/g, ' ').trim().toLocaleLowerCase('el-GR');
     return (state?.players || []).map((player) => {
       const intake = intakeProfiles.find((item) =>
         normalize(item.name) === normalize(player.name) ||
-        normalize(item.legalName) === normalize(player.name)
+        normalize(item.legalName) === normalize(player.name) ||
+        normalize(item.displayName) === normalize(player.name) ||
+        normalize(item.vipProfile?.displayName) === normalize(player.name)
       );
       return {
         playerId: player.id,
@@ -257,7 +274,7 @@ export default function Tablet() {
   async function startPersonalizedSurprise(profile) {
     const answers = profile.vipProfile?.answers || {};
     if (answers.activeParticipation === 'no' || answers.activityPreferences?.surprises !== 'yes' || answers.unexpectedChallenge === 'no') return;
-    if (!canAssignVipActivity({ playerProfiles }, profile, { activityType: 'surprises', activityLabel: 'προσωπικές εκπλήξεις' })) return;
+    if (!canAssignVipActivity({ playerProfiles, playerProfilesReady: intakeProfilesReady }, profile, { activityType: 'surprises', activityLabel: 'προσωπικές εκπλήξεις' })) return;
     const sceneId = Date.now();
     const showMode = state.showMode || {};
     await trackedUpdate({
@@ -342,7 +359,7 @@ export default function Tablet() {
   if (isNewMode(state.mode)) {
     return (
       <>
-        <ModeGame state={displayState} updateState={trackedUpdate} onEnd={archiveAndDelete} onQR={() => setShowQR(true)} playerProfiles={playerProfiles} />
+        <ModeGame state={displayState} updateState={trackedUpdate} onEnd={archiveAndDelete} onQR={() => setShowQR(true)} playerProfiles={playerProfiles} playerProfilesReady={intakeProfilesReady} />
         <NightDirectorHost state={displayState} updateState={trackedUpdate} />
         {renderProductionControls()}
         {renderQR()}
@@ -353,7 +370,7 @@ export default function Tablet() {
   if (state.mode === 'pajama') {
     return (
       <>
-        <PajamaGame state={displayState} updateState={trackedUpdate} onEnd={archiveAndDelete} />
+        <PajamaGame state={displayState} updateState={trackedUpdate} onEnd={archiveAndDelete} playerProfiles={playerProfiles} playerProfilesReady={intakeProfilesReady} />
         <NightDirectorHost state={displayState} updateState={trackedUpdate} />
         <PajamaTVPreview players={state.players || []} pj={state.pajama || {}} />
         <PajamaForcePhase pj={state.pajama || {}} updateState={trackedUpdate} />
@@ -451,6 +468,7 @@ export default function Tablet() {
         <BountyMultiplier state={state} />
       </div>
       <TabletStatusStrip state={displayState} />
+      {intakeProfilesError && <div role="alert" className="mx-auto max-w-7xl rounded-lg border border-red-500 bg-red-950/80 p-3 text-center text-sm text-red-100">{intakeProfilesError} <button className="ml-2 underline font-bold" onClick={() => window.location.reload()}>ΑΝΑΝΕΩΣΗ</button></div>}
       {state.stopActive && (
         <div className="fixed inset-0 z-40 bg-destructive/20 pointer-events-auto flex items-center justify-center">
           <div className="font-heading text-6xl text-destructive comic-text-stroke comic-pulse">⏸ ΠΑΥΣΗ</div>
@@ -470,12 +488,16 @@ export default function Tablet() {
           state={displayState}
           updateState={trackedUpdate}
           onEnd={archiveAndDelete}
+          playerProfiles={playerProfiles}
+          playerProfilesReady={intakeProfilesReady}
         />
       ) : state.mode === 'marathon' ? (
         <MarathonScreen
           state={displayState}
           updateState={trackedUpdate}
           onEnd={archiveAndDelete}
+          playerProfiles={playerProfiles}
+          playerProfilesReady={intakeProfilesReady}
         />
       ) : (
         <>
@@ -484,6 +506,8 @@ export default function Tablet() {
               state={displayState}
               updateState={trackedUpdate}
               onGoToStage2={() => trackedUpdate({ stage: 2 })}
+              playerProfiles={playerProfiles}
+              playerProfilesReady={intakeProfilesReady}
             />
           )}
           {state.stage === 2 && (
@@ -492,6 +516,8 @@ export default function Tablet() {
               updateState={trackedUpdate}
               onRelease={() => trackedUpdate({ stage: 1 })}
               onGoToFinale={() => trackedUpdate({ stage: 3 })}
+              playerProfiles={playerProfiles}
+              playerProfilesReady={intakeProfilesReady}
             />
           )}
           {state.stage === 3 && (
@@ -499,6 +525,8 @@ export default function Tablet() {
               state={displayState}
               updateState={trackedUpdate}
               onEnd={archiveAndDelete}
+              playerProfiles={playerProfiles}
+              playerProfilesReady={intakeProfilesReady}
             />
           )}
         </>

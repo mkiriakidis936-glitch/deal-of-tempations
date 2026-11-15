@@ -13,8 +13,9 @@ import { buildSecretTruths } from '@/lib/intakeContent';
 import GmTools from '@/components/tablet/GmTools';
 import TemptationSlots from '@/components/tablet/TemptationSlots';
 import HighStakesPanel from '@/components/shared/HighStakesPanel';
+import { canAssignVipActivity } from '@/lib/playerIntelligence';
 
-export default function ArrestHeistScreen({ state, updateState, onEnd }) {
+export default function ArrestHeistScreen({ state, updateState, onEnd, playerProfiles = [], playerProfilesReady = true }) {
   const [phase, setPhase] = useState('round_intro');
   const [heistPhase, setHeistPhase] = useState('qr');
   const [codeInput, setCodeInput] = useState('');
@@ -31,6 +32,7 @@ export default function ArrestHeistScreen({ state, updateState, onEnd }) {
   const [intake, setIntake] = useState(null);
 
   const REDEMPTION_COST = 3;
+  const vipCtx = { playerProfiles, playerProfilesReady };
 
   async function loadIntake() {
     if (!state.sessionCode) return;
@@ -72,6 +74,13 @@ export default function ArrestHeistScreen({ state, updateState, onEnd }) {
 
   // === HANDLERS ===
   function handleChoose(choice) {
+    if (!canAssignVipActivity(vipCtx, leader, {
+      activityType: choice === 'truth' ? 'questions' : null,
+      activityLabel: choice === 'truth' ? 'αλήθειες' : 'δοκιμασία θάρρους',
+    })) {
+      handleNextRound();
+      return;
+    }
     setPhase(choice === 'dare' ? 'dare' : 'truth');
   }
 
@@ -79,6 +88,10 @@ export default function ArrestHeistScreen({ state, updateState, onEnd }) {
     if (success) {
       const history = addHistory(state, { type: 'dare_success', player: leader?.name, team: currentTeam });
       await updateState({ history });
+      if (!canAssignVipActivity(vipCtx, oppLeader, { activityType: 'questions', activityLabel: 'αλήθειες' })) {
+        setPhase('round_result');
+        return;
+      }
       setPhase('dare_truth');
     } else {
       await applyPenalty(leader, { type: 'dare_fail', player: leader?.name, team: currentTeam });
@@ -230,8 +243,8 @@ export default function ArrestHeistScreen({ state, updateState, onEnd }) {
               <div className="font-heading text-2xl mb-2">{leader?.name} — Team {currentTeam}</div>
               <div className="text-sm mb-4">Επίπεδο Ποινής: {penaltyStep}/{maxSteps} — Διάλεξε:</div>
               <div className="grid grid-cols-2 gap-3">
-                <ComicButton variant="magenta" size="lg" onClick={() => handleChoose('dare')}>🔥 ΘΑΡΡΟΣ</ComicButton>
-                <ComicButton variant="cyan" size="lg" onClick={() => handleChoose('truth')}>💬 ΑΛΗΘΕΙΑ</ComicButton>
+                <ComicButton variant="magenta" size="lg" disabled={!playerProfilesReady} onClick={() => handleChoose('dare')}>🔥 ΘΑΡΡΟΣ</ComicButton>
+                <ComicButton variant="cyan" size="lg" disabled={!playerProfilesReady} onClick={() => handleChoose('truth')}>💬 ΑΛΗΘΕΙΑ</ComicButton>
               </div>
             </ComicPanel>
           )}
@@ -325,7 +338,11 @@ export default function ArrestHeistScreen({ state, updateState, onEnd }) {
                 <ComicButton variant="green" size="lg" onClick={handleRedeemPoints} disabled={(state[teamKey]?.points || 0) < REDEMPTION_COST}>
                   💰 {REDEMPTION_COST} ΠΟΝΤΟΙ
                 </ComicButton>
-                <ComicButton variant="magenta" size="lg" onClick={() => { setRedeemTruth(ULTIMATE_TRUTHS[Math.floor(Math.random() * ULTIMATE_TRUTHS.length)]); setPhase('redeem_truth'); }}>
+                <ComicButton variant="magenta" size="lg" onClick={() => {
+                  if (!canAssignVipActivity(vipCtx, leader, { activityType: 'questions', activityLabel: 'σκληρή αλήθεια' })) return;
+                  setRedeemTruth(ULTIMATE_TRUTHS[Math.floor(Math.random() * ULTIMATE_TRUTHS.length)]);
+                  setPhase('redeem_truth');
+                }}>
                   💬 ΣΚΛΗΡΗ ΑΛΗΘΕΙΑ
                 </ComicButton>
               </div>

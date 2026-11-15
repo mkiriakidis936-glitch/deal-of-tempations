@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { PAJAMA_WHEEL } from '@/data/pajamaContent';
 import PajamaTimer from '@/components/pajama/PajamaTimer';
 
-export default function PajamaWheel({ player, players = [], index, total, onScore, onDouble, onSwap, onNext }) {
+export default function PajamaWheel({ player, players = [], index, total, onScore, onDouble, onSwap, onNext, canParticipate = true, onStart }) {
   const [highlight, setHighlight] = useState(null);
   const [result, setResult] = useState(null);
   const [resolved, setResolved] = useState(false);
@@ -10,6 +10,7 @@ export default function PajamaWheel({ player, players = [], index, total, onScor
   const [coin, setCoin] = useState(null);
 
   function spin() {
+    if (!canParticipate || (onStart && !onStart())) return;
     setResult(null);
     setResolved(false);
     setSwapTarget(null);
@@ -52,7 +53,12 @@ export default function PajamaWheel({ player, players = [], index, total, onScor
           ))}
         </div>
 
-        {!result ? (
+        {!canParticipate ? (
+          <div className="rounded-xl border border-amber-500/40 bg-amber-950/30 p-4 text-center space-y-3">
+            <p className="text-sm">Η συγκεκριμένη παίκτρια δεν έχει δηλώσει ενεργή συμμετοχή. Ο τροχός παραλείπεται για αυτήν.</p>
+            <button onClick={onNext} className="w-full py-3 rounded-lg font-heading text-xl bg-pink-600 text-white">ΕΠΟΜΕΝΗ</button>
+          </div>
+        ) : !result ? (
           <button onClick={spin} className="w-full py-3 rounded-lg font-heading text-xl bg-pink-600 text-white">
             ΓΥΡΙΣΕ ΤΟΝ ΤΡΟΧΟ
           </button>

@@ -5,9 +5,11 @@ import Timer from '@/components/comic/Timer';
 import { MARATHON_LOCKDOWN } from '@/data/gameContent';
 import LockdownCommands from '@/components/tablet/LockdownCommands';
 import SpeakButton from '@/components/comic/VoiceReader';
+import { canAssignVipActivity, isVipActivityAllowed } from '@/lib/playerIntelligence';
 
-export default function MarathonLockdown({ state, updateState, onEnd }) {
+export default function MarathonLockdown({ state, updateState, onEnd, playerProfiles = [], playerProfilesReady = true }) {
   const [phase, setPhase] = useState('intro');
+  const [approvedLosers, setApprovedLosers] = useState(null);
 
   const lootA = state.teamAlpha?.loot || 0;
   const lootB = state.teamBeta?.loot || 0;
@@ -18,7 +20,21 @@ export default function MarathonLockdown({ state, updateState, onEnd }) {
   const loser = winner === 'alpha' ? 'beta' : 'alpha';
   const winnerName = winner === 'alpha' ? '💖 TEAM ALPHA' : '💎 TEAM BETA';
   const loserName = loser === 'alpha' ? '💖 TEAM ALPHA' : '💎 TEAM BETA';
+  const vipCtx = { playerProfiles, playerProfilesReady };
   const loserPlayers = state.players.filter((p) => p.team === loser);
+  const participatingLosers = loserPlayers.filter((p) => isVipActivityAllowed(vipCtx, p));
+  const executionPlayers = approvedLosers || participatingLosers;
+
+  function startExecution() {
+    if (!participatingLosers.length) { setPhase('victory'); return; }
+    const approved = [];
+    for (const player of participatingLosers) {
+      if (canAssignVipActivity(vipCtx, player, { activityLabel: 'τελική ομαδική δοκιμασία Lockdown' })) approved.push(player);
+    }
+    setApprovedLosers(approved);
+    if (!approved.length) { setPhase('victory'); return; }
+    setPhase('execution');
+  }
 
   useEffect(() => {
     updateState({ marathonStage: 4, winner, gameOver: false });
@@ -56,7 +72,7 @@ export default function MarathonLockdown({ state, updateState, onEnd }) {
                 {MARATHON_LOCKDOWN.map((pos, i) => (
                   <div key={i} className="comic-panel-sm p-2 bg-card/20">
                     <div className="font-bold text-sm">{pos.role}: {pos.name}</div>
-                    <div className="text-xs font-bold text-primary">👉 {(i === 0 ? loserPlayers.slice(0, 1) : i === 1 ? loserPlayers.slice(1, 3) : i === 2 ? loserPlayers.slice(3, 5) : loserPlayers).map((p) => p.name).join(', ') || '—'}</div>
+                    <div className="text-xs font-bold text-primary">👉 {(i === 0 ? participatingLosers.slice(0, 1) : i === 1 ? participatingLosers.slice(1, 3) : i === 2 ? participatingLosers.slice(3, 5) : participatingLosers).map((p) => p.name).join(', ') || '—'}</div>
                     <div className="text-xs">{pos.desc}</div>
                   </div>
                 ))}
@@ -64,7 +80,8 @@ export default function MarathonLockdown({ state, updateState, onEnd }) {
             </ComicPanel>
 
             <div className="text-center">
-              <ComicButton variant="red" size="lg" onClick={() => setPhase('execution')}>▶ ΕΝΑΡΞΗ ΤΕΛΙΚΗΣ ΕΚΤΕΛΕΣΗΣ (120″)</ComicButton>
+              {!playerProfilesReady && <div className="text-sm opacity-70">Φόρτωση ιδιωτικών VIP προτιμήσεων…</div>}
+              <ComicButton variant="red" size="lg" disabled={!playerProfilesReady} onClick={startExecution}>▶ ΕΝΑΡΞΗ ΤΕΛΙΚΗΣ ΕΚΤΕΛΕΣΗΣ (120″)</ComicButton>
             </div>
           </>
         )}
@@ -74,9 +91,9 @@ export default function MarathonLockdown({ state, updateState, onEnd }) {
             <div className="font-heading text-3xl mb-4">⏱ 120″ ΤΕΛΙΚΗ ΕΚΤΕΛΕΣΗ</div>
             <Timer duration={120} running={true} frozen={state.stopActive} onComplete={() => setPhase('victory')} label="LOCKDOWN" size="lg" />
             <div className="mt-4 text-sm">
-              Ηττημένη ομάδα: {loserName} ({loserPlayers.map((p) => p.name).join(', ')})
+              Ηττημένη ομάδα: {loserName} ({participatingLosers.map((p) => p.name).join(', ') || 'χωρίς ενεργή συμμετοχή'})
             </div>
-            <LockdownCommands players={loserPlayers} />
+            <LockdownCommands players={executionPlayers} />
             <div className="mt-4">
               <ComicButton variant="green" size="lg" onClick={() => setPhase('victory')}>✅ ΛΗΞΗ</ComicButton>
             </div>
