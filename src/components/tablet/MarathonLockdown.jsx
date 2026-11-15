@@ -67,7 +67,7 @@ export default function MarathonLockdown({ state, updateState, onEnd, playerProf
                 {MARATHON_LOCKDOWN.map((pos, i) => (
                   <div key={i} className="comic-panel-sm p-2 bg-card/20">
                     <div className="font-bold text-sm">{pos.role}: {pos.name}</div>
-                    <div className="text-xs font-bold text-primary">👉 {(i === 0 ? loserPlayers.slice(0, 1) : i === 1 ? loserPlayers.slice(1, 3) : i === 2 ? loserPlayers.slice(3, 5) : loserPlayers).map((p) => p.name).join(', ') || '—'}</div>
+                    <div className="text-xs font-bold text-primary">👉 {(i === 0 ? participatingLosers.slice(0, 1) : i === 1 ? participatingLosers.slice(1, 3) : i === 2 ? participatingLosers.slice(3, 5) : participatingLosers).map((p) => p.name).join(', ') || '—'}</div>
                     <div className="text-xs">{pos.desc}</div>
                   </div>
                 ))}
