@@ -101,6 +101,10 @@ export default function Isolation() {
           }).catch(() => {});
         } else if (['disconnected', 'failed'].includes(pc.connectionState)) {
           // A dropped connection must never silently reactivate camera or microphone.
+          requestJson(`/api/entities/live-feed/${encodeURIComponent(sessionCode)}/signal`, {
+            method: 'POST',
+            body: JSON.stringify({ token, role: 'source', connected: false }),
+          }).catch(() => {});
           stopMedia('reconnecting');
         }
       };
