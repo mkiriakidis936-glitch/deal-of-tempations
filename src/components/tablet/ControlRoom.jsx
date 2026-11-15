@@ -88,6 +88,8 @@ function episodeTimeline(state) {
 function scoreFor(state, player) {
   if (state.mode === 'pajama') return state.pajama?.scores?.[player.id] || 0;
   if (isNewMode(state.mode)) return (state.mg?.scores?.[player.id] || 0) + (state.mg?.tokens?.[player.id] || 0);
+  if (state.mode === 'marathon') return player.team === 'alpha' ? (state.teamAlpha?.loot || 0) : (state.teamBeta?.loot || 0);
+  if (state.mode === 'arrest_heist') return player.team === 'A' ? (state.teamA?.points || 0) : (state.teamB?.points || 0);
   return player.bounty || 0;
 }
 
@@ -102,7 +104,10 @@ export default function ControlRoom({ state, playerProfiles = [], onStartSurpris
   const players = state.players || [];
   const log = (state.history || []).slice(0, 12);
   const modeName = GAME_MODES.find((mode) => mode.id === state.mode)?.name || state.mode || '—';
-  const currentIndex = isNewMode(state.mode) ? (state.mg?.turn || 0) : state.mode === 'pajama' ? (state.pajama?.turnIndex || 0) : (state.currentPlayerIndex || 0);
+  const currentIndex = isNewMode(state.mode) ? (state.mg?.turn || 0)
+    : state.mode === 'pajama' ? (state.pajama?.turnIndex || 0)
+    : state.mode === 'arrest_heist' ? Math.max(0, players.findIndex((player) => player.team === state.currentTeam && player.isLeader))
+    : (state.currentPlayerIndex || 0);
   const currentPlayer = players.length ? players[currentIndex % players.length] : null;
   const syncTimer = state.syncTimer || state.mg?.timer || null;
   const timerActive = typeof syncTimer?.running === 'boolean' ? syncTimer.running : !!(syncTimer?.endsAt && syncTimer.endsAt > now);
@@ -174,12 +179,14 @@ export default function ControlRoom({ state, playerProfiles = [], onStartSurpris
                   <div className="truncate font-bold">{player.name}</div>
                   <div className="text-[10px] text-foreground/55">
                     {player.team ? `Ομάδα ${player.team} · ` : ''}
-                    {state.mode === 'pajama' ? `Αποτυχίες: ${state.pajama?.fails?.[player.id] || 0}` : `Ποινές: ${player.penaltyStep || 0}`}
+                    {state.mode === 'pajama' ? `Αποτυχίες: ${state.pajama?.fails?.[player.id] || 0}`
+                      : state.mode === 'marathon' ? `Θέση: ${player.position || 0}/79 · Skip: ${player.skipTurns || 0}`
+                      : `Ποινές: ${player.penaltyStep || 0}`}
                   </div>
                 </div>
                 <div className="text-right">
                   <div className="font-heading text-lg text-primary">{scoreFor(state, player)}</div>
-                  <div className="text-[9px] text-foreground/45">{isNewMode(state.mode) || state.mode === 'pajama' ? 'ΠΟΝΤΟΙ' : 'BOUNTY'}</div>
+                  <div className="text-[9px] text-foreground/45">{isNewMode(state.mode) || state.mode === 'pajama' ? 'ΠΟΝΤΟΙ' : state.mode === 'marathon' ? 'TEAM LOOT' : state.mode === 'arrest_heist' ? 'TEAM POINTS' : 'BOUNTY'}</div>
                 </div>
               </div>
             ))}
