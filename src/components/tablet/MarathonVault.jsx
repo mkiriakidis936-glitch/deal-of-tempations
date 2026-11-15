@@ -18,7 +18,7 @@ export default function MarathonVault({ state, updateState, onAdvance, playerPro
   const currentTeam = trialIndex % 2 === 0 ? 'alpha' : 'beta';
   const teamKey = currentTeam === 'alpha' ? 'teamAlpha' : 'teamBeta';
   const teamPlayers = state.players.filter((p) => p.team === currentTeam);
-  const eligibleTeamPlayers = teamPlayers.filter((p) => isVipActivityAllowed(vipCtx, p));
+  const eligibleTeamPlayers = teamPlayers.filter((p) => isVipActivityAllowed(vipCtx, p, currentTrial?.id === 'MT-03' ? 'questions' : null));
   const teamLoot = state[teamKey]?.loot || 0;
   const teamStars = state[teamKey]?.stars || 0;
   const selectedPlayer = state.players.find((p) => p.id === selectedPlayerId);
