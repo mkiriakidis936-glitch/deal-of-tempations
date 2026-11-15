@@ -1,10 +1,18 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 
 export default function Extra4TVOverlay({ state }) {
   const extra4 = state?.extra4 || {};
   const status = extra4.control?.status;
   const card = extra4.cards?.activeCard;
   const feed = extra4.liveFeed;
+  const scene = extra4.scenes?.current;
+  const [replay, setReplay] = useState(false);
+  useEffect(() => {
+    if (!extra4.scenes?.replayAt) return undefined;
+    setReplay(true);
+    const timeout = setTimeout(() => setReplay(false), 1800);
+    return () => clearTimeout(timeout);
+  }, [extra4.scenes?.replayAt]);
 
   return <>
     {status === 'emergency' && (
@@ -16,6 +24,7 @@ export default function Extra4TVOverlay({ state }) {
         </div>
       </div>
     )}
+    {scene && status !== 'emergency' && <div className="fixed top-4 left-1/2 z-[88] -translate-x-1/2 rounded-lg border border-primary/50 bg-black/85 px-4 py-2 text-center text-xs text-primary">SCENE · {scene}{replay ? ' · REPLAY' : ''}</div>}
     {feed?.status === 'requested' && status !== 'emergency' && (
       <div className="fixed top-20 left-1/2 z-[95] -translate-x-1/2 rounded-xl border border-primary/60 bg-black/90 px-5 py-3 text-center text-sm text-primary">
         ISOLATION CHAMBER · ΑΝΑΜΟΝΗ ΣΥΝΑΙΝΕΣΗΣ
