@@ -537,8 +537,7 @@ export function entityRoutes() {
       if (!/^[A-Za-z0-9_-]{16,100}$/.test(submissionId) ||
           typeof body.name !== 'string' || !body.name.trim() || body.name.trim().length > 80 ||
           typeof body.avatar !== 'string' || body.avatar.length > 32 ||
-          !isObject(body.answers || {}) ||
-          !customAnswersValid) {
+          !isObject(body.answers || {})) {
         return res.status(400).json({ error: 'Συμπλήρωσε σωστά τα στοιχεία της πρόσκλησης.' });
       }
       const answers = body.answers || {};
@@ -558,6 +557,9 @@ export function entityRoutes() {
           if (value && question.type === 'select' && !(question.options || []).includes(value)) return false;
           return true;
         });
+      if (!customAnswersValid) {
+        return res.status(400).json({ error: 'Έλεγξε τις πρόσθετες ερωτήσεις της VIP φόρμας και δοκίμασε ξανά.' });
+      }
       const allowedKeys = new Set([
         'displayName', 'personality', 'competitiveness', 'preferredTestType',
         'activityPreferences', 'difficulty', 'unexpectedChallenge', 'activeParticipation',
