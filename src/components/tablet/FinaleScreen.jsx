@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import ComicPanel from '@/components/comic/ComicPanel';
 import ComicButton from '@/components/comic/ComicButton';
 import Timer from '@/components/comic/Timer';
@@ -7,8 +7,9 @@ import { ULTIMATE_TRUTHS } from '@/data/gameContent';
 import SpeakButton from '@/components/comic/VoiceReader';
 import { calculateMostWanted, addHistory } from '@/lib/gameLogic';
 import { TimeCapsuleReveal } from '@/components/tablet/TimeCapsulePanel';
+import { canAssignVipActivity } from '@/lib/playerIntelligence';
 
-export default function FinaleScreen({ state, updateState, onEnd }) {
+export default function FinaleScreen({ state, updateState, onEnd, playerProfiles = [] }) {
   const [truthIndex, setTruthIndex] = useState(0);
   const [timerActive, setTimerActive] = useState(false);
   const [done, setDone] = useState(false);
@@ -16,6 +17,11 @@ export default function FinaleScreen({ state, updateState, onEnd }) {
 
   const mostWanted = calculateMostWanted(state.players);
   const currentTruth = ULTIMATE_TRUTHS[truthIndex];
+
+  useEffect(() => {
+    if (!mostWanted) return;
+    if (!canAssignVipActivity({ playerProfiles }, mostWanted, { activityType: 'questions', activityLabel: 'τελικές αλήθειες' })) setDone(true);
+  }, [mostWanted?.id, playerProfiles]);
 
   function handleAnswer() {
     const next = truthIndex + 1;
