@@ -61,7 +61,7 @@ export default function Extra4Panel({ state, updateState, onOpen, onEndGame, onC
             syncTimer: state.syncTimer || null,
           },
         },
-        liveFeed: { ...extra4.liveFeed, status: 'off', requestedAt: null, cameraEnabled: false, microphoneEnabled: false },
+        liveFeed: { ...extra4.liveFeed, status: 'off', requestedAt: null, cameraEnabled: false, microphoneEnabled: false, sourceToken: null, tvToken: null, offer: null, answer: null },
         eventLog: log,
       },
       { ...timers, stopActive: true },
@@ -130,6 +130,47 @@ export default function Extra4Panel({ state, updateState, onOpen, onEndGame, onC
     delete restrictions[keyTarget];
     await updateExtra({ economy: { ...extra4.economy, keys, restrictions } });
     setKeyTarget('');
+  }
+
+  function createFeedToken() {
+    const bytes = new Uint8Array(32);
+    window.crypto.getRandomValues(bytes);
+    return Array.from(bytes, (value) => value.toString(16).padStart(2, '0')).join('');
+  }
+
+  async function requestLiveFeed() {
+    const sourceToken = createFeedToken();
+    const tvToken = createFeedToken();
+    await updateExtra({
+      liveFeed: {
+        ...extra4.liveFeed,
+        status: 'requested',
+        requestedAt: Date.now(),
+        cameraEnabled: false,
+        microphoneEnabled: false,
+        sourceToken,
+        tvToken,
+        offer: null,
+        answer: null,
+        restartRequest: 0,
+      },
+    });
+  }
+
+  async function stopLiveFeed() {
+    await updateExtra({
+      liveFeed: {
+        ...extra4.liveFeed,
+        status: 'off',
+        requestedAt: null,
+        cameraEnabled: false,
+        microphoneEnabled: false,
+        sourceToken: null,
+        tvToken: null,
+        offer: null,
+        answer: null,
+      },
+    });
   }
 
   async function issueTerminal() {
@@ -257,11 +298,23 @@ export default function Extra4Panel({ state, updateState, onOpen, onEndGame, onC
 
         {tab === 'live' && <ComicPanel className="bg-card space-y-3">
           <div className="ds-label text-primary/80">ISOLATION CHAMBER — LIVE FEED</div>
-          <div className="text-sm">Κατάσταση: <strong>{extra4.liveFeed.status === 'requested' ? 'ΑΝΑΜΟΝΗ ΠΗΓΗΣ' : extra4.liveFeed.status === 'connected' ? 'ΣΥΝΔΕΔΕΜΕΝΟ' : 'ΑΝΕΝΕΡΓΟ'}</strong></div>
-          <div className="flex flex-wrap gap-2"><ComicButton onClick={() => updateExtra({ liveFeed: { ...extra4.liveFeed, status: 'requested', requestedAt: Date.now(), cameraEnabled: false, microphoneEnabled: false } })} disabled={extra4.control.status !== 'running'}>ΑΙΤΗΜΑ ΕΝΑΡΞΗΣ LIVE FEED</ComicButton><ComicButton variant="red" onClick={() => updateExtra({ liveFeed: { ...extra4.liveFeed, status: 'off', requestedAt: null, cameraEnabled: false, microphoneEnabled: false } })}>STOP FEED</ComicButton></div>
+          <div className="text-sm">Κατάσταση: <strong>{extra4.liveFeed.status === 'requested' ? 'ΑΝΑΜΟΝΗ ΣΥΝΑΙΝΕΣΗΣ' : extra4.liveFeed.status === 'connected' ? 'ΣΥΝΔΕΔΕΜΕΝΟ' : extra4.liveFeed.status === 'connecting' || extra4.liveFeed.status === 'reconnecting' ? 'ΣΥΝΔΕΣΗ' : 'ΑΝΕΝΕΡΓΟ'}</strong></div>
+          <div className="flex flex-wrap gap-2"><ComicButton onClick={requestLiveFeed} disabled={extra4.control.status !== 'running' || extra4.liveFeed.status !== 'off'}>ΑΙΤΗΜΑ ΕΝΑΡΞΗΣ LIVE FEED</ComicButton><ComicButton variant="red" onClick={stopLiveFeed} disabled={extra4.liveFeed.status === 'off'}>STOP FEED</ComicButton></div>
+          {extra4.liveFeed.sourceToken && extra4.liveFeed.tvToken && <div className="grid gap-3 sm:grid-cols-2">
+            <div className="rounded-lg border border-border bg-secondary p-3 space-y-2">
+              <div className="font-heading text-sm text-primary">ΣΥΣΚΕΥΗ ISOLATION CHAMBER</div>
+              <div className="break-all text-[10px] text-foreground/60">{window.location.origin}/isolation?code={encodeURIComponent(state.sessionCode || '')}&token={extra4.liveFeed.sourceToken}</div>
+              <ComicButton size="sm" className="w-full" onClick={() => navigator.clipboard.writeText(`${window.location.origin}/isolation?code=${encodeURIComponent(state.sessionCode || '')}&token=${extra4.liveFeed.sourceToken}`)}>ΑΝΤΙΓΡΑΦΗ LINK ΠΗΓΗΣ</ComicButton>
+            </div>
+            <div className="rounded-lg border border-border bg-secondary p-3 space-y-2">
+              <div className="font-heading text-sm text-primary">TV LIVE FEED</div>
+              <div className="break-all text-[10px] text-foreground/60">{window.location.origin}/tv?code={encodeURIComponent(state.sessionCode || '')}&feedToken={extra4.liveFeed.tvToken}</div>
+              <ComicButton size="sm" className="w-full" onClick={() => navigator.clipboard.writeText(`${window.location.origin}/tv?code=${encodeURIComponent(state.sessionCode || '')}&feedToken=${extra4.liveFeed.tvToken}`)}>ΑΝΤΙΓΡΑΦΗ LINK TV</ComicButton>
+            </div>
+          </div>}
           <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={!!extra4.liveFeed.tvPip} onChange={(e) => updateExtra({ liveFeed: { ...extra4.liveFeed, tvPip: e.target.checked } })} /> Picture-in-Picture στην TV</label>
-          <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={!!extra4.liveFeed.tvAudio} onChange={(e) => updateExtra({ liveFeed: { ...extra4.liveFeed, tvAudio: e.target.checked } })} /> Ήχος στην TV (επιλογή Director)</label>
-          <div className="text-xs text-foreground/55">Η μετάδοση ενεργοποιείται μόνο από τη συσκευή πηγής μετά από ρητή συναίνεση. Η πραγματική σύνδεση WebRTC θα ολοκληρωθεί στο επόμενο τμήμα ενσωμάτωσης.</div>
+          <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={!!extra4.liveFeed.tvAudio} onChange={(e) => updateExtra({ liveFeed: { ...extra4.liveFeed, tvAudio: e.target.checked } })} /> Επιτρέπεται αίτημα ήχου στην TV</label>
+          <div className="text-xs text-foreground/55">Η κάμερα και το μικρόφωνο ενεργοποιούνται μόνο μετά από χειροκίνητη συναίνεση στη συσκευή πηγής. Η μετάδοση WebRTC χρησιμοποιεί το τοπικό δίκτυο χωρίς αποθήκευση βίντεο.</div>
         </ComicPanel>}
 
       </div>
