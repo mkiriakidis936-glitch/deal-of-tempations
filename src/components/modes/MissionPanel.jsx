@@ -32,17 +32,9 @@ export default function MissionPanel({ ctx, pool, onSuccess, onFail, title = '�
       setMessage('Η παίκτρια δεν έχει επιλέξει συμμετοχή σε μυστικές αποστολές.');
       return;
     }
-    const answers = profileFor(p.id);
-    const difficulty = Number(answers?.difficulty || 3);
-    const suitablePool = !answers ? pool : pool.filter((mission) => {
-      const minutes = Number(mission.mins || 5);
-      const reward = Number(mission.reward || 0);
-      if (difficulty <= 2) return minutes <= 3 && reward <= 2;
-      if (difficulty === 3) return minutes <= 5;
-      return true;
-    });
+    const suitablePool = pool;
     if (!suitablePool.length) {
-      setMessage('Δεν υπάρχει διαθέσιμη αποστολή για το επίπεδο δυσκολίας που δήλωσε η παίκτρια.');
+      setMessage('Δεν υπάρχουν διαθέσιμες αποστολές σε αυτό το Mode.');
       return;
     }
     if (auto && answers?.boundaries?.trim()) {
