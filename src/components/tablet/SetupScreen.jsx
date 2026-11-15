@@ -207,9 +207,13 @@ export default function SetupScreen({ onStart }) {
       state,
     });
     if (castingPlan?.settingId && castingPlan.mode === mode) {
-      await base44.entities.AppSetting.update(castingPlan.settingId, {
-        value: { ...castingPlan, usedAt: new Date().toISOString() },
-      });
+      try {
+        await base44.entities.AppSetting.update(castingPlan.settingId, {
+          value: { ...castingPlan, usedAt: new Date().toISOString() },
+        });
+      } catch (error) {
+        console.warn('Episode cast usage timestamp could not be saved', error);
+      }
     }
   }
 
