@@ -38,7 +38,7 @@ export default function Isolation() {
   const sessionCode = String(params.get('code') || '').trim().toUpperCase();
   const token = String(params.get('token') || '');
   const feed = state?.extra4?.liveFeed || {};
-  const requested = feed.status === 'requested' || feed.status === 'connecting' || feed.status === 'reconnecting';
+  const requested = ['requested', 'connecting', 'connected'].includes(feed.status);
 
   useEffect(() => {
     if (sessionCode) joinByCode(sessionCode);
