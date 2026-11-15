@@ -212,11 +212,43 @@ export default function Tablet() {
 
   const displayState = { ...state, sessionCode: session.sessionCode };
 
+  function renderProductionControls() {
+    return (
+      <>
+        <button
+          onClick={() => setOverlay('controlroom')}
+          className="fixed bottom-24 right-3 z-[65] comic-boom bg-tarot-royal text-tarot-gold px-3 py-2 font-heading text-xs shadow-xl"
+        >
+          MASTER CONTROL ROOM
+        </button>
+        {overlay === 'controlroom' && (
+          <ControlRoom
+            state={displayState}
+            onOpen={(key) => setOverlay(key)}
+            onRefresh={refresh}
+            onEndGame={() => { setOverlay(null); archiveAndDelete(); }}
+            onClose={() => setOverlay(null)}
+          />
+        )}
+        {overlay === 'showdirector' && <ShowDirector state={displayState} updateState={trackedUpdate} onClose={() => setOverlay(null)} />}
+        {overlay === 'eventqueue' && <EventQueue state={displayState} updateState={trackedUpdate} onClose={() => setOverlay(null)} />}
+        {overlay === 'audio' && <AudioControl state={displayState} updateState={trackedUpdate} onClose={() => setOverlay(null)} />}
+        {overlay === 'synctimer' && <SyncTimerControl state={displayState} updateState={trackedUpdate} onClose={() => setOverlay(null)} />}
+        {overlay === 'finalepres' && (
+          <div className="fixed inset-0 z-[80] bg-background overflow-y-auto">
+            <FinalePresentation state={displayState} updateState={trackedUpdate} onEnd={() => { setOverlay(null); archiveAndDelete(); }} />
+          </div>
+        )}
+      </>
+    );
+  }
+
   if (isNewMode(state.mode)) {
     return (
       <>
         <ModeGame state={displayState} updateState={trackedUpdate} onEnd={archiveAndDelete} onQR={() => setShowQR(true)} />
         <NightDirectorHost state={displayState} updateState={trackedUpdate} />
+        {renderProductionControls()}
         {renderQR()}
       </>
     );
@@ -242,6 +274,7 @@ export default function Tablet() {
             <div className="font-heading text-6xl text-destructive comic-text-stroke comic-pulse">⏸ ΠΑΥΣΗ</div>
           </div>
         )}
+        {renderProductionControls()}
         {renderQR()}
       </>
     );
