@@ -279,7 +279,7 @@ export default function Admin() {
       case 'casting':
         return <AdminShowCasting />;
       case 'extra4':
-        return <AdminExtra4 sessions={sessions} selectedSession={activeSession} onSelect={selectSession} onNavigate={setTab} />;
+        return <AdminExtra4 sessions={sessions} selectedSession={activeSession} onSelect={selectSession} onNavigate={setTab} onUpdate={handleUpdateSession} />;
       case 'players':
       case 'live':
         return (
