@@ -3,11 +3,12 @@ import { QRCodeSVG } from 'qrcode.react';
 import ComicPanel from '@/components/comic/ComicPanel';
 import ComicButton from '@/components/comic/ComicButton';
 import { DIGITAL_CARDS } from '@/data/gameContent';
+import { isVipActivityAllowed } from '@/lib/playerIntelligence';
 import { INTENSITY_LEVELS, EXTRA4_CATEGORIES, getExtra4, addExtra4Event, pauseExtra4Timers, resumeExtra4Timers } from '@/lib/extra4';
 
 const money = (value) => Math.max(0, Number(value) || 0);
 
-export default function Extra4Panel({ state, updateState, onOpen, onEndGame, onClose }) {
+export default function Extra4Panel({ state, updateState, playerProfiles = [], playerProfilesReady = true, onOpen, onEndGame, onClose }) {
   const [tab, setTab] = useState('overview');
   const [category, setCategory] = useState('sensory');
   const [playerId, setPlayerId] = useState(state.players?.[0]?.id || '');
@@ -25,6 +26,9 @@ export default function Extra4Panel({ state, updateState, onOpen, onEndGame, onC
   const updateExtra = (patch, rootPatch = {}) => updateState({ ...rootPatch, extra4: { ...extra4, ...patch } });
   const eventLog = extra4.eventLog.slice().reverse();
   const currentMode = state.mode || '—';
+  const activityType = ['guessing', 'trivia'].includes(category) ? 'questions' : category === 'vip' ? 'surprises' : 'missions';
+  const eligiblePlayers = players.filter((player) => isVipActivityAllowed({ playerProfiles, playerProfilesReady }, player, activityType));
+  const activityCatalog = EXTRA4_CATEGORIES.flatMap((group) => group.actions.map((action) => ({ ...action, categoryId: group.id, categoryLabel: group.label })));
 
   async function pause() {
     if (extra4.control.status === 'paused') {
@@ -84,11 +88,16 @@ export default function Extra4Panel({ state, updateState, onOpen, onEndGame, onC
     await updateExtra({ tactical: { ...extra4.tactical, level, changedAt: Date.now() } });
   }
 
-  async function startActivity(action) {
-    if (state.stopActive || extra4.control.status !== 'running' || activeActivity?.status === 'active') return;
-    const item = { id: `activity-${Date.now()}`, actionId: action.id, label: action.label, category: activeCategory.label, status: 'active', startedAt: Date.now(), mode: currentMode };
+  async function startActivity(action, group = activeCategory) {
+    const groupId = typeof group === 'string' ? group : group.id;
+    const groupLabel = typeof group === 'string' ? (EXTRA4_CATEGORIES.find((item) => item.id === group)?.label || group) : group.label;
+    const type = ['guessing', 'trivia'].includes(groupId) ? 'questions' : groupId === 'vip' ? 'surprises' : 'missions';
+    const eligible = players.filter((player) => isVipActivityAllowed({ playerProfiles, playerProfilesReady }, player, type));
+    if (state.stopActive || extra4.control.status !== 'running' || activeActivity?.status === 'active' || eligible.length === 0) return;
+    const catalogIndex = activityCatalog.findIndex((item) => item.id === action.id && item.categoryId === groupId);
+    const item = { id: `activity-${Date.now()}`, actionId: action.id, label: action.label, category: groupLabel, status: 'active', startedAt: Date.now(), mode: currentMode, participantIds: eligible.map((player) => player.id) };
     const eventLog = addExtra4Event(extra4, 'activity_started', `Έναρξη: ${item.label}`, { activityId: item.id, result: null });
-    await updateExtra({ activity: { ...extra4.activity, active: item }, eventLog });
+    await updateExtra({ activity: { ...extra4.activity, active: item, queueIndex: catalogIndex >= 0 ? catalogIndex : extra4.activity.queueIndex }, eventLog });
     onOpen?.(action.id);
   }
 
@@ -96,7 +105,24 @@ export default function Extra4Panel({ state, updateState, onOpen, onEndGame, onC
     if (!activeActivity || activeActivity.status !== 'active') return;
     const endedAt = Date.now();
     const completed = { ...activeActivity, status: 'completed', endedAt, result };
-    const eventLog = addExtra4Event(extra4, 'activity_completed', `Ολοκλήρωση: ${activeActivity.label}`, { activityId: activeActivity.id, result });
+    let eventLog = addExtra4Event(extra4, 'activity_completed', `Ολοκλήρωση: ${activeActivity.label}`, { activityId: activeActivity.id, result });
+    if (extra4.activity.auto && result !== 'cancelled' && result !== 'skipped') {
+      const startIndex = Math.max(-1, activityCatalog.findIndex((item) => item.id === activeActivity.actionId && item.categoryId === (EXTRA4_CATEGORIES.find((group) => group.label === activeActivity.category)?.id || category)));
+      let next = null;
+      for (let step = 1; step <= activityCatalog.length; step += 1) {
+        const candidate = activityCatalog[(startIndex + step) % activityCatalog.length];
+        const type = ['guessing', 'trivia'].includes(candidate.categoryId) ? 'questions' : candidate.categoryId === 'vip' ? 'surprises' : 'missions';
+        const eligible = players.filter((player) => isVipActivityAllowed({ playerProfiles, playerProfilesReady }, player, type));
+        if (eligible.length) { next = { candidate, eligible }; break; }
+      }
+      if (next && extra4.control.status === 'running') {
+        const nextActivity = { id: `activity-${Date.now()}`, actionId: next.candidate.id, label: next.candidate.label, category: next.candidate.categoryLabel, status: 'active', startedAt: Date.now(), mode: currentMode, participantIds: next.eligible.map((player) => player.id) };
+        eventLog = addExtra4Event({ ...extra4, eventLog }, 'activity_started', `Αυτόματη επόμενη δραστηριότητα: ${nextActivity.label}`, { activityId: nextActivity.id, result: null });
+        await updateExtra({ activity: { ...extra4.activity, active: nextActivity, queueIndex: activityCatalog.indexOf(next.candidate) }, eventLog });
+        onOpen?.(next.candidate.id);
+        return;
+      }
+    }
     await updateExtra({ activity: { ...extra4.activity, active: completed }, eventLog });
   }
 
@@ -257,7 +283,9 @@ export default function Extra4Panel({ state, updateState, onOpen, onEndGame, onC
             <div className="ds-label text-primary/80">INTERACTIVE MINI-GAMES</div>
             <div className="flex flex-wrap gap-2">{EXTRA4_CATEGORIES.map((item) => <button key={item.id} onClick={() => setCategory(item.id)} className={`rounded-lg border px-3 py-2 text-xs ${category === item.id ? 'border-primary bg-primary text-tarot-dark' : 'border-border bg-secondary'}`}>{item.label}</button>)}</div>
             <div className="grid gap-2 sm:grid-cols-2">{activeCategory.actions.map((action) => <ComicButton key={action.id} disabled={!!(activeActivity?.status === 'active') || extra4.control.status !== 'running'} onClick={() => startActivity(action)}>{action.label}</ComicButton>)}</div>
-            {activeActivity?.status === 'active' && <div className="rounded-lg border border-primary/40 bg-primary/5 p-3 space-y-2"><div className="font-heading text-primary">ΕΝΕΡΓΗ ΔΡΑΣΤΗΡΙΟΤΗΤΑ: {activeActivity.label}</div><div className="flex flex-wrap gap-2"><ComicButton variant="green" onClick={() => finishActivity('completed')}>ΟΛΟΚΛΗΡΩΘΗΚΕ</ComicButton><ComicButton variant="yellow" onClick={() => finishActivity('success')}>ΕΠΙΤΥΧΙΑ</ComicButton><ComicButton variant="red" onClick={() => finishActivity('failed')}>ΑΠΟΤΥΧΙΑ</ComicButton></div></div>}
+            <label className="flex items-center gap-2 text-xs"><input type="checkbox" checked={extra4.activity.auto !== false} onChange={(e) => updateExtra({ activity: { ...extra4.activity, auto: e.target.checked } })} /> Αυτόματη επιλογή επόμενης δραστηριότητας</label>
+            <div className="text-xs text-foreground/50">Επιλέξιμοι παίκτες για την κατηγορία: {eligiblePlayers.length}/{players.length}. Οι δηλωμένες προτιμήσεις ελέγχονται πριν από την ανάθεση.</div>
+            {activeActivity?.status === 'active' && <div className="rounded-lg border border-primary/40 bg-primary/5 p-3 space-y-2"><div className="font-heading text-primary">ΕΝΕΡΓΗ ΔΡΑΣΤΗΡΙΟΤΗΤΑ: {activeActivity.label}</div><div className="text-xs text-foreground/60">Συμμετέχοντες: {(activeActivity.participantIds || []).map((id) => players.find((player) => player.id === id)?.name || id).join(', ') || '—'}</div><div className="flex flex-wrap gap-2"><ComicButton variant="green" onClick={() => finishActivity('completed')}>ΟΛΟΚΛΗΡΩΘΗΚΕ</ComicButton><ComicButton variant="yellow" onClick={() => finishActivity('success')}>ΕΠΙΤΥΧΙΑ</ComicButton><ComicButton variant="red" onClick={() => finishActivity('failed')}>ΑΠΟΤΥΧΙΑ</ComicButton><ComicButton variant="dark" onClick={() => finishActivity('skipped')}>ΠΑΡΑΛΕΙΨΗ</ComicButton><ComicButton variant="red" onClick={() => finishActivity('cancelled')}>ΑΚΥΡΩΣΗ</ComicButton></div></div>}
           </ComicPanel>
         </div>}
 
