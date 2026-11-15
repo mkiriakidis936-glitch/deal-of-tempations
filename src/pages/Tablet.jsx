@@ -80,6 +80,7 @@ export default function Tablet() {
 
   const [showQR, setShowQR] = React.useState(false);
   const [intakeProfiles, setIntakeProfiles] = React.useState([]);
+  const [intakeProfilesReady, setIntakeProfilesReady] = React.useState(false);
   const [showSplash, setShowSplash] = React.useState(() => !sessionStorage.getItem('dotSplash'));
   const [overlay, setOverlay] = React.useState(null);
   const endingRef = React.useRef(false);
@@ -96,11 +97,21 @@ export default function Tablet() {
     let active = true;
     if (!session?.id) {
       setIntakeProfiles([]);
+      setIntakeProfilesReady(true);
       return undefined;
     }
+    setIntakeProfilesReady(false);
     base44.entities.PlayerIntake.filter({}, { sort: '-created_date', limit: 500 })
-      .then((result) => { if (active) setIntakeProfiles(result.items || []); })
-      .catch((error) => console.error('Private player profile load failed', error));
+      .then((result) => {
+        if (active) {
+          setIntakeProfiles(result.items || []);
+          setIntakeProfilesReady(true);
+        }
+      })
+      .catch((error) => {
+        console.error('Private player profile load failed', error);
+        if (active) setIntakeProfilesReady(true);
+      });
     return () => { active = false; };
   }, [session?.id]);
 
