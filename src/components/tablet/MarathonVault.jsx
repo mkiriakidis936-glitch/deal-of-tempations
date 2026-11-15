@@ -125,6 +125,9 @@ export default function MarathonVault({ state, updateState, onAdvance, playerPro
               </div>
             )}
             {!playerProfilesReady && <div className="text-center text-sm opacity-70">Φόρτωση ιδιωτικών προτιμήσεων…</div>}
+            {playerProfilesReady && !selectedPlayerId && eligibleTeamPlayers.length > 0 && (
+              <div className="text-center mt-3"><ComicButton variant="white" size="md" onClick={skipTrial}>ΠΑΡΑΛΕΙΨΗ ΧΩΡΙΣ ΠΟΙΝΗ</ComicButton></div>
+            )}
             <div className="text-center mt-4">
               <ComicButton
                 variant="green"
