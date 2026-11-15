@@ -54,6 +54,10 @@ export default function AdminShowCasting() {
       const record = settings.items?.[0] || null;
       const current = record?.value && typeof record.value === 'object' ? record.value : null;
       setPlan(current ? { ...current, settingId: record.id } : null);
+      if (current?.mode && Array.isArray(current.players)) {
+        setMode(current.mode);
+        setSelected(current.players.map((player) => normalizeName(player.name)).filter(Boolean));
+      }
     } catch (error) {
       console.error('Show casting load failed', error);
       setMessage(error.message || 'Δεν φορτώθηκαν οι συμμετοχές.');
