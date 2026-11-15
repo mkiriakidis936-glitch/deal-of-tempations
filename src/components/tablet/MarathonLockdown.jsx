@@ -9,6 +9,7 @@ import { canAssignVipActivity, isVipActivityAllowed } from '@/lib/playerIntellig
 
 export default function MarathonLockdown({ state, updateState, onEnd, playerProfiles = [], playerProfilesReady = true }) {
   const [phase, setPhase] = useState('intro');
+  const [approvedLosers, setApprovedLosers] = useState(null);
 
   const lootA = state.teamAlpha?.loot || 0;
   const lootB = state.teamBeta?.loot || 0;
@@ -22,12 +23,16 @@ export default function MarathonLockdown({ state, updateState, onEnd, playerProf
   const vipCtx = { playerProfiles, playerProfilesReady };
   const loserPlayers = state.players.filter((p) => p.team === loser);
   const participatingLosers = loserPlayers.filter((p) => isVipActivityAllowed(vipCtx, p));
+  const executionPlayers = approvedLosers || participatingLosers;
 
   function startExecution() {
     if (!participatingLosers.length) { setPhase('victory'); return; }
+    const approved = [];
     for (const player of participatingLosers) {
-      if (!canAssignVipActivity(vipCtx, player, { activityLabel: 'τελική ομαδική δοκιμασία Lockdown' })) return;
+      if (canAssignVipActivity(vipCtx, player, { activityLabel: 'τελική ομαδική δοκιμασία Lockdown' })) approved.push(player);
     }
+    setApprovedLosers(approved);
+    if (!approved.length) { setPhase('victory'); return; }
     setPhase('execution');
   }
 
@@ -88,7 +93,7 @@ export default function MarathonLockdown({ state, updateState, onEnd, playerProf
             <div className="mt-4 text-sm">
               Ηττημένη ομάδα: {loserName} ({participatingLosers.map((p) => p.name).join(', ') || 'χωρίς ενεργή συμμετοχή'})
             </div>
-            <LockdownCommands players={participatingLosers} />
+            <LockdownCommands players={executionPlayers} />
             <div className="mt-4">
               <ComicButton variant="green" size="lg" onClick={() => setPhase('victory')}>✅ ΛΗΞΗ</ComicButton>
             </div>
