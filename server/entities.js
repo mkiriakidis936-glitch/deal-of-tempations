@@ -464,7 +464,8 @@ export function entityRoutes() {
           answer: null,
           status: 'connecting',
           cameraEnabled: true,
-          microphoneEnabled: microphoneEnabled === true,
+          microphoneEnabled: microphoneEnabled === true && currentFeed.tvAudio === true,
+          sourceConsentAt: Date.now(),
         };
       } else if (role === 'tv' && answer !== undefined) {
         if (!answer || answer.type !== 'answer' || typeof answer.sdp !== 'string' || answer.sdp.length > 100000 || !currentFeed.offer) {
