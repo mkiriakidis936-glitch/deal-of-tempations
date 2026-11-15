@@ -304,7 +304,7 @@ export default function Tablet() {
   if (isNewMode(state.mode)) {
     return (
       <>
-        <ModeGame state={displayState} updateState={trackedUpdate} onEnd={archiveAndDelete} onQR={() => setShowQR(true)} />
+        <ModeGame state={displayState} updateState={trackedUpdate} onEnd={archiveAndDelete} onQR={() => setShowQR(true)} playerProfiles={playerProfiles} />
         <NightDirectorHost state={displayState} updateState={trackedUpdate} />
         {renderProductionControls()}
         {renderQR()}
