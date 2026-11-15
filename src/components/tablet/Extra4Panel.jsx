@@ -46,7 +46,7 @@ export default function Extra4Panel({ state, updateState, playerProfiles = [], p
   const activeActivity = extra4.activity.active;
   const activeTimer = state.syncTimer || state.mg?.timer || null;
   const timerRemaining = activeTimer?.endsAt ? Math.max(0, Math.ceil((activeTimer.endsAt - Date.now()) / 1000)) : activeTimer?.remaining;
-  const updateExtra = (patch, rootPatch = {}) => updateState({ ...rootPatch, extra4: patch });
+  const updateExtra = (patch, rootPatch = {}) => updateState({ ...rootPatch, extra4: { ...extra4, ...patch } });
   const eventLog = extra4.eventLog.slice().reverse();
   const currentMode = state.mode || '—';
   const sceneItems = getSceneItems(state);
