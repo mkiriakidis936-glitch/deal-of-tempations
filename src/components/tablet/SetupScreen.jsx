@@ -344,6 +344,13 @@ export default function SetupScreen({ onStart }) {
         )}
 
         <ComicPanel>
+          {castingPlan?.mode === mode && (
+            <div className="mb-3 rounded-lg border border-primary/50 bg-primary/10 p-3">
+              <div className="font-heading text-sm text-primary">🎬 ΕΠΙΣΗΜΗ ΕΠΙΛΟΓΗ ΕΠΕΙΣΟΔΙΟΥ ΑΠΟ ADMIN</div>
+              <div className="text-xs text-foreground/70">{players.filter((player) => player.name.trim()).map((player) => player.name).join(' · ')}</div>
+              {castingPlan.usedAt && <div className="mt-1 text-[10px] text-foreground/45">Η επιλογή έχει χρησιμοποιηθεί σε προηγούμενη έναρξη.</div>}
+            </div>
+          )}
           <div className="flex items-center justify-between mb-3">
             <h2 className="font-heading text-2xl text-primary">2. ΠΑΙΚΤΡΙΕΣ ({players.length}/{maxPlayers})</h2>
             <div className="flex gap-2">
