@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Panel, Btn } from '@/components/modes/ModeShell';
 import { GATE_TOKENS, BLIND_TEXTURES, WHISPER_QUESTIONS, ASMR_CLIPS } from '@/data/modes/extendedContent';
 import { pick, sfx, whisper, useLocalCountdown } from '@/lib/modeKit';
+import { canAssignVipActivity } from '@/lib/playerIntelligence';
 
 // Act 2 — The Midnight ASMR & Tickle Vault
 export default function ActMidnight({ ctx, onDone }) {
@@ -78,7 +79,7 @@ function BlindTest({ ctx, seat, onDone }) {
     <Panel title="🙈 The Blind ASMR Test" accent="#8B5CF6">
       <p className="text-sm opacity-80">Η {seat?.name} φοράει μάσκα ύπνου και κάθεται αναπαυτικά με τα πέλματα ελεύθερα. Οι υπόλοιπες εφαρμόζουν την κρυφή υφή για 20″. Στόχος: να μαντέψει υφή και ποια την αγγίζει.</p>
       {!tex ? (
-        <Btn color="bg-violet-700" onClick={newRound}>🎴 Νέα κρυφή κάρτα υφής</Btn>
+        <Btn color="bg-violet-700" onClick={() => { if (canAssignVipActivity(ctx, seat, { activityLabel: 'Blind ASMR Test' })) newRound(); }}>🎴 Νέα κρυφή κάρτα υφής</Btn>
       ) : (
         <div className="space-y-2">
           <div className="rounded bg-violet-950/70 p-3">
@@ -106,7 +107,7 @@ function Whispers({ ctx, seat, onDone }) {
     <Panel title="🤫 The Midnight Whispers" accent="#8B5CF6">
       <p className="text-sm opacity-80">Φώτα στο ελάχιστο, κύκλος σε απόσταση αναπνοής. Η ερώτηση φαίνεται ΜΟΝΟ στο tablet — ψιθυρίζεται, δεν δείχνεται στην τηλεόραση. Όποια γελάσει δυνατά τρώει «Whisper Penalty»: 15″ απαλό δέσιμο καρπών με σατέν κορδέλα και ελαφρύ γαργάλημα.</p>
       {!q ? (
-        <Btn color="bg-violet-700" onClick={() => setQ(pick(WHISPER_QUESTIONS))}>🎴 Νέα ερώτηση για {seat?.name}</Btn>
+        <Btn color="bg-violet-700" onClick={() => { if (canAssignVipActivity(ctx, seat, { activityType: 'questions', activityLabel: 'ερωτήσεις' })) setQ(pick(WHISPER_QUESTIONS)); }}>🎴 Νέα ερώτηση για {seat?.name}</Btn>
       ) : (
         <div className="space-y-2">
           <div className="rounded bg-violet-950/70 p-3 font-body text-lg">{q}</div>
