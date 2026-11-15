@@ -5,7 +5,7 @@ import { PAJAMA_ACTS } from '@/data/pajamaProgram';
 export const EXTRA4_VERSION = '4.0';
 
 export const EXTRA4_CATEGORIES = [
-  { id: 'sensory', label: 'Sensory Challenges', actions: [{ id: 'oracle', label: 'Blind Oracle' }, { id: 'audio', label: 'Audio Challenge' }] },
+  { id: 'sensory', label: 'Sensory Challenges', actions: [{ id: 'extra4sensory', label: 'Digital Sensory Mini-Games' }, { id: 'oracle', label: 'Blind Oracle' }, { id: 'audio', label: 'Audio Challenge' }] },
   { id: 'guessing', label: 'Guessing Games', actions: [{ id: 'trivia', label: 'Trivia Know Me' }] },
   { id: 'roulette', label: 'Roulette Challenges', actions: [{ id: 'shoe', label: 'Shoe Roulette' }, { id: 'slots', label: 'Temptation Slots' }, { id: 'karmaslots', label: 'Karma Slots' }] },
   { id: 'reaction', label: 'Reaction & Reflex', actions: [{ id: 'extra4reaction', label: 'Digital Reaction & Reflex Games' }] },
