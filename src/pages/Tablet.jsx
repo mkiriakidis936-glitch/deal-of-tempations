@@ -353,7 +353,7 @@ export default function Tablet() {
   if (state.mode === 'pajama') {
     return (
       <>
-        <PajamaGame state={displayState} updateState={trackedUpdate} onEnd={archiveAndDelete} />
+        <PajamaGame state={displayState} updateState={trackedUpdate} onEnd={archiveAndDelete} playerProfiles={playerProfiles} />
         <NightDirectorHost state={displayState} updateState={trackedUpdate} />
         <PajamaTVPreview players={state.players || []} pj={state.pajama || {}} />
         <PajamaForcePhase pj={state.pajama || {}} updateState={trackedUpdate} />
@@ -470,12 +470,14 @@ export default function Tablet() {
           state={displayState}
           updateState={trackedUpdate}
           onEnd={archiveAndDelete}
+          playerProfiles={playerProfiles}
         />
       ) : state.mode === 'marathon' ? (
         <MarathonScreen
           state={displayState}
           updateState={trackedUpdate}
           onEnd={archiveAndDelete}
+          playerProfiles={playerProfiles}
         />
       ) : (
         <>
@@ -484,6 +486,7 @@ export default function Tablet() {
               state={displayState}
               updateState={trackedUpdate}
               onGoToStage2={() => trackedUpdate({ stage: 2 })}
+              playerProfiles={playerProfiles}
             />
           )}
           {state.stage === 2 && (
