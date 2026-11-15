@@ -385,11 +385,12 @@ export default function Tablet() {
             onClose={() => setOverlay(null)}
           />
         )}
-        {overlay === 'extra4minigames' && (
+        {['extra4sensory', 'extra4reaction'].includes(overlay) && (
          <div className="fixed inset-0 z-[85] overflow-y-auto bg-black/95 p-3">
            <div className="mx-auto max-w-3xl pt-4">
              <LockdownMiniGames
                safeOnly
+               allowedIds={overlay === 'extra4sensory' ? ['decibel', 'memory'] : ['shake', 'memory']}
                onPenalty={() => {}}
                onWheel={() => {}}
                onComplete={(ok, game) => {
