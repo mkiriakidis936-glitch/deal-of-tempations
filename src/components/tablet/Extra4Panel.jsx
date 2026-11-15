@@ -10,16 +10,23 @@ import { PAJAMA_ACTS } from '@/data/pajamaProgram';
 
 const money = (value) => Math.max(0, Number(value) || 0);
 
-function currentSceneLabel(state) {
+function getSceneItems(state) {
   if (isNewMode(state.mode)) {
     const meta = modeMeta(state.mode);
-    const act = meta?.acts?.[state.mg?.actIndex || 0];
-    return ACT_META[act]?.title || act || 'Προετοιμασία';
+    return (meta?.acts || []).map((id) => ({ id, label: ACT_META[id]?.title || id }));
   }
-  if (state.mode === 'pajama') return PAJAMA_ACTS[state.pajama?.actIndex || 0]?.title || 'Pajama Show';
-  if (state.mode === 'marathon') return ['INFILTRATION', 'THE VAULT', 'POLICE RAIDS', 'TOTAL LOCKDOWN'][(state.marathonStage || 1) - 1] || 'Marathon';
-  if (state.mode === 'arrest_heist') return ['ARREST & HEIST', 'GRAND HEIST', 'FINALE'][(state.stage || 1) - 1] || 'Arrest & Heist';
-  return ({ 0: 'Προετοιμασία', 1: 'Περιπολία', 2: 'Ανάκριση', 3: 'Φινάλε' })[state.stage || 0] || 'Σε εξέλιξη';
+  if (state.mode === 'pajama') return PAJAMA_ACTS.map((act) => ({ id: act.id, label: act.title }));
+  if (state.mode === 'marathon') return ['INFILTRATION', 'THE VAULT', 'POLICE RAIDS', 'TOTAL LOCKDOWN'].map((label, index) => ({ id: `marathon-${index + 1}`, label }));
+  if (state.mode === 'arrest_heist') return ['ARREST & HEIST', 'GRAND HEIST', 'FINALE'].map((label, index) => ({ id: `arrest-${index + 1}`, label }));
+  return ['Προετοιμασία', 'Περιπολία', 'Ανάκριση', 'Φινάλε'].map((label, index) => ({ id: `classic-${index}`, label }));
+}
+
+function getModeSceneIndex(state) {
+  if (isNewMode(state.mode)) return state.mg?.actIndex || 0;
+  if (state.mode === 'pajama') return state.pajama?.actIndex || 0;
+  if (state.mode === 'marathon') return Math.max(0, (state.marathonStage || 1) - 1);
+  if (state.mode === 'arrest_heist') return Math.max(0, (state.stage || 1) - 1);
+  return state.stage || 0;
 }
 
 export default function Extra4Panel({ state, updateState, playerProfiles = [], playerProfilesReady = true, onOpen, onEndGame, onClose }) {
@@ -41,12 +48,24 @@ export default function Extra4Panel({ state, updateState, playerProfiles = [], p
   const updateExtra = (patch, rootPatch = {}) => updateState({ ...rootPatch, extra4: { ...extra4, ...patch } });
   const eventLog = extra4.eventLog.slice().reverse();
   const currentMode = state.mode || '—';
+  const sceneItems = getSceneItems(state);
+  const defaultSceneOrder = sceneItems.map((item) => item.id);
+  const savedSceneOrder = extra4.scenes.modeId === currentMode && Array.isArray(extra4.scenes.order) ? extra4.scenes.order : [];
+  const sceneOrder = [...savedSceneOrder.filter((id) => defaultSceneOrder.includes(id)), ...defaultSceneOrder.filter((id) => !savedSceneOrder.includes(id))];
+  const modeSceneIndex = Math.max(0, Math.min(sceneItems.length - 1, getModeSceneIndex(state)));
+  const autoSceneIndex = Math.max(0, sceneOrder.indexOf(sceneItems[modeSceneIndex]?.id));
+  const currentSceneIndex = extra4.scenes.auto === false
+    ? Math.max(0, Math.min(sceneOrder.length - 1, extra4.scenes.currentIndex || 0))
+    : autoSceneIndex;
+  const currentSceneId = sceneOrder[currentSceneIndex];
+  const currentScene = sceneItems.find((item) => item.id === currentSceneId)?.label || sceneItems[0]?.label || '—';
   React.useEffect(() => {
-    if (extra4.scenes.auto === false || extra4.scenes.current === currentScene) return;
-    updateExtra({ scenes: { ...extra4.scenes, current: currentScene, updatedAt: Date.now() } });
-  }, [extra4.scenes.auto, extra4.scenes.current, currentScene, updateExtra]);
+    if (extra4.scenes.auto === false) return;
+    if (extra4.scenes.current === currentScene && extra4.scenes.modeId === currentMode &&
+        extra4.scenes.currentIndex === currentSceneIndex && JSON.stringify(extra4.scenes.order || []) === JSON.stringify(sceneOrder)) return;
+    updateExtra({ scenes: { ...extra4.scenes, current: currentScene, currentIndex: currentSceneIndex, modeId: currentMode, order: sceneOrder, updatedAt: Date.now() } });
+  }, [extra4.scenes.auto, extra4.scenes.current, extra4.scenes.modeId, extra4.scenes.currentIndex, extra4.scenes.order, currentScene, currentMode, currentSceneIndex, sceneOrder, updateExtra]);
 
-  const currentScene = currentSceneLabel(state);
   const activeTimers = [
     state.syncTimer ? { label: 'Κεντρικό', timer: state.syncTimer } : null,
     state.mg?.timer ? { label: 'Mode', timer: state.mg.timer } : null,
@@ -365,15 +384,30 @@ export default function Extra4Panel({ state, updateState, playerProfiles = [], p
           <div className="rounded-lg border border-primary/30 bg-primary/5 p-4">
             <div className="text-xs text-foreground/50">ΕΝΕΡΓΟ MODE · ΤΡΕΧΟΥΣΑ ΣΚΗΝΗ</div>
             <div className="mt-1 font-heading text-2xl text-primary">{currentScene}</div>
-            <div className="mt-1 text-xs text-foreground/55">Η σκηνή ακολουθεί αυτόματα τη φάση του ενεργού Mode. Οι υπάρχοντες κανόνες και οι μεταβάσεις του Mode παραμένουν ενεργοί.</div>
+            <div className="mt-1 text-xs text-foreground/55">Η αυτόματη λειτουργία ακολουθεί τη φάση του Mode. Η χειροκίνητη λειτουργία ελέγχει μόνο τη σειρά παρουσίασης και δεν αλλάζει τους κανόνες ή το στάδιο του παιχνιδιού.</div>
           </div>
-          <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={extra4.scenes.auto !== false} onChange={(e) => updateExtra({ scenes: { ...extra4.scenes, auto: e.target.checked, current: currentScene } })} /> Αυτόματη παρακολούθηση εξέλιξης σκηνών</label>
+          <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={extra4.scenes.auto !== false} onChange={(e) => updateExtra({ scenes: { ...extra4.scenes, auto: e.target.checked, modeId: currentMode, order: sceneOrder, currentIndex: autoSceneIndex, current: sceneItems[sceneOrder[autoSceneIndex]]?.label || currentScene } })} /> Αυτόματη παρακολούθηση εξέλιξης σκηνών</label>
+          <div className="space-y-1">
+            {sceneOrder.map((id, index) => {
+              const item = sceneItems.find((scene) => scene.id === id);
+              if (!item) return null;
+              return <div key={id} className={`flex items-center gap-2 rounded-lg border p-2 text-sm ${index === currentSceneIndex ? 'border-primary bg-primary/10' : 'border-border bg-secondary'}`}>
+                <span className="flex-1">{index + 1}. {item.label}{index === currentSceneIndex ? ' · ΤΡΕΧΟΥΣΑ' : ''}</span>
+                <button disabled={index === 0} onClick={() => { const next = [...sceneOrder]; [next[index - 1], next[index]] = [next[index], next[index - 1]]; updateExtra({ scenes: { ...extra4.scenes, modeId: currentMode, order: next } }); }} className="rounded border border-border px-2 py-1 text-xs disabled:opacity-30">↑</button>
+                <button disabled={index === sceneOrder.length - 1} onClick={() => { const next = [...sceneOrder]; [next[index + 1], next[index]] = [next[index], next[index + 1]]; updateExtra({ scenes: { ...extra4.scenes, modeId: currentMode, order: next } }); }} className="rounded border border-border px-2 py-1 text-xs disabled:opacity-30">↓</button>
+              </div>;
+            })}
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <ComicButton variant="yellow" onClick={() => updateExtra({ scenes: { ...extra4.scenes, auto: false, modeId: currentMode, order: sceneOrder, currentIndex: (currentSceneIndex + 1) % sceneOrder.length, current: sceneItems[sceneOrder[(currentSceneIndex + 1) % sceneOrder.length]]?.label || currentScene } })} disabled={sceneOrder.length < 2}>ΠΑΡΑΛΕΙΨΗ ΣΚΗΝΗΣ</ComicButton>
+            <ComicButton variant="dark" onClick={() => updateExtra({ scenes: { ...extra4.scenes, modeId: currentMode, order: sceneOrder, currentIndex: currentSceneIndex, current: currentScene, replayAt: Date.now() } })}>ΕΠΑΝΑΛΗΨΗ ΣΚΗΝΗΣ</ComicButton>
+          </div>
           <div className="grid gap-2 sm:grid-cols-3">
             <ComicButton onClick={() => onOpen?.('showdirector')}>SCENE DIRECTOR</ComicButton>
             <ComicButton variant="yellow" onClick={() => onOpen?.('eventqueue')}>ΑΝΑΚΟΙΝΩΣΗ / EVENT QUEUE</ComicButton>
             <ComicButton variant="purple" onClick={() => onOpen?.('finalepres')}>SPECIAL SCENE / FINALE</ComicButton>
           </div>
-          <div className="text-xs text-foreground/55">Οι χειροκίνητες αλλαγές, οι αποκαλύψεις και οι ανακοινώσεις γίνονται από τα υπάρχοντα εργαλεία Show Director και Event Queue.</div>
+          <div className="text-xs text-foreground/55">Ο Director μπορεί να αναδιατάξει τη σειρά, να παραλείψει ή να επαναλάβει σκηνή και να ενεργοποιήσει ειδική παρουσίαση ή ανακοίνωση.</div>
         </ComicPanel>}
 
         {tab === 'economy' && <div className="grid gap-3 lg:grid-cols-2">
