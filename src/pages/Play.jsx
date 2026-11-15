@@ -158,7 +158,7 @@ export default function Play() {
           }
         }}
       />
-      <Extra4MobileCard state={state} />
+      <Extra4MobileCard state={state} playerId={selectedPlayerId} />
       </>
     );
   }
