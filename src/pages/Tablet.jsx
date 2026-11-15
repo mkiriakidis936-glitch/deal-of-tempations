@@ -54,10 +54,14 @@ import { base44 } from '@/api/base44Client';
 import { awardAchievements } from '@/lib/achievements';
 import { setGameStopActive } from '@/lib/modeKit';
 import { canAssignVipActivity } from '@/lib/playerIntelligence';
+import { getExtra4, pauseExtra4Timers, resumeExtra4Timers } from '@/lib/extra4';
 
 export default function Tablet() {
   const { session, state, loading, updateState, createSession, deleteSession, refresh, joinByCode } = useGameSession();
-  React.useEffect(() => { setGameStopActive(!!(state?.stopActive || state?.mg?.stop)); }, [state?.stopActive, state?.mg?.stop]);
+  React.useEffect(() => {
+    const extraStatus = state?.extra4?.control?.status;
+    setGameStopActive(!!(state?.stopActive || state?.mg?.stop || extraStatus === 'paused' || extraStatus === 'emergency'));
+  }, [state?.stopActive, state?.mg?.stop, state?.extra4?.control?.status]);
 
   // Sync με Admin & links: κωδικός στο URL ή η ενεργή συνεδρία του Admin ανοίγει πάντα εδώ.
   React.useEffect(() => {
@@ -333,6 +337,7 @@ export default function Tablet() {
         {overlay === 'controlroom' && (
           <ControlRoom
             state={displayState}
+            updateState={trackedUpdate}
             playerProfiles={playerProfiles}
             onStartSurprise={startPersonalizedSurprise}
             onRevealSurprise={revealPersonalizedSurprise}
@@ -395,31 +400,24 @@ export default function Tablet() {
 
   // Παύση: παγώνει και το συγχρονισμένο χρονόμετρο, και το ξαναξεκινά με το ίδιο υπόλοιπο.
   async function handleStop() {
-    const pausing = !state.stopActive;
-    const timer = state.syncTimer;
-    if (pausing) {
-      if (timer?.running) {
-        const remaining = Math.max(0, Math.ceil(((timer.endsAt || 0) - Date.now()) / 1000));
-        await trackedUpdate({
-          stopActive: true,
-          pausedTimerRemaining: remaining,
-          syncTimer: { ...timer, running: false, remaining },
-        });
-        return;
-      }
-      await trackedUpdate({ stopActive: true });
-      return;
-    }
-    if (state.pausedTimerRemaining != null && state.syncTimer && !state.syncTimer.running) {
-      const remaining = state.pausedTimerRemaining;
+    const extra4 = getExtra4(state);
+    if (extra4.control.status === 'emergency') return;
+    if (extra4.control.status === 'paused') {
+      const timers = resumeExtra4Timers(state);
       await trackedUpdate({
+        ...timers,
         stopActive: false,
         pausedTimerRemaining: null,
-        syncTimer: { ...state.syncTimer, running: true, endsAt: Date.now() + remaining * 1000, remaining },
+        extra4: { ...extra4, control: { ...extra4.control, status: 'running', pausedAt: null, resumedAt: Date.now() } },
       });
       return;
     }
-    await trackedUpdate({ stopActive: false, pausedTimerRemaining: null });
+    const timers = pauseExtra4Timers(state);
+    await trackedUpdate({
+      ...timers,
+      stopActive: true,
+      extra4: { ...extra4, control: { ...extra4.control, status: 'paused', pausedAt: Date.now() } },
+    });
   }
 
   async function handleUndo() {
