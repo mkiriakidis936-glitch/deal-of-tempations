@@ -25,6 +25,7 @@ import MobileStatus from '@/components/play/MobileStatus';
 import SyncTimerDisplay from '@/components/shared/SyncTimerDisplay';
 import WaitingRoom from '@/components/play/WaitingRoom';
 import PajamaMobile from '@/components/play/PajamaMobile';
+import Extra4MobileCard from '@/components/play/Extra4MobileCard';
 
 export default function Play() {
   const { session, state, loading, updateState: saveState, joinByCode } = useGameSession({ autoLoad: false });
@@ -141,6 +142,7 @@ export default function Play() {
 
   if (isNewMode(state.mode) && myPlayer) {
     return (
+      <>
       <ModeMobile
         state={state}
         me={myPlayer}
@@ -154,11 +156,14 @@ export default function Play() {
           }
         }}
       />
+      <Extra4MobileCard state={state} />
+      </>
     );
   }
 
   if (state.mode === 'pajama' && myPlayer) {
     return (
+      <>
       <PajamaMobile
         pj={state.pajama || {}}
         players={state.players || []}
@@ -172,6 +177,8 @@ export default function Play() {
           }
         }}
       />
+      <Extra4MobileCard state={state} />
+      </>
     );
   }
 
@@ -211,6 +218,7 @@ export default function Play() {
   return (
     <div className="min-h-screen comic-dots p-3 pb-8">
       {state.stopActive && <div className="fixed inset-0 z-[100] bg-destructive/85 flex items-center justify-center text-center pointer-events-auto"><div className="font-heading text-5xl text-white">⏸ ΣΤΟΠ</div></div>}
+      <Extra4MobileCard state={state} />
       <div className="max-w-md mx-auto space-y-3">
         <div className="sticky top-0 z-20 -mx-3 px-3 py-2 comic-dots border-b-2 border-border">
           <ComicPanel className="bg-card">
