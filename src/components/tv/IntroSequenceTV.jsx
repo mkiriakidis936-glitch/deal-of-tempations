@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { getPlayerColor } from '@/components/shared/BoardView';
+import { GAME_MODES } from '@/data/gameConfig';
 
 const TITLE_SECS = 4;
 const GAP = 2.4;
@@ -10,6 +11,7 @@ export default function IntroSequenceTV({ state }) {
   const intro = state.intro;
   const startedAt = intro?.startedAt || 0;
   const players = state.players || [];
+  const modeName = GAME_MODES.find((mode) => mode.id === state.mode)?.name || state.mode || 'LIVE SHOW';
   const [now, setNow] = useState(Date.now());
   const [hidden, setHidden] = useState(false);
 
@@ -52,7 +54,8 @@ export default function IntroSequenceTV({ state }) {
           <div className="ds-eyebrow text-primary/70">Απόψε</div>
           <h1 className="ds-title mt-6 text-5xl leading-[1.05] sm:text-7xl">Deal of<br />Temptation</h1>
           <div className="ds-rule mx-auto mt-8 w-40" />
-          <div className="ds-label mt-6 text-foreground/45">Η νύχτα ξεκινά</div>
+          <div className="ds-label mt-6 text-primary/75">{modeName}</div>
+          <div className="ds-label mt-2 text-foreground/45">Η παραγωγή ξεκινά</div>
         </div>
       )}
 
@@ -78,7 +81,7 @@ export default function IntroSequenceTV({ state }) {
           <div className="ds-eyebrow text-primary/70">Έναρξη</div>
           <h2 className="ds-title mt-6 text-6xl">Ας αρχίσουμε</h2>
           <div className="ds-lede mt-4 text-sm">
-            {players.length} παίκτριες · μία νύχτα · καμία ασφάλεια
+            {modeName} · {players.length} παίκτριες
           </div>
         </div>
       )}
