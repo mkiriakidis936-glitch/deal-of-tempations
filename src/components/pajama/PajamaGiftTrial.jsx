@@ -7,6 +7,8 @@ export default function PajamaGiftTrial({ players, onDone, canAssign, canStart }
   const [running, setRunning] = useState(false);
   const [result, setResult] = useState(null);
   const [consentConfirmed, setConsentConfirmed] = useState(false);
+  const [consentDeclined, setConsentDeclined] = useState(false);
+  const [groupPlayers, setGroupPlayers] = useState([]);
 
   useEffect(() => {
     if (!running || left <= 0) return;
@@ -20,7 +22,12 @@ export default function PajamaGiftTrial({ players, onDone, canAssign, canStart }
 
   function confirmGroupConsent() {
     if (consentConfirmed) return true;
-    if (canStart && !canStart(sacrificedId)) return false;
+    const approvedPlayers = canStart ? canStart(sacrificedId) : players.filter((player) => player.id !== sacrificedId);
+    if (!Array.isArray(approvedPlayers) || approvedPlayers.length === 0) {
+      setConsentDeclined(true);
+      return false;
+    }
+    setGroupPlayers(approvedPlayers);
     setConsentConfirmed(true);
     return true;
   }
@@ -62,9 +69,9 @@ export default function PajamaGiftTrial({ players, onDone, canAssign, canStart }
           </p>
         </div>
 
-        {players.length === 0 ? (
+        {players.length < 2 ? (
           <div className="rounded-xl border border-amber-500/40 bg-amber-950/30 p-3 text-center space-y-3">
-            <p className="text-sm">Δεν υπάρχει διαθέσιμη ενεργή συμμετοχή για αυτή τη δοκιμασία.</p>
+            <p className="text-sm">Δεν υπάρχουν αρκετές διαθέσιμες συμμετοχές για την ομαδική δοκιμασία.</p>
             <button onClick={() => onDone({ success: false, sacrificedName: '', skipped: true, unlockedAt: Date.now() })} className="w-full py-3 rounded-lg font-heading text-lg bg-pink-600 text-white">ΠΑΡΑΛΕΙΨΗ ΔΟΚΙΜΑΣΙΑΣ → ΦΙΝΑΛΕ</button>
           </div>
         ) : <div className="rounded-xl border border-pink-500/40 bg-pink-950/50 p-3">
@@ -83,7 +90,7 @@ export default function PajamaGiftTrial({ players, onDone, canAssign, canStart }
           </div>
         </div>}
 
-        {players.length > 0 && <div className="rounded-xl border border-pink-500/40 bg-pink-950/50 p-3">
+        {players.length >= 2 && <div className="rounded-xl border border-pink-500/40 bg-pink-950/50 p-3">
           <div className="flex items-center justify-between">
             <span className={`font-heading text-4xl ${done ? 'text-rose-400 animate-pulse' : 'text-pink-100'}`}>
               {String(Math.floor(left / 60)).padStart(2, '0')}:{String(left % 60).padStart(2, '0')}
@@ -105,7 +112,7 @@ export default function PajamaGiftTrial({ players, onDone, canAssign, canStart }
           {!sacrificedId && <div className="text-[11px] text-pink-300 mt-2">Διάλεξε πρώτα τη θυσία.</div>}
         </div>}
 
-        {players.length > 0 && !result && (
+        {players.length >= 2 && !result && (
           <div className="grid grid-cols-2 gap-2">
             <button
               onClick={() => finish(true)}
@@ -156,7 +163,7 @@ export default function PajamaGiftTrial({ players, onDone, canAssign, canStart }
           </div>
         )}
 
-        {players.length > 0 && result && (
+        {players.length >= 2 && result && (
           <button
             onClick={handOver}
             className="w-full py-3 rounded-lg font-heading text-lg bg-pink-600 text-white"
@@ -164,7 +171,7 @@ export default function PajamaGiftTrial({ players, onDone, canAssign, canStart }
             ΣΥΝΕΧΕΙΑ: ΦΙΝΑΛΕ →
           </button>
         )}
-        {players.length > 0 && !result && done && (
+        {players.length >= 2 && !result && done && (
           <div className="text-center text-sm text-rose-200 font-bold bg-rose-950/60 border border-rose-500/40 rounded-lg p-2">
             ⏱ Ο χρόνος τελείωσε — πάτα «ΕΣΠΑΣΕ».
           </div>
