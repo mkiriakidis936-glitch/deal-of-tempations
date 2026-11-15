@@ -243,8 +243,8 @@ export default function ArrestHeistScreen({ state, updateState, onEnd, playerPro
               <div className="font-heading text-2xl mb-2">{leader?.name} — Team {currentTeam}</div>
               <div className="text-sm mb-4">Επίπεδο Ποινής: {penaltyStep}/{maxSteps} — Διάλεξε:</div>
               <div className="grid grid-cols-2 gap-3">
-                <ComicButton variant="magenta" size="lg" onClick={() => handleChoose('dare')}>🔥 ΘΑΡΡΟΣ</ComicButton>
-                <ComicButton variant="cyan" size="lg" onClick={() => handleChoose('truth')}>💬 ΑΛΗΘΕΙΑ</ComicButton>
+                <ComicButton variant="magenta" size="lg" disabled={!playerProfilesReady} onClick={() => handleChoose('dare')}>🔥 ΘΑΡΡΟΣ</ComicButton>
+                <ComicButton variant="cyan" size="lg" disabled={!playerProfilesReady} onClick={() => handleChoose('truth')}>💬 ΑΛΗΘΕΙΑ</ComicButton>
               </div>
             </ComicPanel>
           )}
