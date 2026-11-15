@@ -211,12 +211,12 @@ export default function Extra4Panel({ state, updateState, playerProfiles = [], p
   async function tradeKeyForLoot() {
     if (!playerId || money(extra4.economy.keys[playerId]) < 1) return;
     const pool = extra4.economy.lootPool || [];
-    const available = pool.filter((item) => item.mode === currentMode || item.mode === 'all');
+    const available = pool.filter((item) => !item.removedAt && !item.consumedAt && (item.mode === currentMode || item.mode === 'all'));
     if (!available.length) return;
     const selected = available[Math.floor(Math.random() * available.length)];
     const keys = { ...extra4.economy.keys, [playerId]: money(extra4.economy.keys[playerId]) - 1 };
     const inventory = { ...extra4.economy.inventory, [playerId]: [...(extra4.economy.inventory[playerId] || []), { ...selected, awardedAt: Date.now() }] };
-    const lootPool = pool.filter((item) => item.id !== selected.id);
+    const lootPool = pool.map((item) => item.id === selected.id ? { ...item, consumedAt: Date.now() } : item);
     await updateExtra({ economy: { ...extra4.economy, keys, inventory, lootPool } });
   }
 
@@ -228,7 +228,7 @@ export default function Extra4Panel({ state, updateState, playerProfiles = [], p
     if (!playerId || !keyTarget || money(extra4.economy.keys[playerId]) < 1) return;
     const keys = { ...extra4.economy.keys, [playerId]: money(extra4.economy.keys[playerId]) - 1 };
     const restrictions = { ...extra4.economy.restrictions };
-    delete restrictions[keyTarget];
+    restrictions[keyTarget] = null;
     await updateExtra({ economy: { ...extra4.economy, keys, restrictions } });
     setKeyTarget('');
   }
