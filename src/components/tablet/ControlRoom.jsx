@@ -89,7 +89,7 @@ function scoreFor(state, player) {
   return player.bounty || 0;
 }
 
-export default function ControlRoom({ state, playerProfiles = [], onStartSurprise, onRevealSurprise, onOpen, onRefresh, onEndGame, onClose }) {
+export default function ControlRoom({ state, playerProfiles = [], onStartSurprise, onRevealSurprise, onCancelSurprise, onOpen, onRefresh, onEndGame, onClose }) {
   const [pendingProfile, setPendingProfile] = useState(null);
   const [now, setNow] = useState(Date.now());
   useEffect(() => {
@@ -110,11 +110,12 @@ export default function ControlRoom({ state, playerProfiles = [], onStartSurpris
     ? Math.ceil((syncTimer.endsAt - now) / 1000)
     : syncTimer?.remaining;
   const night = state.night;
+  const closeRoom = () => { if (pendingProfile) onCancelSurprise?.(); onClose?.(); };
   const timeline = episodeTimeline(state);
   const availableActions = isNewMode(state.mode) || state.mode === 'pajama' ? UNIVERSAL_ACTIONS : ACTIONS;
 
   return (
-    <div className="fixed inset-0 z-[70] overflow-y-auto bg-background/95 p-3 backdrop-blur-sm" onClick={onClose}>
+    <div className="fixed inset-0 z-[70] overflow-y-auto bg-background/95 p-3 backdrop-blur-sm" onClick={closeRoom}>
       <div onClick={(e) => e.stopPropagation()} className="mx-auto max-w-5xl space-y-3">
         <div className="comic-panel ds-sheen px-5 py-4">
           <div className="ds-eyebrow text-primary/80">DEAL OF TEMPTATION · LIVE PRODUCTION</div>
@@ -238,7 +239,7 @@ export default function ControlRoom({ state, playerProfiles = [], onStartSurpris
                   <ComicButton variant="yellow" size="md" className="flex-1" onClick={() => { onRevealSurprise?.(pendingProfile); setPendingProfile(null); }}>
                     ΑΠΟΚΑΛΥΨΕ ΤΩΡΑ
                   </ComicButton>
-                  <ComicButton variant="dark" size="md" onClick={() => setPendingProfile(null)}>ΑΚΥΡΩΣΗ</ComicButton>
+                  <ComicButton variant="dark" size="md" onClick={() => { onCancelSurprise?.(); setPendingProfile(null); }}>ΑΚΥΡΩΣΗ</ComicButton>
                 </div>
               </div>
             )}
@@ -293,7 +294,7 @@ export default function ControlRoom({ state, playerProfiles = [], onStartSurpris
           )}
         </ComicPanel>
 
-        <ComicButton variant="red" size="sm" onClick={onClose} className="w-full">ΚΛΕΙΣΙΜΟ CONTROL ROOM</ComicButton>
+        <ComicButton variant="red" size="sm" onClick={closeRoom} className="w-full">ΚΛΕΙΣΙΜΟ CONTROL ROOM</ComicButton>
       </div>
     </div>
   );
