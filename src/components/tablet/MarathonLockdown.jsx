@@ -7,7 +7,7 @@ import LockdownCommands from '@/components/tablet/LockdownCommands';
 import SpeakButton from '@/components/comic/VoiceReader';
 import { canAssignVipActivity, isVipActivityAllowed } from '@/lib/playerIntelligence';
 
-export default function MarathonLockdown({ state, updateState, onEnd, playerProfiles = [] }) {
+export default function MarathonLockdown({ state, updateState, onEnd, playerProfiles = [], playerProfilesReady = true }) {
   const [phase, setPhase] = useState('intro');
 
   const lootA = state.teamAlpha?.loot || 0;
@@ -19,7 +19,7 @@ export default function MarathonLockdown({ state, updateState, onEnd, playerProf
   const loser = winner === 'alpha' ? 'beta' : 'alpha';
   const winnerName = winner === 'alpha' ? '💖 TEAM ALPHA' : '💎 TEAM BETA';
   const loserName = loser === 'alpha' ? '💖 TEAM ALPHA' : '💎 TEAM BETA';
-  const vipCtx = { playerProfiles };
+  const vipCtx = { playerProfiles, playerProfilesReady };
   const loserPlayers = state.players.filter((p) => p.team === loser);
   const participatingLosers = loserPlayers.filter((p) => isVipActivityAllowed(vipCtx, p));
 
