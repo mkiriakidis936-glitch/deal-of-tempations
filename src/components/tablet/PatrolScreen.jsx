@@ -18,7 +18,7 @@ import {
   isFullyRestrained, getCurrentPenalty, addHistory, assignChief,
   applyGlitchEffect,
 } from '@/lib/gameLogic';
-import { canAssignVipActivity } from '@/lib/playerIntelligence';
+import { canAssignVipActivity, isVipActivityAllowed } from '@/lib/playerIntelligence';
 
 export default function PatrolScreen({ state, updateState, onGoToStage2, playerProfiles = [], playerProfilesReady = true }) {
   const [uiPhase, setUiPhase] = useState('idle');
@@ -201,7 +201,10 @@ export default function PatrolScreen({ state, updateState, onGoToStage2, playerP
             {square.type === 'police' && (
               <div className="text-center">
                 <div className="font-heading text-lg mb-2 text-foreground">🚔 ΣΥΛΛΗΨΗ! Πάς για Ανάκριση.</div>
-                <ComicButton variant="red" size="lg" onClick={onGoToStage2}>
+                <ComicButton variant="red" size="lg" onClick={() => {
+                  if (canAssignVipActivity(vipCtx, currentPlayer, { activityType: 'questions', activityLabel: 'ανάκριση' })) onGoToStage2();
+                  else handleNextPlayer();
+                }}>
                   ⚡ ΠΡΟΣ ΑΝΑΚΡΙΣΗ
                 </ComicButton>
               </div>
@@ -237,7 +240,7 @@ export default function PatrolScreen({ state, updateState, onGoToStage2, playerP
               <div className="space-y-2">
                 <div className="font-heading text-lg text-center text-primary">📜 ΕΝΤΑΛΜΑ — Διάλεξε Στόχο</div>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                  {state.players.filter((p) => p.id !== currentPlayer.id).map((p) => (
+                  {state.players.filter((p) => p.id !== currentPlayer.id && isVipActivityAllowed(vipCtx, p)).map((p) => (
                     <button
                       key={p.id}
                       onClick={() => handleWarrantTarget(state.players.indexOf(p), drawCard('warrant'))}
@@ -248,6 +251,9 @@ export default function PatrolScreen({ state, updateState, onGoToStage2, playerP
                     </button>
                   ))}
                 </div>
+                {state.players.filter((p) => p.id !== currentPlayer.id && isVipActivityAllowed(vipCtx, p)).length === 0 && (
+                  <ComicButton variant="white" size="md" onClick={handleNextPlayer}>ΠΑΡΑΛΕΙΨΗ ΕΝΤΑΛΜΑΤΟΣ</ComicButton>
+                )}
               </div>
             )}
             {square.type === 'glitch' && state.glitchCard && (
