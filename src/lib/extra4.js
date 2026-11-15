@@ -50,7 +50,16 @@ export function pauseExtra4Timers(state, now = Date.now()) {
   ]));
   return {
     ...(syncTimer !== state.syncTimer ? { syncTimer } : {}),
-    ...(state.mg ? { mg: { ...state.mg, ...(mgTimer !== state.mg.timer ? { timer: mgTimer } : {}), ...(Object.keys(missions).length ? { missions } : {}) } } : {}),
+    ...(state.mg ? {
+      mg: {
+        ...state.mg,
+        ...(mgTimer !== state.mg.timer ? { timer: mgTimer } : {}),
+        ...(Object.keys(missions).length ? { missions } : {}),
+        stop: true,
+        stopAt: now,
+        extra4PausedAt: now,
+      },
+    } : {}),
   };
 }
 
@@ -66,9 +75,22 @@ export function resumeExtra4Timers(state, now = Date.now()) {
     const { extra4RemainingMs, ...rest } = mission;
     return [id, { ...rest, expiresAt: now + extra4RemainingMs }];
   }));
+  const pausedFor = Math.max(0, now - (state.mg?.extra4PausedAt || state.mg?.stopAt || now));
+  const { extra4PausedAt, ...mgWithoutPauseMarker } = state.mg || {};
   return {
     ...(syncTimer !== state.syncTimer ? { syncTimer } : {}),
-    ...(state.mg ? { mg: { ...state.mg, ...(mgTimer !== state.mg.timer ? { timer: mgTimer } : {}), ...(Object.keys(missions).length ? { missions } : {}) } } : {}),
+    ...(state.mg ? {
+      mg: {
+        ...mgWithoutPauseMarker,
+        ...(mgTimer !== state.mg.timer ? { timer: mgTimer } : {}),
+        ...(Object.keys(missions).length ? { missions } : {}),
+        stop: false,
+        stopAt: null,
+        ...(state.mg.startedAt ? { startedAt: state.mg.startedAt + pausedFor } : {}),
+        ...(state.mg.actStartedAt ? { actStartedAt: state.mg.actStartedAt + pausedFor } : {}),
+        ...(state.mg.morningTimer ? { morningTimer: state.mg.morningTimer + pausedFor } : {}),
+      },
+    } : {}),
   };
 }
 
