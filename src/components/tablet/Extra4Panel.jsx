@@ -167,25 +167,40 @@ export default function Extra4Panel({ state, updateState, playerProfiles = [], p
     await updateExtra({ activity: { ...extra4.activity, active: completed }, eventLog });
   }
 
+  function economyTransaction(type, details) {
+    return {
+      id: globalThis.crypto?.randomUUID?.() || `economy-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+      type,
+      playerId,
+      mode: currentMode,
+      timestamp: Date.now(),
+      ...details,
+    };
+  }
+
   async function addTokens() {
     const value = money(amount);
     if (!playerId || !value) return;
     const tokens = { ...extra4.economy.tokens, [playerId]: money(extra4.economy.tokens[playerId]) + value };
-    await updateExtra({ economy: { ...extra4.economy, tokens } });
+    const transactions = [economyTransaction('tokens_awarded', { amount: value }), ...(extra4.economy.transactions || [])].slice(0, 100);
+    await updateExtra({ economy: { ...extra4.economy, tokens, transactions } });
     setAmount('1');
   }
 
   async function awardKey() {
     if (!playerId) return;
     const keys = { ...extra4.economy.keys, [playerId]: money(extra4.economy.keys[playerId]) + 1 };
-    await updateExtra({ economy: { ...extra4.economy, keys } });
+    const transactions = [economyTransaction('key_awarded', { amount: 1 }), ...(extra4.economy.transactions || [])].slice(0, 100);
+    await updateExtra({ economy: { ...extra4.economy, keys, transactions } });
   }
 
   async function tradeKeyForTokens() {
     if (!playerId || money(extra4.economy.keys[playerId]) < 1 || money(amount) < 1) return;
+    const value = money(amount);
     const keys = { ...extra4.economy.keys, [playerId]: money(extra4.economy.keys[playerId]) - 1 };
-    const tokens = { ...extra4.economy.tokens, [playerId]: money(extra4.economy.tokens[playerId]) + money(amount) };
-    await updateExtra({ economy: { ...extra4.economy, keys, tokens } });
+    const tokens = { ...extra4.economy.tokens, [playerId]: money(extra4.economy.tokens[playerId]) + value };
+    const transactions = [economyTransaction('key_exchanged_for_tokens', { keys: -1, tokens: value }), ...(extra4.economy.transactions || [])].slice(0, 100);
+    await updateExtra({ economy: { ...extra4.economy, keys, tokens, transactions } });
   }
 
   async function addLootToPool() {
@@ -201,9 +216,11 @@ export default function Extra4Panel({ state, updateState, playerProfiles = [], p
     const available = pool.filter((item) => !item.removedAt && !item.consumedAt && (item.mode === currentMode || item.mode === 'all'));
     if (!available.length) return;
     const selected = available[Math.floor(Math.random() * available.length)];
-    const inventory = { ...extra4.economy.inventory, [playerId]: [...(extra4.economy.inventory[playerId] || []), { ...selected, awardedAt: Date.now() }] };
-    const lootPool = pool.map((item) => item.id === selected.id ? { ...item, consumedAt: Date.now() } : item);
-    await updateExtra({ economy: { ...extra4.economy, inventory, lootPool } });
+    const awardedAt = Date.now();
+    const inventory = { ...extra4.economy.inventory, [playerId]: [...(extra4.economy.inventory[playerId] || []), { ...selected, awardedAt }] };
+    const lootPool = pool.map((item) => item.id === selected.id ? { ...item, consumedAt: awardedAt } : item);
+    const transactions = [economyTransaction('loot_awarded', { lootId: selected.id, lootName: selected.name, rarity: selected.rarity }), ...(extra4.economy.transactions || [])].slice(0, 100);
+    await updateExtra({ economy: { ...extra4.economy, inventory, lootPool, transactions } });
   }
 
   async function tradeKeyForLoot() {
@@ -212,10 +229,12 @@ export default function Extra4Panel({ state, updateState, playerProfiles = [], p
     const available = pool.filter((item) => !item.removedAt && !item.consumedAt && (item.mode === currentMode || item.mode === 'all'));
     if (!available.length) return;
     const selected = available[Math.floor(Math.random() * available.length)];
+    const awardedAt = Date.now();
     const keys = { ...extra4.economy.keys, [playerId]: money(extra4.economy.keys[playerId]) - 1 };
-    const inventory = { ...extra4.economy.inventory, [playerId]: [...(extra4.economy.inventory[playerId] || []), { ...selected, awardedAt: Date.now() }] };
-    const lootPool = pool.map((item) => item.id === selected.id ? { ...item, consumedAt: Date.now() } : item);
-    await updateExtra({ economy: { ...extra4.economy, keys, inventory, lootPool } });
+    const inventory = { ...extra4.economy.inventory, [playerId]: [...(extra4.economy.inventory[playerId] || []), { ...selected, awardedAt }] };
+    const lootPool = pool.map((item) => item.id === selected.id ? { ...item, consumedAt: awardedAt } : item);
+    const transactions = [economyTransaction('key_exchanged_for_loot', { keys: -1, lootId: selected.id, lootName: selected.name, rarity: selected.rarity }), ...(extra4.economy.transactions || [])].slice(0, 100);
+    await updateExtra({ economy: { ...extra4.economy, keys, inventory, lootPool, transactions } });
   }
 
   async function removeLootFromPool(id) {
@@ -234,7 +253,8 @@ export default function Extra4Panel({ state, updateState, playerProfiles = [], p
     const keys = { ...extra4.economy.keys, [playerId]: money(extra4.economy.keys[playerId]) - 1 };
     const restrictions = { ...extra4.economy.restrictions };
     restrictions[keyTarget] = null;
-    await updateExtra({ economy: { ...extra4.economy, keys, restrictions } });
+    const transactions = [economyTransaction('key_used_to_release_ally', { keys: -1, targetPlayerId: keyTarget }), ...(extra4.economy.transactions || [])].slice(0, 100);
+    await updateExtra({ economy: { ...extra4.economy, keys, restrictions, transactions } });
     setKeyTarget('');
   }
 
@@ -447,6 +467,7 @@ export default function Extra4Panel({ state, updateState, playerProfiles = [], p
             <ComicButton variant="yellow" onClick={rollLoot} disabled={!playerId || !(extra4.economy.lootPool || []).some((item) => !item.removedAt && !item.consumedAt && (item.mode === currentMode || item.mode === 'all'))}>LOOT ROULETTE ΓΙΑ {players.find((player) => player.id === playerId)?.name || 'ΠΑΙΚΤΗ'}</ComicButton>
             {(extra4.economy.lootPool || []).filter((item) => !item.removedAt && !item.consumedAt && (item.mode === currentMode || item.mode === 'all')).map((item) => <div key={item.id} className="flex items-center justify-between gap-2 border-b border-border/50 py-2 text-xs"><span>{item.name} · {item.rarity.toUpperCase()}</span><ComicButton size="sm" variant="red" onClick={() => removeLootFromPool(item.id)}>ΑΦΑΙΡΕΣΗ</ComicButton></div>)}
             <div className="border-t border-border/50 pt-2"><div className="ds-label mb-2">INVENTORY</div>{players.map((player) => <div key={player.id} className="py-1 text-xs"><strong>{player.name}:</strong> {(extra4.economy.inventory[player.id] || []).map((item) => `${item.name} (${item.rarity})`).join(', ') || '—'}</div>)}</div>
+            <div className="border-t border-border/50 pt-2"><div className="ds-label mb-2">ΙΣΤΟΡΙΚΟ ΣΥΝΑΛΛΑΓΩΝ</div>{(extra4.economy.transactions || []).slice(0, 8).map((entry) => <div key={entry.id} className="flex justify-between gap-2 border-b border-border/30 py-1 text-[11px]"><span>{players.find((player) => player.id === entry.playerId)?.name || 'Παίκτης'} · {({ tokens_awarded: 'Απονομή Tokens', key_awarded: 'Απονομή Key', key_exchanged_for_tokens: 'Key → Tokens', key_exchanged_for_loot: 'Key → Loot', loot_awarded: 'Απονομή Loot', key_used_to_release_ally: 'Απελευθέρωση συμμάχου' })[entry.type] || entry.type}{entry.lootName ? ` · ${entry.lootName}` : ''}</span><span className="shrink-0 opacity-60">{new Date(entry.timestamp).toLocaleTimeString('el-GR', { hour: '2-digit', minute: '2-digit' })}</span></div>)}{!(extra4.economy.transactions || []).length && <div className="text-xs opacity-50">Δεν υπάρχουν συναλλαγές.</div>}</div>
           </ComicPanel>
         </div>}
 
