@@ -44,9 +44,7 @@ export default function Isolation() {
     if (sessionCode) joinByCode(sessionCode);
   }, [sessionCode, joinByCode]);
 
-  function stopLocal() {
-    if (pollRef.current) clearInterval(pollRef.current);
-    pollRef.current = null;
+  function stopMedia(nextConnection = 'idle') {
     if (pcRef.current) {
       pcRef.current.ontrack = null;
       pcRef.current.onconnectionstatechange = null;
@@ -56,8 +54,14 @@ export default function Isolation() {
     streamRef.current?.getTracks().forEach((track) => track.stop());
     streamRef.current = null;
     if (videoRef.current) videoRef.current.srcObject = null;
-    setConnection('idle');
+    setConnection(nextConnection);
     setConsented(false);
+  }
+
+  function stopLocal() {
+    if (pollRef.current) clearInterval(pollRef.current);
+    pollRef.current = null;
+    stopMedia('idle');
   }
 
   async function publishOffer(pc, microphoneEnabled) {
@@ -88,18 +92,23 @@ export default function Isolation() {
       pcRef.current = pc;
       stream.getTracks().forEach((track) => pc.addTrack(track, stream));
       pc.onconnectionstatechange = () => {
+        if (pcRef.current !== pc) return;
         setConnection(pc.connectionState);
         if (pc.connectionState === 'connected') {
           requestJson(`/api/entities/live-feed/${encodeURIComponent(sessionCode)}/signal`, {
             method: 'POST',
             body: JSON.stringify({ token, role: 'source', connected: true }),
           }).catch(() => {});
+        } else if (['disconnected', 'failed'].includes(pc.connectionState)) {
+          // A dropped connection must never silently reactivate camera or microphone.
+          stopMedia('reconnecting');
         }
       };
       await publishOffer(pc, includeAudio && feed.tvAudio === true);
       lastRestartRef.current = Number(feed.restartRequest) || 0;
+      if (pollRef.current) clearInterval(pollRef.current);
       pollRef.current = setInterval(async () => {
-        if (!pcRef.current || pcRef.current !== pc || restartingRef.current) return;
+        if (restartingRef.current) return;
         try {
           const result = await requestJson(`/api/entities/live-feed/${encodeURIComponent(sessionCode)}/state?token=${encodeURIComponent(token)}`);
           const latest = result.liveFeed || {};
@@ -107,17 +116,20 @@ export default function Isolation() {
             stopLocal();
             return;
           }
-          if (latest.answer?.sdp && pc.signalingState === 'have-local-offer' && latest.answer.sdp !== pc.remoteDescription?.sdp) {
-            await pc.setRemoteDescription(new RTCSessionDescription(latest.answer));
+          const restartRequest = Number(latest.restartRequest) || 0;
+          if (restartRequest > lastRestartRef.current) {
+            lastRestartRef.current = restartRequest;
+            // Director has to issue a fresh request and the participant must consent again.
+            stopMedia('idle');
+            setError('Η σύνδεση διακόπηκε. Περιμένεις νέο αίτημα του Director και χρειάζεται νέα συναίνεση.');
+            return;
           }
-          if ((Number(latest.restartRequest) || 0) > lastRestartRef.current) {
-            lastRestartRef.current = Number(latest.restartRequest) || 0;
-            restartingRef.current = true;
-            await publishOffer(pc, includeAudio && feed.tvAudio === true);
-            restartingRef.current = false;
+          const currentPc = pcRef.current;
+          if (currentPc && latest.answer?.sdp && currentPc.signalingState === 'have-local-offer' && latest.answer.sdp !== currentPc.remoteDescription?.sdp) {
+            await currentPc.setRemoteDescription(new RTCSessionDescription(latest.answer));
           }
         } catch {
-          setConnection('reconnecting');
+          if (pcRef.current) setConnection('reconnecting');
         }
       }, 900);
     } catch (cause) {
