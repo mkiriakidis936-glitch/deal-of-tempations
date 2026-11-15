@@ -36,7 +36,7 @@ export function addExtra4Event(extra4, type, detail, extra = {}) {
 }
 
 export function pauseExtra4Timers(state, now = Date.now()) {
-  const syncTimer = state.syncTimer?.endsAt
+  const syncTimer = state.syncTimer?.running && state.syncTimer?.endsAt
     ? { ...state.syncTimer, remaining: Math.max(0, Math.ceil((state.syncTimer.endsAt - now) / 1000)), endsAt: null, running: false, extra4Paused: true }
     : state.syncTimer;
   const mgTimer = state.mg?.timer?.endsAt
@@ -44,7 +44,7 @@ export function pauseExtra4Timers(state, now = Date.now()) {
     : state.mg?.timer;
   const missions = Object.fromEntries(Object.entries(state.mg?.missions || {}).map(([id, mission]) => [
     id,
-    mission?.expiresAt
+    mission?.status === 'active' && mission?.expiresAt
       ? { ...mission, extra4RemainingMs: Math.max(0, mission.expiresAt - now), expiresAt: null }
       : mission,
   ]));
