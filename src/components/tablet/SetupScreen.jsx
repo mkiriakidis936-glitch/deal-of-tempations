@@ -30,6 +30,7 @@ export default function SetupScreen({ onStart }) {
   const [testMode, setTestMode] = useState(false);
   const [customScenarios, setCustomScenarios] = useState([]);
   const [selectedScenarioId, setSelectedScenarioId] = useState('');
+  const [castingPlan, setCastingPlan] = useState(null);
 
   const applyNames = (names, shoeByName, pjByName = {}, vipByName = {}) => {
     if (!names.length) return;
@@ -50,9 +51,10 @@ export default function SetupScreen({ onStart }) {
 
   const loadIntakes = async () => {
     try {
-      const [classicRes, pajamaRes] = await Promise.all([
-        base44.entities.PlayerIntake.filter({}, { sort: '-created_date', limit: 50 }),
-        base44.entities.PajamaIntake.filter({}, { sort: '-created_date', limit: 100 }),
+      const [classicRes, pajamaRes, castingRes] = await Promise.all([
+        base44.entities.PlayerIntake.filter({}, { sort: '-created_date', limit: 500 }),
+        base44.entities.PajamaIntake.filter({}, { sort: '-created_date', limit: 500 }),
+        base44.entities.AppSetting.filter({ key: 'show_casting_plan' }, { limit: 1 }),
       ]);
       const allClassic = classicRes.items || [];
       const classic = allClassic.filter((item) => !item.vipGameMode || item.vipGameMode === 'classic');
@@ -81,7 +83,21 @@ export default function SetupScreen({ onStart }) {
         if (n && !names.includes(n)) names.push(n);
       });
 
-      applyNames(names, shoeByName, pjByName, Object.fromEntries(allClassic.map((item) => [item.name?.trim(), item]).filter(([name]) => name)));
+      const castingRecord = castingRes.items?.[0] || null;
+      const savedCastingPlan = castingRecord?.value;
+      if (savedCastingPlan?.mode && Array.isArray(savedCastingPlan.players) && savedCastingPlan.players.length) {
+        const activePlan = { ...savedCastingPlan, settingId: castingRecord.id };
+        setCastingPlan(activePlan);
+        setMode(activePlan.mode);
+        setPlayers(activePlan.players.map((player, index) => ({
+          ...player,
+          footwearLevel: player.footwearLevel ?? 2,
+          toenailPerk: player.toenailPerk || TOENAIL_PERKS[index % TOENAIL_PERKS.length].id,
+        })));
+      } else {
+        setCastingPlan(null);
+        applyNames(names, shoeByName, pjByName, Object.fromEntries(allClassic.map((item) => [item.name?.trim(), item]).filter(([name]) => name)));
+      }
     } catch (e) {
       console.error('Intake load error', e);
     } finally {
@@ -172,7 +188,7 @@ export default function SetupScreen({ onStart }) {
     }
   }
 
-  function handleStart() {
+  async function handleStart() {
     const valid = players.filter((p) => p.name.trim());
     if (valid.length < minPlayers) return;
     const selectedScenario = customScenarios.find((scenario) => scenario.id === selectedScenarioId && scenario.modeId === mode);
@@ -182,7 +198,7 @@ export default function SetupScreen({ onStart }) {
     if (mode === 'beach_bar' && valid.some((p) => pajamaApproved.some((i) => (i.name || '').trim() === p.name.trim() && i.alcohol === 'free'))) {
       state.mg = { ...state.mg, alcoholFree: true };
     }
-    onStart({
+    await onStart({
       sessionCode: generateSessionCode(),
       mode,
       duration,
@@ -190,6 +206,11 @@ export default function SetupScreen({ onStart }) {
       stage: state.stage,
       state,
     });
+    if (castingPlan?.settingId && castingPlan.mode === mode) {
+      await base44.entities.AppSetting.update(castingPlan.settingId, {
+        value: { ...castingPlan, usedAt: new Date().toISOString() },
+      });
+    }
   }
 
   const canStart = players.filter((p) => p.name.trim()).length >= minPlayers;
