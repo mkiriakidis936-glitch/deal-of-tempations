@@ -14,6 +14,7 @@ import { loadPajamaContent, defaultPajamaContent } from '@/lib/pajamaContentStor
 import { PAJAMA_BOARD, PAJAMA_NIGHT_LENGTH } from '@/data/pajamaBoard';
 import { PAJAMA_ACTS } from '@/data/pajamaProgram';
 import { PAJAMA_SABOTAGE_ACTIONS, PAJAMA_SECRET_ORDERS } from '@/data/pajamaSabotage';
+import { canAssignVipActivity, isVipActivityAllowed } from '@/lib/playerIntelligence';
 
 function randomSecretOrder() {
   return { ...PAJAMA_SECRET_ORDERS[Math.floor(Math.random() * PAJAMA_SECRET_ORDERS.length)] };
@@ -60,7 +61,7 @@ const EMPTY = {
 
 const DEFAULT_BINDING = 'Χέρια δεμένα πίσω από την πλάτη · πόδια ενωμένα με κορδέλες';
 
-export default function PajamaGame({ state, updateState, onEnd }) {
+export default function PajamaGame({ state, updateState, onEnd, playerProfiles = [] }) {
   const [content, setContent] = useState(null);
 
   useEffect(() => {
@@ -75,13 +76,16 @@ export default function PajamaGame({ state, updateState, onEnd }) {
   }, []);
 
   const players = state.players || [];
+  const vipCtx = { playerProfiles };
   const pj = { ...EMPTY, ...(state.pajama || {}) };
   const setPj = (patch) => updateState({ pajama: { ...pj, ...patch } });
   const act = PAJAMA_ACTS[Math.min(pj.actIndex || 0, PAJAMA_ACTS.length - 1)];
 
   useEffect(() => {
     if (!players.length || pj.phase === 'setup' || pj.saboteurId) return;
-    const pick = players[Math.floor(Math.random() * players.length)];
+    const eligible = players.filter((player) => isVipActivityAllowed(vipCtx, player));
+    if (!eligible.length) return;
+    const pick = eligible[Math.floor(Math.random() * eligible.length)];
     updateState({ pajama: { ...pj, saboteurId: pick.id } });
   }, [players.length, pj.phase, pj.saboteurId]);
 
@@ -122,7 +126,8 @@ export default function PajamaGame({ state, updateState, onEnd }) {
           nailColor: prev?.nailColor || '',
         };
       });
-    const saboteurId = roster.length > 1 ? roster[Math.floor(Math.random() * roster.length)].id : roster[0]?.id || null;
+    const eligibleRoster = roster.filter((player) => isVipActivityAllowed(vipCtx, player));
+    const saboteurId = eligibleRoster.length ? eligibleRoster[Math.floor(Math.random() * eligibleRoster.length)].id : null;
     const teamMode = !!wantTeams && roster.length >= 4;
     const teams = {};
     if (teamMode) {
@@ -145,7 +150,8 @@ export default function PajamaGame({ state, updateState, onEnd }) {
   }
 
   function rematch() {
-    const saboteurId = players.length > 1 ? players[Math.floor(Math.random() * players.length)].id : players[0]?.id || null;
+    const eligiblePlayers = players.filter((player) => isVipActivityAllowed(vipCtx, player));
+    const saboteurId = eligiblePlayers.length ? eligiblePlayers[Math.floor(Math.random() * eligiblePlayers.length)].id : null;
     const teams = {};
     const teamMode = !!pj.teamMode && players.length >= 4;
     if (teamMode) {
@@ -251,6 +257,8 @@ export default function PajamaGame({ state, updateState, onEnd }) {
   function completeSecretOrder(actorId) {
     if (!pj.secretOrder || pj.secretOrderDone) return;
     if (actorId !== pj.saboteurId) return;
+    const actor = players.find((player) => player.id === actorId);
+    if (!canAssignVipActivity(vipCtx, actor, { activityType: 'missions', activityLabel: 'μυστική αποστολή' })) return;
     const points = pj.secretOrder.points || 3;
     setPj({
       secretOrderDone: true,
@@ -310,6 +318,10 @@ export default function PajamaGame({ state, updateState, onEnd }) {
     const lastRoll = { name: player.name, d1, d2, dice, from, to, type: square.type };
 
     if (square.type === 'wildcard') {
+      if (!canAssignVipActivity(vipCtx, player, { activityLabel: 'τροχός Pajama' })) {
+        applyTurnEnd({ positions, lastRoll, lastResult: null });
+        return;
+      }
       setPj({
         positions,
         lastRoll,
@@ -333,6 +345,11 @@ export default function PajamaGame({ state, updateState, onEnd }) {
       return;
     }
 
+    const activityType = square.type === 'morning_confessions' ? 'questions' : null;
+    if (!canAssignVipActivity(vipCtx, player, { activityType, activityLabel: activityType ? 'πρωινές εξομολογήσεις' : 'δοκιμασία Pajama' })) {
+      applyTurnEnd({ positions, lastRoll, lastResult: null });
+      return;
+    }
     const drawn = drawCard(square.type);
     if (!drawn) {
       applyTurnEnd({ positions, lastRoll, lastResult: null });
@@ -453,6 +470,8 @@ export default function PajamaGame({ state, updateState, onEnd }) {
 
   function submitConfession(playerId, text) {
     if (!text.trim()) return;
+    const player = players.find((item) => item.id === playerId);
+    if (!canAssignVipActivity(vipCtx, player, { activityType: 'questions', activityLabel: 'εξομολόγηση Pajama' })) return;
     const confessions = [...pj.confessions.filter((c) => c.playerId !== playerId), { playerId, text: text.trim() }];
     setPj({ confessions });
   }
@@ -519,6 +538,8 @@ export default function PajamaGame({ state, updateState, onEnd }) {
         key={`wheel-${pj.actIndex}-${pj.actRound}-${pj.wheelTurnIndex}`}
         player={players[pj.wheelTurnIndex]}
         players={players}
+        canParticipate={isVipActivityAllowed(vipCtx, players[pj.wheelTurnIndex])}
+        onStart={() => canAssignVipActivity(vipCtx, players[pj.wheelTurnIndex], { activityLabel: 'τροχός Pajama' })}
         index={pj.wheelTurnIndex}
         total={players.length}
         onScore={wheelScore}
@@ -536,6 +557,7 @@ export default function PajamaGame({ state, updateState, onEnd }) {
         pj={pj}
         secretIdeas={content.secrets}
         onSubmit={submitConfession}
+        canParticipate={(player) => isVipActivityAllowed(vipCtx, player, 'questions')}
         onStartGuessing={startGuessing}
         onGuess={guess}
       />
@@ -545,8 +567,9 @@ export default function PajamaGame({ state, updateState, onEnd }) {
   if (pj.phase === 'morning') {
     return (
       <PajamaMorning
-        players={players}
+        players={players.filter((player) => isVipActivityAllowed(vipCtx, player))}
         pj={pj}
+        canAssign={(player) => canAssignVipActivity(vipCtx, player, { activityLabel: 'πρωινή δοκιμασία Pajama' })}
         onScore={(playerId, delta) => setPj(awards([[playerId, delta, 'main']]))}
         onFinish={() => setPj(advancePatch())}
       />
@@ -556,7 +579,8 @@ export default function PajamaGame({ state, updateState, onEnd }) {
   if (pj.phase === 'gift') {
     return (
       <PajamaGiftTrial
-        players={players}
+        players={players.filter((player) => isVipActivityAllowed(vipCtx, player))}
+        canAssign={(player) => canAssignVipActivity(vipCtx, player, { activityLabel: 'ομαδική δοκιμασία δώρου' })}
         onDone={(gift) => setPj({ gift, phase: 'finale' })}
       />
     );
