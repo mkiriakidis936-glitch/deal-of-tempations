@@ -62,24 +62,28 @@ export default function ShowDirector({ state, updateState, onClose }) {
 
   async function triggerTransition(act) {
     const actDef = acts.find((a) => a.id === act);
+    const sceneId = Date.now();
     await updateState({
       showMode: {
         ...showMode,
         act,
         autoSpeak,
-        transition: { active: true, actName: actDef.label, subtitle: actDef.subtitle, icon: actDef.icon, timestamp: Date.now() },
+        transition: { active: true, actName: actDef.label, subtitle: actDef.subtitle, icon: actDef.icon, timestamp: sceneId },
         reveal: null,
+        sceneHistory: [...(showMode.sceneHistory || []), { id: sceneId, type: 'transition', act, title: actDef.label, subtitle: actDef.subtitle, timestamp: sceneId }].slice(-100),
       },
     });
   }
 
   async function startReveal() {
     if (!revealTitle.trim()) return;
+    const sceneId = Date.now();
     await updateState({
       showMode: {
         ...showMode,
         autoSpeak,
-        reveal: { active: true, title: revealTitle, content: revealContent, phase: 'buildup', timestamp: Date.now() },
+        reveal: { active: true, title: revealTitle, content: revealContent, phase: 'buildup', timestamp: sceneId },
+        sceneHistory: [...(showMode.sceneHistory || []), { id: sceneId, type: 'reveal', title: revealTitle, content: revealContent, phase: 'buildup', timestamp: sceneId }].slice(-100),
       },
     });
   }
@@ -87,8 +91,12 @@ export default function ShowDirector({ state, updateState, onClose }) {
   async function doReveal() {
     const current = showMode.reveal;
     if (!current) return;
+    const revealedAt = Date.now();
+    const sceneHistory = [...(showMode.sceneHistory || [])];
+    const sceneIndex = sceneHistory.findIndex((scene) => scene.id === current.timestamp);
+    if (sceneIndex >= 0) sceneHistory[sceneIndex] = { ...sceneHistory[sceneIndex], phase: 'reveal', revealedAt };
     await updateState({
-      showMode: { ...showMode, reveal: { ...current, phase: 'reveal', timestamp: Date.now() } },
+      showMode: { ...showMode, reveal: { ...current, phase: 'reveal', timestamp: revealedAt }, sceneHistory },
     });
   }
 
