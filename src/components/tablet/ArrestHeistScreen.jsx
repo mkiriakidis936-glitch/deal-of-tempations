@@ -15,7 +15,7 @@ import TemptationSlots from '@/components/tablet/TemptationSlots';
 import HighStakesPanel from '@/components/shared/HighStakesPanel';
 import { canAssignVipActivity } from '@/lib/playerIntelligence';
 
-export default function ArrestHeistScreen({ state, updateState, onEnd, playerProfiles = [] }) {
+export default function ArrestHeistScreen({ state, updateState, onEnd, playerProfiles = [], playerProfilesReady = true }) {
   const [phase, setPhase] = useState('round_intro');
   const [heistPhase, setHeistPhase] = useState('qr');
   const [codeInput, setCodeInput] = useState('');
@@ -32,7 +32,7 @@ export default function ArrestHeistScreen({ state, updateState, onEnd, playerPro
   const [intake, setIntake] = useState(null);
 
   const REDEMPTION_COST = 3;
-  const vipCtx = { playerProfiles };
+  const vipCtx = { playerProfiles, playerProfilesReady };
 
   async function loadIntake() {
     if (!state.sessionCode) return;
@@ -77,7 +77,10 @@ export default function ArrestHeistScreen({ state, updateState, onEnd, playerPro
     if (!canAssignVipActivity(vipCtx, leader, {
       activityType: choice === 'truth' ? 'questions' : null,
       activityLabel: choice === 'truth' ? 'αλήθειες' : 'δοκιμασία θάρρους',
-    })) return;
+    })) {
+      handleNextRound();
+      return;
+    }
     setPhase(choice === 'dare' ? 'dare' : 'truth');
   }
 
