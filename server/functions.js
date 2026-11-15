@@ -5,12 +5,34 @@ import { entityApi } from './entities.js';
 import { pool } from './db.js';
 
 // ---- port of base44/shared/archiveLogic.ts ----
-async function archiveSessionData({ sessionCode, mode, winner, playerNames, stats, confessions, highlights }) {
+async function archiveSessionData({ sessionCode, mode, winner, playerNames, stats, confessions, highlights, showScenes, episodeSchedule }) {
   const eventDate = new Date().toISOString().split('T')[0];
   const names = [...new Set((Array.isArray(playerNames) ? playerNames : []).filter((name) => typeof name === 'string' && name.trim()).map((name) => name.trim()))];
   const safeStats = stats && typeof stats === 'object' && !Array.isArray(stats) ? stats : {};
   const safeConfessions = Array.isArray(confessions) ? confessions : [];
   const safeHighlights = Array.isArray(highlights) ? highlights : [];
+  const safeShowScenes = (Array.isArray(showScenes) ? showScenes : [])
+    .filter((scene) => scene && typeof scene === 'object' && !Array.isArray(scene))
+    .slice(-100)
+    .map((scene) => ({
+      id: String(scene.id ?? '').slice(0, 80),
+      type: String(scene.type ?? 'scene').slice(0, 40),
+      title: String(scene.title ?? scene.actName ?? '').slice(0, 160),
+      subtitle: String(scene.subtitle ?? '').slice(0, 240),
+      content: String(scene.content ?? '').slice(0, 2000),
+      phase: String(scene.phase ?? '').slice(0, 30),
+      timestamp: Number.isFinite(Number(scene.timestamp)) ? Number(scene.timestamp) : null,
+      revealedAt: Number.isFinite(Number(scene.revealedAt)) ? Number(scene.revealedAt) : null,
+    }));
+  const safeEpisodeSchedule = (Array.isArray(episodeSchedule) ? episodeSchedule : [])
+    .filter((item) => item && typeof item === 'object' && !Array.isArray(item))
+    .slice(0, 30)
+    .map((item) => ({
+      title: String(item.title ?? '').slice(0, 160),
+      desc: String(item.desc ?? '').slice(0, 500),
+      start: Number.isFinite(Number(item.start)) ? Number(item.start) : null,
+      end: Number.isFinite(Number(item.end)) ? Number(item.end) : null,
+    }));
   const client = await pool.connect();
 
   try {
@@ -34,7 +56,8 @@ async function archiveSessionData({ sessionCode, mode, winner, playerNames, stat
     );
     const archiveId = archives[0]?.id || await insertRecord('SessionArchive', {
       sessionCode, mode, winner: winner || '', playerNames: names, stats: safeStats,
-      confessions: safeConfessions, highlights: safeHighlights, eventDate, volume: 1,
+      confessions: safeConfessions, highlights: safeHighlights, showScenes: safeShowScenes,
+      episodeSchedule: safeEpisodeSchedule, eventDate, volume: 1,
     });
 
     const { rows: chronicles } = await client.query(
@@ -54,6 +77,7 @@ async function archiveSessionData({ sessionCode, mode, winner, playerNames, stat
         names.length ? `Στο τραπέζι κάθισαν: ${names.join(', ')}.` : '',
         safeHighlights.length ? `Έμειναν: ${safeHighlights.join(' · ')}.` : '',
         safeConfessions.length ? `Καταγράφηκαν ${safeConfessions.length} εξομολογήσεις στο Vault.` : '',
+        safeShowScenes.length ? `Καταγράφηκαν ${safeShowScenes.length} σκηνές τηλεοπτικής παραγωγής.` : '',
       ].filter(Boolean).join(' ');
       await insertRecord('Chronicle', {
         volume: 1, chapter, sessionCode, title: chronicleTitle, content: chronicleText,
