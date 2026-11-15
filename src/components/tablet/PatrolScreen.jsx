@@ -18,11 +18,13 @@ import {
   isFullyRestrained, getCurrentPenalty, addHistory, assignChief,
   applyGlitchEffect,
 } from '@/lib/gameLogic';
+import { canAssignVipActivity } from '@/lib/playerIntelligence';
 
-export default function PatrolScreen({ state, updateState, onGoToStage2 }) {
+export default function PatrolScreen({ state, updateState, onGoToStage2, playerProfiles = [] }) {
   const [uiPhase, setUiPhase] = useState('idle');
 
   const currentPlayer = state.players[state.currentPlayerIndex];
+  const vipCtx = { playerProfiles };
   const square = getBoardSquare(currentPlayer.position);
   const squareType = SQUARE_TYPES[square.type] || SQUARE_TYPES.street;
 
@@ -34,18 +36,29 @@ export default function PatrolScreen({ state, updateState, onGoToStage2 }) {
     );
     const sq = getBoardSquare(newPos);
     const fixed = getSquareChallenge(newPos);
+    const fixedAllowed = !fixed || canAssignVipActivity(vipCtx, currentPlayer, {
+      activityType: fixed.type === 'truth' ? 'questions' : null,
+      activityLabel: fixed.type === 'truth' ? 'ερωτήσεις' : 'δοκιμασία δρόμου',
+    });
     await updateState({
       players: updatedPlayers,
       diceValue: dice,
-      activeCard: fixed ? { name: fixed.title, text: fixed.text, duration: fixed.duration, icon: fixed.type === 'truth' ? '💬' : '🔥' } : null,
-      cardAction: fixed ? (fixed.type === 'truth' ? 'street_truth' : 'street_dare') : null,
+      activeCard: fixed && fixedAllowed ? { name: fixed.title, text: fixed.text, duration: fixed.duration, icon: fixed.type === 'truth' ? '💬' : '🔥' } : null,
+      cardAction: fixed && fixedAllowed ? (fixed.type === 'truth' ? 'street_truth' : 'street_dare') : null,
       glitchCard: sq.type === 'glitch' ? drawCard('glitch') : null,
       history: addHistory(state, { type: 'move', player: currentPlayer.name, dice, position: newPos, squareType: sq.type }),
     });
-    setUiPhase(fixed ? 'card' : 'rolled');
+    setUiPhase(fixed && fixedAllowed ? 'card' : fixed ? 'result' : 'rolled');
   }
 
   async function handleChooseAction(choice) {
+    if (!canAssignVipActivity(vipCtx, currentPlayer, {
+      activityType: choice === 'truth' ? 'questions' : null,
+      activityLabel: choice === 'truth' ? 'ερωτήσεις' : 'δοκιμασία δρόμου',
+    })) {
+      setUiPhase('result');
+      return;
+    }
     const cardType = choice === 'truth' ? 'street_truth' : 'street_dare';
     const card = drawCard(cardType);
     await updateState({ activeCard: card, cardAction: cardType });
@@ -92,6 +105,7 @@ export default function PatrolScreen({ state, updateState, onGoToStage2 }) {
 
   async function handleWarrantTarget(idx, card) {
     const target = state.players[idx];
+    if (!canAssignVipActivity(vipCtx, target, { activityLabel: 'στόχος εντάλματος' })) return;
     const history = addHistory(state, { type: 'warrant', card: card?.name, player: currentPlayer.name, target: target.name });
     await updateState({ activeCard: card, history });
     setUiPhase('result');
