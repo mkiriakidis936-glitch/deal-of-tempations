@@ -243,6 +243,18 @@ export default function Play() {
 
             <SyncTimerDisplay state={state} variant="mobile" />
 
+            {state.extra4?.cards?.activeCard && (
+              <ComicPanel className="comic-pop border border-primary/40 bg-primary/10">
+                <div className="flex items-center gap-2">
+                  <span className="text-3xl">{state.extra4.cards.activeCard.icon || '🎴'}</span>
+                  <div className="min-w-0 flex-1">
+                    <div className="font-heading text-lg text-primary">{state.extra4.cards.activeCard.name || state.extra4.cards.activeCard.title}</div>
+                    <div className="text-[10px] font-bold uppercase text-foreground/55">EXTRA 4.0 · {state.extra4.cards.activeCard.category || 'DIGITAL CARD'} · {state.extra4.cards.activeCard.rarity || '—'}</div>
+                  </div>
+                </div>
+                <p className="mt-2 text-sm text-foreground">{state.extra4.cards.activeCard.desc || state.extra4.cards.activeCard.text || ''}</p>
+              </ComicPanel>
+            )}
             {state.activeCard && (
               <ComicPanel className={`comic-pop ${isMyTurn ? 'bg-primary/20 ring-4 ring-destructive' : 'bg-secondary'}`}>
                 <div className="flex items-center gap-2 mb-2">
