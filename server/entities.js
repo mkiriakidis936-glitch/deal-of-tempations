@@ -541,6 +541,25 @@ export function entityRoutes() {
         return res.status(400).json({ error: 'Συμπλήρωσε σωστά τα στοιχεία της πρόσκλησης.' });
       }
       const answers = body.answers || {};
+      const { rows: settings } = await query(
+        "SELECT data FROM records WHERE entity = 'AppSetting' AND data->>'key' = 'admin_form_questions' LIMIT 1"
+      );
+      const configuredQuestions = Array.isArray(settings[0]?.data?.value?.forms?.invitation)
+        ? settings[0].data.value.forms.invitation
+        : [];
+      const customAnswers = body.customAnswers === undefined ? {} : body.customAnswers;
+      const customQuestionIds = new Set(configuredQuestions.map((question) => String(question.id || '')).filter(Boolean));
+      const customAnswersValid = isObject(customAnswers) &&
+        Object.entries(customAnswers).every(([id, value]) => customQuestionIds.has(id) && typeof value === 'string' && value.length <= 2000) &&
+        configuredQuestions.every((question) => {
+          const value = customAnswers[question.id] || '';
+          if (question.required && !String(value).trim()) return false;
+          if (value && question.type === 'select' && !(question.options || []).includes(value)) return false;
+          return true;
+        });
+      if (!customAnswersValid) {
+        return res.status(400).json({ error: 'Έλεγξε τις πρόσθετες ερωτήσεις της VIP φόρμας και δοκίμασε ξανά.' });
+      }
       const allowedKeys = new Set([
         'displayName', 'personality', 'competitiveness', 'preferredTestType',
         'activityPreferences', 'difficulty', 'unexpectedChallenge', 'activeParticipation',
@@ -580,6 +599,11 @@ export function entityRoutes() {
         'Διαμονή στο σπίτι / Villa': answers.stayAtVilla === 'yes' ? 'ΝΑΙ' : answers.stayAtVilla === 'no' ? 'ΟΧΙ' : '',
         'Αγαπημένο ποτό': answers.favoriteDrink || '',
       };
+      configuredQuestions.forEach((question) => {
+        const value = customAnswers[question.id];
+        if (value !== undefined && String(value).trim()) answerLabels[question.label] = value;
+      });
+      const customAnswerLabels = Object.fromEntries(configuredQuestions.map((question) => [question.id, question.label]));
       const data = {
         invitationId: invitations[0].id,
         submissionId,
@@ -588,6 +612,7 @@ export function entityRoutes() {
         displayName: String(answers.displayName || '').trim(),
         avatar: body.avatar,
         answers,
+        customAnswers,
         answerLabels,
         confirmed: true,
         submittedAt: new Date().toISOString(),
@@ -607,7 +632,12 @@ export function entityRoutes() {
             vipGameMode: gameMode,
             vipInvitationId: invitations[0].id,
             vipSubmissionId: submissionId,
-            vipProfile: { displayName: data.displayName, avatar: body.avatar, answers, answerLabels },
+            vipProfile: {
+              displayName: data.displayName,
+              avatar: body.avatar,
+              answers: { ...answers, customAnswers, customAnswerLabels },
+              answerLabels,
+            },
             shoeSize: answers.shoeSize || '',
             nailColor: answers.nailColor || '',
             slipperType: answers.slipperType || '',

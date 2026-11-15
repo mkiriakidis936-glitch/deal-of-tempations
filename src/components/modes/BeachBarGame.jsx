@@ -6,6 +6,7 @@ import {
   BEACH_STEP_SECONDS, BEACH_FINALE_SECONDS, BEACH_PHASES,
 } from '@/data/modes/beachBarContent';
 import { pick, sfx, startBeat, drinkText, useLocalCountdown, isGameStopActive } from '@/lib/modeKit';
+import { canAssignVipActivity } from '@/lib/playerIntelligence';
 
 const TURQ = '#00F2FE';
 const CORAL = '#FF3366';
@@ -123,6 +124,7 @@ function Dance({ ctx, bb, setBb, T, addDrink, flopOn }) {
     log(`📯 FREEZE! ${cmd}`);
   }
   function loser(p) {
+    if (!canAssignVipActivity(ctx, p, { activityLabel: 'Freeze challenge' })) return;
     addDrink(p.id);
     setBb({ phase: 'wheel', loser: p.id, freeze: null });
     log(`🥃 ${p.name} έχασε στο Freeze — σφηνάκι και Τροχός Ποινών`);
@@ -169,6 +171,8 @@ function Wheel({ ctx, bb, setBb, T, flopOn }) {
 
   function spin() {
     if (spinning) return;
+    const selectedPlayer = players.find((player) => player.id === who);
+    if (!canAssignVipActivity(ctx, selectedPlayer, { activityLabel: 'Wheel challenge' })) return;
     setSpinning(true);
     setRun(false);
     let n = 0;
@@ -236,7 +240,11 @@ function Truth({ ctx, bb, setBb, T, addDrink }) {
         <select value={who} onChange={(e) => setWho(e.target.value)} className="px-2 py-2 rounded bg-background border border-border">
           {players.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
         </select>
-        <Btn color="bg-rose-600" onClick={() => { setQ(pick(SHOT_TRUTH)); setState('decide'); setBb({ truth: { who, at: Date.now() } }); }}>🎴 Νέα ερώτηση 18+</Btn>
+        <Btn color="bg-rose-600" onClick={() => {
+          const selectedPlayer = players.find((player) => player.id === who);
+          if (!canAssignVipActivity(ctx, selectedPlayer, { activityType: 'questions', activityLabel: 'ερωτήσεις' })) return;
+          setQ(pick(SHOT_TRUTH)); setState('decide'); setBb({ truth: { who, at: Date.now() } });
+        }}>🎴 Νέα ερώτηση 18+</Btn>
       </div>
       {q && (
         <div className="rounded-lg p-4 space-y-3" style={{ background: '#1a0010', border: `2px solid ${CORAL}` }}>

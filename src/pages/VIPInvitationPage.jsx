@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { request } from '@/api/base44Client';
 import { GAME_MODES } from '@/data/gameConfig';
+import CustomFormQuestions from '@/components/forms/CustomFormQuestions';
 
 const AVATARS = ['♠', '♥', '♦', '♣', '👑', '🖤', '🔥', '✨', '🦂', '🐍', '🦇', '🌙'];
 const NAIL_COLORS = ['Κόκκινο', 'Ροζ', 'Λευκό', 'Μαύρο', 'Nude', 'French', 'Μπλε', 'Μωβ', 'Πράσινο', 'Πορτοκαλί', 'Χρυσό', 'Ασημί', 'Χωρίς χρώμα'];
@@ -25,6 +26,8 @@ export default function VIPInvitationPage() {
   });
   const [saving, setSaving] = useState(false);
   const [done, setDone] = useState(false);
+  const [customAnswers, setCustomAnswers] = useState({});
+  const [customQuestionsValid, setCustomQuestionsValid] = useState(true);
   const submissionId = useMemo(makeSubmissionId, []);
 
   useEffect(() => {
@@ -41,7 +44,7 @@ export default function VIPInvitationPage() {
     ...current,
     activityPreferences: { ...current.activityPreferences, [key]: checked ? 'yes' : 'no' },
   }));
-  const valid = name.trim().length > 0 && !saving;
+  const valid = name.trim().length > 0 && customQuestionsValid && !saving;
   const gameName = GAME_MODES.find((mode) => mode.id === invitation?.gameMode)?.name || invitation?.gameMode || '—';
 
   async function submit(event) {
@@ -51,7 +54,7 @@ export default function VIPInvitationPage() {
     setError('');
     try {
       await request('POST', `/api/entities/vip-invitations/${encodeURIComponent(token)}/submit`, {
-        submissionId, name: name.trim(), avatar, answers,
+        submissionId, name: name.trim(), avatar, answers, customAnswers,
       });
       setDone(true);
     } catch (e) { setError(e.message || 'Δεν αποθηκεύτηκε η συμμετοχή.'); }
@@ -135,6 +138,18 @@ export default function VIPInvitationPage() {
           <div style={fieldStyle}><label style={labelStyle}>ΕΠΙΘΥΜΕΙΣ ΝΑ ΜΕΙΝΕΙΣ ΣΤΟ ΣΠΙΤΙ / VILLA;</label>{yesNo('stayAtVilla')}</div>
           <div style={fieldStyle}><label style={labelStyle}>ΑΓΑΠΗΜΕΝΟ ΠΟΤΟ</label>{textInput('favoriteDrink')}</div>
         </section>
+
+        {invitation.questions?.length > 0 && <section style={sectionStyle}>
+          <h2 style={{ color: '#e5cf91', fontSize: 16, margin: '0 0 16px' }}>6. ΕΠΙΠΛΕΟΝ ΕΡΩΤΗΣΕΙΣ</h2>
+          <CustomFormQuestions
+            formType="invitation"
+            questionsOverride={invitation.questions}
+            value={customAnswers}
+            onChange={setCustomAnswers}
+            onValidityChange={setCustomQuestionsValid}
+            className="space-y-3"
+          />
+        </section>}
 
         {error && <p role="alert" style={{ color: '#f1a0a0', fontSize: 13, marginBottom: 14 }}>{error}</p>}
         <button type="submit" disabled={!valid} style={{ width: '100%', borderRadius: 10, padding: '14px 16px', border: '1px solid #e0c36b', background: !valid ? '#4a4025' : 'linear-gradient(110deg,#8b6a24,#d9bd68,#8b6a24)', color: '#100e09', fontWeight: 800, letterSpacing: '.12em', opacity: !valid ? .65 : 1 }}>

@@ -9,6 +9,7 @@ import {
   WHEEL_DECISION_SECONDS, WHEEL_PENALTY_SECONDS, FOOT_ID, WHISPER_CLUES, SOCK_HEIST_SECONDS,
 } from '@/data/modes/lockdownContent';
 import { pick, shuffle, sfx, whisper, timerStart, timerAdd, timerLeft, useTick, useLocalCountdown, isGameStopActive } from '@/lib/modeKit';
+import { canAssignVipActivity } from '@/lib/playerIntelligence';
 
 const norm = (s) => String(s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().toLowerCase();
 const RED = '#FF003C';
@@ -55,6 +56,8 @@ export default function ActLockdown({ ctx, onDone, standalone }) {
   }
 
   function start() {
+    const initialHostage = players[ld.hostageIdx ?? 0];
+    if (!canAssignVipActivity(ctx, initialHostage, { activityLabel: 'ρόλο Hostage' })) return;
     sfx.alarm();
     const durationSeconds = standalone ? LOCKDOWN_SECONDS : MARATHON_LOCKDOWN_SECONDS;
     setMg({ timer: timerStart(durationSeconds), ld: { ...ld, stage: 'l1', revealed: [false, false, false, false], correct: 0, wrong: 0, qOrder: shuffle(HOSTAGE_QUESTIONS.map((_, i) => i)), qi: 0 } });
@@ -194,7 +197,10 @@ function Level1({ ctx, ld, setLd, hostage, penalty, onPass }) {
       <p className="text-sm opacity-80">Ο πρώτος κωδικός είναι κλειδωμένος. Η ομάδα επιλέγει μία «Hostage»· οι υπόλοιπες απαντούν στις ερωτήσεις ενώ κάνουν ασταμάτητο γαργάλημα στα πέλματά της. Κάθε λάθος = +2′ ποινή στο ρολόι.</p>
       <div className="flex flex-wrap gap-2 items-center text-sm">
         Hostage:
-        <select value={ld.hostageIdx ?? ''} onChange={(e) => setLd({ hostageIdx: Number(e.target.value) })} className="px-2 py-1.5 rounded bg-background border border-border">
+        <select value={ld.hostageIdx ?? ''} onChange={(e) => {
+          const nextHostage = players[Number(e.target.value)];
+          if (canAssignVipActivity(ctx, nextHostage, { activityLabel: 'ρόλο Hostage' })) setLd({ hostageIdx: Number(e.target.value) });
+        }} className="px-2 py-1.5 rounded bg-background border border-border">
           <option value="">{hostage?.name} (σειρά)</option>
           {players.map((p, i) => <option key={p.id} value={i}>{p.name}</option>)}
         </select>

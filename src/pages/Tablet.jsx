@@ -53,6 +53,7 @@ import { calculateMostWanted, getWantedLevel } from '@/lib/gameLogic';
 import { base44 } from '@/api/base44Client';
 import { awardAchievements } from '@/lib/achievements';
 import { setGameStopActive } from '@/lib/modeKit';
+import { canAssignVipActivity } from '@/lib/playerIntelligence';
 
 export default function Tablet() {
   const { session, state, loading, updateState, createSession, deleteSession, refresh, joinByCode } = useGameSession();
@@ -256,6 +257,7 @@ export default function Tablet() {
   async function startPersonalizedSurprise(profile) {
     const answers = profile.vipProfile?.answers || {};
     if (answers.activeParticipation === 'no' || answers.activityPreferences?.surprises !== 'yes' || answers.unexpectedChallenge === 'no') return;
+    if (!canAssignVipActivity({ playerProfiles }, profile, { activityType: 'surprises', activityLabel: 'προσωπικές εκπλήξεις' })) return;
     const sceneId = Date.now();
     const showMode = state.showMode || {};
     await trackedUpdate({

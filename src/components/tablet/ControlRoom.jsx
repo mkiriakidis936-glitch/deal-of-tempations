@@ -203,6 +203,8 @@ export default function ControlRoom({ state, playerProfiles = [], onStartSurpris
               const answers = profile.vipProfile?.answers || {};
               const preferences = answers.activityPreferences || {};
               const wish = String(answers.surpriseWish || '').trim();
+              const customAnswers = answers.customAnswers || {};
+              const customAnswerLabels = answers.customAnswerLabels || {};
               const surpriseAllowed = answers.activeParticipation !== 'no' && preferences.surprises === 'yes' && answers.unexpectedChallenge !== 'no';
               return (
                 <div key={profile.playerId} className="rounded-lg border border-primary/20 bg-secondary p-3 space-y-2">
@@ -221,6 +223,14 @@ export default function ControlRoom({ state, playerProfiles = [], onStartSurpris
                     <div className="rounded border border-amber-500/30 bg-amber-500/5 p-2 text-xs">
                       <strong className="text-amber-300">ΠΡΟΣΩΠΙΚΑ ΟΡΙΑ – ΜΟΝΟ ΓΙΑ ΤΟΝ ΠΑΡΟΥΣΙΑΣΤΗ</strong>
                       <div className="mt-1 whitespace-pre-wrap">{answers.boundaries}</div>
+                    </div>
+                  )}
+                  {Object.entries(customAnswers).some(([, value]) => String(value || '').trim()) && (
+                    <div className="rounded border border-primary/20 p-2 text-xs space-y-1">
+                      <strong>Πρόσθετες απαντήσεις VIP</strong>
+                      {Object.entries(customAnswers).filter(([, value]) => String(value || '').trim()).map(([id, value]) => (
+                        <div key={id}><span className="text-foreground/55">{customAnswerLabels[id] || id}:</span> {value}</div>
+                      ))}
                     </div>
                   )}
                   {wish && (
