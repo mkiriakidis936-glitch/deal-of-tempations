@@ -270,8 +270,10 @@ export default function Extra4Panel({ state, updateState, playerProfiles = [], p
   async function issueTerminal() {
     if (!terminalPlayer) return;
     const code = globalThis.crypto?.randomUUID?.() || `terminal-${Date.now()}`;
-    const url = `${window.location.origin}/play?code=${encodeURIComponent(state.sessionCode || '')}&terminal=${encodeURIComponent(code)}&player=${encodeURIComponent(terminalPlayer)}`;
-    const terminals = { ...(extra4.cards.terminals || {}), [code]: { code, playerId: terminalPlayer, url, active: true, createdAt: Date.now() } };
+    const activityId = activeActivity?.status === 'active' ? activeActivity.id : null;
+    const activityQuery = activityId ? `&activity=${encodeURIComponent(activityId)}` : '';
+    const url = `${window.location.origin}/play?code=${encodeURIComponent(state.sessionCode || '')}&terminal=${encodeURIComponent(code)}&player=${encodeURIComponent(terminalPlayer)}${activityQuery}`;
+    const terminals = { ...(extra4.cards.terminals || {}), [code]: { code, playerId: terminalPlayer, activityId, url, active: true, createdAt: Date.now() } };
     await updateExtra({ cards: { ...extra4.cards, terminals } });
     setTerminalUrl(url);
   }
