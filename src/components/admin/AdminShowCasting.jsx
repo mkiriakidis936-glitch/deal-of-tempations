@@ -3,17 +3,17 @@ import { base44 } from '@/api/base44Client';
 import ComicPanel from '@/components/comic/ComicPanel';
 import ComicButton from '@/components/comic/ComicButton';
 import { GAME_MODES, TOENAIL_PERKS } from '@/data/gameConfig';
-import { isNewλειτουργία, modeMeta } from '@/data/modes/modeRegistry';
+import { isNewMode, modeMeta } from '@/data/modes/modeRegistry';
 
 const CAST_KEY = 'show_casting_plan';
 const SHOE_TO_LEVEL = { boots: 3, sneakers: 2, sandals: 1, barefoot: 0 };
 
 function modesForIntake(item, source) {
   if (source === 'pajama') {
-    if (Array.isArray(item.preferredλειτουργίαs) && item.preferredλειτουργίαs.length) return item.preferredλειτουργίαs;
+    if (Array.isArray(item.preferredModes) && item.preferredModes.length) return item.preferredModes;
     return item.formType === 'modes' ? [] : ['pajama'];
   }
-  return [item.vipGameλειτουργία || 'classic'];
+  return [item.vipGameMode || 'classic'];
 }
 
 function normalizeName(value) {
@@ -21,7 +21,7 @@ function normalizeName(value) {
 }
 
 function playerLimits(mode) {
-  if (isNewλειτουργία(mode)) {
+  if (isNewMode(mode)) {
     const meta = modeMeta(mode);
     return { min: meta.min, max: meta.max };
   }
@@ -31,7 +31,7 @@ function playerLimits(mode) {
 }
 
 export default function AdminShowCasting() {
-  const [mode, setλειτουργία] = useState('classic');
+  const [mode, setMode] = useState('classic');
   const [playerIntakes, setPlayerIntakes] = useState([]);
   const [pajamaIntakes, setPajamaIntakes] = useState([]);
   const [selected, setSelected] = useState([]);
@@ -55,7 +55,7 @@ export default function AdminShowCasting() {
       const current = record?.value && typeof record.value === 'object' ? record.value : null;
       setPlan(current ? { ...current, settingId: record.id } : null);
       if (current?.mode && Array.isArray(current.players)) {
-        setλειτουργία(current.mode);
+        setMode(current.mode);
         setSelected(current.players.map((player) => normalizeName(player.name)).filter(Boolean));
       }
     } catch (error) {
@@ -84,7 +84,7 @@ export default function AdminShowCasting() {
         nailColor: '',
         vipProfile: null,
         accommodation: '',
-        preferredλειτουργίαs: [],
+        preferredModes: [],
       };
       previous.sourceIds.push({ source, id: item.id });
       previous.shoeType = item.shoeType || previous.shoeType;
@@ -92,7 +92,7 @@ export default function AdminShowCasting() {
       previous.nailColor = item.nailColor || previous.nailColor;
       previous.vipProfile = item.vipProfile || previous.vipProfile;
       previous.accommodation = item.accommodation || item.stayAtVilla || item.vipProfile?.answers?.stayAtVilla || previous.accommodation;
-      previous.preferredλειτουργίαs = [...new Set([...previous.preferredλειτουργίαs, ...modes])];
+      previous.preferredModes = [...new Set([...previous.preferredModes, ...modes])];
       byName.set(key, previous);
     };
     playerIntakes.forEach((item) => add(item, 'player'));
@@ -184,7 +184,7 @@ export default function AdminShowCasting() {
               <button
                 key={item.id}
                 type="button"
-                onClick={() => { setλειτουργία(item.id); setSelected([]); }}
+                onClick={() => { setMode(item.id); setSelected([]); }}
                 className={`rounded-lg border p-2 text-left ${mode === item.id ? 'border-primary bg-primary/10' : 'border-border/60 bg-secondary'}`}
               >
                 <div className="text-xs font-bold">{item.name}</div>
@@ -196,7 +196,7 @@ export default function AdminShowCasting() {
         </div>
         <label className="block space-y-1 text-sm font-bold">
           ΤΕΛΙΚΟ MODE
-          <select value={mode} onChange={(event) => { setλειτουργία(event.target.value); setSelected([]); }} className="w-full rounded-lg border-2 border-border bg-background px-3 py-2">
+          <select value={mode} onChange={(event) => { setMode(event.target.value); setSelected([]); }} className="w-full rounded-lg border-2 border-border bg-background px-3 py-2">
             {GAME_MODES.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
           </select>
         </label>
