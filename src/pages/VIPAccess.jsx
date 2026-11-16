@@ -7,7 +7,6 @@ export default function VIPAccess(){
  const [profile,setProfile]=useState({displayName:'',safeWord:'',intensity:3,preferences:[],boundaries:[],adultConfirmed:false,consentConfirmed:false});
  const [message,setMessage]=useState(''); const [busy,setBusy]=useState(false);
  async function unlock(e){e.preventDefault();setBusy(true);setMessage('');try{const r=await request('POST','/api/entities/vip-access/unlock',{code});setToken(r.token);setCode('');}catch(err){setMessage(err.message||'Δεν επιτράπηκε η πρόσβαση.')}finally{setBusy(false)}}
- useEffect(()=>{if(!token)return;request('GET','/api/entities/vip-access/vault',undefined).catch(()=>{});},[token]);
  async function loadVault(t=token){try{const data=await fetchVault(t);setVault(data);if(data.profile)setProfile(p=>({...p,...data.profile,adultConfirmed:true,consentConfirmed:true}));}catch(e){setMessage(e.message||'Δεν φορτώθηκε το Vault.')}}
  async function saveProfile(e){e.preventDefault();setBusy(true);setMessage('');try{await requestWithVip(token,'/api/entities/vip-access/profile',profile);setMessage('Το προφίλ αποθηκεύτηκε.');await loadVault()}catch(err){setMessage(err.message||'Δεν αποθηκεύτηκε.')}finally{setBusy(false)}}
  function toggle(list,key){setProfile(p=>({...p,[list]:p[list].includes(key)?p[list].filter(x=>x!==key):[...p[list],key]}))}
