@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { base44 } from '@/api/base44Client';
+import { base44, request } from '@/api/base44Client';
 import ComicPanel from '@/components/comic/ComicPanel';
 import ComicButton from '@/components/comic/ComicButton';
 import { isIntakeEnabled, setIntakeEnabled } from '@/lib/intakeFlag';
@@ -53,8 +53,9 @@ export default function AdminIntakes() {
   }
 
   async function handleDelete(id) {
+    if (!window.confirm('Να διαγραφεί η αίτηση και οι συνδεδεμένες επιβεβαιώσεις συμμετοχής;')) return;
     try {
-      await base44.entities.PlayerIntake.delete(id);
+      await request('DELETE', `/api/entities/player-intakes/${id}`);
       setIntakes((prev) => prev.filter((i) => i.id !== id));
       setMsg({ ok: true, text: 'Το ερωτηματολόγιο διαγράφηκε.' });
     } catch (e) { console.error('Delete error', e); setMsg({ ok: false, text: e.message || 'Η διαγραφή απέτυχε.' }); }

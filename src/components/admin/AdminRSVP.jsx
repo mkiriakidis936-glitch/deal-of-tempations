@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { base44 } from '@/api/base44Client';
+import { base44, request } from '@/api/base44Client';
 import ComicPanel from '@/components/comic/ComicPanel';
 import ComicButton from '@/components/comic/ComicButton';
 
@@ -29,8 +29,9 @@ export default function AdminRSVP() {
   useEffect(() => { load(); }, [load]);
 
   async function handleDelete(id) {
+    if (!window.confirm('Να διαγραφεί η επιβεβαίωση και η συνδεδεμένη αίτηση συμμετοχής;')) return;
     try {
-      await base44.entities.InvitationRSVP.delete(id);
+      await request('DELETE', `/api/entities/invitation-rsvps/${id}`);
       setRsvps((prev) => prev.filter((r) => r.id !== id));
       setCount((c) => Math.max(0, c - 1));
       setMsg({ ok: true, text: 'Η επιβεβαίωση διαγράφηκε.' });

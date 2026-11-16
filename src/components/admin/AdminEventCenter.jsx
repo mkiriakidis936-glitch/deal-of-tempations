@@ -102,34 +102,13 @@ export default function AdminEventCenter({ sessions: initialSessions = [], selec
   }
 
   async function deleteEvent() {
-    if (!selected || !window.confirm(`Να διαγραφεί οριστικά το Event ${event.title || selected.mode} (${selected.sessionCode}); Θα διαγραφούν και οι προσκλήσεις/συμμετοχές που είναι συνδεδεμένες με αυτό. Θα διατηρηθεί αντίγραφο της παρτίδας για ανάκτηση.`)) return;
+    if (!selected || !window.confirm(`Να διαγραφεί οριστικά το Event ${event.title || selected.mode} (${selected.sessionCode}); Θα διαγραφούν όλες οι προσκλήσεις και οι συνδεδεμένες αιτήσεις/συμμετοχές. Θα δημιουργηθεί αντίγραφο της παρτίδας για ανάκτηση.`)) return;
     setBusy(true);
     try {
-      const invitationIds = new Set(vipInvitations.map((invitation) => invitation.id));
-      for (const invitation of vipInvitations) {
-        const submissions = await base44.entities.VIPInvitationSubmission.filter({ invitationId: invitation.id }, { limit: 500 });
-        for (const submission of submissions.items || []) {
-          const intakes = await base44.entities.PlayerIntake.filter({ vipSubmissionId: submission.submissionId }, { limit: 100 });
-          for (const intake of intakes.items || []) await base44.entities.PlayerIntake.delete(intake.id);
-          await base44.entities.VIPInvitationSubmission.delete(submission.id);
-        }
-        await base44.entities.VIPInvitation.delete(invitation.id);
-      }
-      for (const row of vipSubmissions.filter((submission) => !invitationIds.has(submission.invitationId))) {
-        const intakes = await base44.entities.PlayerIntake.filter({ vipSubmissionId: row.submissionId }, { limit: 100 });
-        for (const intake of intakes.items || []) await base44.entities.PlayerIntake.delete(intake.id);
-        await base44.entities.VIPInvitationSubmission.delete(row.id);
-      }
-      for (const row of rsvps) await base44.entities.InvitationRSVP.delete(row.id);
-      for (const row of publicSubmissions) await base44.entities.PublicFormSubmission.delete(row.id);
-      const linkedIntakes = await base44.entities.PlayerIntake.filter({ sessionCode: selected.sessionCode }, { limit: 500 });
-      for (const intake of linkedIntakes.items || []) await base44.entities.PlayerIntake.delete(intake.id);
-      const snapshots = await base44.entities.GameSessionSnapshot.filter({ sessionId: selected.id }, { limit: 500 });
-      for (const snapshot of snapshots.items || []) if (snapshot.label !== 'Αυτόματο αντίγραφο πριν από διαγραφή Event') await base44.entities.GameSessionSnapshot.delete(snapshot.id);
       await onDeleteSession?.(selected.id);
       setSelectedId('');
       await onRefreshSessions?.();
-      setMessage('Το Event διαγράφηκε και δημιουργήθηκε αντίγραφο της παρτίδας.');
+      setMessage('Το Event και τα συνδεδεμένα στοιχεία διαγράφηκαν. Δημιουργήθηκε αντίγραφο για ανάκτηση.');
     } catch (error) { setMessage(error.message || 'Η διαγραφή του Event απέτυχε.'); }
     finally { setBusy(false); }
   }

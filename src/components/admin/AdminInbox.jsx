@@ -68,6 +68,10 @@ export default function AdminInbox({ sessions = [] }) {
     try {
       if (item._entity === 'VIPInvitationSubmission') {
         await request('DELETE', `/api/entities/vip-submissions/${item.id}`);
+      } else if (item._entity === 'InvitationRSVP') {
+        await request('DELETE', `/api/entities/invitation-rsvps/${item.id}`);
+      } else if (item._entity === 'PlayerIntake') {
+        await request('DELETE', `/api/entities/player-intakes/${item.id}`);
       } else {
         await base44.entities[item._entity].delete(item.id);
       }

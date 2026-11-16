@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { base44 } from '@/api/base44Client';
+import { base44, request } from '@/api/base44Client';
 import ComicPanel from '@/components/comic/ComicPanel';
 import ComicButton from '@/components/comic/ComicButton';
 import AdminNav, { AdminTabBar } from '@/components/admin/AdminNav';
@@ -188,22 +188,11 @@ export default function Admin() {
   async function handleDeleteSession(id) {
     try {
       const target = sessions.find((session) => session.id === id);
-      if (target) {
-        await base44.entities.GameSessionSnapshot.create({
-          sessionId: target.id,
-          sessionCode: target.sessionCode,
-          mode: target.state?.mode || target.mode || '',
-          stage: Number(target.state?.stage ?? 0),
-          playerCount: Array.isArray(target.state?.players) ? target.state.players.length : 0,
-          label: 'Αυτόματο αντίγραφο πριν από διαγραφή',
-          state: JSON.parse(JSON.stringify(target.state || {})),
-          sourceUpdatedAt: target.updated_date || target.created_date || null,
-        });
-      }
-      await base44.entities.GameSession.delete(id);
+      if (!target?.sessionCode) throw new Error('Δεν βρέθηκε ο κωδικός Event της παρτίδας.');
+      await request('DELETE', `/api/entities/game-events/${encodeURIComponent(target.sessionCode)}`);
       setSessions((prev) => prev.filter((s) => s.id !== id));
       setPickedSession((prev) => (prev?.id === id ? null : prev));
-    } catch (e) { console.error('Delete error', e); }
+    } catch (e) { console.error('Delete error', e); throw e; }
   }
 
   async function handleRestartSession(session) {
