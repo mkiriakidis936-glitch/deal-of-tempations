@@ -13,6 +13,8 @@ const TARGETS = [
   { path: '/modes-form?mode=pedi_extended', label: 'Pedi Extended' },
   { path: '/modes-form?mode=lockdown', label: 'Lockdown' },
   { path: '/modes-form?mode=beach_bar', label: 'Beach Bar' },
+  { path: '/forms', label: 'Δημόσιες Φόρμες — Join the Heist / Event Request / Feedback' },
+  { path: '/vip-access', label: 'VIP Access / Digital Vault — VIP φόρμα προφίλ & ορίων' },
 ];
 const makeId = () => globalThis.crypto?.randomUUID?.() || `${Date.now().toString(36)}${Math.random().toString(36).slice(2)}`;
 
