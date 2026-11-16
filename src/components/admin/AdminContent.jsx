@@ -6,14 +6,14 @@ import { CONTENT_CATEGORIES } from '@/components/admin/content/contentSchemas';
 const MODE_GROUPS = [
   {
     id: 'classic',
-    label: '🎲 CLASSIC MODE',
+    label: '🎲 ΚΛΑΣΙΚΟ MODE',
     desc: '44 κουτιά · Σκάλα 7 Ποινών · Στάδια 1-3',
     color: 'bg-tarot-wine',
     cats: ['board', 'penalties', 'footwear_levels', 'hidden_roles', 'toenail_perks', 'warrant_cards', 'glitch_cards', 'black_market_options', 'street_truths', 'street_dares', 'hardcore_truths', 'ultimate_truths', 'extreme_protocols'],
   },
   {
     id: 'marathon',
-    label: '🏆 MEGA MARATHON (48h)',
+    label: '🏆 MEGA MARATHON (48 ώρες)',
     desc: '2 ομάδες · 4 στάδια · $200.000 Loot',
     color: 'bg-tarot-royal',
     cats: ['marathon_stages', 'marathon_trials', 'marathon_group_penalties', 'marathon_lockdown'],
@@ -42,7 +42,7 @@ const MODE_GROUPS = [
   },
   {
     id: 'global',
-    label: '⚙️ GLOBAL SETTINGS',
+    label: '⚙️ ΓΕΝΙΚΕΣ ΡΥΘΜΙΣΕΙΣ',
     desc: 'Game Modes · Intensity Levels · Square Types',
     color: 'bg-tarot-teal',
     cats: ['game_modes', 'intensity_levels', 'square_types'],
