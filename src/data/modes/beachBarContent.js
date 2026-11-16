@@ -108,7 +108,7 @@ function sanitizeBeachItems(value, id = '') {
   for (const [key, current] of Object.entries(value)) {
     if (key === 'restraint' && current === true) { value[key] = false; continue; }
     if (typeof current === 'string' && UNSAFE_BEACH_COPY.test(current)) {
-      value[key] = ['title', 'name', 'label'].includes(key) ? `Safe Digital Challenge ${id}`.trim() : SAFE_BEACH_CHALLENGE;
+      value[key] = ['title', 'name', 'label'].includes(key) ? 'Safe Digital Challenge' : SAFE_BEACH_CHALLENGE;
     } else if (current && typeof current === 'object') sanitizeBeachItems(current, value.id || id);
   }
   return value;
