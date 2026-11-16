@@ -125,11 +125,11 @@ export default function AdminDigitalInvitations() {
 
   return <div className="space-y-4">
     <ComicPanel className="bg-card space-y-3 border border-[#b99a45]/60">
-      <div className="font-heading text-xl text-primary">VIP PRIVATE INVITATION</div>
+      <div className="font-heading text-xl text-primary">ΙΔΙΩΤΙΚΗ VIP ΠΡΟΣΚΛΗΣΗ</div>
       <p className="text-sm text-foreground/70">Έτοιμη, ιδιωτική πρόσκληση DEAL OF TEMPTATION. Το σύστημα δημιουργεί ένα κοινό link και QR για όλους τους καλεσμένους. Το κείμενο και ο σχεδιασμός είναι προκαθορισμένα.</p>
       <div className="rounded-xl border border-[#b99a45]/50 bg-black p-4 text-center">
-        <div className="text-xs tracking-[0.35em] text-[#c9a94e]">EXCLUSIVE ACCESS</div>
-        <div className="my-2 font-serif text-2xl tracking-[0.12em] text-[#f4e6bd]">VIP INVITATION</div>
+        <div className="text-xs tracking-[0.35em] text-[#c9a94e]">ΑΠΟΚΛΕΙΣΤΙΚΗ ΠΡΟΣΒΑΣΗ</div>
+        <div className="my-2 font-serif text-2xl tracking-[0.12em] text-[#f4e6bd]">VIP ΠΡΟΣΚΛΗΣΗ</div>
         <div className="text-xs text-[#b99a45]">DEAL OF TEMPTATION</div>
       </div>
       <ComicButton disabled={vipBusy} onClick={createVipInvitation}>＋ ΔΗΜΙΟΥΡΓΙΑ ΕΤΟΙΜΗΣ VIP ΠΡΟΣΚΛΗΣΗΣ</ComicButton>
@@ -144,7 +144,7 @@ export default function AdminDigitalInvitations() {
       return <ComicPanel key={invitation.id} className="bg-card space-y-3 border border-[#b99a45]/40">
         <div className="flex items-center justify-between gap-2">
           <div>
-            <div className="font-heading text-lg text-[#c9a94e]">VIP INVITATION</div>
+            <div className="font-heading text-lg text-[#c9a94e]">VIP ΠΡΟΣΚΛΗΣΗ</div>
             <div className="text-xs text-foreground/60">{new Date(invitation.created_date).toLocaleString('el-GR')}</div>
             <div className="text-xs text-[#d8bd72]">Παιχνίδι: {GAME_MODES.find((mode) => mode.id === invitation.gameMode)?.name || invitation.gameMode || 'ΚΛΑΣΣΙΚΗ'}</div>
           </div>
@@ -157,14 +157,14 @@ export default function AdminDigitalInvitations() {
           <div className="min-w-0 flex-1 space-y-2 text-center sm:text-left">
             <div className="break-all text-xs text-[#d8bd72]">{url}</div>
             <div className="flex flex-wrap justify-center sm:justify-start gap-2">
-              <ComicButton size="sm" onClick={() => navigator.clipboard.writeText(url)}>ΑΝΤΙΓΡΑΦΗ LINK</ComicButton>
-              <ComicButton size="sm" variant="dark" onClick={() => { if (navigator.share) navigator.share({ title: 'VIP Invitation — DEAL OF TEMPTATION', url }).catch(() => {}); else navigator.clipboard.writeText(url); }}>ΚΟΙΝΟΠΟΙΗΣΗ</ComicButton>
+              <ComicButton size="sm" onClick={() => navigator.clipboard.writeText(url)}>ΑΝΤΙΓΡΑΦΗ ΣΥΝΔΕΣΜΟΥ</ComicButton>
+              <ComicButton size="sm" variant="dark" onClick={() => { if (navigator.share) navigator.share({ title: 'VIP Πρόσκληση — DEAL OF TEMPTATION', url }).catch(() => {}); else navigator.clipboard.writeText(url); }}>ΚΟΙΝΟΠΟΙΗΣΗ</ComicButton>
             </div>
           </div>
         </div>}
         <div className="flex flex-wrap gap-2">
           <ComicButton size="sm" variant="dark" disabled={vipBusy} onClick={() => loadVipSubmissions(invitation)}>ΑΠΑΝΤΗΣΕΙΣ / ΣΥΜΜΕΤΟΧΕΣ</ComicButton>
-          <ComicButton size="sm" variant={invitation.active ? 'red' : 'green'} disabled={vipBusy} onClick={() => toggleVipInvitation(invitation)}>{invitation.active ? 'ΑΠΕΝΕΡΓΟΠΟΙΗΣΗ LINK' : 'ΕΝΕΡΓΟΠΟΙΗΣΗ LINK'}</ComicButton>
+          <ComicButton size="sm" variant={invitation.active ? 'red' : 'green'} disabled={vipBusy} onClick={() => toggleVipInvitation(invitation)}>{invitation.active ? 'ΑΠΕΝΕΡΓΟΠΟΙΗΣΗ ΣΥΝΔΕΣΜΟΥ' : 'ΕΝΕΡΓΟΠΟΙΗΣΗ ΣΥΝΔΕΣΜΟΥ'}</ComicButton>
           <ComicButton size="sm" variant="red" disabled={vipBusy} onClick={() => deleteVipInvitation(invitation)}>ΔΙΑΓΡΑΦΗ VIP ΠΡΟΣΚΛΗΣΗΣ + ΑΠΑΝΤΗΣΕΩΝ</ComicButton>
         </div>
         {responses && <div className="space-y-2 border-t border-[#b99a45]/30 pt-3">
@@ -186,7 +186,7 @@ export default function AdminDigitalInvitations() {
     })}
 
     <ComicPanel className="bg-card space-y-3">
-      <div className="font-heading text-xl text-primary">DIGITAL INVITATIONS</div>
+      <div className="font-heading text-xl text-primary">ΨΗΦΙΑΚΕΣ ΠΡΟΣΚΛΗΣΕΙΣ</div>
       <p className="text-xs text-foreground/65">Δημιουργία QR προσκλήσεων που οδηγούν στις ήδη υπάρχουσες φόρμες και εμπειρίες.</p>
       <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Τίτλος πρόσκλησης" className="w-full rounded-lg border-2 border-border bg-background px-3 py-2 text-sm" />
       <select value={target} onChange={(e) => setTarget(e.target.value)} className="w-full rounded-lg border-2 border-border bg-background px-3 py-2 text-sm">
@@ -205,7 +205,7 @@ export default function AdminDigitalInvitations() {
             <div className="text-xs text-foreground/60 break-all my-2">{url}</div>
             <div className="flex flex-wrap gap-2">
               <ComicButton size="sm" onClick={() => { if (navigator.share) navigator.share({ title: item.title, url }).catch(() => {}); else navigator.clipboard.writeText(url); }}>ΑΠΟΣΤΟΛΗ / ΚΟΙΝΟΠΟΙΗΣΗ</ComicButton>
-              <ComicButton size="sm" variant="dark" onClick={() => navigator.clipboard.writeText(url)}>ΑΝΤΙΓΡΑΦΗ LINK</ComicButton>
+              <ComicButton size="sm" variant="dark" onClick={() => navigator.clipboard.writeText(url)}>ΑΝΤΙΓΡΑΦΗ ΣΥΝΔΕΣΜΟΥ</ComicButton>
               <ComicButton size="sm" variant="red" disabled={busy} onClick={() => save(items.filter((x) => x.id !== item.id))}>ΔΙΑΓΡΑΦΗ</ComicButton>
             </div>
           </div>
