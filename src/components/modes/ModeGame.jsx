@@ -12,7 +12,7 @@ import GameDurationClock from '@/components/shared/GameDurationClock';
 import { useModeCtx, useTick, timerStart } from '@/lib/modeKit';
 import { COLLECTIONS, applyScenarioCollections } from '@/lib/modesContentStore';
 
-// Tablet (game master) για τα τέσσερα ψηφιακά modes. Κάθε mode = λίστα από acts.
+// Tablet (game master) για τα ψηφιακά modes. Κάθε mode = λίστα από acts.
 export default function ModeGame({ state, updateState, onEnd, onQR, playerProfiles = [], playerProfilesReady = true }) {
   const [, setContentReady] = useState(false);
   useEffect(() => {
