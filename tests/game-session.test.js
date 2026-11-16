@@ -74,6 +74,19 @@ test('Bailout Auction accepts only the current player own positive bid', () => {
   }, 'p1'), false);
 });
 
+
+test('existing redacted vote maps remain writable without exposing other votes', () => {
+  const current = {
+    players,
+    juryTrial: { votes: { p0: 'guilty', p1: 'innocent' }, question: 'Q' },
+  };
+  const response = sanitizePublicSession({ state: current }, 'p0');
+  assert.deepEqual(response.state.juryTrial.votes, { p0: 'guilty', __redacted_0: true });
+  assert.equal(validatePlayerPatch(current, {
+    juryTrial: { ...response.state.juryTrial, votes: { ...response.state.juryTrial.votes, p0: 'innocent' } },
+  }, 'p0'), true);
+});
+
 test('private auction bids and interrogation votes are redacted for other players', () => {
   const record = { state: {
     players,
@@ -81,7 +94,7 @@ test('private auction bids and interrogation votes are redacted for other player
     absoluteInterrogation: { active: true, step: 0, targetId: 'p0', votes: { 0: { p0: true, p1: false } } },
   } };
   const response = sanitizePublicSession(record, 'p0');
-  assert.deepEqual(response.state.bailoutAuction.bids, { p0: 10, __redacted_0: true });
+  assert.deepEqual(response.state.bailoutAuction.bids, { p0: 10 });
   assert.deepEqual(response.state.absoluteInterrogation.votes[0], { p0: true });
 });
 
