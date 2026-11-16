@@ -117,7 +117,6 @@ SITE_EVENTS.push(
   { id: 'extended', label: '💅 PEDI-GLAM EXTENDED' },
   { id: 'lockdown', label: '🚨 PAJAMA LOCKDOWN' },
   { id: 'beachbar', label: '🍹 BEACH BAR LOCKDOWN' },
-  { id: 'marathon4h', label: '🌙 4H PAJAMA MARATHON' },
 );
 
 Object.assign(DEFAULT_SITE, {
@@ -209,36 +208,6 @@ Object.assign(DEFAULT_SITE, {
     info: modeInfo('Καλοκαιρινό: σαγιονάρες, άνετα ρούχα, μαγιό ή κάτι δροσερό.', 'Σαγιονάρες (υποχρεωτικές), μεγάλη διάθεση και κινητό με φόρτιση.'),
     participation: 'Κλειστή λίστα, 18+, λίγες θέσεις. Στη φόρμα δηλώνεις αν πίνεις αλκοόλ και τα όριά σου.',
     faq: modeFaq('Ένα beach bar party game με χορό, ποτό, σαγιονάρες και ποινές. Κλειστή λίστα, 18+.', 'Περίπου 3-4 ώρες.'),
-  },
-  marathon4h: {
-    tab: '4H Pajama Marathon',
-    overline: '4-Hour Pajama Marathon · Extended Edition · 18+',
-    titleLines: ['4H PAJAMA', 'MARATHON'],
-    tagline: 'Τέσσερις πράξεις, από το βραδινό ταμπλό ως τον πρωινό καφέ.',
-    date: '',
-    cta: { label: 'ΚΛΕΙΣΕ ΘΕΣΗ', path: '/modes-form?mode=marathon_4h' },
-    scenarioKicker: 'Το παιχνίδι',
-    scenarioTitle: 'ΤΙ ΕΙΝΑΙ Ο 4H PAJAMA MARATHON',
-    scenario: [
-      'Όλα τα modes σε μία διαδρομή. Ξεκινάτε με το Glam & Chaos Board, περνάτε στα μεσάνυχτα του Midnight Vault, μπαίνετε στο Pajama Lockdown και κλείνετε με το Morning Escape και το VIP Vault.',
-      'Ο ρόλος της «Hostage» αλλάζει κυκλικά σε κάθε πράξη. Καμία δεν μένει στο περιθώριο: όλες δοκιμάζονται και ως δεμένες και ως λύτριες.',
-      'Τα Glam Tokens που μαζεύετε στο ταμπλό είναι το νόμισμά σας για όλη τη βραδιά: ασυλίες, hints και skips.',
-    ],
-    highlights: ['4 πράξεις, 3-4 ώρες', 'Κυκλική εναλλαγή Hostage', 'Glam Tokens σε όλη τη βραδιά', 'Escape Room & VIP Vault'],
-    videoKicker: 'Το τρέιλερ',
-    videoTitle: '30 ΔΕΥΤΕΡΟΛΕΠΤΑ ΑΠΟ ΤΟΝ ΜΑΡΑΘΩΝΙΟ',
-    programKicker: 'Πρόγραμμα',
-    programTitle: 'ΤΕΣΣΕΡΙΣ ΠΡΑΞΕΙΣ',
-    programNote: 'Σύνολο περίπου 3,5 ώρες.',
-    program: [
-      { roman: 'I', title: 'The Glam & Chaos Board', subtitle: '', meta: '45′', group: 'Βράδυ', lines: ['Ταμπλό, tokens και κρυφές αποστολές.'] },
-      { roman: 'II', title: 'Midnight ASMR & Tickle Vault', subtitle: '', meta: '45′', group: 'Μεσάνυχτα', lines: ['Blind ASMR Test και Midnight Whispers.'] },
-      { roman: 'III', title: 'Pajama Lockdown (18+)', subtitle: '', meta: '75′', group: 'Νύχτα', lines: ['Το escape room των 60 λεπτών.'] },
-      { roman: 'IV', title: 'Extended Morning Escape & VIP Vault', subtitle: '', meta: '45′', group: 'Πρωί', lines: ['Ο τελικός γρίφος, ο καφές και οι τίτλοι.'] },
-    ],
-    info: modeInfo('Πιτζάμες. Θα μείνεις αρκετή ώρα, φόρεσε κάτι άνετο.', 'Παντόφλες, παράταιρες κάλτσες, μάσκα ύπνου και κινητό με φόρτιση.'),
-    participation: 'Κλειστή λίστα, 18+, λίγες θέσεις. Στη φόρμα δηλώνεις και τα όριά σου.',
-    faq: modeFaq('Ο πλήρης μαραθώνιος με όλες τις φάσεις: ταμπλό, Midnight Vault, Lockdown και Morning Escape.', 'Περίπου 3,5-4 ώρες.'),
   },
 });
 
