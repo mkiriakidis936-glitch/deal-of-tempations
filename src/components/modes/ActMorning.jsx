@@ -16,6 +16,27 @@ export default function ActMorning({ ctx, onFinish }) {
   const [card, setCard] = useState(null);
   const unlocked = !!mg.vaultUnlocked;
 
+  React.useEffect(() => {
+    const action = mg.playerAction;
+    if (!action || !['morning_clue', 'morning_code'].includes(action.type)) return;
+    if (action.type === 'morning_clue') {
+      const next = found.includes(action.index) ? found : [...found, action.index];
+      setMg({ morningFound: next, playerAction: null });
+      log(`☀️ ${nameOf(action.playerId)} βρήκε το ψηφιακό ψήγμα ${action.index + 1}`);
+      return;
+    }
+    if (action.code === code) {
+      setMg({ vaultUnlocked: true, morningSolvedAt: Date.now(), playerAction: null });
+      log(`☀️ ${nameOf(action.playerId)} έλυσε τον Coffee Code από το κινητό`);
+      sfx.ok();
+      confetti({ particleCount: 160, spread: 90, origin: { y: 0.6 }, colors: ['#FFD700', '#FF2A85', '#ffffff'] });
+    } else {
+      setMg({ playerAction: null });
+      log(`☀️ ${nameOf(action.playerId)} δοκίμασε λανθασμένο Coffee Code`);
+      sfx.fail();
+    }
+  }, [mg.playerAction?.at]);
+
   function toggleClue(i) {
     const next = found.includes(i) ? found.filter((x) => x !== i) : [...found, i];
     setMg({ morningFound: next });
