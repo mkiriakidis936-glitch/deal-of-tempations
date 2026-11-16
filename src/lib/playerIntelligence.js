@@ -34,7 +34,7 @@ export function canAssignVipActivity(ctx, player, { activityType = null, activit
     return false;
   }
   const normalizedLabel = normalizeName(activityLabel);
-  const inferredType = activityType || (/(mission|αποστολ)/.test(normalizedLabel) ? 'missions' : /(surprise|απροβλεπτ|τροχο|wheel)/.test(normalizedLabel) ? 'surprises' : /(question|ερωτησ|quiz|trivia)/.test(normalizedLabel) ? 'questions' : null);
+  const inferredType = activityType || (/(mission|αποστολ)/.test(normalizedLabel) ? 'missions' : /(surprise|απροβλεπτ|τροχο|wheel|chaos)/.test(normalizedLabel) ? 'surprises' : /(question|ερωτησ|quiz|trivia|test|δοκιμασ)/.test(normalizedLabel) ? 'questions' : null);
   if (inferredType && answers.activityPreferences?.[inferredType] === 'no') {
     window.alert(`${player.name} δεν έχει επιλέξει συμμετοχή σε ${activityLabel}.`);
     return false;
