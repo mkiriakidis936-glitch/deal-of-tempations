@@ -76,7 +76,7 @@ export const DEFAULT_SITE = {
     videoTitle: '30 ΔΕΥΤΕΡΟΛΕΠΤΑ ΑΠΟ ΤΗ ΝΥΧΤΑ',
     programKicker: 'Πρόγραμμα',
     programTitle: 'ΕΠΤΑ ΠΡΑΞΕΙΣ',
-    programNote: 'Σύνολο περίπου 8 ώρες, με διαλείμματα.',
+    programNote: 'Συνολική διάρκεια 5 ώρες, με διαλείμματα.',
     program: PAJAMA_PROGRAM,
     info: [
       { title: 'Πότε', text: '{date}' },
