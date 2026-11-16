@@ -493,13 +493,26 @@ export function entityRoutes() {
   });
   r.get('/vip-access/vault', requireVipSession, async (req, res, next) => {
     try {
-      const [{ rows: profiles }, { rows: archives }, { rows: certificates }] = await Promise.all([
-        query("SELECT id, data FROM records WHERE entity = 'VIPAccessProfile' AND data->>'sessionId' = $1 ORDER BY created_date DESC LIMIT 1", [req.vipSession.id]),
+      const [{ rows: profiles }, { rows: archives }, { rows: certificates }, { rows: contentRows }] = await Promise.all([
+        query("SELECT id, data FROM records WHERE entity = 'VIPAccessProfile' ORDER BY updated_date DESC LIMIT 200"),
         query("SELECT id, data FROM records WHERE entity = 'SessionArchive' ORDER BY created_date DESC LIMIT 50"),
         query("SELECT id, data FROM records WHERE entity = 'VIPVaultCertificate' ORDER BY created_date DESC LIMIT 50"),
+        query("SELECT data FROM records WHERE entity = 'AppSetting' AND data->>'key' = $1 ORDER BY updated_date DESC LIMIT 1", ['vip_unrated_content']),
       ]);
+      const vipContent = contentRows[0]?.data?.value || {};
       return res.json({
-        profile: profiles[0] ? { id: profiles[0].id, ...profiles[0].data } : null,
+        profile: profiles.find((row) => row.data?.sessionId === req.vipSession.id)
+          ? { id: profiles.find((row) => row.data?.sessionId === req.vipSession.id).id, ...profiles.find((row) => row.data?.sessionId === req.vipSession.id).data }
+          : null,
+        profiles: profiles.map((row) => ({
+          id: row.id,
+          displayName: row.data?.displayName || '',
+          intensity: row.data?.intensity || 3,
+          preferences: row.data?.preferences || [],
+          boundaries: row.data?.boundaries || [],
+          adultConfirmed: !!row.data?.adultConfirmed,
+          consentConfirmed: !!row.data?.consentConfirmed,
+        })),
         certificates: certificates.map((row) => ({ id: row.id, ...row.data })),
         archives: archives.map((row) => ({
           id: row.id, mode: row.data.mode || '', winner: row.data.winner || '',
@@ -538,7 +551,7 @@ export function entityRoutes() {
         preferences, boundaries, updatedAt: new Date().toISOString(),
         adultConfirmed: true, consentConfirmed: true,
       };
-      const { rows: existing } = await query("SELECT id FROM records WHERE entity = 'VIPAccessProfile' AND data->>'sessionId' = $1 ORDER BY created_date DESC LIMIT 1", [req.vipSession.id]);
+      const { rows: existing } = await query("SELECT id FROM records WHERE entity = 'VIPAccessProfile' AND lower(data->>'displayName') = lower($1) ORDER BY updated_date DESC LIMIT 1", [profile.displayName]);
       let saved;
       if (existing[0]) {
         const { rows } = await query("UPDATE records SET data = $1::jsonb, updated_date = now() WHERE id = $2 RETURNING *", [JSON.stringify(profile), existing[0].id]);
