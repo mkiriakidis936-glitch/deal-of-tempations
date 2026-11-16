@@ -147,12 +147,19 @@ function Dance({ ctx, bb, setBb, T, addDrink, flopOn }) {
     setBb({ freeze: { cmd, at: Date.now() } });
     log(`📯 FREEZE! ${cmd}`);
   }
-  function loser(p) {
-    if (!canAssignVipActivity(ctx, p, { activityLabel: 'Freeze challenge' })) return;
+  function loser(p, fromMobile = false) {
+    if (!canAssignVipActivity(ctx, p, { activityLabel: 'Freeze challenge' })) { if (fromMobile) setBb({ playerAction: null }); return; }
     addDrink(p.id);
-    setBb({ phase: 'wheel', loser: p.id, freeze: null });
+    setBb({ phase: 'wheel', loser: p.id, freeze: null, ...(fromMobile ? { playerAction: null } : {}) });
     log(`🥤 ${p.name} ολοκλήρωσε το Freeze — mocktail counter και Τροχός Προκλήσεων`);
   }
+
+  useEffect(() => {
+    const action = ctx.mg?.playerAction;
+    if (action?.type !== 'beach_freeze_loser' || !bb.freeze) return;
+    const player = players.find((item) => item.id === action.playerId);
+    if (player) loser(player, true);
+  }, [ctx.mg?.playerAction?.at, bb.freeze, players]);
 
   return (
     <Panel title="🎶 The Dance & Freeze Arena" accent={TURQ}>
@@ -193,10 +200,10 @@ function Wheel({ ctx, bb, setBb, T, flopOn }) {
   const [run, setRun] = useState(false);
   const left = useLocalCountdown(card?.secs || 0, run, () => { sfx.alarm(); setRun(false); });
 
-  function spin() {
+  function spin(fromMobile = false, requestedPlayerId = who) {
     if (spinning) return;
-    const selectedPlayer = players.find((player) => player.id === who);
-    if (!canAssignVipActivity(ctx, selectedPlayer, { activityLabel: 'Wheel challenge' })) return;
+    const selectedPlayer = players.find((player) => player.id === requestedPlayerId);
+    if (!canAssignVipActivity(ctx, selectedPlayer, { activityLabel: 'Wheel challenge' })) { if (fromMobile) setBb({ playerAction: null }); return; }
     setSpinning(true);
     setRun(false);
     let n = 0;
@@ -210,13 +217,28 @@ function Wheel({ ctx, bb, setBb, T, flopOn }) {
         const c = pick(BEACH_WHEEL);
         setCat(c.cat);
         setSpinning(false);
-        setBb({ wheel: { card: c, pid: who, at: Date.now() }, loser: null });
-        log(`🎡 ${nameOf(who)}: «${c.title}»`);
+        setBb({ wheel: { card: c, pid: requestedPlayerId, at: Date.now() }, loser: null, ...(fromMobile ? { playerAction: null } : {}) });
+        log(`🎡 ${nameOf(requestedPlayerId)}: «${c.title}»`);
         sfx.ok();
         if (c.loseFlop) setBb({ flops: { ...(bb.flops || {}), [who]: false } });
       }
     }, 110);
   }
+
+  useEffect(() => {
+    const action = ctx.mg?.playerAction;
+    if (!action) return;
+    if (action.type === 'beach_wheel_spin' && action.playerId === bb.loser && !card) {
+      setWho(action.playerId);
+      spin(true, action.playerId);
+    } else if (action.type === 'beach_wheel_done' && action.playerId === bb.wheel?.pid && card) {
+      setBb({ wheel: null, phase: 'dance', playerAction: null });
+      setRun(false);
+    } else if (action.type === 'beach_wheel_again' && action.playerId === bb.wheel?.pid && card) {
+      setBb({ wheel: null, playerAction: null });
+      setRun(false);
+    }
+  }, [ctx.mg?.playerAction?.at, bb.loser, bb.wheel?.pid, card, spin, setBb]);
 
   const meta = WHEEL_CATEGORIES.find((c) => c.id === (card ? card.cat : cat));
   return (
@@ -257,6 +279,24 @@ function Truth({ ctx, bb, setBb, T, addDrink }) {
   const left = useLocalCountdown(BEACH_STEP_SECONDS, state === 'decide', () => { setState('quiz'); sfx.alarm(); log(`🚨 ${nameOf(who)} άργησε — ενεργοποιήθηκε ψηφιακό quiz`); });
   const tk = useLocalCountdown(20, state === 'quiz', () => sfx.alarm());
 
+  function respond(value, fromMobile = false) {
+    if (!q || state !== 'decide') return;
+    if (value === 'truth') {
+      setState('idle'); setQ(null); sfx.ok(); log(`🗣️ ${nameOf(who)} είπε αλήθεια`);
+    } else {
+      addDrink(who, 2); setState('idle'); setQ(null); log(`🥤 ${nameOf(who)} επέλεξε mocktail / PASS`);
+    }
+    setBb({ truth: null });
+    if (fromMobile) ctx.setMg({ playerAction: null });
+  }
+
+  useEffect(() => {
+    const action = ctx.mg?.playerAction;
+    if (action?.type === 'beach_truth_response' && action.playerId === who) respond(action.value, true);
+  }, [ctx.mg?.playerAction?.at, who, q, state]);
+
+
+
   return (
     <Panel title="🥤 Mocktail & Truth Sync" accent={CORAL}>
       <p className="text-sm opacity-80">Απαντάς ειλικρινά ή επιλέγεις μη αλκοολούχο mocktail / PASS. Αν αργήσεις πάνω από 5″, ενεργοποιείται προαιρετικό ψηφιακό quiz.</p>
@@ -267,7 +307,7 @@ function Truth({ ctx, bb, setBb, T, addDrink }) {
         <Btn color="bg-rose-600" onClick={() => {
           const selectedPlayer = players.find((player) => player.id === who);
           if (!canAssignVipActivity(ctx, selectedPlayer, { activityType: 'questions', activityLabel: 'ερωτήσεις' })) return;
-          setQ(pick(SHOT_TRUTH)); setState('decide'); setBb({ truth: { who, at: Date.now() } });
+          const question = pick(SHOT_TRUTH); setQ(question); setState('decide'); setBb({ truth: { who, at: Date.now(), question, status: 'decide' } });
         }}>🎴 Νέα ερώτηση 18+</Btn>
       </div>
       {q && (
@@ -277,8 +317,8 @@ function Truth({ ctx, bb, setBb, T, addDrink }) {
           {state === 'decide' && (
             <div className="flex flex-wrap gap-2 items-center">
               <b className="font-display text-4xl w-16">{Math.ceil(left)}″</b>
-              <Btn color="bg-emerald-700" onClick={() => { setState('idle'); setQ(null); sfx.ok(); log(`🗣️ ${nameOf(who)} είπε αλήθεια`); }}>🗣️ TRUTH</Btn>
-              <Btn color="bg-orange-600" onClick={() => { addDrink(who, 2); setState('idle'); setQ(null); log(`🥤 ${nameOf(who)} επέλεξε mocktail`); }}>🥤 MOCKTAIL / PASS</Btn>
+              <Btn color="bg-emerald-700" onClick={() => respond('truth')}>🗣️ TRUTH</Btn>
+              <Btn color="bg-orange-600" onClick={() => respond('mocktail')}>🥤 MOCKTAIL / PASS</Btn>
             </div>
           )}
           {state === 'quiz' && (
