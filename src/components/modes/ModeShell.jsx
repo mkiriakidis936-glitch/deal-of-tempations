@@ -6,6 +6,7 @@ import { fmt, timerLeft, useTick, setGameStopActive } from '@/lib/modeKit';
 export default function ModeShell({ modeId, ctx, act, children, onQR, onEnd, showTimer = true }) {
   const theme = MODE_THEMES[modeId] || MODE_THEMES.lockdown;
   const meta = modeMeta(modeId);
+  const actTitle = modeId === 'marathon_4h' && act === 'board' ? 'Act 1 · Pajama Pedi-Glam' : (ACT_META[act]?.title || act);
   const [showLog, setShowLog] = useState(false);
   const { mg, stopped, toggleStop, centralStopped } = ctx;
   useEffect(() => { setGameStopActive(stopped); }, [stopped]);
@@ -24,7 +25,7 @@ export default function ModeShell({ modeId, ctx, act, children, onQR, onEnd, sho
             >
               {meta?.icon} {meta?.name}
             </div>
-            {act && <div className="text-xs sm:text-sm opacity-70 font-body">{ACT_META[act]?.title || act}</div>}
+            {act && <div className="text-xs sm:text-sm opacity-70 font-body">{actTitle}</div>}
           </div>
           {showTimer && mg.timer && (
             <div
