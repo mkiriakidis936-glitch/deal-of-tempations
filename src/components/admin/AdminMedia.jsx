@@ -46,7 +46,7 @@ export default function AdminMedia() {
   const LIBRARY_CATEGORIES = [
     { id: 'heist', label: 'Heist' },
     { id: 'pajama', label: 'Pajama' },
-    { id: 'branding', label: 'Branding' },
+    { id: 'branding', label: 'Εταιρική ταυτότητα' },
     { id: 'uncategorized', label: 'Χωρίς κατηγορία' },
   ];
   const categoryOf = (url) => ov.libraryCategories?.[url] || 'uncategorized';
@@ -227,7 +227,7 @@ export default function AdminMedia() {
       <input ref={libraryOne} type="file" accept={MEDIA_ACCEPT} hidden onChange={onFiles} />
 
       <ComicPanel className="bg-card">
-        <div className="font-heading text-xl text-primary">🗂️ MEDIA LIBRARY 2.0</div>
+        <div className="font-heading text-xl text-primary">🗂️ ΒΙΒΛΙΟΘΗΚΗ ΠΟΛΥΜΕΣΩΝ 2.0</div>
         <p className="text-xs font-body text-foreground/70 mt-1">
           Διαχείριση φωτογραφιών, γραφικών SVG, βίντεο και ήχων με κατηγορίες, αναζήτηση και προεπισκόπηση. Οι φωτογραφίες μικραίνουν αυτόματα.
         </p>
@@ -283,12 +283,12 @@ export default function AdminMedia() {
         </div>
       </ComicPanel>
       <ComicPanel className="bg-card space-y-3">
-        <div className="font-heading text-lg">🎮 MODE MEDIA CENTER</div>
+        <div className="font-heading text-lg">🎮 ΚΕΝΤΡΟ ΠΟΛΥΜΕΣΩΝ MODES</div>
         <p className="text-xs text-foreground/60">Ανεξάρτητη φωτογραφική ταυτότητα για τα τέσσερα νέα Modes.</p>
         <ModeMediaManager
           value={ov.modeMedia || {}}
           disabled={!!busy}
-          onSave={(modeMedia) => run('mode-media', () => save({ ...ov, modeMedia }), 'Το Mode Media αποθηκεύτηκε ✓')}
+          onSave={(modeMedia) => run('mode-media', () => save({ ...ov, modeMedia }), 'Το Πολυμέσα Mode αποθηκεύτηκε ✓')}
         />
       </ComicPanel>
 
@@ -347,7 +347,7 @@ export default function AdminMedia() {
       <ComicPanel className="bg-card space-y-3">
         <div className="flex items-center justify-between gap-2 flex-wrap"><div className="font-heading text-lg">🗂️ ΒΙΒΛΙΟΘΗΚΗ ΑΡΧΕΙΩΝ ({library.length})</div><ComicButton size="sm" disabled={!!busy} onClick={() => pick('library', 'library', libraryOne)}>＋ ΠΡΟΣΘΗΚΗ ΑΡΧΕΙΟΥ</ComicButton></div>
         <input type="search" value={librarySearch} onChange={(e) => setLibrarySearch(e.target.value)} placeholder="Αναζήτηση αρχείων…" className="w-full rounded-lg border-2 border-border bg-background px-3 py-2 text-sm" />
-        <p className="text-[11px] text-foreground/60">Οργάνωσε φωτογραφίες, γραφικά, βίντεο και ήχους σε Heist, Pajama ή Branding. Η διαγραφή αφαιρεί το αρχείο οριστικά.</p>
+        <p className="text-[11px] text-foreground/60">Οργάνωσε φωτογραφίες, γραφικά, βίντεο και ήχους σε Heist, Pajama ή Εταιρική ταυτότητα. Η διαγραφή αφαιρεί το αρχείο οριστικά.</p>
         <div className="flex flex-wrap gap-2">
           {[{ id: 'all', label: 'Όλα' }, ...LIBRARY_CATEGORIES].map((c) => (
             <ComicButton key={c.id} size="sm" variant={libraryFilter === c.id ? 'default' : 'dark'} disabled={!!busy} onClick={() => setLibraryFilter(c.id)}>{c.label}</ComicButton>
