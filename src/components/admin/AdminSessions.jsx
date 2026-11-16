@@ -6,7 +6,7 @@ import { calculateMostWanted } from '@/lib/gameLogic';
 
 const MODE_NAMES = Object.fromEntries(GAME_MODES.map((m) => [m.id, m.name]));
 const INT_NAMES = Object.fromEntries(INTENSITY_LEVELS.map((i) => [i.id, `${i.icon} ${i.name}`]));
-const STAGE_NAMES = { 0: 'Stage 0', 1: 'Stage 1', 2: 'Stage 2', 3: 'Stage 3' };
+const STAGE_NAMES = { 0: 'Στάδιο 0', 1: 'Στάδιο 1', 2: 'Στάδιο 2', 3: 'Στάδιο 3' };
 
 export default function AdminSessions({ sessions, loading, onSelect, onDelete, onRestart, onRefresh }) {
   const [expanded, setExpanded] = useState(null);
@@ -99,7 +99,7 @@ export default function AdminSessions({ sessions, loading, onSelect, onDelete, o
                 {/* History */}
                 {state.history && state.history.length > 0 && (
                   <div>
-                    <div className="text-xs font-bold mb-1">📜 Ιστορικό ({state.history.length} events):</div>
+                    <div className="text-xs font-bold mb-1">📜 Ιστορικό ({state.history.length} συμβάντα):</div>
                     <div className="max-h-32 overflow-y-auto space-y-0.5 text-xs bg-background/5 rounded p-2">
                       {state.history.slice(0, 15).map((h, i) => (
                         <div key={i} className="truncate">
