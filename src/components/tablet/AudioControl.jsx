@@ -1,7 +1,7 @@
 import React, { useRef, useState, useEffect } from 'react';
 import ComicPanel from '@/components/comic/ComicPanel';
 import ComicButton from '@/components/comic/ComicButton';
-import { SOUND_LIST, SOUNDS, registerAudioContext } from '@/data/soundLibrary';
+import { SOUND_LIST, SOUNDS, registerAudioContext, getAudioOutput, getAudioMasterVolume, setAudioMasterVolume, unlockAudioContexts } from '@/data/soundLibrary';
 
 const MUSIC_TRACKS = [
   { id: 'none', label: '🔇 Σιωπή' },
@@ -13,6 +13,7 @@ const MUSIC_TRACKS = [
 export default function AudioControl({ state, updateState, onClose }) {
   const audioSync = state.audioSync || {};
   const [musicPlaying, setMusicPlaying] = useState(false);
+  const [masterVolume, setMasterVolume] = useState(getAudioMasterVolume);
   const ambientRef = useRef(null);
 
   useEffect(() => {
@@ -44,7 +45,6 @@ export default function AudioControl({ state, updateState, onClose }) {
     const Ctx = window.AudioContext || window.webkitAudioContext;
     if (!Ctx) return;
     const ctx = new Ctx();
-    const dest = ctx.destination;
     const osc1 = ctx.createOscillator();
     const osc2 = ctx.createOscillator();
     const gain = ctx.createGain();
@@ -57,7 +57,7 @@ export default function AudioControl({ state, updateState, onClose }) {
     gain.gain.value = 0.05;
     osc1.connect(gain);
     osc2.connect(gain);
-    gain.connect(dest);
+    gain.connect(getAudioOutput(ctx));
     osc1.start();
     osc2.start();
     ambientRef.current = { ctx, osc1, osc2, unregister: registerAudioContext(ctx) };
@@ -90,7 +90,7 @@ export default function AudioControl({ state, updateState, onClose }) {
   }
 
   return (
-    <div className="fixed inset-0 z-[70] bg-background/85 flex items-center justify-center p-4" onClick={onClose}>
+    <div className="fixed inset-0 z-[70] bg-background/85 flex items-center justify-center p-4" onPointerDownCapture={unlockAudioContexts} onClick={onClose}>
       <div onClick={(e) => e.stopPropagation()} className="max-w-lg w-full space-y-3 max-h-[85vh] overflow-y-auto">
         <ComicPanel className="bg-tarot-forest text-center py-4">
           <div className="font-heading text-3xl comic-text-stroke text-tarot-gold">🎵 ΗΧΗΤΙΚΟΣ ΣΚΗΝΟΘΕΤΗΣ</div>
@@ -114,6 +114,12 @@ export default function AudioControl({ state, updateState, onClose }) {
               </ComicButton>
             ))}
           </div>
+        </ComicPanel>
+
+        {/* Master output level — saved locally per device */}
+        <ComicPanel className="bg-card space-y-2">
+          <div className="flex items-center justify-between gap-3"><div className="font-heading text-lg text-primary">ΕΝΤΑΣΗ ΗΧΟΥ</div><strong className="text-sm tabular-nums">{Math.round(masterVolume * 100)}%</strong></div>
+          <input aria-label="Κεντρική ένταση ήχου" type="range" min="0" max="1" step="0.01" value={masterVolume} onChange={(event) => { const next = setAudioMasterVolume(event.target.value); setMasterVolume(next); }} className="w-full accent-primary" />
         </ComicPanel>
 
         {/* Background music */}

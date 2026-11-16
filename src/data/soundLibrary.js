@@ -2,9 +2,46 @@
 // Each sound is a function that takes an AudioContext and plays a tone sequence.
 
 const activeContexts = new Set();
+const masterGains = new WeakMap();
+let masterVolume = 0.78;
+
+export function getAudioMasterVolume() {
+  try {
+    const saved = window.localStorage.getItem('dot_audio_master_volume');
+    if (saved !== null && Number.isFinite(Number(saved))) masterVolume = Math.max(0, Math.min(1, Number(saved)));
+  } catch { /* storage can be unavailable */ }
+  return masterVolume;
+}
+
+export function getAudioOutput(ctx) {
+  let gain = masterGains.get(ctx);
+  if (!gain) {
+    gain = ctx.createGain();
+    gain.gain.value = getAudioMasterVolume();
+    gain.connect(ctx.destination);
+    masterGains.set(ctx, gain);
+  }
+  return gain;
+}
+
+export function setAudioMasterVolume(value) {
+  masterVolume = Math.max(0, Math.min(1, Number(value) || 0));
+  try { window.localStorage.setItem('dot_audio_master_volume', String(masterVolume)); } catch { /* storage can be unavailable */ }
+  activeContexts.forEach((ctx) => {
+    try { getAudioOutput(ctx).gain.setTargetAtTime(masterVolume, ctx.currentTime, 0.025); } catch { /* context may be closed */ }
+  });
+  return masterVolume;
+}
+
+export function unlockAudioContexts() {
+  activeContexts.forEach((ctx) => {
+    if (ctx.state === 'suspended') ctx.resume().catch(() => {});
+  });
+}
 
 export function registerAudioContext(ctx) {
   activeContexts.add(ctx);
+  getAudioOutput(ctx);
   return () => activeContexts.delete(ctx);
 }
 
@@ -25,6 +62,7 @@ function createCtx() {
   if (!Ctx) return null;
   const ctx = new Ctx();
   activeContexts.add(ctx);
+  getAudioOutput(ctx);
   return ctx;
 }
 
@@ -47,7 +85,7 @@ export const SOUNDS = {
     name: 'Dramatic Sting', icon: '🎭', duration: 2,
     play: () => {
       const ctx = createCtx(); if (!ctx) return;
-      const dest = ctx.destination;
+      const dest = getAudioOutput(ctx);
       [220, 330, 440, 550].forEach((f, i) => tone(ctx, dest, f, i * 0.15, 0.4, 'sawtooth', 0.2));
       setTimeout(() => closeCtx(ctx), 2500);
     },
@@ -56,7 +94,7 @@ export const SOUNDS = {
     name: 'Suspense', icon: '😰', duration: 3,
     play: () => {
       const ctx = createCtx(); if (!ctx) return;
-      const dest = ctx.destination;
+      const dest = getAudioOutput(ctx);
       tone(ctx, dest, 110, 0, 3, 'sine', 0.15);
       tone(ctx, dest, 165, 0, 3, 'sine', 0.1);
       [0.5, 1, 1.5, 2, 2.5].forEach((t) => tone(ctx, dest, 880, t, 0.1, 'square', 0.08));
@@ -67,7 +105,7 @@ export const SOUNDS = {
     name: 'Celebration', icon: '🎉', duration: 2,
     play: () => {
       const ctx = createCtx(); if (!ctx) return;
-      const dest = ctx.destination;
+      const dest = getAudioOutput(ctx);
       [523, 659, 784, 1047].forEach((f, i) => tone(ctx, dest, f, i * 0.1, 0.3, 'triangle', 0.2));
       setTimeout(() => ctx.close(), 2500);
     },
@@ -76,7 +114,7 @@ export const SOUNDS = {
     name: 'Buzzer', icon: '🚫', duration: 1,
     play: () => {
       const ctx = createCtx(); if (!ctx) return;
-      const dest = ctx.destination;
+      const dest = getAudioOutput(ctx);
       tone(ctx, dest, 150, 0, 1, 'sawtooth', 0.3);
       setTimeout(() => ctx.close(), 1500);
     },
@@ -85,7 +123,7 @@ export const SOUNDS = {
     name: 'Reveal', icon: '✨', duration: 2,
     play: () => {
       const ctx = createCtx(); if (!ctx) return;
-      const dest = ctx.destination;
+      const dest = getAudioOutput(ctx);
       tone(ctx, dest, 200, 0, 1.5, 'sine', 0.15);
       tone(ctx, dest, 400, 0.3, 1.2, 'sine', 0.15);
       tone(ctx, dest, 800, 0.6, 1, 'sine', 0.2);
@@ -97,7 +135,7 @@ export const SOUNDS = {
     name: 'Heartbeat', icon: '💓', duration: 2,
     play: () => {
       const ctx = createCtx(); if (!ctx) return;
-      const dest = ctx.destination;
+      const dest = getAudioOutput(ctx);
       [0, 0.4, 0.8, 1.2, 1.6].forEach((t) => {
         tone(ctx, dest, 60, t, 0.15, 'sine', 0.3);
         tone(ctx, dest, 50, t + 0.1, 0.1, 'sine', 0.2);
@@ -109,7 +147,7 @@ export const SOUNDS = {
     name: 'Transition', icon: '🎬', duration: 1.5,
     play: () => {
       const ctx = createCtx(); if (!ctx) return;
-      const dest = ctx.destination;
+      const dest = getAudioOutput(ctx);
       tone(ctx, dest, 440, 0, 0.3, 'sine', 0.15);
       tone(ctx, dest, 554, 0.2, 0.3, 'sine', 0.15);
       tone(ctx, dest, 659, 0.4, 0.3, 'sine', 0.15);
@@ -121,7 +159,7 @@ export const SOUNDS = {
     name: 'Applause', icon: '👏', duration: 3,
     play: () => {
       const ctx = createCtx(); if (!ctx) return;
-      const dest = ctx.destination;
+      const dest = getAudioOutput(ctx);
       for (let i = 0; i < 20; i++) {
         const t = i * 0.08 + Math.random() * 0.05;
         tone(ctx, dest, 200 + Math.random() * 300, t, 0.05, 'square', 0.05);
@@ -133,7 +171,7 @@ export const SOUNDS = {
     name: 'Drumroll', icon: '🥁', duration: 3,
     play: () => {
       const ctx = createCtx(); if (!ctx) return;
-      const dest = ctx.destination;
+      const dest = getAudioOutput(ctx);
       for (let i = 0; i < 30; i++) {
         tone(ctx, dest, 80 + (i % 2) * 20, i * 0.08, 0.06, 'sawtooth', 0.15);
       }

@@ -374,6 +374,14 @@ export default function Tablet() {
         >
           MASTER CONTROL ROOM
         </button>
+        <a
+          href={`/tv?code=${encodeURIComponent(session.sessionCode)}`}
+          target="_blank"
+          rel="noreferrer"
+          className="fixed bottom-24 left-3 z-[65] comic-boom bg-background/90 border border-primary/60 text-primary px-3 py-2 font-heading text-xs shadow-xl"
+        >
+          LIVE TV PREVIEW ↗
+        </a>
         {overlay === 'controlroom' && (
           <ControlRoom
             state={displayState}

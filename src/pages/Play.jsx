@@ -37,6 +37,13 @@ export default function Play() {
 
   useAudioSync(state);
 
+  React.useEffect(() => {
+    document.body.classList.add('dot-mobile-experience');
+    return () => {
+      document.body.classList.remove('dot-mobile-experience');
+    };
+  }, []);
+
   const restoredRef = useRef(false);
   const prevTurnRef = useRef(false);
   const currentCodeRef = useRef(null);

@@ -1,10 +1,20 @@
 import { useEffect, useRef } from 'react';
-import { SOUNDS, stopAllSounds } from '@/data/soundLibrary';
+import { SOUNDS, stopAllSounds, unlockAudioContexts } from '@/data/soundLibrary';
 
 // Cross-device audio sync: watches state.audioSync and plays the triggered effect on all devices.
 export function useAudioSync(state) {
   const lastEffectRef = useRef(null);
   const lastMusicRef = useRef(null);
+
+  useEffect(() => {
+    const unlock = () => unlockAudioContexts();
+    document.addEventListener('pointerdown', unlock, { passive: true });
+    document.addEventListener('keydown', unlock);
+    return () => {
+      document.removeEventListener('pointerdown', unlock);
+      document.removeEventListener('keydown', unlock);
+    };
+  }, []);
 
   useEffect(() => {
     if (state?.mg?.stop || state?.stopActive) {

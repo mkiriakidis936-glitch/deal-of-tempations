@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import ComicPanel from '@/components/comic/ComicPanel';
 import AdminEventInfo from '@/components/admin/AdminEventInfo';
 import AdminBackup from '@/components/admin/AdminBackup';
