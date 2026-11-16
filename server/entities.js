@@ -827,7 +827,7 @@ export function entityRoutes() {
         const { rows: sessions } = await query("SELECT id FROM records WHERE entity = 'GameSession' AND data->>'sessionCode' = $1 LIMIT 1", [sessionCode]);
         if (!sessions[0]) return res.status(400).json({ error: 'Το επιλεγμένο Event δεν βρέθηκε.' });
       }
-      const allowedGameModes = ['classic', 'marathon', 'arrest_heist', 'pajama', 'pedi_extended', 'lockdown', 'beach_bar', 'marathon_4h'];
+      const allowedGameModes = ['classic', 'marathon', 'arrest_heist', 'pajama', 'lockdown', 'beach_bar', 'marathon_4h'];
       if (!allowedGameModes.includes(gameMode)) return res.status(400).json({ error: 'Επίλεξε έγκυρο παιχνίδι.' });
       const data = {
         gameMode,
@@ -946,7 +946,7 @@ export function entityRoutes() {
     return formLimit(req, res, async () => {
       const body = req.body || {};
       const submissionId = typeof body.submissionId === 'string' ? body.submissionId.trim() : '';
-      if (!/^[A-Za-z0-9_-]{16,100}$/.test(submissionId) ||
+      if (body.adultConfirmed !== true || !/^[A-Za-z0-9_-]{16,100}$/.test(submissionId) ||
           typeof body.name !== 'string' || !body.name.trim() || body.name.trim().length > 80 ||
           typeof body.avatar !== 'string' || body.avatar.length > 32 ||
           !isObject(body.answers || {})) {
@@ -974,7 +974,7 @@ export function entityRoutes() {
       }
       const allowedKeys = new Set([
         'displayName', 'personality', 'competitiveness', 'preferredTestType',
-        'activityPreferences', 'difficulty', 'unexpectedChallenge', 'activeParticipation',
+        'activityPreferences', 'unexpectedChallenge', 'activeParticipation',
         'boundaries', 'surpriseWish', 'shoeSize', 'plannedOutfit', 'shoesToWear',
         'nailColor', 'slipperType', 'pajamaType', 'stayAtVilla', 'favoriteDrink',
       ]);
@@ -986,7 +986,7 @@ export function entityRoutes() {
           !['yes', 'no', ''].includes(answers.activeParticipation || '') ||
           !['yes', 'no', ''].includes(answers.stayAtVilla || '') ||
           !['questions', 'missions', 'surprises'].every((key) => ['yes', 'no'].includes(answers.activityPreferences?.[key] || 'no')) ||
-          !['competitiveness', 'difficulty'].every((key) => answers[key] === undefined || answers[key] === '' || /^[1-5]$/.test(String(answers[key]))) ||
+          !['competitiveness'].every((key) => answers[key] === undefined || answers[key] === '' || /^[1-5]$/.test(String(answers[key]))) ||
           (answers.activityPreferences !== undefined && (!isObject(answers.activityPreferences) || Object.keys(answers.activityPreferences).some((key) => !['questions', 'missions', 'surprises'].includes(key))))) {
         return res.status(400).json({ error: 'Έλεγξε τις απαντήσεις της VIP φόρμας και δοκίμασε ξανά.' });
       }
@@ -997,7 +997,6 @@ export function entityRoutes() {
         'Ανταγωνιστικότητα': answers.competitiveness || '',
         'Προτιμώμενο είδος δοκιμασιών': answers.preferredTestType || '',
         'Προτιμήσεις δραστηριοτήτων': Object.entries(answers.activityPreferences || {}).filter(([, value]) => value === 'yes').map(([key]) => ({ questions: 'Ερωτήσεις', missions: 'Αποστολές', surprises: 'Εκπλήξεις' }[key])).join(', '),
-        'Δυσκολία δοκιμασιών': answers.difficulty || '',
         'Απρόβλεπτη πρόκληση': answers.unexpectedChallenge === 'yes' ? 'ΝΑΙ' : answers.unexpectedChallenge === 'no' ? 'ΟΧΙ' : '',
         'Ενεργή συμμετοχή': answers.activeParticipation === 'yes' ? 'ΝΑΙ' : answers.activeParticipation === 'no' ? 'ΟΧΙ' : '',
         'Τι δεν επιθυμείς να περιλαμβάνει το παιχνίδι': answers.boundaries || '',
@@ -1027,6 +1026,7 @@ export function entityRoutes() {
         answers,
         customAnswers,
         answerLabels,
+        adultConfirmed: true,
         confirmed: true,
         submittedAt: new Date().toISOString(),
       };
