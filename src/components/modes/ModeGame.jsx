@@ -8,7 +8,6 @@ import ActMorning from '@/components/modes/ActMorning';
 import BeachBarGame from '@/components/modes/BeachBarGame';
 import VIPUnratedMode from '@/components/modes/VIPUnratedMode';
 import { modeMeta, ACT_META, MODE_THEMES } from '@/data/modes/modeRegistry';
-import GameDurationClock from '@/components/shared/GameDurationClock';
 import { useModeCtx, useTick, timerStart } from '@/lib/modeKit';
 import { COLLECTIONS, applyScenarioCollections } from '@/lib/modesContentStore';
 
