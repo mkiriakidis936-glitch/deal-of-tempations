@@ -11,13 +11,21 @@ export default function PublicForms() {
   const [form, setForm] = useState({ name: '', contact: '', email: '', eventType: '', eventDate: '', guests: '', message: '', suggestion: '' });
   const [busy, setBusy] = useState(false);
   const [status, setStatus] = useState('');
+  const [photo, setPhoto] = useState(null);
   const active = TYPES.find((x) => x.id === type);
   const change = (key) => (e) => setForm((v) => ({ ...v, [key]: e.target.value }));
   async function submit(e) {
     e.preventDefault(); setBusy(true); setStatus('');
     try {
-      await request('POST', `/api/entities/public-forms/${type}`, form);
-      setStatus('Η υποβολή καταχωρίστηκε επιτυχώς.'); setForm({ name: '', contact: '', email: '', eventType: '', eventDate: '', guests: '', message: '', suggestion: '' });
+      let photoUrl = '';
+      if (photo && type === 'feedback') {
+        const uploaded = await fetch(`/api/media/public-image?name=${encodeURIComponent(photo.name)}`, { method: 'POST', headers: { 'Content-Type': 'application/octet-stream' }, body: photo });
+        const uploadData = await uploaded.json();
+        if (!uploaded.ok) throw new Error(uploadData.error || 'Η φωτογραφία δεν ανέβηκε.');
+        photoUrl = uploadData.url;
+      }
+      await request('POST', `/api/entities/public-forms/${type}`, { ...form, photoUrl });
+      setStatus('Η υποβολή καταχωρίστηκε επιτυχώς.'); setPhoto(null); setForm({ name: '', contact: '', email: '', eventType: '', eventDate: '', guests: '', message: '', suggestion: '' });
     } catch (err) { setStatus(err.message || 'Η υποβολή δεν ολοκληρώθηκε.'); }
     finally { setBusy(false); }
   }
@@ -38,7 +46,7 @@ export default function PublicForms() {
         {type!=='join-heist' && field('Στοιχείο επικοινωνίας','contact')}
         {field('Email','email')}
         {type==='event-request' && <>{field('Τύπος εκδήλωσης','eventType',true)}{field('Ημερομηνία','eventDate')}{field('Αριθμός συμμετεχόντων','guests')}</>}
-        {type==='feedback' ? <>{field('Σχόλια / Feedback','message')}{field('Πρόταση για νέες 18+ κάρτες','suggestion')}</> :
+        {type==='feedback' ? <>{field('Σχόλια / Feedback','message')}{field('Πρόταση για νέες 18+ κάρτες','suggestion')}<label style={{display:'grid',gap:6,fontSize:13,color:'#d8bd72'}}>Προαιρετική φωτογραφία (JPG, PNG, WEBP · έως 8MB)<input type="file" accept="image/jpeg,image/png,image/webp" onChange={e=>setPhoto(e.target.files?.[0]||null)} style={{color:'#f5ebd1'}} /></label>{photo&&<p style={{fontSize:12,color:'#b6aa8b'}}>{photo.name}</p>}</> :
           <label style={{display:'grid',gap:6,fontSize:13,color:'#d8bd72'}}>Πρόσθετες πληροφορίες<textarea value={form.message} onChange={change('message')} rows={4} maxLength={3000} style={{padding:12,borderRadius:9,border:'1px solid #806a35',background:'#101010',color:'#f5ebd1'}} /></label>}
         <button disabled={busy} style={{padding:14,borderRadius:9,background:'#b99a45',color:'#090909',fontWeight:800}}>{busy?'ΑΠΟΣΤΟΛΗ...':'ΥΠΟΒΟΛΗ ΦΟΡΜΑΣ'}</button>
         {status && <p role="status" style={{fontSize:13,color:'#e6d7a8'}}>{status}</p>}

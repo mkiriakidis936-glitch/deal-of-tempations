@@ -38,6 +38,31 @@ export const mediaStatic = [
 export function mediaRoutes() {
   const r = express.Router();
 
+  // Public feedback photo upload: image-only, strict size limit, random filename.
+  r.post('/public-image', async (req, res) => {
+    const original = path.basename(String(req.query.name || 'photo'));
+    const ext = path.extname(original).toLowerCase();
+    const allowed = new Set(['.jpg', '.jpeg', '.png', '.webp']);
+    if (!allowed.has(ext)) return res.status(415).json({ error: 'Επιτρέπονται μόνο JPG, PNG και WEBP.' });
+    const limit = 8 * 1024 * 1024;
+    if (Number(req.headers['content-length'] || 0) > limit) return res.status(413).json({ error: 'Η φωτογραφία πρέπει να είναι έως 8MB.' });
+    const name = `public-${Date.now().toString(36)}-${crypto.randomBytes(8).toString('hex')}${ext}`;
+    const tmp = path.join(UPLOAD_DIR, `.${name}.part`);
+    let size = 0;
+    const counter = new Transform({ transform(chunk, _enc, cb) { size += chunk.length; size > limit ? cb(new Error('TOO_BIG')) : cb(null, chunk); } });
+    try {
+      await pipeline(req, counter, fs.createWriteStream(tmp));
+      if (!size) throw new Error('EMPTY');
+      await fsp.rename(tmp, path.join(UPLOAD_DIR, name));
+      return res.json({ url: `/media/${name}`, name, size, kind: 'image' });
+    } catch (e) {
+      await fsp.rm(tmp, { force: true });
+      if (e.message === 'TOO_BIG') return res.status(413).json({ error: 'Η φωτογραφία πρέπει να είναι έως 8MB.' });
+      if (e.message === 'EMPTY') return res.status(400).json({ error: 'Το αρχείο είναι κενό.' });
+      return res.status(400).json({ error: 'Η μεταφόρτωση απέτυχε.' });
+    }
+  });
+
   // POST /api/media/upload?name=photo.jpg  — raw body (octet-stream), μόνο admin
   r.post('/upload', requireAdmin, async (req, res) => {
     const original = path.basename(String(req.query.name || ''));

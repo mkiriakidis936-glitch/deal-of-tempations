@@ -6,6 +6,7 @@ import ActMidnight from '@/components/modes/ActMidnight';
 import ActLockdown from '@/components/modes/ActLockdown';
 import ActMorning from '@/components/modes/ActMorning';
 import BeachBarGame from '@/components/modes/BeachBarGame';
+import VIPUnratedMode from '@/components/modes/VIPUnratedMode';
 import { modeMeta, ACT_META, MODE_THEMES } from '@/data/modes/modeRegistry';
 import { useModeCtx, useTick, timerStart } from '@/lib/modeKit';
 import { COLLECTIONS, applyScenarioCollections } from '@/lib/modesContentStore';
@@ -45,6 +46,8 @@ export default function ModeGame({ state, updateState, onEnd, onQR, playerProfil
     log(`➡️ ${ACT_META[acts[actIndex + 1]].title}`);
   }
   const finishAll = () => setMg({ finishedAll: true });
+
+  if (mg.vipUnrated?.active || mg.vipUnrated?.completed || mg.vipUnrated?.stoppedAt) { return <ModeShell modeId={state.mode} ctx={ctx} onQR={onQR} onEnd={onEnd}><VIPUnratedMode ctx={ctx} /></ModeShell>; }
 
   if (mg.finishedAll) {
     return (

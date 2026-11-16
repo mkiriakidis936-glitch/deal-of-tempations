@@ -73,6 +73,15 @@ export default function ModeMobile({ state, me, updateState, onChangePlayer, ses
           </div>
         )}
 
+        {state.mg?.vipUnrated?.active && state.mg.vipUnrated.currentCard && (
+          <div className="rounded-lg p-3 space-y-2" style={{background:'#211805',border:'2px solid #D8BD72'}}>
+            <div className="text-xs tracking-widest text-amber-300">VIP UNRATED · ΚΑΡΤΑ {(state.mg.vipUnrated.cardIndex||0)+1}/12</div>
+            <div className="font-heading text-lg">{state.mg.vipUnrated.currentCard[0]}</div>
+            <p className="text-sm">{state.mg.vipUnrated.currentCard[1]}</p>
+            <div className="text-xs opacity-70">Η επιλογή και η ολοκλήρωση ελέγχονται από το tablet. Μπορείς πάντα να ζητήσεις PASS ή STOP.</div>
+          </div>
+        )}
+
         {mission && mission.status === 'active' && (
           <div className="rounded-lg p-3 space-y-1" style={{ background: '#2a0033', border: '2px solid #d946ef' }}>
             <div className="text-xs uppercase tracking-widest text-fuchsia-300">🕵️ Μυστική αποστολή · μόνο για σένα</div>

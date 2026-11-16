@@ -438,7 +438,7 @@ export function entityRoutes() {
         guests: clean(body.guests, 30),
         message: clean(body.message, 3000),
         suggestion: clean(body.suggestion, 3000),
-        photoUrl: '',
+        photoUrl: typeof body.photoUrl === 'string' && /^\/media\/public-[A-Za-z0-9._-]+\.(?:jpg|jpeg|png|webp)$/i.test(body.photoUrl) ? body.photoUrl : '',
         status: 'new',
         submittedAt: new Date().toISOString(),
       };
