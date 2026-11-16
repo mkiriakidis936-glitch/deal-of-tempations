@@ -198,7 +198,7 @@ export default function SetupScreen({ onStart }) {
     const selectedScenario = customScenarios.find((scenario) => scenario.id === selectedScenarioId && scenario.modeId === mode);
     const selectedIntensity = mode === 'classic' ? intensity : 'standard';
     if (!safeWord.trim() || !safeWordConfirmed) return;
-    const selectedDuration = newMode ? { id: 'fixed', minutes: newMode.minutes } : (DURATION_OPTIONS.find((option) => option.id === duration) || DURATION_OPTIONS[1]);
+    const selectedDuration = newMode ? { id: 'standard', minutes: newMode.minutes } : (DURATION_OPTIONS.find((option) => option.id === duration) || DURATION_OPTIONS[1]);
     const state = { ...createInitialState(mode, selectedIntensity, valid), gameDurationMinutes: selectedDuration.minutes, safetyProfile: { safeWord: safeWord.trim(), confirmedAt: Date.now() }, testMode,
       ...(selectedScenario ? { customScenario: { id: selectedScenario.id, name: selectedScenario.name, description: selectedScenario.description, collections: selectedScenario.collections || [] } } : {})
     };
