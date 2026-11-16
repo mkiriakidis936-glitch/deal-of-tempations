@@ -75,7 +75,7 @@ export default function ModeMobile({ state, me, updateState, onChangePlayer, ses
 
         {state.mg?.vipUnrated?.active && state.mg.vipUnrated.currentCard && (
           <div className="rounded-lg p-3 space-y-2" style={{background:'#211805',border:'2px solid #D8BD72'}}>
-            <div className="text-xs tracking-widest text-amber-300">VIP UNRATED · ΚΑΡΤΑ {(state.mg.vipUnrated.cardIndex||0)+1}/12</div>
+            <div className="text-xs tracking-widest text-amber-300">VIP UNRATED · ΚΑΡΤΑ {(state.mg.vipUnrated.cardIndex||0)+1}/{state.mg.vipUnrated.cardCount||12}</div>
             <div className="font-heading text-lg">{state.mg.vipUnrated.currentCard[0]}</div>
             <p className="text-sm">{state.mg.vipUnrated.currentCard[1]}</p>
             <div className="text-xs opacity-70">Η επιλογή και η ολοκλήρωση ελέγχονται από το tablet. Μπορείς πάντα να ζητήσεις PASS ή STOP.</div>

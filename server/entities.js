@@ -506,18 +506,20 @@ export function entityRoutes() {
           eventDate: row.data.eventDate || '', playerCount: (row.data.playerNames || []).length,
           stats: row.data.stats || {}, highlights: row.data.highlights || [],
         })),
-        hiddenModes: [
+        hiddenModes: Array.isArray(vipContent.modes) ? vipContent.modes.filter((mode) => mode.active !== false) : [
           { id: 'midnight-interrogation', name: 'Midnight Interrogation Room', description: 'Ψηφιακή ανάκριση με ερωτήσεις, μυστικά και επιλογές PASS.' },
           { id: 'vip-vault-sabotage', name: 'VIP Vault Sabotage / Inside Mole', description: 'Κρυφός ρόλος, ψηφοφορίες και αποστολές σαμποτάζ μέσα στο παιχνίδι.' },
           { id: 'barefoot-maze', name: 'Barefoot Maze', description: 'Ψηφιακός γρίφος διαδρομής και επιλογών — χωρίς δεμένα μάτια ή φυσική μετακίνηση.' },
         ],
-        unratedDeck: [
-          'Wheel of Temptation','Blind Touch (consent-based digital choice)','Police Escort (role-play prompt)',
-          'Ice Pass (optional object-choice prompt)','Confession or Lockdown','Role Reversal',
-          'Whisper Challenge','Triple Cuff Chain (digital chain puzzle)','Barefoot Tango (music / choice challenge)',
-          'Blackmail Auction (fictional secret bidding)','Decibel Scream Test (optional sound meter)',
-          'Ultimate Lockdown Trigger',
-        ],
+        unratedDeck: Array.isArray(vipContent.deck)
+          ? vipContent.deck.filter((card) => card.active !== false).map((card) => card.title)
+          : [
+            'Wheel of Temptation','Blind Touch (consent-based digital choice)','Police Escort (role-play prompt)',
+            'Ice Pass (optional object-choice prompt)','Confession or Lockdown','Role Reversal',
+            'Whisper Challenge','Triple Cuff Chain (digital chain puzzle)','Barefoot Tango (music / choice challenge)',
+            'Blackmail Auction (fictional secret bidding)','Decibel Scream Test (optional sound meter)',
+            'Ultimate Lockdown Trigger',
+          ],
       });
     } catch (error) { return next(error); }
   });
