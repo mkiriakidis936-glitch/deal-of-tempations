@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 const MODE_LABELS = {
   classic: 'CLASSIC DEAL',
@@ -7,7 +7,19 @@ const MODE_LABELS = {
   pajama: 'PAJAMA EXPERIENCE',
 };
 
-export default function TVExperienceLayer({ sessionCode, mode, playerCount, stage, online, fullscreen, onToggleFullscreen }) {
+export default function TVExperienceLayer({ sessionCode, mode, playerCount, stage, online, fullscreen, onToggleFullscreen, event }) {
+  const [moment, setMoment] = useState(null);
+  const previousEventRef = useRef(null);
+  useEffect(() => {
+    if (!event) return undefined;
+    const signature = event.timestamp || event.id || `${event.type || ''}:${event.player || ''}:${event.description || event.detail || event.card || ''}`;
+    if (previousEventRef.current === null) { previousEventRef.current = signature; return undefined; }
+    if (previousEventRef.current === signature) return undefined;
+    previousEventRef.current = signature;
+    setMoment(event);
+    const timer = window.setTimeout(() => setMoment(null), 2600);
+    return () => window.clearTimeout(timer);
+  }, [event]);
   const modeLabel = MODE_LABELS[mode] || String(mode || 'LIVE GAME').replace(/[_-]/g, ' ').toUpperCase();
 
   return (
@@ -41,6 +53,16 @@ export default function TVExperienceLayer({ sessionCode, mode, playerCount, stag
           {fullscreen ? 'ΕΞΟΔΟΣ' : 'ΠΛΗΡΗΣ ΟΘΟΝΗ'}
         </button>
       </header>
+
+      {moment && (
+        <div className="dot-tv-moment" role="status" aria-live="polite">
+          <span className="dot-tv-moment-kicker">LIVE MOMENT</span>
+          <strong>{String(moment.type || 'GAME UPDATE').replace(/[_-]/g, ' ').toUpperCase()}</strong>
+          {(moment.player || moment.description || moment.detail || moment.card) && (
+            <small>{[moment.player, moment.description || moment.detail || moment.card].filter(Boolean).join(' · ')}</small>
+          )}
+        </div>
+      )}
 
       <div className="dot-tv-stage-marker" aria-hidden="true">
         <span />
