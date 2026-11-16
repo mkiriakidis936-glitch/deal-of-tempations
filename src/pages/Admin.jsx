@@ -12,6 +12,7 @@ import AdminOverview from '@/components/admin/AdminOverview';
 import AdminInbox from '@/components/admin/AdminInbox';
 import AdminEventCenter from '@/components/admin/AdminEventCenter';
 import AdminSettings from '@/components/admin/AdminSettings';
+import AdminBackup from '@/components/admin/AdminBackup';
 import AdminSessions from '@/components/admin/AdminSessions';
 import AdminSessionRecovery from '@/components/admin/AdminSessionRecovery';
 import AdminEpisodeArchive from '@/components/admin/AdminEpisodeArchive';
@@ -102,6 +103,7 @@ const NAV_GROUPS = [
     tabs: [
       { id: 'sessions', label: '🎲 Ιστορικό παρτίδων' },
       { id: 'archive', label: '🎬 Αρχείο επεισοδίων' },
+      { id: 'backup', label: '💾 Αντίγραφα ασφαλείας' },
       { id: 'recovery', label: '🛟 Ανάκτηση παρτίδων' },
     ],
   },
@@ -127,10 +129,10 @@ const LEGACY_TABS = {
   arrest_heist: 'editor',
   special: 'editor',
   site: 'website',
-  eventinfo: 'settings',
+  eventinfo: 'eventinfo',
   notifications: 'notifications',
-  backup: 'settings',
-  guide: 'settings',
+  backup: 'backup',
+  guide: 'guide',
   meta: 'achievements',
   visits: 'statistics',
   intakes: 'forms',
@@ -279,6 +281,8 @@ export default function Admin() {
         );
       case 'settings':
         return <AdminSettings />;
+      case 'backup':
+        return <AdminBackup />;
       case 'recovery':
         return <AdminSessionRecovery />;
       case 'archive':
