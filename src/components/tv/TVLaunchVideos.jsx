@@ -4,23 +4,26 @@ export default function TVLaunchVideos({ sessionCode, welcomeSrc, countdownSrc, 
   const [active, setActive] = useState('idle');
   const [countdownPlayedFor, setCountdownPlayedFor] = useState(null);
   const [pendingCountdown, setPendingCountdown] = useState(false);
+  const [welcomeCompletedFor, setWelcomeCompletedFor] = useState(null);
 
   useEffect(() => {
     if (!sessionCode) return;
     setActive(welcomeSrc ? 'welcome' : 'idle');
     setCountdownPlayedFor(null);
     setPendingCountdown(false);
+    setWelcomeCompletedFor(null);
   }, [sessionCode, welcomeSrc]);
 
   useEffect(() => {
     if (!countdownStartedAt || !countdownSrc || countdownPlayedFor === countdownStartedAt) return;
     setCountdownPlayedFor(countdownStartedAt);
-    if (welcomeSrc) setPendingCountdown(true);
+    if (welcomeSrc && welcomeCompletedFor !== sessionCode) setPendingCountdown(true);
     else setActive('countdown');
-  }, [countdownStartedAt, countdownSrc, welcomeSrc, countdownPlayedFor]);
+  }, [countdownStartedAt, countdownSrc, welcomeSrc, countdownPlayedFor, welcomeCompletedFor, sessionCode]);
 
   const finish = () => {
     if (active === 'welcome') {
+      setWelcomeCompletedFor(sessionCode);
       if (pendingCountdown && countdownSrc) {
         setPendingCountdown(false);
         setActive('countdown');
