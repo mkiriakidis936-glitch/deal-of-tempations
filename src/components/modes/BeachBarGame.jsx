@@ -20,6 +20,15 @@ export default function BeachBarGame({ ctx, onEnd }) {
   const drinks = bb.drinks || {};
   const addDrink = (id, n = 1) => setBb({ drinks: { ...drinks, [id]: (drinks[id] || 0) + n } });
 
+  useEffect(() => {
+    const action = mg.playerAction;
+    if (action?.type !== 'beach_checkin' || !players.some((player) => player.id === action.playerId)) return;
+    const checkin = { ...(bb.checkin || {}), [action.playerId]: true };
+    setMg((cur) => ({ playerAction: null, bb: { ...(cur.bb || {}), checkin } }));
+    log(`🩴 ${nameOf(action.playerId)} ολοκλήρωσε το Beach Bar check-in από το κινητό`);
+  }, [mg.playerAction?.at]);
+
+
   return (
     <div className="space-y-3">
       <div className="flex flex-wrap gap-2">
