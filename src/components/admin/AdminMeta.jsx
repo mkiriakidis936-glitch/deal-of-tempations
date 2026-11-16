@@ -129,7 +129,7 @@ export default function AdminMeta({ initialTab = 'chronicle' }) {
                   </div>
                   <div className="text-sm text-foreground/70">🏆 {a.winner || '—'}</div>
                   <div className="text-xs text-foreground/50">👥 {(a.playerNames || []).join(', ') || '—'}</div>
-                  <div className="text-xs text-foreground/40">{a.eventDate} · {(a.εξομολογήσεις || []).length} εξομολογήσεις · {(a.σημαντικές στιγμές || []).length} σημαντικές στιγμές</div>
+                  <div className="text-xs text-foreground/40">{a.eventDate} · {(a.confessions || []).length} εξομολογήσεις · {(a.highlights || []).length} σημαντικές στιγμές</div>
                 </div>
                 <ComicButton variant="red" size="sm" onClick={() => handleDelete(a.id)}>🗑️</ComicButton>
               </div>
