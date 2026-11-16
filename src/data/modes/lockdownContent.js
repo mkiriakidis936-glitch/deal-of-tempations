@@ -113,7 +113,7 @@ export const TRUE_FALSE = [
 
 
 const UNSAFE_LOCKDOWN_COPY = /hogtie|blindfold|restraint|δεσίμ|δεμέν|δέσιμο|ακινητοπ|zip.?ties|duct tape|παγάκι|παγάκια|γαργαλ|tickle|σφηνάκ|\bshot\b|αλκοόλ|alcohol|χωρίς χέρια|μάτια κλειστά|τυφλά|περιορισμός κίνησης|αγγίζ|ακουμπ|touch|μασάζ|massage|άγγιγμα|σπρώξ|δέσε|δεμένη|δεμένος/i;
-const SAFE_LOCKDOWN_CHALLENGE = 'Προαιρετικό ψηφιακό challenge χωρίς σωματική επαφή, περιορισμό κίνησης ή αλκοόλ. Ολοκλήρωσε ένα quiz ή επίλεξε PASS / STOP.';
+const SAFE_LOCKDOWN_CHALLENGE = 'Προαιρετικό ψηφιακό challenge: ολοκλήρωσε ένα quiz ή επίλεξε PASS / STOP.';
 function sanitizeLockdownCopy(value, id = '') {
   if (Array.isArray(value)) {
     value.forEach((item, index) => {
