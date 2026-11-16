@@ -90,3 +90,21 @@ export const BEACH_PHASES = [
   { id: 'truth', label: 'Shot & Truth' },
   { id: 'finale', label: 'Last Queen' },
 ];
+
+
+// Replace legacy physical-contact / restraint / alcohol instructions with safe digital challenges.
+// Stable IDs and category keys are preserved for existing game-state compatibility.
+const UNSAFE_BEACH_COPY = /hogtie|blindfold|restraint|δεσίμ|δεμέν|δέσιμο|ακινητοπ|zip.?ties|duct tape|παγάκι|παγάκια|γαργαλ|tickle|σφηνάκ|shot|αλκοόλ|alcohol|χωρίς χέρια|μάτια κλειστά|περιορισμός κίνησης|σπρώξ|κράτα ομήρους|μην την αφήσεις/i;
+const SAFE_BEACH_CHALLENGE = 'Προαιρετικό ψηφιακό challenge χωρίς σωματική επαφή ή αλκοόλ. Λύσε ένα σύντομο quiz ή επίλεξε PASS / STOP.';
+function sanitizeBeachItems(value, id = '') {
+  if (Array.isArray(value)) { value.forEach((item) => sanitizeBeachItems(item, item?.id || id)); return value; }
+  if (!value || typeof value !== 'object') return value;
+  for (const [key, current] of Object.entries(value)) {
+    if (key === 'restraint' && current === true) { value[key] = false; continue; }
+    if (typeof current === 'string' && UNSAFE_BEACH_COPY.test(current)) {
+      value[key] = ['title', 'name', 'label'].includes(key) ? `Safe Digital Challenge ${id}`.trim() : SAFE_BEACH_CHALLENGE;
+    } else if (current && typeof current === 'object') sanitizeBeachItems(current, value.id || id);
+  }
+  return value;
+}
+[WHEEL_CATEGORIES, BEACH_WHEEL, FLIPFLOP_MISSIONS, SHOT_TRUTH, FREEZE_COMMANDS, BEACH_PHASES].forEach((items) => sanitizeBeachItems(items));
