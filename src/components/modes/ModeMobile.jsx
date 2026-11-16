@@ -41,7 +41,7 @@ export default function ModeMobile({ state, me, updateState, onChangePlayer, ses
 
   function panic() {
     if (mg.stop) return;
-    updateState({ mg: { ...mg, stop: true, stopAt: Date.now(), stopBy: me.id, timer: timerPause(mg.timer) }, gamePausedAt: state.gamePausedAt || Date.now() });
+    updateState({ mg: { stop: true, stopAt: Date.now(), stopBy: me.id, timer: timerPause(mg.timer) } });
   }
 
   const ld = mg.ld || {};
