@@ -24,6 +24,21 @@ export default function ActLockdown({ ctx, onDone, standalone }) {
   const live = ['l1', 'l2', 'l3', 'exit'].includes(ld.stage);
   useTick(live, 500);
 
+  useEffect(() => {
+    const action = mg.playerAction;
+    if (action?.type !== 'lockdown_exit_code' || ld.stage !== 'exit') return;
+    if (action.code === EXIT_CODE) {
+      setMg({ playerAction: null, ld: { ...ld, stage: 'won' } });
+      log('🎆 EXIT CODE σωστός — ΞΕΚΛΕΙΔΩΘΗΚΕ ΑΠΟ ΚΙΝΗΤΟ!');
+      sfx.ok();
+      confetti({ particleCount: 220, spread: 120, origin: { y: 0.55 }, colors: ['#FF003C', '#FF2A85', '#FFD700', '#00F2FE'] });
+    } else {
+      setMg({ playerAction: null });
+      log('🔐 Λανθασμένος κωδικός από κινητό — δοκίμασε ξανά');
+      sfx.fail();
+    }
+  }, [mg.playerAction?.at, ld.stage]);
+
   // Λήξη χρόνου + Midnight Penalty Surge (μόνο από το tablet).
   const mgRef = useRef(mg);
   mgRef.current = mg;
