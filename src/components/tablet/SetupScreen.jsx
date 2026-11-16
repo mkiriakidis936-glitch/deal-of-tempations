@@ -14,7 +14,7 @@ const NAIL_COLORS = ['Red', 'Pink', 'White', 'Black', 'Nude', 'French', 'Blue', 
 
 const DURATION_OPTIONS = [
   { id: 'afternoon', icon: '☀️', name: 'Μία βραδιά', desc: 'Τελειώνει στο Finale — χωρίς διανυκτέρευση.' },
-  { id: '48h', icon: '🌙', name: 'Διανυκτέρευση', desc: 'Ανοίγει η νύχτα και το πρωί.' },
+  { id: '48h', icon: '🌙', name: 'Διανυκτέρευση', desc: 'Το mode ολοκληρώνεται κανονικά. Μετά ακολουθεί ύπνος ή χαλάρωση.' },
 ];
 
 export default function SetupScreen({ onStart }) {
