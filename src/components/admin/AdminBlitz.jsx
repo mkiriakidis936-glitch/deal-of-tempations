@@ -122,8 +122,8 @@ export default function AdminBlitz({ sessions, selectedSession, onSelect, onUpda
             <BlitzOverlay blitz={previewFor('timer')} embedded />
           </ScaledFrame>
           <div className="grid grid-cols-2 gap-2">
-            <ComicButton variant="green" size="sm" onClick={() => play('timer')} disabled={busy}>▶ PLAY</ComicButton>
-            <ComicButton variant="yellow" size="sm" onClick={stop} disabled={busy || !isLive('timer') || !live?.running}>■ STOP</ComicButton>
+            <ComicButton variant="green" size="sm" onClick={() => play('timer')} disabled={busy}>▶ ΕΝΑΡΞΗ</ComicButton>
+            <ComicButton variant="yellow" size="sm" onClick={stop} disabled={busy || !isLive('timer') || !live?.running}>■ ΔΙΑΚΟΠΗ</ComicButton>
           </div>
         </ComicPanel>
 
@@ -140,8 +140,8 @@ export default function AdminBlitz({ sessions, selectedSession, onSelect, onUpda
             <BlitzOverlay blitz={previewFor('commands')} embedded />
           </ScaledFrame>
           <div className="grid grid-cols-3 gap-2">
-            <ComicButton variant="green" size="sm" onClick={() => play('commands')} disabled={busy}>▶ PLAY</ComicButton>
-            <ComicButton variant="yellow" size="sm" onClick={stop} disabled={busy || !isLive('commands') || !live?.running}>■ STOP</ComicButton>
+            <ComicButton variant="green" size="sm" onClick={() => play('commands')} disabled={busy}>▶ ΕΝΑΡΞΗ</ComicButton>
+            <ComicButton variant="yellow" size="sm" onClick={stop} disabled={busy || !isLive('commands') || !live?.running}>■ ΔΙΑΚΟΠΗ</ComicButton>
             <ComicButton variant="purple" size="sm" onClick={reshuffle} disabled={busy}>🎲 ΝΕΕΣ</ComicButton>
           </div>
         </ComicPanel>
