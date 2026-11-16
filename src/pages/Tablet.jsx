@@ -297,6 +297,22 @@ export default function Tablet() {
     return () => clearInterval(interval);
   }, [session?.id, state?.midnightPact?.phase]);
 
+  React.useEffect(() => {
+    if (!session || !state?.gameStartedAt || state.gameTimeExpired) return undefined;
+    const checkDuration = () => {
+      const pausedMs = Math.max(0, Number(state.gamePausedMs || 0));
+      const pausedNow = state.gamePausedAt ? Date.now() - state.gamePausedAt : 0;
+      const elapsed = Date.now() - state.gameStartedAt - pausedMs - pausedNow;
+      const durationMs = Math.max(1, Number(state.gameDurationMinutes) || 300) * 60000;
+      if (elapsed >= durationMs) {
+        trackedUpdate({ gameTimeExpired: true, stopActive: true, gamePausedAt: state.gamePausedAt || Date.now() });
+      }
+    };
+    checkDuration();
+    const timerId = setInterval(checkDuration, 1000);
+    return () => clearInterval(timerId);
+  }, [session?.id, state?.gameStartedAt, state?.gameDurationMinutes, state?.gamePausedMs, state?.gamePausedAt, state?.gameTimeExpired, trackedUpdate]);
+
   if (showSplash) {
     return <SplashScreen onComplete={() => { setShowSplash(false); sessionStorage.setItem('dotSplash', '1'); }} />;
   }
@@ -550,22 +566,6 @@ export default function Tablet() {
     const target = calculateMostWanted(state.players) || state.players[0];
     await trackedUpdate({ bombEvent: { active: true, targetId: target.id } });
   }
-
-  React.useEffect(() => {
-    if (!session || !state?.gameStartedAt || state.gameTimeExpired) return undefined;
-    const checkDuration = () => {
-      const pausedMs = Math.max(0, Number(state.gamePausedMs || 0));
-      const pausedNow = state.gamePausedAt ? Date.now() - state.gamePausedAt : 0;
-      const elapsed = Date.now() - state.gameStartedAt - pausedMs - pausedNow;
-      const durationMs = Math.max(1, Number(state.gameDurationMinutes) || 300) * 60000;
-      if (elapsed >= durationMs) {
-        trackedUpdate({ gameTimeExpired: true, stopActive: true, gamePausedAt: state.gamePausedAt || Date.now() });
-      }
-    };
-    checkDuration();
-    const timerId = setInterval(checkDuration, 1000);
-    return () => clearInterval(timerId);
-  }, [session?.id, state?.gameStartedAt, state?.gameDurationMinutes, state?.gamePausedMs, state?.gamePausedAt, state?.gameTimeExpired, trackedUpdate]);
 
   const wantedLevel = state.players?.length ? getWantedLevel(calculateMostWanted(state.players)) : 0;
   const mostWantedName = calculateMostWanted(state.players)?.name;
