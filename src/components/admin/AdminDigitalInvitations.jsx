@@ -9,7 +9,7 @@ const KEY = 'digital_invitations';
 const TARGETS = [
   { path: '/invitation', label: 'Heist Night — Πρόσκληση' },
   { path: '/pajama-invite', label: 'Pajama Pedi-Glam — Πρόσκληση' },
-  { path: '/modes-form', label: 'Digital Modes — Επιλογή Mode' },
+  { path: '/modes-form', label: 'Επιλογή λειτουργιών παιχνιδιού' },
   { path: '/modes-form?mode=pedi_extended', label: 'Pedi Extended' },
   { path: '/modes-form?mode=lockdown', label: 'Lockdown' },
   { path: '/modes-form?mode=beach_bar', label: 'Beach Bar' },
@@ -126,7 +126,7 @@ export default function AdminDigitalInvitations() {
   return <div className="space-y-4">
     <ComicPanel className="bg-card space-y-3 border border-[#b99a45]/60">
       <div className="font-heading text-xl text-primary">ΙΔΙΩΤΙΚΗ VIP ΠΡΟΣΚΛΗΣΗ</div>
-      <p className="text-sm text-foreground/70">Έτοιμη, ιδιωτική πρόσκληση DEAL OF TEMPTATION. Το σύστημα δημιουργεί ένα κοινό link και QR για όλους τους καλεσμένους. Το κείμενο και ο σχεδιασμός είναι προκαθορισμένα.</p>
+      <p className="text-sm text-foreground/70">Έτοιμη, ιδιωτική πρόσκληση DEAL OF TEMPTATION. Το σύστημα δημιουργεί έναν κοινό σύνδεσμο και QR για όλους τους καλεσμένους. Το κείμενο και ο σχεδιασμός είναι προκαθορισμένα.</p>
       <div className="rounded-xl border border-[#b99a45]/50 bg-black p-4 text-center">
         <div className="text-xs tracking-[0.35em] text-[#c9a94e]">ΑΠΟΚΛΕΙΣΤΙΚΗ ΠΡΟΣΒΑΣΗ</div>
         <div className="my-2 font-serif text-2xl tracking-[0.12em] text-[#f4e6bd]">VIP ΠΡΟΣΚΛΗΣΗ</div>
@@ -135,7 +135,7 @@ export default function AdminDigitalInvitations() {
       <ComicButton disabled={vipBusy} onClick={createVipInvitation}>＋ ΔΗΜΙΟΥΡΓΙΑ ΕΤΟΙΜΗΣ VIP ΠΡΟΣΚΛΗΣΗΣ</ComicButton>
       {vipMessage && <div className="text-sm font-bold text-foreground">{vipMessage}</div>}
       <label className="block space-y-1 text-sm font-bold text-[#d8bd72]">ΣΥΝΔΕΣΗ ΜΕ ΠΑΙΧΝΙΔΙ<select value={vipGameMode} onChange={(e) => setVipGameMode(e.target.value)} className="w-full rounded-lg border border-[#b99a45]/50 bg-black px-3 py-3 text-sm text-[#f4e6bd]">{GAME_MODES.map((mode) => <option key={mode.id} value={mode.id}>{mode.name}</option>)}</select></label>
-      <p className="text-xs text-foreground/55">Η VIP φόρμα έχει δικές της ερωτήσεις και δεν επηρεάζει το απλό Invitation Form.</p>
+      <p className="text-xs text-foreground/55">Η VIP φόρμα έχει δικές της ερωτήσεις και δεν επηρεάζει το απλή φόρμα πρόσκλησης.</p>
     </ComicPanel>
 
     {vipInvitations.map((invitation) => {
