@@ -283,7 +283,10 @@ const SAFE_GAME_CHALLENGE = 'Προαιρετική ψηφιακή δοκιμα�
 
 function sanitizeGameCopy(value, id = '') {
   if (Array.isArray(value)) {
-    value.forEach((item) => sanitizeGameCopy(item, item?.id || id));
+    value.forEach((item, index) => {
+      if (typeof item === 'string' && UNSAFE_GAME_COPY.test(item)) value[index] = SAFE_GAME_CHALLENGE;
+      else sanitizeGameCopy(item, item?.id || id);
+    });
     return value;
   }
   if (!value || typeof value !== 'object') return value;
