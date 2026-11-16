@@ -20,7 +20,6 @@ import MidnightPactMobile from '@/components/play/MidnightPactMobile';
 import PrivateMessages from '@/components/play/PrivateMessages';
 import SealedVote from '@/components/play/SealedVote';
 import { useAudioSync } from '@/hooks/useAudioSync';
-import { unlockAudioContexts } from '@/data/soundLibrary';
 import { getPlayerColor } from '@/components/shared/BoardView';
 import MobileStatus from '@/components/play/MobileStatus';
 import SyncTimerDisplay from '@/components/shared/SyncTimerDisplay';
@@ -39,13 +38,8 @@ export default function Play() {
   useAudioSync(state);
 
   React.useEffect(() => {
-    const unlock = () => unlockAudioContexts();
-    document.addEventListener('pointerdown', unlock, { passive: true });
-    document.addEventListener('keydown', unlock);
     document.body.classList.add('dot-mobile-experience');
     return () => {
-      document.removeEventListener('pointerdown', unlock);
-      document.removeEventListener('keydown', unlock);
       document.body.classList.remove('dot-mobile-experience');
     };
   }, []);
