@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Panel, Btn, RestraintNote } from '@/components/modes/ModeShell';
 import MissionPanel from '@/components/modes/MissionPanel';
 import {
@@ -69,7 +69,7 @@ export default function ActBoard({ ctx, onDone }) {
     return { finished: fin, scores, ...nextTurn(turn, fin, mg.skip || []), ...extra };
   }
 
-  function roll() {
+  function roll(fromMobile = false) {
     if (!ctx.playerProfilesReady || !cur || mg.card || mg.branch || allDone || stopped) return;
     const d = 1 + Math.floor(Math.random() * 6);
     const from = pos[cur.id] || 0;
@@ -77,7 +77,7 @@ export default function ActBoard({ ctx, onDone }) {
     let gated = false;
     if (np > EXT_PORTAL && (tokens[cur.id] || 0) < GATE_TOKENS) { np = EXT_PORTAL; gated = true; }
     np = Math.min(np, EXT_END);
-    const patch = { pos: { ...pos, [cur.id]: np }, lastRoll: { id: cur.id, d, gated, at: Date.now() } };
+    const patch = { pos: { ...pos, [cur.id]: np }, lastRoll: { id: cur.id, d, gated, at: Date.now() }, ...(fromMobile ? { playerAction: null } : {}) };
     const t = squareType(np);
     sfx.click();
     if (t === 'branch') patch.branch = cur.id;
@@ -91,28 +91,28 @@ export default function ActBoard({ ctx, onDone }) {
     log(`${cur.name} 🎲 ${d}${gated ? ` — η πύλη θέλει ${GATE_TOKENS} tokens` : ''}`);
   }
 
-  function chooseRoute(route) {
+  function chooseRoute(route, fromMobile = false) {
     if (!ctx.playerProfilesReady) return;
     const p = players.find((x) => x.id === mg.branch);
     if (!p) return;
     const cardPatch = draw(p, route);
     if (!cardPatch) {
-      setMg({ branch: null, ...nextTurn(turn, finished, mg.skip || []) });
+      setMg({ branch: null, ...(fromMobile ? { playerAction: null } : {}), ...nextTurn(turn, finished, mg.skip || []) });
       log(`⏭️ ${p.name}: η κάρτα παραλείφθηκε βάσει VIP προτιμήσεων`);
       return;
     }
-    setMg({ branch: null, ...cardPatch });
+    setMg({ branch: null, ...(fromMobile ? { playerAction: null } : {}), ...cardPatch });
     log(`🔀 ${p.name} διάλεξε «${ROUTES[route].name}»`);
   }
 
-  function resolve(ok) {
+  function resolve(ok, fromMobile = false) {
     const c = mg.card;
     if (!c) return;
     const p = players.find((x) => x.id === c.playerId);
     const reward = c.reward || (c.free ? 1 : ROUTES[c.route].reward);
     const t = { ...tokens };
     const scores = { ...(mg.scores || {}) };
-    const patch = { card: null };
+    const patch = { card: null, ...(fromMobile ? { playerAction: null } : {}) };
     const immune = [...(mg.immune || [])];
     const shielded = !ok && immune.includes(p.id);
     if (shielded) { immune.splice(immune.indexOf(p.id), 1); patch.immune = immune; }
@@ -128,6 +128,22 @@ export default function ActBoard({ ctx, onDone }) {
     log(`${ok ? '✅' : '❌'} ${p.name}: «${c.title}»${ok ? ` +${reward} 🪙` : c.route === 'chaos' ? ' −1 🪙' : ''}`);
     sfx[ok ? 'ok' : 'fail']();
   }
+
+  function passCard() {
+    if (!mg.card || mg.card.playerId !== cur?.id) return;
+    const card = mg.card;
+    setMg({ card: null, playerAction: null, ...nextTurn(turn, finished, mg.skip || []) });
+    log(`⏭️ ${nameOf(card.playerId)} επέλεξε PASS στην κάρτα «${card.title}»`);
+  }
+
+  useEffect(() => {
+    const action = mg.playerAction;
+    if (!action || action.playerId !== cur?.id) return;
+    if (action.type === 'board_roll' && !mg.card && !mg.branch && !allDone) roll(true);
+    else if (action.type === 'board_route' && mg.branch === action.playerId) chooseRoute(action.route, true);
+    else if (action.type === 'board_complete' && mg.card?.playerId === action.playerId) resolve(true, true);
+    else if (action.type === 'board_pass' && mg.card?.playerId === action.playerId) passCard();
+  }, [mg.playerAction?.at, mg.card?.playerId, mg.branch, cur?.id, allDone]);
 
   function payImmunity(useItem) {
     const c = mg.card;
