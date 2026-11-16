@@ -16,7 +16,7 @@ export function isVipActivityAllowed(ctx, player, activityType = null) {
   if (!answers) return true;
   if (answers.activeParticipation === 'no') return false;
   if (activityType && answers.activityPreferences?.[activityType] === 'no') return false;
-  if (activityType === 'surprises' && answers.unexpectedChallenge === 'no') return false;
+  if (inferredType === 'surprises' && answers.unexpectedChallenge === 'no') return false;
   return true;
 }
 
@@ -33,7 +33,9 @@ export function canAssignVipActivity(ctx, player, { activityType = null, activit
     window.alert(`${player.name} έχει δηλώσει ότι δεν επιθυμεί ενεργή συμμετοχή.`);
     return false;
   }
-  if (activityType && answers.activityPreferences?.[activityType] === 'no') {
+  const normalizedLabel = normalizeName(activityLabel);
+  const inferredType = activityType || (/(mission|αποστολ)/.test(normalizedLabel) ? 'missions' : /(surprise|απροβλεπτ|τροχο|wheel)/.test(normalizedLabel) ? 'surprises' : /(question|ερωτησ|quiz|trivia)/.test(normalizedLabel) ? 'questions' : null);
+  if (inferredType && answers.activityPreferences?.[inferredType] === 'no') {
     window.alert(`${player.name} δεν έχει επιλέξει συμμετοχή σε ${activityLabel}.`);
     return false;
   }
