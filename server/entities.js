@@ -288,12 +288,13 @@ export function validatePlayerPatch(current, patch, playerId) {
     const actionTypes = new Set([
       'board_roll', 'board_route', 'board_complete', 'board_pass',
       'midnight_pass', 'lockdown_exit_code', 'morning_clue', 'morning_code',
-      'beach_checkin', 'beach_finale_response',
+      'beach_checkin', 'beach_finale_response', 'beach_freeze_loser', 'beach_wheel_spin', 'beach_wheel_done', 'beach_wheel_again', 'beach_truth_response',
     ]);
     let validAction = Object.keys(next).length === 1 && isObject(action) &&
       action.playerId === playerId && actionTypes.has(action.type) && Number.isFinite(action.at);
     if (validAction && action.type === 'board_route') validAction = ['glam', 'chaos'].includes(action.route);
     if (validAction && action.type === 'beach_finale_response') validAction = ['done', 'pass'].includes(action.value);
+    if (validAction && action.type === 'beach_truth_response') validAction = ['truth', 'mocktail'].includes(action.value);
     if (validAction && action.type === 'lockdown_exit_code') validAction = /^\d{4}$/.test(String(action.code || ''));
     if (validAction && action.type === 'morning_clue') validAction = Number.isInteger(action.index) && action.index >= 0 && action.index < 4;
     if (validAction && action.type === 'morning_code') validAction = /^\d{4}$/.test(String(action.code || ''));
