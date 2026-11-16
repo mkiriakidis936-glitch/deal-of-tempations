@@ -100,7 +100,7 @@ const deepMerge = (target, patch, field = '', allowClear = false) => {
   return merged;
 };
 
-function validatePlayerPatch(current, patch, playerId) {
+export function validatePlayerPatch(current, patch, playerId) {
   if (!isObject(patch) || !Object.keys(patch).length) return false;
   const allowed = new Set([
     'mobileVotes', 'electricChairVotes', 'juryTrial', 'grandJury', 'privateMessages',
@@ -321,7 +321,7 @@ function validatePlayerPatch(current, patch, playerId) {
   return true;
 }
 
-function sanitizePublicSession(record, playerId = null) {
+export function sanitizePublicSession(record, playerId = null) {
   if (!record?.state || !isObject(record.state)) return record;
   const state = { ...record.state };
   if (Array.isArray(state.players)) {
