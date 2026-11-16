@@ -59,7 +59,7 @@ const EMPTY = {
   gift: null,
 };
 
-const DEFAULT_BINDING = 'Χέρια δεμένα πίσω από την πλάτη · πόδια ενωμένα με κορδέλες';
+const DEFAULT_BINDING = 'Προαιρετικό ψηφιακό challenge σε εξέλιξη';
 
 export default function PajamaGame({ state, updateState, onEnd, playerProfiles = [], playerProfilesReady = true }) {
   const [content, setContent] = useState(null);
