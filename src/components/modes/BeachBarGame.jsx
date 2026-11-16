@@ -47,7 +47,7 @@ export default function BeachBarGame({ ctx, onEnd }) {
         </div>
       </Panel>
 
-      {bb.phase === 'checkin' && <CheckIn ctx={ctx} bb={bb} setBb={setBb} onStart={() => { setBb({ phase: 'dance', flops: Object.fromEntries(players.map((p) => [p.id, true])) }); log('🍹 Το Beach Bar άνοιξε!'); }} />}
+      {bb.phase === 'checkin' && <CheckIn ctx={ctx} bb={bb} setBb={setBb} onStart={() => { setBb({ phase: 'dance', flops: Object.fromEntries(players.map((p) => [p.id, p.hasFlipFlops !== false])) }); log('🍹 Το Beach Bar άνοιξε!'); }} />}
       {bb.phase === 'dance' && <Dance ctx={ctx} bb={bb} setBb={setBb} T={T} addDrink={addDrink} flopOn={flopOn} />}
       {bb.phase === 'wheel' && <Wheel ctx={ctx} bb={bb} setBb={setBb} T={T} flopOn={flopOn} />}
       {bb.phase === 'truth' && <Truth ctx={ctx} bb={bb} setBb={setBb} T={T} addDrink={addDrink} />}
