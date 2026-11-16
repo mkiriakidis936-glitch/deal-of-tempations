@@ -26,7 +26,7 @@ export default function BeachBarGame({ ctx, onEnd }) {
     const checkin = { ...(bb.checkin || {}), [action.playerId]: true };
     setMg((cur) => ({ playerAction: null, bb: { ...(cur.bb || {}), checkin } }));
     log(`🩴 ${nameOf(action.playerId)} ολοκλήρωσε το Beach Bar check-in από το κινητό`);
-  }, [mg.playerAction?.at]);
+  }, [mg.playerAction?.at, players, bb.checkin, setMg, log, nameOf]);
 
 
   return (
