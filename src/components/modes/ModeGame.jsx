@@ -52,7 +52,7 @@ export default function ModeGame({ state, updateState, onEnd, onQR, playerProfil
   const acts = meta.acts;
   const actIndex = Math.min(mg.actIndex || 0, acts.length - 1);
   const act = acts[actIndex];
-  const actTitleFor = (item) => state.mode === 'marathon_4h' && item === 'board' ? 'Act 1 · Pajama Pedi-Glam' : ACT_META[item].title;
+  const actTitleFor = (item) => state.mode === 'marathon_4h' && item === 'board' ? 'Act 1 · Pajama Pedi-Glam' : state.mode === 'marathon_4h' && item === 'lockdown' ? 'Act 3 · Pajama Lockdown (18+)' : ACT_META[item].title;
   const theme = MODE_THEMES[state.mode];
   const multi = acts.length > 1;
   useTick(true, 15000);
