@@ -2,6 +2,9 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { GAME_MODES } from '@/data/gameConfig';
 import { request } from '@/api/base44Client';
+import { fetchOverrides } from '@/lib/media';
+import { PHOTO_SPOT_IDS, VIDEO_SLOTS } from '@/data/mediaSlots';
+import { NEW_MODES } from '@/data/modes/modeRegistry';
 
 const QUICK_LINKS = [
   { id: 'modes', icon: '🎮', title: 'Λειτουργίες παιχνιδιού', detail: 'Διαχείριση λειτουργιών' },
@@ -17,7 +20,7 @@ function MetricCard({ icon, label, value, note, accent }) {
 }
 
 export default function AdminOverview({ sessions = [], loading = false, onNavigate = () => {} }) {
-  const [extra, setExtra] = useState({ achievements: null, connection: 'loading', newRequests: null, vipInvitations: null, backup: null });
+  const [extra, setExtra] = useState({ achievements: null, connection: 'loading', newRequests: null, vipInvitations: null, backup: null, emptyPhotos: null, missingVideos: null, missingTrailers: null, pushDevices: null });
   useEffect(() => {
     let mounted = true;
     Promise.allSettled([
@@ -25,7 +28,9 @@ export default function AdminOverview({ sessions = [], loading = false, onNaviga
       Promise.all([base44.entities.PublicFormSubmission.filter({ status: 'new' }, { limit: 500 }), base44.entities.PlayerIntake.filter({}, { limit: 500 }), base44.entities.PajamaIntake.filter({}, { limit: 500 }), base44.entities.BacheloretteIntake.filter({}, { limit: 500 })]),
       base44.entities.VIPInvitation.filter({ active: true }, { limit: 100 }),
       request('GET', '/api/backup/list'),
-    ]).then(([achievements, requests, vip, backup]) => {
+      request('GET', '/api/push/status'),
+      fetchOverrides(),
+    ]).then(([achievements, requests, vip, backup, push, media]) => {
       if (!mounted) return;
       setExtra({
         achievements: achievements.status === 'fulfilled' ? (achievements.value.items || []).length : null,
@@ -33,6 +38,10 @@ export default function AdminOverview({ sessions = [], loading = false, onNaviga
         newRequests: requests.status === 'fulfilled' ? requests.value.reduce((sum, result) => sum + (result.items || []).filter((item) => !item.status || ['new','Νέο'].includes(item.status)).length, 0) : null,
         vipInvitations: vip.status === 'fulfilled' ? (vip.value.items || []).length : null,
         backup: backup.status === 'fulfilled' ? (backup.value.items || []).sort((a, b) => Number(b.modified) - Number(a.modified))[0] || null : null,
+        pushDevices: push.status === 'fulfilled' ? (push.value.devices || []).length : null,
+        emptyPhotos: media.status === 'fulfilled' ? (media.value?.value?.emptySlots || []).filter((id) => PHOTO_SPOT_IDS.includes(id)).length : null,
+        missingVideos: media.status === 'fulfilled' ? VIDEO_SLOTS.filter((slot) => !media.value?.value?.[slot.id]).length : null,
+        missingTrailers: media.status === 'fulfilled' ? NEW_MODES.filter((mode) => !media.value?.value?.modeMedia?.[mode.id]?.trailer).length : null,
       });
     });
     return () => { mounted = false; };
@@ -44,6 +53,7 @@ export default function AdminOverview({ sessions = [], loading = false, onNaviga
     return { active, finished };
   }, [sessions]);
   const recent = sessions.slice(0, 5);
+  const upcomingEvent = sessions.filter((session) => session.event?.scheduledAt && Date.parse(session.event.scheduledAt) >= Date.now()).sort((a, b) => Date.parse(a.event.scheduledAt) - Date.parse(b.event.scheduledAt))[0] || recent[0] || null;
   const playerCount = new Set(sessions.flatMap((session) => (session.state?.players || []).map((player) => player.id || player.name).filter(Boolean).map((value) => String(value).trim().toLowerCase()))).size;
   const dateLabel = (value) => {
     if (!value) return 'Ημερομηνία μη διαθέσιμη';
@@ -69,9 +79,11 @@ export default function AdminOverview({ sessions = [], loading = false, onNaviga
       <div><div className="font-heading text-xl">Τι να κάνω τώρα</div><p className="text-xs text-foreground/55">Άμεσες εκκρεμότητες από τα αποθηκευμένα δεδομένα.</p></div>
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-2">
         <div className="rounded-xl bg-secondary/70 p-3"><div className="text-[10px] text-foreground/55">ΝΕΕΣ ΑΙΤΗΣΕΙΣ</div><div className="mt-1 text-2xl font-bold">{extra.newRequests ?? '—'}</div><button onClick={() => onNavigate('inbox')} className="mt-1 text-xs font-bold text-primary">Άνοιγμα εισερχομένων →</button></div>
-        <div className="rounded-xl bg-secondary/70 p-3"><div className="text-[10px] text-foreground/55">ΕΠΟΜΕΝΟ EVENT</div><div className="mt-1 text-sm font-bold">{recent[0]?.event?.title || recent[0]?.mode || 'Δεν υπάρχει Event'}</div><div className="mt-1 text-[10px] text-foreground/55">{recent[0]?.sessionCode || 'Ξεκίνα από Game & Mode'}</div><button onClick={() => onNavigate('events')} className="mt-1 text-xs font-bold text-primary">Άνοιγμα Events →</button></div>
+        <div className="rounded-xl bg-secondary/70 p-3"><div className="text-[10px] text-foreground/55">ΕΠΟΜΕΝΟ EVENT</div><div className="mt-1 text-sm font-bold">{upcomingEvent?.event?.title || upcomingEvent?.mode || 'Δεν υπάρχει Event'}</div><div className="mt-1 text-[10px] text-foreground/55">{upcomingEvent?.event?.scheduledAt ? new Date(upcomingEvent.event.scheduledAt).toLocaleString('el-GR') : upcomingEvent?.sessionCode || 'Ξεκίνα από Game & Mode'}</div><button onClick={() => onNavigate('events')} className="mt-1 text-xs font-bold text-primary">Άνοιγμα Events →</button></div>
         <div className="rounded-xl bg-secondary/70 p-3"><div className="text-[10px] text-foreground/55">ΕΝΕΡΓΕΣ VIP ΠΡΟΣΚΛΗΣΕΙΣ</div><div className="mt-1 text-2xl font-bold">{extra.vipInvitations ?? '—'}</div><button onClick={() => onNavigate('invitations')} className="mt-1 text-xs font-bold text-primary">Άνοιγμα προσκλήσεων →</button></div>
         <div className="rounded-xl bg-secondary/70 p-3"><div className="text-[10px] text-foreground/55">ΤΕΛΕΥΤΑΙΟ BACKUP</div><div className="mt-1 text-sm font-bold">{extra.backup ? new Date(extra.backup.modified).toLocaleString('el-GR') : 'Μη διαθέσιμο'}</div><button onClick={() => onNavigate('settings')} className="mt-1 text-xs font-bold text-primary">Άνοιγμα αντιγράφων →</button></div>
+        <div className="rounded-xl bg-secondary/70 p-3"><div className="text-[10px] text-foreground/55">ΕΛΛΕΙΨΕΙΣ MEDIA</div><div className="mt-1 text-sm font-bold">{extra.emptyPhotos === null ? '—' : extra.emptyPhotos + (extra.missingVideos || 0) + (extra.missingTrailers || 0)}</div><div className="mt-1 text-[10px] text-foreground/55">Κενές φωτογραφίες / βίντεο / trailers</div><button onClick={() => onNavigate('media')} className="mt-1 text-xs font-bold text-primary">Άνοιγμα βιβλιοθήκης →</button></div>
+        <div className="rounded-xl bg-secondary/70 p-3"><div className="text-[10px] text-foreground/55">ΣΥΣΚΕΥΕΣ PUSH</div><div className="mt-1 text-2xl font-bold">{extra.pushDevices ?? '—'}</div><button onClick={() => onNavigate('notifications')} className="mt-1 text-xs font-bold text-primary">Άνοιγμα ειδοποιήσεων →</button></div>
       </div>
     </section>
     <section className="grid grid-cols-2 xl:grid-cols-4 gap-3">

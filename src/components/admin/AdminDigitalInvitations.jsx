@@ -65,7 +65,8 @@ export default function AdminDigitalInvitations() {
   const add = () => {
     const cleanTitle = title.trim();
     if (!cleanTitle) return;
-    const next = [...items, { id: makeId(), title: cleanTitle, path: target, createdAt: new Date().toISOString() }];
+    const linkedPath = sessionCode ? `${target}${target.includes('?') ? '&' : '?'}event=${encodeURIComponent(sessionCode)}` : target;
+    const next = [...items, { id: makeId(), title: cleanTitle, path: linkedPath, sessionCode: sessionCode || '', createdAt: new Date().toISOString() }];
     save(next).then(() => setTitle(''));
   };
 

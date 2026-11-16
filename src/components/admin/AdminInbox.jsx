@@ -33,7 +33,10 @@ export default function AdminInbox({ sessions = [] }) {
           .then(({ items: rows }) => (rows || []).map((item) => ({ ...item, _entity: entity })))
           .catch((error) => { console.error('Inbox source failed:', entity, error); return []; })
       ));
-      setItems(results.flat().sort((a, b) => new Date(dateFor(b)).getTime() - new Date(dateFor(a)).getTime()));
+      const rsvpIds = new Set((results[4] || []).map((item) => item.submissionId).filter(Boolean));
+      const vipIds = new Set((results[5] || []).map((item) => item.submissionId).filter(Boolean));
+      const combined = results.flat().filter((item) => item._entity !== 'PlayerIntake' || (!rsvpIds.has(item.submissionId) && !vipIds.has(item.vipSubmissionId)));
+      setItems(combined.sort((a, b) => new Date(dateFor(b)).getTime() - new Date(dateFor(a)).getTime()));
       setMessage('');
     } catch (error) {
       setMessage(error.message || 'Δεν φορτώθηκαν οι αιτήσεις.');

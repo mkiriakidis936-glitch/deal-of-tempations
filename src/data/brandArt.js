@@ -3,6 +3,8 @@ import { NEW_MODES } from '@/data/modes/modeRegistry';
 
 const BASE = '/assets/';
 
+export const MEDIA_FOCAL_POINTS = {};
+
 export const ART = {
   emblem: `${BASE}b53d2d438_kse5udkse5udkse5.jpeg`,
   poster: `${BASE}a6f4b0278_l5k9kkl5k9kkl5k9.jpeg`,
@@ -83,6 +85,8 @@ export const DEFAULTS = { ...ART, ...PHOTO, ...FILM, ...MODE_COVERS, heistPhotos
 // Καλείται μία φορά στην εκκίνηση (src/lib/media.js), ΠΡΙΝ φορτωθεί η εφαρμογή.
 // Αλλάζει τα αντικείμενα επιτόπου, ώστε να τα δουν όλα τα components.
 export function applyMediaOverrides(o = {}) {
+  for (const key of Object.keys(MEDIA_FOCAL_POINTS)) delete MEDIA_FOCAL_POINTS[key];
+  Object.assign(MEDIA_FOCAL_POINTS, o.libraryFocalPoints && typeof o.libraryFocalPoints === 'object' ? o.libraryFocalPoints : {});
   const str = (v) => (typeof v === 'string' && v ? v : null);
   const isVideo = (v) => /\.(mp4|webm|mov)(?:[?#]|$)/i.test(v || '');
   const clearPhotos = !!(o.clearAllPhotos || o.clearAllMedia);
