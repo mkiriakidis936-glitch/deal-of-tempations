@@ -147,7 +147,7 @@ export default function AdminPlayers({ sessions, selectedSession, onSelect, onUp
               </div>
               {p.vipProfile?.answerLabels && (
                 <details className="mb-3 rounded-lg border border-[#b99a45]/35 bg-black/30 p-3">
-                  <summary className="cursor-pointer text-xs font-bold text-[#d8bd72]">✦ VIP ΠΡΟΦΙΛ ΣΥΜΜΕΤΕΧΟΝΤΑ</summary>
+                  <summary className="cursor-pointer text-xs font-bold text-[#d8bd72]">✦ VIP ΠΡΟΦΙΛ ΣΥΜΜΕΤΕΧΟΥΣΑΣ</summary>
                   <div className="mt-2 space-y-1 text-xs text-foreground/75">
                     {Object.entries(p.vipProfile.answerLabels).filter(([, value]) => String(value || '').trim()).map(([label, value]) => (
                       <div key={label}><span className="text-[#d8bd72]">{label}:</span> {String(value)}</div>
@@ -182,9 +182,9 @@ export default function AdminPlayers({ sessions, selectedSession, onSelect, onUp
                   />
                 </div>
 
-                {/* Tokens */}
+                {/* Μάρκες */}
                 <div>
-                  <label className="font-bold block mb-1">🎟️ Tokens</label>
+                  <label className="font-bold block mb-1">🎟️ Μάρκες</label>
                   <input
                     type="number"
                     min={0}
@@ -238,10 +238,10 @@ export default function AdminPlayers({ sessions, selectedSession, onSelect, onUp
 
                 {/* Toenail perk */}
                 <div>
-                  <label className="font-bold block mb-1">💅 Perk</label>
+                  <label className="font-bold block mb-1">💅 Προνόμιο</label>
                   <select
-                    value={edit.toenailPerk || ''}
-                    onChange={(e) => editField(p.id, 'toenailPerk', e.target.value || null)}
+                    value={edit.toenailΠρονόμιο || ''}
+                    onChange={(e) => editField(p.id, 'toenailΠρονόμιο', e.target.value || null)}
                     className="w-full border-2 border-border rounded px-1 py-1"
                   >
                     <option value="">— Κανένα —</option>
@@ -260,8 +260,8 @@ export default function AdminPlayers({ sessions, selectedSession, onSelect, onUp
                     >
                       <option value="">—</option>
                       {isMarathon
-                        ? [<option key="alpha" value="alpha">Alpha</option>, <option key="beta" value="beta">Beta</option>]
-                        : [<option key="A" value="A">Team Alpha</option>, <option key="B" value="B">Team Beta</option>]}
+                        ? [<option key="alpha" value="alpha">Άλφα</option>, <option key="beta" value="beta">Βήτα</option>]
+                        : [<option key="A" value="A">Ομάδα Άλφα</option>, <option key="B" value="B">Ομάδα Βήτα</option>]}
                     </select>
                   </div>
                 )}
