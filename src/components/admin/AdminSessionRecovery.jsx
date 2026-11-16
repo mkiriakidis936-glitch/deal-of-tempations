@@ -140,7 +140,7 @@ export default function AdminSessionRecovery() {
       ) : sessions.map((session) => {
         const state = session.state || {};
         const history = Array.isArray(state.history) ? state.history : [];
-        const sessionSnapshots = σημεία επαναφοράςBySession.get(session.id) || [];
+        const sessionSnapshots = snapshotsBySession.get(session.id) || [];
         const isExpanded = expanded === session.id;
         return (
           <ComicPanel key={session.id} className="bg-card space-y-3">
