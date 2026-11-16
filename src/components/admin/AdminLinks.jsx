@@ -8,22 +8,22 @@ const ORIGIN = window.location.origin;
 
 const GAME_LINKS = [
   { id: 'tablet', label: '📱 TABLET — εδώ παίζεις', path: '/', needsCode: true, desc: 'Η κύρια συσκευή. Μόνο αυτή ξεκινά γύρους, κάρτες και δεσίματα.' },
-  { id: 'tv', label: '📺 TV — οθόνη για όλες', path: '/tv', needsCode: true, desc: 'Δείχνει board, σκορ και ανακοινώσεις. Δεν ελέγχει τίποτα.' },
+  { id: 'tv', label: '📺 TV — οθόνη για όλες', path: '/tv', needsCode: true, desc: 'Δείχνει ταμπλό, σκορ και ανακοινώσεις. Δεν ελέγχει τίποτα.' },
   { id: 'mobile', label: '📲 ΚΙΝΗΤΟ — κάθε παίκτρια', path: '/play', needsCode: true, desc: 'Ψηφοφορίες, προσωπικές κάρτες, μίνι-παιχνίδια.' },
 ];
 
 const GUEST_LINKS = [
-  { id: 'teaser', label: '🕯️ Πρόσκληση + Φόρμα', path: '/invitation', desc: 'Ένα link: teaser με countdown, μετά η φόρμα συμμετοχής.' },
+  { id: 'teaser', label: '🕯️ Πρόσκληση + Φόρμα', path: '/invitation', desc: 'Ένας σύνδεσμος: εισαγωγικό βίντεο με αντίστροφη μέτρηση, μετά η φόρμα συμμετοχής.' },
   { id: 'pajama-invite', label: '🩴 Πρόσκληση Pajama', path: '/pajama-invite', desc: 'Το μυστηριώδες link που στέλνεις — οδηγεί στη φόρμα.' },
-  { id: 'pajama', label: '🩴 Φόρμα Pajama', path: '/pajama-form', desc: 'Η φόρμα που συμπληρώνουν — μετά την εγκρίνεις στο Admin → Intakes.' },
-  { id: 'modes-form', label: '🎮 Φόρμα Νέων Modes', path: '/modes-form', desc: 'Η φόρμα όπου η καλεσμένη διαλέγει ένα ή περισσότερα modes (Pedi-Glam Extended, Lockdown, Beach Bar, 4H Marathon). Τις εγκρίνεις στο Admin → Ερωτηματολόγια.' },
+  { id: 'pajama', label: '🩴 Φόρμα Pajama', path: '/pajama-form', desc: 'Η φόρμα που συμπληρώνουν — μετά την εγκρίνεις στη Διαχείριση → Ερωτηματολόγια.' },
+  { id: 'modes-form', label: '🎮 Φόρμα Νέων Modes', path: '/modes-form', desc: 'Η φόρμα όπου η καλεσμένη διαλέγει ένα ή περισσότερα modes (Pedi-Glam Extended, Lockdown, Beach Bar, 4H Marathon). Τις εγκρίνεις στο Διαχείριση → Ερωτηματολόγια.' },
 ];
 
 const OPTIONAL_LINKS = [
-  { id: 'intake', label: '📝 Intake αρχηγού', path: '/intake', desc: 'Ερωτηματολόγιο διοργανώτριας.' },
+  { id: 'intake', label: '📝 Ερωτηματολόγιο αρχηγού', path: '/intake', desc: 'Ερωτηματολόγιο διοργανώτριας.' },
 ];
 
-const ADMIN_LINK = { id: 'admin', label: '🔧 ADMIN PANEL', path: '/admin', desc: 'Το πάνελ σου — δεν το στέλνεις ποτέ σε καλεσμένη.' };
+const ADMIN_LINK = { id: 'admin', label: '🔧 ΠΙΝΑΚΑΣ ΔΙΑΧΕΙΡΙΣΗΣ', path: '/admin', desc: 'Το πάνελ σου — δεν το στέλνεις ποτέ σε καλεσμένη.' };
 
 function buildUrl(def, sessionCode) {
   return def.needsCode ? `${ORIGIN}${def.path}?code=${encodeURIComponent(sessionCode)}` : `${ORIGIN}${def.path}`;
@@ -109,7 +109,7 @@ function EventDateSetter() {
 
   return (
     <ComicPanel className="bg-tarot-royal/20">
-      <div className="font-heading text-xl mb-1">🕯️ ΗΜΕΡΟΜΗΝΙΑ EVENT (COUNTDOWN ΠΡΟΣΚΛΗΣΗΣ)</div>
+      <div className="font-heading text-xl mb-1">🕯️ ΗΜΕΡΟΜΗΝΙΑ ΕΚΔΗΛΩΣΗΣ (ΑΝΤΙΣΤΡΟΦΗ ΜΕΤΡΗΣΗ ΠΡΟΣΚΛΗΣΗΣ)</div>
       <div className="text-xs text-foreground/60 mb-3">
         Επηρεάζει μόνο το countdown στην Πρόσκληση (/invitation). Κενό = χωρίς countdown.
       </div>
@@ -151,7 +151,7 @@ export default function AdminLinks({ sessions = [], selectedSession }) {
       <ComicPanel className="bg-primary">
         <div className="flex items-start justify-between gap-3 flex-wrap">
           <div>
-            <div className="font-heading text-2xl comic-text-stroke">🔗 LINKS ΠΑΙΧΝΙΔΙΟΥ</div>
+            <div className="font-heading text-2xl comic-text-stroke">🔗 ΣΥΝΔΕΣΜΟΙ ΠΑΙΧΝΙΔΙΟΥ</div>
             <div className="text-sm font-bold mt-1">
               {sessionCode
                 ? <>Ένας κωδικός για όλες τις συσκευές: <span className="font-heading text-xl tracking-widest bg-background text-primary px-2 rounded">{sessionCode}</span></>
@@ -162,7 +162,7 @@ export default function AdminLinks({ sessions = [], selectedSession }) {
             </div>
           </div>
           <ComicButton variant={copiedAll ? 'green' : 'purple'} size="sm" onClick={copyAll} disabled={!sessionCode}>
-            {copiedAll ? '✅ ΑΝΤΙΓΡΑΦΗΚΑΝ' : '📋 COPY ΤΑ 3 ΤΟΥ ΠΑΙΧΝΙΔΙΟΥ'}
+            {copiedAll ? '✅ ΑΝΤΙΓΡΑΦΗΚΑΝ' : '📋 ΑΝΤΙΓΡΑΦΗ ΤΩΝ 3 ΣΥΝΔΕΣΜΩΝ ΠΑΙΧΝΙΔΙΟΥ'}
           </ComicButton>
         </div>
       </ComicPanel>
@@ -170,7 +170,7 @@ export default function AdminLinks({ sessions = [], selectedSession }) {
       <div className="space-y-3">
         <div className="border-b-2 border-border pb-1">
           <div className="font-heading text-lg text-primary">🎮 ΤΟ ΠΑΙΧΝΙΔΙ (ίδιος κωδικός παντού)</div>
-          <div className="text-xs text-foreground/60">Αυτά τα ανοίγεις εσύ. Χωρίς κωδικό δεν μπαίνουν σε συνεδρία.</div>
+          <div className="text-xs text-foreground/60">Αυτά τα ανοίγεις εσύ. Χωρίς κωδικό δεν συνδέονται σε συνεδρία.</div>
         </div>
         {GAME_LINKS.map((def) => (
           <LinkRow key={def.id} def={def} sessionCode={sessionCode} locked={!sessionCode} />
@@ -180,7 +180,7 @@ export default function AdminLinks({ sessions = [], selectedSession }) {
       <div className="space-y-3">
         <div className="border-b-2 border-border pb-1">
           <div className="font-heading text-lg text-primary">💌 ΣΤΕΛΝΕΙΣ ΣΤΙΣ ΚΑΛΕΣΜΕΝΕΣ</div>
-          <div className="text-xs text-foreground/60">Σταθερά links, χωρίς κωδικό.</div>
+          <div className="text-xs text-foreground/60">Σταθεροί σύνδεσμοι, χωρίς κωδικό.</div>
         </div>
         {GUEST_LINKS.map((def) => (
           <LinkRow key={def.id} def={def} sessionCode={sessionCode} locked={false} />
@@ -190,13 +190,13 @@ export default function AdminLinks({ sessions = [], selectedSession }) {
       <ComicPanel className="bg-secondary">
         <div className="flex items-center justify-between gap-3 flex-wrap">
           <div>
-            <div className="font-heading text-lg">🗂️ ΠΡΟΑΙΡΕΤΙΚΑ LINKS ({OPTIONAL_LINKS.length})</div>
+            <div className="font-heading text-lg">🗂️ ΠΡΟΑΙΡΕΤΙΚΟΙ ΣΥΝΔΕΣΜΟΙ ({OPTIONAL_LINKS.length})</div>
             <div className="text-xs text-foreground/60">
               Δεν χρειάζονται για να παίξει το παιχνίδι. Άνοιξέ τα μόνο αν τα θέλεις.
             </div>
           </div>
           <ComicButton variant={showOptional ? 'dark' : 'white'} size="sm" onClick={() => setShowOptional(!showOptional)}>
-            {showOptional ? '▲ ΚΡΥΨΕ' : '▼ ΕΜΦΑΝΙΣΕ'}
+            {showOptional ? '▲ ΑΠΟΚΡΥΨΗ' : '▼ ΕΜΦΑΝΙΣΗ'}
           </ComicButton>
         </div>
       </ComicPanel>
