@@ -115,7 +115,7 @@ export const INTENSITY_LEVELS = [
 // ===== GAME MODES =====
 // Four legacy modes plus the five digital modes registered below.
 export const GAME_MODES = [
-  { id: 'classic', name: 'ΚΛΑΣΣΙΚΗ', icon: '🎲', desc: '2-6 παίκτριες. Ταμπλό 44 κουτιών, Σκάλα 7 Ποινών, Στάδια 1-3.' },
+  { id: 'classic', name: 'ΚΛΑΣΣΙΚΗ', icon: '🎲', desc: '2-6 παίκτριες. Ταμπλό 24 κουτιών, Σκάλα 7 Ποινών, Στάδια 1-3.' },
   { id: 'marathon', name: 'MEGA MARATHON', icon: '🏆', desc: '8-10 παίκτριες. 2 ομάδες (Alpha & Beta), 4 στάδια, $200.000 Loot ή 10 Wanted Stars.' },
   { id: 'arrest_heist', name: 'ARREST & HEIST', icon: '🚨', desc: '2 Ομάδες (Alpha vs Beta). 6 γύροι, 6 στάδια ποινών, Grand Heist Escape.' },
   { id: 'pajama', name: 'PAJAMA PEDI-GLAM', icon: '🩴', desc: 'Μένουν στο σπίτι. Πιτζάμες, νύχια, παντόφλες, ψηφιακές προκλήσεις και ομαδικά quiz. 44 κουτιά, νύχτα & πρωί.' },
