@@ -52,6 +52,7 @@ export default function AdminMedia() {
   const categoryOf = (url) => ov.libraryCategories?.[url] || 'uncategorized';
   const [busy, setBusy] = useState(null);
   const [progress, setProgress] = useState(0);
+  const [dragging, setDragging] = useState(false);
   const [msg, setMsg] = useState(null);
   const target = useRef(null);
   const imgOne = useRef(null);
@@ -230,6 +231,7 @@ export default function AdminMedia() {
 
       <ComicPanel className="bg-card">
         <div className="font-heading text-xl text-primary">🗂️ ΒΙΒΛΙΟΘΗΚΗ ΠΟΛΥΜΕΣΩΝ 2.0</div>
+        <div onDragOver={(e) => { e.preventDefault(); setDragging(true); }} onDragLeave={() => setDragging(false)} onDrop={(e) => { e.preventDefault(); setDragging(false); target.current = { id: 'library', mode: 'library' }; onFiles({ target: { files: [...(e.dataTransfer?.files || [])], value: '' } }); }} className={`mt-3 rounded-xl border-2 border-dashed p-5 text-center text-sm font-bold transition-colors ${dragging ? 'border-primary bg-primary/15' : 'border-border/70 bg-secondary/40'}`}>ΣΥΡΕ ΕΔΩ ΠΟΛΛΑΠΛΑ ΑΡΧΕΙΑ ΓΙΑ ΑΝΕΒΑΣΜΑ</div>
         <p className="text-xs font-body text-foreground/70 mt-1">
           Διαχείριση φωτογραφιών, γραφικών SVG, βίντεο και ήχων με κατηγορίες, αναζήτηση και προεπισκόπηση. Οι φωτογραφίες μικραίνουν αυτόματα.
         </p>

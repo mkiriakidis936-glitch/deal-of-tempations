@@ -430,6 +430,7 @@ export function entityRoutes() {
       const clean = (v, max = 1200) => typeof v === 'string' ? v.trim().slice(0, max) : '';
       const data = {
         type,
+        ...(clean(body.sessionCode, 40) ? { sessionCode: clean(body.sessionCode, 40).toUpperCase() } : {}),
         name: clean(body.name, 100),
         contact: clean(body.contact, 160),
         email: clean(body.email, 160),
@@ -442,6 +443,10 @@ export function entityRoutes() {
         status: 'new',
         submittedAt: new Date().toISOString(),
       };
+      if (data.sessionCode) {
+        const { rows: linkedSessions } = await query("SELECT id FROM records WHERE entity = 'GameSession' AND data->>'sessionCode' = $1 LIMIT 1", [data.sessionCode]);
+        if (!linkedSessions[0]) return res.status(400).json({ error: 'Το Event της πρόσκλησης δεν βρέθηκε.' });
+      }
       if (!data.name || (type === 'join-heist' && !data.contact) || (type === 'event-request' && !data.eventType) ||
           (type === 'feedback' && !data.message && !data.suggestion)) {
         return res.status(400).json({ error: 'Συμπλήρωσε τα υποχρεωτικά πεδία.' });

@@ -27,6 +27,7 @@ export default function AdminBackup() {
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState(null);
   const [picked, setPicked] = useState(null); // { name, data }
+  const latestBackup = items.length ? [...items].sort((a, b) => Number(b.modified) - Number(a.modified))[0] : null;
   const fileRef = useRef(null);
   const mediaFileRef = useRef(null);
 
@@ -80,6 +81,17 @@ export default function AdminBackup() {
     return replace ? 'replace' : 'merge';
   }
 
+  async function testStored(name) {
+    await run(async () => {
+      const token = getToken();
+      const response = await fetch(`/api/backup/file/${encodeURIComponent(name)}`, { headers: token ? { Authorization: `Bearer ${token}` } : {} });
+      if (!response.ok) throw new Error(`Αποτυχία ανάγνωσης αντιγράφου (${response.status}).`);
+      const data = await response.json();
+      if (data?.app !== 'deal-of-temptation' || !Array.isArray(data.records)) throw new Error('Το αρχείο δεν είναι έγκυρο αντίγραφο εφαρμογής.');
+      setMsg({ ok: true, text: `Ο έλεγχος ολοκληρώθηκε: ${data.records.length} εγγραφές, έγκυρη δομή. Δεν έγινε επαναφορά.` });
+    }, '');
+  }
+
   function restoreStored(name) {
     if (!window.confirm(`Επαναφορά από «${name}»;`)) return;
     const mode = askMode('Τρόπος επαναφοράς:');
@@ -119,6 +131,12 @@ export default function AdminBackup() {
           <div className="font-body text-sm text-foreground">{msg.ok ? '✓ ' : '⚠ '}{msg.text}</div>
         </ComicPanel>
       )}
+
+      <ComicPanel className="bg-card space-y-2">
+        <div className="font-heading text-lg text-primary">ΤΕΛΕΥΤΑΙΟ ΑΝΤΙΓΡΑΦΟ</div>
+        <div className="text-sm">{latestBackup ? `${when(latestBackup.modified)} · ${KIND_LABEL[latestBackup.kind] || latestBackup.kind} · ${mb(latestBackup.size)}` : 'Δεν υπάρχει αποθηκευμένο αντίγραφο.'}</div>
+        <ComicButton size="sm" variant="dark" disabled={busy} onClick={load}>ΕΛΕΓΧΟΣ ΚΑΤΑΣΤΑΣΗΣ</ComicButton>
+      </ComicPanel>
 
       <ComicPanel className="bg-card space-y-3">
         <div className="font-heading text-lg text-primary">ΔΗΜΙΟΥΡΓΙΑ</div>
@@ -169,6 +187,7 @@ export default function AdminBackup() {
               <div className="text-xs text-foreground/60">{when(it.modified)} · {mb(it.size)}</div>
             </div>
             <ComicButton variant="dark" size="sm" disabled={busy} onClick={() => run(() => download(`/api/backup/file/${encodeURIComponent(it.name)}`, it.name), 'Το αρχείο κατέβηκε.')}>⬇</ComicButton>
+            {it.name.endsWith('.json') && <ComicButton variant="dark" size="sm" disabled={busy} onClick={() => testStored(it.name)}>ΕΛΕΓΧΟΣ</ComicButton>}
             <ComicButton variant="red" size="sm" disabled={busy} onClick={() => restoreStored(it.name)}>ΕΠΑΝΑΦΟΡΑ</ComicButton>
           </div>
         ))}

@@ -141,6 +141,8 @@ export default function Admin() {
   const [sessions, setSessions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [pickedSession, setPickedSession] = useState(null);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [globalSearch, setGlobalSearch] = useState('');
   const navGroups = NAV_GROUPS;
 
   const loadSessions = useCallback(async () => {
@@ -156,6 +158,15 @@ export default function Admin() {
   }, []);
 
   useEffect(() => { loadSessions(); }, [loadSessions]);
+
+  useEffect(() => {
+    const onKeyDown = (event) => {
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') { event.preventDefault(); setSearchOpen(true); }
+      if (event.key === 'Escape') setSearchOpen(false);
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, []);
 
   // Μία κοινή ενεργή συνεδρία για όλες τις καρτέλες — προεπιλογή η πιο πρόσφατη (ό,τι δείχνει η TV).
   const activeSession = pickedSession || sessions[0] || null;
@@ -337,11 +348,16 @@ export default function Admin() {
   return (
     <div className="admin-root min-h-[100dvh] comic-dots p-2.5 sm:p-4 pb-[calc(env(safe-area-inset-bottom,0px)+5.5rem)]">
       <div className="max-w-6xl mx-auto space-y-3">
+        {searchOpen && <div className="fixed inset-0 z-[100] bg-black/70 p-3 sm:p-8" onMouseDown={(e) => { if (e.target === e.currentTarget) setSearchOpen(false); }}><div className="mx-auto mt-[8vh] max-w-xl rounded-2xl border border-primary/40 bg-card p-4 shadow-2xl"><div className="flex items-center gap-2"><input autoFocus value={globalSearch} onChange={(e) => setGlobalSearch(e.target.value)} placeholder="Αναζήτηση σε ενότητες, Events, παίκτριες..." className="min-w-0 flex-1 rounded-lg border border-border bg-background p-3 text-sm" /><ComicButton size="sm" variant="dark" onClick={() => setSearchOpen(false)}>ΚΛΕΙΣΙΜΟ</ComicButton></div><div className="mt-3 max-h-[60vh] overflow-y-auto space-y-1">{[
+          ...NAV_GROUPS.flatMap((group) => group.tabs.map((tab) => ({ type: 'tab', id: tab.id, label: tab.label.replace(/^[^ ]+ /, ''), detail: group.label }))),
+          ...sessions.map((session) => ({ type: 'session', id: session.id, label: session.event?.title || session.mode || 'Game', detail: session.sessionCode + ' · ' + (session.state?.players || []).map((player) => player.name).join(', ') })),
+        ].filter((item) => !globalSearch || (item.label + ' ' + item.detail).toLocaleLowerCase('el-GR').includes(globalSearch.toLocaleLowerCase('el-GR'))).slice(0, 30).map((item) => <button key={item.type + item.id} className="w-full rounded-lg p-3 text-left hover:bg-secondary" onClick={() => { if (item.type === 'tab') setTab(item.id); else { const found = sessions.find((session) => session.id === item.id); setPickedSession(found || null); setTab('events'); } setSearchOpen(false); }}><div className="text-sm font-bold">{item.label}</div><div className="text-[10px] text-foreground/50">{item.detail}</div></button>)}</div></div></div>}
         <ComicPanel className="bg-secondary flex items-center justify-between gap-2">
           <div className="min-w-0">
             <div className="font-heading text-2xl sm:text-3xl comic-text-stroke text-primary">🔧 ΚΕΝΤΡΟ ΕΛΕΓΧΟΥ</div>
             <div className="text-[11px] sm:text-xs font-bold text-foreground/70 font-body truncate">DEAL OF TEMPTATION — Κεντρική διαχείριση εφαρμογής</div>
           </div>
+          <ComicButton variant="dark" size="sm" onClick={() => { setGlobalSearch(''); setSearchOpen(true); }}>⌕ <span className="hidden sm:inline">ΑΝΑΖΗΤΗΣΗ · ⌘K</span></ComicButton>
           <ComicButton variant="dark" size="sm" onClick={loadSessions} disabled={loading}>
             🔄 <span className="hidden sm:inline">{loading ? 'ΦΟΡΤΩΣΗ...' : 'ΑΝΑΝΕΩΣΗ'}</span>
           </ComicButton>

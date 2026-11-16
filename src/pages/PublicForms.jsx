@@ -24,7 +24,7 @@ export default function PublicForms() {
         if (!uploaded.ok) throw new Error(uploadData.error || 'Η φωτογραφία δεν ανέβηκε.');
         photoUrl = uploadData.url;
       }
-      await request('POST', `/api/entities/public-forms/${type}`, { ...form, photoUrl });
+      await request('POST', `/api/entities/public-forms/${type}`, { ...form, photoUrl, sessionCode: new URLSearchParams(window.location.search).get('event') || new URLSearchParams(window.location.search).get('sessionCode') || '' });
       setStatus('Η υποβολή καταχωρίστηκε επιτυχώς.'); setPhoto(null); setForm({ name: '', contact: '', email: '', eventType: '', eventDate: '', guests: '', message: '', suggestion: '' });
     } catch (err) { setStatus(err.message || 'Η υποβολή δεν ολοκληρώθηκε.'); }
     finally { setBusy(false); }

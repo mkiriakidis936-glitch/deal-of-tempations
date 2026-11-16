@@ -45,7 +45,8 @@ export default function AdminInbox({ sessions = [] }) {
   const filtered = useMemo(() => items.filter((item) => {
     const haystack = [nameFor(item), item.contact, item.email, item.eventType, item.message, item.suggestion, item.sessionCode, item.gameMode]
       .filter(Boolean).join(' ').toLocaleLowerCase('el-GR');
-    const status = item.status || (item.confirmed ? 'Επιβεβαιώθηκε' : 'Νέο');
+    const rawStatus = item.status || (item.confirmed ? 'Επιβεβαιώθηκε' : 'Νέο');
+    const status = ({ new: 'Νέο', contact: 'Επικοινωνία', confirmed: 'Επιβεβαιώθηκε', rejected: 'Απορρίφθηκε' })[rawStatus] || rawStatus;
     return (!search || haystack.includes(search.toLocaleLowerCase('el-GR')))
       && (eventFilter === 'all' || item.sessionCode === eventFilter)
       && (statusFilter === 'all' || status === statusFilter)
@@ -87,7 +88,8 @@ export default function AdminInbox({ sessions = [] }) {
     </ComicPanel>
     {message && <ComicPanel className="bg-tarot-crimson"><div className="text-sm">{message}</div></ComicPanel>}
     {loading ? <ComicPanel className="bg-card text-center">Φόρτωση αιτήσεων…</ComicPanel> : filtered.length === 0 ? <ComicPanel className="bg-card text-center text-sm text-foreground/60">Δεν βρέθηκαν αιτήσεις με αυτά τα φίλτρα.</ComicPanel> : filtered.map((item) => {
-      const status = item.status || (item.confirmed ? 'Επιβεβαιώθηκε' : 'Νέο');
+      const rawStatus = item.status || (item.confirmed ? 'Επιβεβαιώθηκε' : 'Νέο');
+      const status = ({ new: 'Νέο', contact: 'Επικοινωνία', confirmed: 'Επιβεβαιώθηκε', rejected: 'Απορρίφθηκε' })[rawStatus] || rawStatus;
       const contact = item.contact || item.phone || item.email || '';
       return <ComicPanel key={item._entity + item.id} className="bg-card space-y-2">
         <div className="flex items-start justify-between gap-2">
