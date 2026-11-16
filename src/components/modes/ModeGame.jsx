@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { loadModesContent } from '@/lib/modesContentStore';
 import ModeShell, { Panel, Btn } from '@/components/modes/ModeShell';
 import ActBoard from '@/components/modes/ActBoard';
-import ActVilla48 from '@/components/modes/ActVilla48';
 import ActMidnight from '@/components/modes/ActMidnight';
 import ActLockdown from '@/components/modes/ActLockdown';
 import ActMorning from '@/components/modes/ActMorning';
@@ -86,7 +85,6 @@ export default function ModeGame({ state, updateState, onEnd, onQR, playerProfil
         </div>
       )}
 
-      {act === 'villa' && <ActVilla48 ctx={ctx} onDone={finishAll} />}
       {act === 'board' && <ActBoard ctx={ctx} onDone={nextAct} />}
       {act === 'midnight' && <ActMidnight ctx={ctx} onDone={nextAct} />}
       {act === 'lockdown' && <ActLockdown ctx={ctx} standalone={!multi} onDone={(res) => { setMg({ lockdownResult: res }); if (multi) nextAct(); else finishAll(); }} />}
