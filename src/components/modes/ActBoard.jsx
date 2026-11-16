@@ -197,7 +197,7 @@ export default function ActBoard({ ctx, onDone }) {
         </Panel>
       )}
 
-      {mg.card && <CardStage card={mg.card} who={nameOf(mg.card.playerId)} players={players} tokens={tokens} immune={(mg.immune || []).includes(mg.card.playerId)} onResolve={resolve} onImmunity={payImmunity} stopped={stopped} onRansom={(buyerId) => { const nextTokens = { ...tokens, [buyerId]: Math.max(0, (tokens[buyerId] || 0) - 2) }; setMg({ card: null, tokens: nextTokens, ...nextTurn(turn, finished, mg.skip || []) }); log(nameOf(buyerId) + ' εξαγόρασε την κάρτα Hogtie Ransom με 2 Tokens.'); }} canPay={(tokens[mg.card.playerId] || 0) >= 2} />}
+      {mg.card && <CardStage card={mg.card} who={nameOf(mg.card.playerId)} players={players} tokens={tokens} immune={(mg.immune || []).includes(mg.card.playerId)} onResolve={resolve} onImmunity={payImmunity} stopped={stopped} onRansom={(buyerId) => { const nextTokens = { ...tokens, [buyerId]: Math.max(0, (tokens[buyerId] || 0) - 2) }; setMg({ card: null, tokens: nextTokens, ...nextTurn(turn, finished, mg.skip || []) }); log(nameOf(buyerId) + ' εξαγόρασε την κάρτα Challenge Ransom με 2 Tokens.'); }} canPay={(tokens[mg.card.playerId] || 0) >= 2} />}
 
       {!mg.card && !mg.branch && !allDone && (
         <div className="text-center">
@@ -319,7 +319,7 @@ function Market({ ctx, cur }) {
       const tg = target || players.find((p) => p.id !== b)?.id;
       if (!tg) return;
       t[tg] = (t[tg] || 0) + 1;
-      log(`💸 ${nameOf(b)} δωροδόκησε την ${nameOf(tg)} να πάρει τη θέση της στο επόμενο δύσκολο δέσιμο`);
+      log(`💸 ${nameOf(b)} δωροδόκησε την ${nameOf(tg)} να πάρει τη θέση της στο επόμενο ψηφιακό challenge`);
     } else log(`🛒 ${nameOf(b)} αγόρασε «${item.name}»`);
     setMg(patch);
     sfx.ok();
