@@ -27,7 +27,7 @@ export default function ArrestHeistScreen({ state, updateState, onEnd, playerPro
   const [showGmTools, setShowGmTools] = useState(false);
   const [showSlots, setShowSlots] = useState(false);
   const [codeRevealed, setCodeRevealed] = useState(false);
-  const [tickleImmunity, setTickleImmunity] = useState(false);
+  const [challengeCompleted, setChallengeCompleted] = useState(false);
   const [redeemTruth, setRedeemTruth] = useState(null);
   const [intake, setIntake] = useState(null);
 
@@ -320,7 +320,7 @@ export default function ArrestHeistScreen({ state, updateState, onEnd, playerPro
                 <p>{ARREST_HEIST_LADDER[penaltyStep - 1]?.detail}</p>
               </div>
               <div className="grid grid-cols-2 gap-3">
-                <ComicButton variant="red" size="lg" onClick={() => setPhase('tickle')}>⏱ 30″ ΓΑΡΓΑΛΗΜΑ</ComicButton>
+                <ComicButton variant="red" size="lg" onClick={() => setPhase('quiz')}>⏱ 30″ ΨΗΦΙΑΚΟ QUIZ</ComicButton>
                 <ComicButton variant="green" size="lg" onClick={() => setPhase('redeem_choose')}>💰 ΕΚΤΟΝΩΣΗ (-1)</ComicButton>
               </div>
               <div className="text-xs text-center mt-2 text-foreground/60">Εκτόνωση: θυσίασε {REDEMPTION_COST} πόντους ή απάντησε Σκληρή Αλήθεια για -1 βήμα</div>
@@ -375,10 +375,10 @@ export default function ArrestHeistScreen({ state, updateState, onEnd, playerPro
             </ComicPanel>
           )}
 
-          {phase === 'tickle' && (
+          {phase === 'quiz' && (
             <ComicPanel className="bg-destructive text-foreground text-center comic-pulse">
-              <div className="font-heading text-3xl mb-4">⏱ 30″ ΓΑΡΓΑΛΗΜΑ</div>
-              <Timer duration={30} running={true} frozen={state.stopActive} onComplete={() => setPhase('round_result')} label="ΓΑΡΓΑΛΗΜΑ" size="lg" />
+              <div className="font-heading text-3xl mb-4">⏱ 30″ ΨΗΦΙΑΚΟ QUIZ</div>
+              <Timer duration={30} running={true} frozen={state.stopActive} onComplete={() => setPhase('round_result')} label="ΨΗΦΙΑΚΟ QUIZ" size="lg" />
               {intake?.musicPreferences && <div className="text-sm mt-3">🎤 Κατά τη διάρκεια: καραόκε σε {intake.musicPreferences} — αν σταματήσει να τραγουδά, +10″</div>}
               <div className="mt-4">
                 <ComicButton variant="green" size="lg" onClick={() => setPhase('round_result')}>✅ ΣΥΝΕΧΕΙΑ</ComicButton>
@@ -504,9 +504,9 @@ export default function ArrestHeistScreen({ state, updateState, onEnd, playerPro
             <ComicPanel className="bg-card text-center py-8">
               <div className="text-6xl mb-3">📱</div>
               <div className="font-heading text-xl mb-2">Φάση Α — QR Code Scan</div>
-              {tickleImmunity ? (
+              {challengeCompleted ? (
                 <>
-                  <div className="text-sm mb-4 text-tarot-forest font-bold">🛡️ IMMUNITY: Η πατούσα έχει ασυλία — το γαργάλημα σταμάτησε. Σκανάρετε άνετα!</div>
+                  <div className="text-sm mb-4 text-tarot-forest font-bold">🛡️ CHALLENGE COMPLETE — Μπορείτε να συνεχίσετε στο QR.</div>
                   <div className="comic-panel-sm p-4 bg-card mb-4 inline-block">
                     <img src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=VAULT-${vaultCode}`} alt="QR Code" className="w-48 h-48" />
                     <div className="text-xs text-center mt-1 font-bold">Σκάναρε με κινητό</div>
@@ -517,13 +517,13 @@ export default function ArrestHeistScreen({ state, updateState, onEnd, playerPro
                 </>
               ) : (
                 <>
-                  <div className="text-sm mb-2 text-foreground/70">Η αντίπαλη ομάδα γαργαλάει την πατούσα! Μέγιστο 30″ γαργαλήματος πριν το σκανάρισμα.</div>
+                  <div className="text-sm mb-2 text-foreground/70">Ολοκληρώστε προαιρετικό ψηφιακό quiz 30″ πριν το σκανάρισμα. PASS είναι διαθέσιμο.</div>
                   <div className="comic-panel-sm p-4 bg-destructive/20 mb-4 inline-block">
-                    <Timer duration={30} running={true} frozen={state.stopActive} onComplete={() => setTickleImmunity(true)} label="ΓΑΡΓΑΛΗΜΑ → IMMUNITY" size="md" variant="red" />
+                    <Timer duration={30} running={true} frozen={state.stopActive} onComplete={() => setChallengeCompleted(true)} label="QUIZ → CONTINUE" size="md" variant="red" />
                   </div>
                   <div className="text-xs mb-3 text-foreground/60">Όταν πατήσετε ΣΚΑΝΑΡΙΣΤΗΚΕ, η πατούσα παίρνει αυτόματη ασυλία.</div>
                   <div>
-                    <ComicButton variant="green" size="lg" onClick={() => { setTickleImmunity(true); setHeistPhase('code'); }}>📸 ΣΚΑΝΑΡΙΣΤΗΚΕ → IMMUNITY</ComicButton>
+                    <ComicButton variant="green" size="lg" onClick={() => { setTickleImmunity(true); setHeistPhase('code'); }}>📸 ΣΚΑΝΑΡΙΣΤΗΚΕ → CONTINUE</ComicButton>
                   </div>
                 </>
               )}
@@ -585,9 +585,9 @@ export default function ArrestHeistScreen({ state, updateState, onEnd, playerPro
 
           <ComicPanel className="bg-destructive text-foreground py-6">
             <div className="font-heading text-2xl mb-2">😈 ΤΕΛΙΚΗ ΠΟΙΝΗ</div>
-            <div className="text-sm mb-3">Η ηττημένη αρχηγός ({loserLeader?.name || '—'}) παραμένει σε Full Hogtie.</div>
-            <div className="font-heading text-xl mb-3">60″ Ultimate Tickle Gauntlet</div>
-            <Timer duration={60} running={true} frozen={state.stopActive} onComplete={() => {}} label="TICKLE GAUNTLET" size="lg" />
+            <div className="text-sm mb-3">Η ηττημένη αρχηγός ({loserLeader?.name || '—'}) επιλέγει προαιρετικό τελικό challenge ή PASS.</div>
+            <div className="font-heading text-xl mb-3">60″ Final Digital Challenge</div>
+            <Timer duration={60} running={true} frozen={state.stopActive} onComplete={() => {}} label="FINAL QUIZ" size="lg" />
           </ComicPanel>
 
           <ComicButton variant="magenta" size="lg" onClick={onEnd}>🔄 ΝΕΟ ΠΑΙΧΝΙΔΙ</ComicButton>
