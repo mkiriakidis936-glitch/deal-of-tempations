@@ -150,6 +150,11 @@ export function pushRoutes() {
     res.json({ devices, history });
   });
 
+  r.delete('/notifications', requireAdmin, async (_req, res) => {
+    const result = await query('DELETE FROM notifications');
+    res.json({ success: true, deleted: result.rowCount || 0 });
+  });
+
   r.delete('/notifications/:id', requireAdmin, async (req, res) => {
     const result = await query('DELETE FROM notifications WHERE id = $1 RETURNING id', [req.params.id]);
     if (!result.rowCount) return res.status(404).json({ error: 'Η ειδοποίηση δεν βρέθηκε.' });

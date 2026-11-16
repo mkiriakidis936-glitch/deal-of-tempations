@@ -93,20 +93,26 @@ const NAV_GROUPS = [
     ],
   },
   {
-    id: 'settings',
-    label: '07 · ΡΥΘΜΙΣΕΙΣ',
-    tabs: [
-      { id: 'settings', label: '⚙️ Κεντρικές ρυθμίσεις' },
-      { id: 'notifications', label: '🔔 Ειδοποιήσεις' },
-    ],
-  },
-  {
     id: 'history',
-    label: '08 · ΙΣΤΟΡΙΚΟ & ΑΝΑΚΤΗΣΗ',
+    label: '07 · ΙΣΤΟΡΙΚΟ & ΑΝΑΚΤΗΣΗ',
     tabs: [
       { id: 'sessions', label: '🎲 Ιστορικό παρτίδων' },
       { id: 'archive', label: '🎬 Αρχείο επεισοδίων' },
       { id: 'recovery', label: '🛟 Ανάκτηση παρτίδων' },
+    ],
+  },
+  {
+    id: 'settings',
+    label: '08 · ΡΥΘΜΙΣΕΙΣ',
+    tabs: [
+      { id: 'settings', label: '⚙️ Ρυθμίσεις εφαρμογής' },
+    ],
+  },
+  {
+    id: 'notifications',
+    label: '09 · ΕΙΔΟΠΟΙΗΣΕΙΣ',
+    tabs: [
+      { id: 'notifications', label: '🔔 Ειδοποιήσεις PUSH' },
     ],
   },
 ];

@@ -29,6 +29,18 @@ export default function AdminNotifications() {
 
   useEffect(() => { load(); return onInstallChange(() => setInstallable(canInstall())); }, [load]);
 
+  async function deleteAllHistory() {
+    if (!status.history.length || !window.confirm('Να διαγραφούν ΟΛΕΣ οι τελευταίες ειδοποιήσεις από το ιστορικό; Η ενέργεια δεν αναιρείται.')) return;
+    setBusy(true);
+    setMsg(null);
+    try {
+      await request('DELETE', '/api/push/notifications');
+      setStatus((current) => ({ ...current, history: [] }));
+      setMsg({ ok: true, text: 'Διαγράφηκαν όλες οι τελευταίες ειδοποιήσεις.' });
+    } catch (error) { setMsg({ ok: false, text: error.message || 'Η μαζική διαγραφή απέτυχε.' }); }
+    finally { setBusy(false); }
+  }
+
   async function deleteHistoryItem(item) {
     if (!window.confirm('Να διαγραφεί αυτή η ειδοποίηση από το ιστορικό;')) return;
     try {
@@ -105,7 +117,7 @@ export default function AdminNotifications() {
       </ComicPanel>
 
       <ComicPanel className="bg-card space-y-2">
-        <div className="font-heading text-lg">🕘 ΤΕΛΕΥΤΑΙΕΣ ΕΙΔΟΠΟΙΗΣΕΙΣ</div>
+        <div className="flex flex-wrap items-center justify-between gap-2"><div className="font-heading text-lg">🕘 ΤΕΛΕΥΤΑΙΕΣ ΕΙΔΟΠΟΙΗΣΕΙΣ</div><ComicButton size="sm" variant="red" disabled={busy || !status.history.length} onClick={deleteAllHistory}>ΔΙΑΓΡΑΦΗ ΟΛΩΝ</ComicButton></div>
         {!status.history.length && <div className="text-xs text-foreground/60">Δεν έχει έρθει καμία ακόμα.</div>}
         {status.history.map((n) => (
           <div key={n.id} className="flex items-start gap-2 border-2 border-border/40 rounded-lg p-2 bg-secondary/40"><a href={n.url || '/admin'} className="min-w-0 flex-1 hover:underline"><div className="text-sm font-bold">{n.title}</div><div className="text-xs text-foreground/70">{n.body}</div><div className="text-[10px] text-foreground/50">{when(n.created_date)}</div></a><ComicButton size="sm" variant="red" onClick={() => deleteHistoryItem(n)}>ΔΙΑΓΡΑΦΗ</ComicButton></div>
