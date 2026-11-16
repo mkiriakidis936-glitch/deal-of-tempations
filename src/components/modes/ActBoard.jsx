@@ -143,7 +143,7 @@ export default function ActBoard({ ctx, onDone }) {
     else if (action.type === 'board_route' && mg.branch === action.playerId) chooseRoute(action.route, true);
     else if (action.type === 'board_complete' && mg.card?.playerId === action.playerId) resolve(true, true);
     else if (action.type === 'board_pass' && mg.card?.playerId === action.playerId) passCard();
-  }, [mg.playerAction?.at, mg.card?.playerId, mg.branch, cur?.id, allDone]);
+  }, [mg.playerAction?.at, mg.card?.playerId, mg.branch, cur?.id, allDone, roll, chooseRoute, resolve, passCard]);
 
   function payImmunity(useItem) {
     const c = mg.card;
