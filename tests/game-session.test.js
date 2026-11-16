@@ -12,17 +12,11 @@ const players = [
   { id: 'p1', name: 'Player 1', vipProfile: { boundaries: ['own-only'] } },
 ];
 
-test('all four approved digital modes are registered with fixed durations', () => {
-  assert.deepEqual(NEW_MODES.map((mode) => mode.id), [
-    'pedi_extended', 'lockdown', 'beach_bar', 'marathon_4h',
-  ]);
-  assert.equal(NEW_MODES.find((mode) => mode.id === 'lockdown').minutes, 60);
-  assert.equal(NEW_MODES.find((mode) => mode.id === 'marathon_4h').minutes, 240);
+test('approved digital modes exclude Pedi-Glam Extended and use five-hour duration', () => {
+  assert.deepEqual(NEW_MODES.map((mode) => mode.id), ['lockdown', 'beach_bar', 'marathon_4h']);
+  assert.equal(NEW_MODES.some((mode) => mode.id === 'pedi_extended'), false);
+  assert.ok(NEW_MODES.every((mode) => mode.minutes === 300));
   assert.deepEqual(NEW_MODES.find((mode) => mode.id === 'marathon_4h').acts, ['board', 'midnight', 'lockdown', 'morning']);
-  assert.equal(NEW_MODES.find((mode) => mode.id === 'marathon_4h').actDurations.board
-    + NEW_MODES.find((mode) => mode.id === 'marathon_4h').actDurations.midnight
-    + NEW_MODES.find((mode) => mode.id === 'marathon_4h').actDurations.lockdown
-    + NEW_MODES.find((mode) => mode.id === 'marathon_4h').actDurations.morning, 240);
 });
 
 test('player session response never exposes another player VIP profile', () => {
@@ -102,4 +96,10 @@ test('private auction bids and interrogation votes are redacted for other player
 test('database startup migration does not delete session history records', async () => {
   const db = await readFile(new URL('../server/db.js', import.meta.url), 'utf8');
   assert.doesNotMatch(db, /DELETE\s+FROM\s+records/i);
+});
+
+test('VIP invitation submission requires server-side 18+ confirmation and no difficulty field', async () => {
+  const source = await readFile(new URL('../server/entities.js', import.meta.url), 'utf8');
+  assert.match(source, /body\.adultConfirmed !== true/);
+  assert.doesNotMatch(source, /'difficulty',\s*'unexpectedChallenge'/);
 });
