@@ -1,4 +1,5 @@
 import ModeTV from '@/components/modes/ModeTV';
+import TVExperienceLayer from '@/components/tv/TVExperienceLayer';
 import { isNewMode } from '@/data/modes/modeRegistry';
 import React, { useMemo, useState } from 'react';
 import { useGameSession } from '@/hooks/useGameSession';
@@ -146,7 +147,8 @@ function formatEvent(event) {
 
 export default function TVScreen() {
   const { session, state, loading, joinByCode } = useGameSession({ autoLoad: false });
-  const [fullscreen, setFullscreen] = useState(false);
+  const [fullscreen, setFullscreen] = useState(Boolean(document.fullscreenElement));
+  const [networkOnline, setNetworkOnline] = useState(typeof navigator === 'undefined' ? true : navigator.onLine);
   const feedToken = new URLSearchParams(window.location.search).get('feedToken') || '';
 
   // Sync με Admin & links: κωδικός στο URL ή η ενεργή συνεδρία του Admin ανοίγει πάντα εδώ.
@@ -164,6 +166,29 @@ export default function TVScreen() {
 
   useAudioSync(state);
 
+  React.useEffect(() => {
+    const updateNetwork = () => setNetworkOnline(navigator.onLine);
+    const updateFullscreen = () => setFullscreen(Boolean(document.fullscreenElement));
+    window.addEventListener('online', updateNetwork);
+    window.addEventListener('offline', updateNetwork);
+    document.addEventListener('fullscreenchange', updateFullscreen);
+    return () => {
+      window.removeEventListener('online', updateNetwork);
+      window.removeEventListener('offline', updateNetwork);
+      document.removeEventListener('fullscreenchange', updateFullscreen);
+    };
+  }, []);
+
+  const toggleFullscreen = async () => {
+    try {
+      if (document.fullscreenElement) await document.exitFullscreen();
+      else if (document.documentElement.requestFullscreen) await document.documentElement.requestFullscreen();
+      else setFullscreen((value) => !value);
+    } catch (error) {
+      console.warn('Fullscreen is not available in this browser', error);
+      setFullscreen((value) => !value);
+    }
+  };
 
   const formattedHistory = useMemo(() => (state?.history || []).map(formatEvent), [state?.history]);
 
@@ -196,11 +221,12 @@ export default function TVScreen() {
   const ahLeaderB = state.players?.find((p) => p.team === 'B' && p.isLeader);
 
   return (
-    <div className="min-h-screen comic-dots-dark text-foreground flex flex-col">
+    <div className={`dot-tv-shell min-h-screen comic-dots-dark text-foreground flex flex-col ${fullscreen ? 'dot-tv-fullscreen' : ''}`}>
       <div className="fixed inset-0 -z-10 pointer-events-none opacity-20">
         <MediaSpot src={PHOTO.tv || FILM.tv} slot="tv" className="w-full h-full object-cover" />
       </div>
       {state.stopActive && state.extra4?.control?.status !== 'emergency' && <div className="fixed inset-0 z-[100] bg-destructive/90 flex items-center justify-center text-center pointer-events-auto"><div className="font-heading text-7xl text-white">⏸ ΣΤΟΠ</div></div>}
+      <TVExperienceLayer sessionCode={session.sessionCode} mode={state.mode} playerCount={state.players?.length || 0} stage={state.stage} online={networkOnline} fullscreen={fullscreen} onToggleFullscreen={toggleFullscreen} />
       <Extra4TVOverlay state={state} />
       <Extra4LiveFeedTV sessionCode={session.sessionCode} token={feedToken} feed={state.extra4?.liveFeed || {}} />
       {(state.absoluteInterrogation?.active || state.interrogationVerdict || state.bailoutAuction?.active || state.blackBribe || state.sacrificeWheel || state.bailoutOutcome) && (
@@ -234,13 +260,6 @@ export default function TVScreen() {
       <FinaleTV state={state} />
       <GiftCodeTV state={state} />
       <BlitzOverlay blitz={state.blitz} />
-      <button
-        onClick={() => setFullscreen((f) => !f)}
-        className="fixed top-10 right-4 z-40 comic-boom bg-primary text-tarot-dark px-3 py-1.5 text-sm"
-      >
-        {fullscreen ? '🔽 Exit' : '⛶ Fullscreen'}
-      </button>
-
       {state.testMode && (
         <div className="fixed top-10 left-4 z-40 comic-boom bg-tarot-royal text-tarot-gold px-3 py-1.5 text-sm font-heading">
           🧪 TEST MODE
@@ -253,7 +272,7 @@ export default function TVScreen() {
         </div>
       )}
 
-      <div className={`flex-1 flex flex-col ${fullscreen ? 'p-2' : 'p-4 pt-14 pb-16'}`}>
+      <div className={`dot-tv-stage flex-1 flex flex-col ${fullscreen ? 'p-2' : 'p-4 pt-16 pb-16'}`}>
         <div className="max-w-7xl mx-auto w-full flex-1 flex flex-col gap-3">
 
 
