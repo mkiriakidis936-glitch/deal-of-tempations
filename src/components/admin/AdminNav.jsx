@@ -32,41 +32,26 @@ export default function AdminNav({ groups, active, onChange }) {
   );
 }
 
-// Κινητό (iPhone): οριζόντια μπάρα που σκρολάρει, κολλημένη στην κορυφή
+// Κινητό: σταθερή κάτω μπάρα με τις πέντε βασικές ενότητες
 export function AdminTabBar({ groups, active, onChange }) {
-  const ref = useRef(null);
-  useEffect(() => {
-    const container = ref.current;
-    const selected = container?.querySelector('[data-active="true"]');
-    if (!container || !selected) return;
-
-    const left = selected.offsetLeft - (container.clientWidth - selected.clientWidth) / 2;
-    container.scrollTo({ left: Math.max(0, left), behavior: 'smooth' });
-  }, [active]);
-
+  const tabs = [
+    { id: 'dashboard', label: 'Αρχική', icon: '⌂' },
+    { id: 'inbox', label: 'Αιτήσεις', icon: '✉' },
+    { id: 'events', label: 'Events', icon: '◎' },
+    { id: 'media', label: 'Media', icon: '▧' },
+    { id: 'settings', label: 'Ρυθμίσεις', icon: '⚙' },
+  ];
   return (
-    <div ref={ref} className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1.5 px-1.5 snap-x" role="tablist">
-      {groups.flatMap((g) => [
-        <span key={`g-${g.id}`} className="shrink-0 font-heading text-[9px] tracking-[0.18em] text-primary/70 pl-2 pr-0.5">
-          {g.label}
-        </span>,
-        ...g.tabs.map((t) => (
-          <button
-            key={t.id}
-            role="tab"
-            data-active={active === t.id}
-            onClick={() => onChange(t.id)}
-            className={cn(
-              'shrink-0 snap-center whitespace-nowrap min-h-[44px] px-3.5 rounded-full border-2 text-xs font-bold transition-all',
-              active === t.id
-                ? 'bg-primary text-tarot-dark border-primary'
-                : 'bg-card border-border/40'
-            )}
-          >
-            {t.label}
-          </button>
-        )),
-      ])}
+    <div className="mx-auto flex max-w-xl items-center justify-around gap-1 py-1.5" role="tablist" aria-label="Κύρια πλοήγηση">
+      {tabs.map((tab) => (
+        <button key={tab.id} type="button" role="tab" aria-selected={active === tab.id}
+          onClick={() => onChange(tab.id)}
+          className={cn('flex min-w-0 flex-1 flex-col items-center justify-center gap-0.5 rounded-xl px-1 py-1.5 text-[10px] font-bold transition-colors',
+            active === tab.id ? 'bg-primary text-tarot-dark' : 'text-foreground/70 hover:bg-secondary')}>
+          <span className="text-lg leading-5">{tab.icon}</span>
+          <span className="truncate">{tab.label}</span>
+        </button>
+      ))}
     </div>
   );
 }

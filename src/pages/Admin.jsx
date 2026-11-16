@@ -9,6 +9,8 @@ import AdminContentHub from '@/components/admin/AdminContentHub';
 import AdminContent from '@/components/admin/AdminContent';
 import AdminDashboard from '@/components/admin/AdminDashboard';
 import AdminOverview from '@/components/admin/AdminOverview';
+import AdminInbox from '@/components/admin/AdminInbox';
+import AdminEventCenter from '@/components/admin/AdminEventCenter';
 import AdminSettings from '@/components/admin/AdminSettings';
 import AdminSessions from '@/components/admin/AdminSessions';
 import AdminSessionRecovery from '@/components/admin/AdminSessionRecovery';
@@ -41,6 +43,8 @@ const NAV_GROUPS = [
     label: '01 · ΚΕΝΤΡΙΚΟΣ ΠΙΝΑΚΑΣ',
     tabs: [
       { id: 'dashboard', label: '📊 Επισκόπηση' },
+      { id: 'inbox', label: '📥 Εισερχόμενα' },
+      { id: 'events', label: '🎟️ Events & καλεσμένοι' },
       { id: 'statistics', label: '📈 Στατιστικά' },
     ],
   },
@@ -230,6 +234,10 @@ export default function Admin() {
 
   function renderTab() {
     switch (tab) {
+      case 'inbox':
+        return <AdminInbox sessions={sessions} />;
+      case 'events':
+        return <AdminEventCenter sessions={sessions} onDeleteSession={handleDeleteSession} onRefreshSessions={loadSessions} />;
       case 'modes':
         return <AdminContentHub />;
       case 'editor':
@@ -327,7 +335,7 @@ export default function Admin() {
   }
 
   return (
-    <div className="admin-root min-h-[100dvh] comic-dots p-2.5 sm:p-4 pb-[calc(env(safe-area-inset-bottom,0px)+1.5rem)]">
+    <div className="admin-root min-h-[100dvh] comic-dots p-2.5 sm:p-4 pb-[calc(env(safe-area-inset-bottom,0px)+5.5rem)]">
       <div className="max-w-6xl mx-auto space-y-3">
         <ComicPanel className="bg-secondary flex items-center justify-between gap-2">
           <div className="min-w-0">
@@ -340,7 +348,7 @@ export default function Admin() {
         </ComicPanel>
 
         {/* Κινητό: μενού που σκρολάρει οριζόντια, πάντα ορατό */}
-        <div className="lg:hidden sticky z-30 -mx-2.5 px-2.5 py-1 bg-background/90 backdrop-blur border-b border-border/40" style={{ top: 'env(safe-area-inset-top, 0px)' }}>
+        <div className="lg:hidden fixed z-40 bottom-0 left-0 right-0 px-2 pb-[env(safe-area-inset-bottom,0px)] bg-background/95 backdrop-blur border-t border-border/50 shadow-lg">
           <AdminTabBar groups={navGroups} active={tab} onChange={setTab} />
         </div>
 
