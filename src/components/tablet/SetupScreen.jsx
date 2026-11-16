@@ -12,14 +12,8 @@ const SHOE_TO_LEVEL = { boots: 3, sneakers: 2, sandals: 1, barefoot: 0 };
 
 const NAIL_COLORS = ['Red', 'Pink', 'White', 'Black', 'Nude', 'French', 'Blue', 'Purple', 'Green', 'Orange', 'Gold', 'Silver', 'None'];
 
-const DURATION_OPTIONS = [
-  { id: 'express', minutes: 60, icon: '⚡', name: 'EXPRESS · 1 ΩΡΑ', desc: 'Πραγματικό χρονόμετρο 60 λεπτών.' },
-  { id: 'standard', minutes: 180, icon: '🎲', name: 'STANDARD · 3 ΩΡΕΣ', desc: 'Πραγματικό χρονόμετρο 180 λεπτών.' },
-  { id: 'ultra', minutes: 300, icon: '🏆', name: 'ULTRA MARATHON · 5 ΩΡΕΣ', desc: 'Πραγματικό χρονόμετρο 300 λεπτών.' },
-];
 
 export default function SetupScreen({ onStart }) {
-  const [duration, setDuration] = useState('standard');
   const [mode, setMode] = useState('classic');
   const [intensity, setIntensity] = useState('standard');
   const [safeWord, setSafeWord] = useState('');
@@ -140,10 +134,6 @@ export default function SetupScreen({ onStart }) {
 
   function updatePlayer(idx, field, value) {
     setPlayers(players.map((p, i) => (i === idx ? { ...p, [field]: value } : p)));
-  }
-
-  function handleDuration(d) {
-    setDuration(d.id);
   }
 
   function handleModeChange(m) {
