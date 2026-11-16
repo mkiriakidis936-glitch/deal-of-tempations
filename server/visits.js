@@ -7,6 +7,9 @@ const BOT = /bot|crawl|spider|slurp|preview|facebookexternalhit|headless|lightho
 const hits = new Map(); // ip -> { n, reset }  (απλό rate limit)
 setInterval(() => hits.clear(), 60_000).unref();
 
+// Καθαρισμός: οι επισκέψεις πάνω από 180 ημέρες σβήνονται (μία φορά την ημέρα)
+setInterval(() => { query("DELETE FROM page_views WHERE created_date < now() - interval '180 days'").catch(() => {}); }, 24 * 3600_000).unref();
+
 export function visitRoutes() {
   const r = express.Router();
 

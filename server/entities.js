@@ -475,12 +475,24 @@ export function entityRoutes() {
       return next();
     } catch (error) { return next(error); }
   };
+  // Brute-force protection: max 8 wrong codes per IP in 15 minutes.
+  const vipFails = new Map();
+  const vipLocked = (ip) => { const b = vipFails.get(ip); return !!b && Date.now() - b.startedAt < 15 * 60_000 && b.count >= 8; };
+  const vipFail = (ip) => {
+    const now = Date.now(); let b = vipFails.get(ip);
+    if (!b || now - b.startedAt >= 15 * 60_000) { b = { startedAt: now, count: 0 }; vipFails.set(ip, b); }
+    b.count += 1;
+    if (vipFails.size > 5000) for (const [k, v] of vipFails) if (now - v.startedAt >= 15 * 60_000) vipFails.delete(k);
+  };
   r.post('/vip-access/unlock', async (req, res) => {
+    const ip = req.ip || req.socket.remoteAddress || 'unknown';
+    if (vipLocked(ip)) return res.status(429).json({ error: 'Πολλές αποτυχημένες προσπάθειες. Δοκίμασε ξανά σε 15 λεπτά.' });
     const expected = process.env.VIP_ACCESS_CODE || '';
     const supplied = String(req.body?.code || '');
     const a = Buffer.from(supplied);
     const b = Buffer.from(expected);
     if (!expected || !a.length || a.length !== b.length || !crypto.timingSafeEqual(a, b)) {
+      vipFail(ip);
       return res.status(401).json({ error: 'Ο κωδικός VIP δεν είναι σωστός.' });
     }
     const token = crypto.randomBytes(32).toString('base64url');

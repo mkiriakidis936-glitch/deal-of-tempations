@@ -80,7 +80,12 @@ export function notifyNewSubmission(entity, rec) {
   } else if (entity === 'VIPInvitationSubmission') {
     msg = { title: '✦ Νέο VIP Ερωτηματολόγιο', body: `${clip(rec.displayName || name, 80)} συμπλήρωσε το VIP Questionnaire`, url: '/admin?tab=digital-invitations' };
   } else if (entity === 'PajamaIntake') {
-    msg = { title: '🩴 Νέα φόρμα Pajama', body: `${name} συμπλήρωσε τη φόρμα στο /pajama-form`, url: '/admin?tab=pajama' };
+    const modes = Array.isArray(rec.preferredModes) && rec.preferredModes.length ? ` (${clip(rec.preferredModes.join(', '), 80)})` : '';
+    msg = { title: '🩴 Νέα φόρμα', body: `${name} συμπλήρωσε τη φόρμα${modes}`, url: '/admin?tab=pajama' };
+  } else if (entity === 'BacheloretteIntake') {
+    const leader = clip(rec.leaderName, 80) || 'Κάποια ομάδα';
+    const code = clip(rec.sessionCode, 8);
+    msg = { title: '🎲 Νέο Intake ομάδας', body: `${leader} συμπλήρωσε το Intake${code ? ` (κωδικός ${code})` : ''}`, url: '/admin?tab=intakes' };
   }
   if (msg) notifyAdmins(msg).catch((e) => console.error('[push] notify error:', e.message));
 }

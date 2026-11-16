@@ -1,6 +1,7 @@
 import express from 'express';
 import path from 'node:path';
 import fs from 'node:fs';
+import zlib from 'node:zlib';
 import { migrate, pool } from './db.js';
 import { attachUser, authRoutes } from './auth.js';
 import { entityRoutes } from './entities.js';
@@ -12,6 +13,51 @@ import { backupRoutes, startAutoBackup } from './backup.js';
 
 const app = express();
 app.set('trust proxy', 1); // Railway terminates TLS in front of us
+
+// Security headers (camera/microphone μένουν ανοιχτά για QR scanner και Live Feed).
+app.use((req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'SAMEORIGIN');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  res.setHeader('Permissions-Policy', 'camera=(self), microphone=(self), geolocation=()');
+  if (req.headers['x-forwarded-proto'] === 'https') res.setHeader('Strict-Transport-Security', 'max-age=15552000');
+  next();
+});
+
+// gzip για κείμενο (HTML/JS/CSS/JSON/SVG). Δεν αγγίζει SSE, εικόνες, βίντεο.
+const COMPRESSIBLE = /^(text\/(html|css|plain|javascript)|application\/(javascript|json|manifest\+json)|image\/svg\+xml)/;
+app.use((req, res, next) => {
+  if (req.method === 'HEAD' || !/\bgzip\b/.test(String(req.headers['accept-encoding'] || ''))) return next();
+  const write = res.write.bind(res);
+  const end = res.end.bind(res);
+  const writeHead = res.writeHead.bind(res);
+  let gz = null;
+  let decided = false;
+  const decide = () => {
+    if (decided) return;
+    decided = true;
+    const type = String(res.getHeader('Content-Type') || '');
+    const status = res.statusCode;
+    if (!COMPRESSIBLE.test(type) || res.getHeader('Content-Encoding') || status === 204 || status === 304 || /no-transform/.test(String(res.getHeader('Cache-Control') || ''))) return;
+    gz = zlib.createGzip({ level: 6 });
+    res.setHeader('Content-Encoding', 'gzip');
+    res.setHeader('Vary', 'Accept-Encoding');
+    res.removeHeader('Content-Length');
+    gz.on('data', (chunk) => write(chunk));
+    gz.on('end', () => end());
+  };
+  res.writeHead = (...args) => { decide(); return writeHead(...args); };
+  res.write = (chunk, enc, cb) => { decide(); return gz ? gz.write(chunk, enc, cb) : write(chunk, enc, cb); };
+  res.end = (chunk, enc, cb) => {
+    decide();
+    if (!gz) return end(chunk, enc, cb);
+    if (typeof chunk === 'function') { cb = chunk; chunk = undefined; }
+    if (chunk) gz.write(chunk, enc);
+    gz.end();
+    return res;
+  };
+  next();
+});
 // πριν από τον γενικό parser των 2MB: τα αντίγραφα ασφαλείας έχουν δικό τους, μεγαλύτερο όριο
 app.use('/api/backup', attachUser, backupRoutes());
 app.use(express.json({ limit: '2mb' }));

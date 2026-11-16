@@ -13,6 +13,7 @@ import SiteInfo from '@/components/site/SiteInfo';
 import SiteFaq from '@/components/site/SiteFaq';
 import SiteRegistration from '@/components/site/SiteRegistration';
 import SiteContact from '@/components/site/SiteContact';
+import { HomeProgram, HomeFaq } from '@/components/site/SiteHomeProgram';
 import { getSiteContent, SITE_EVENTS } from '@/data/siteContent';
 import { ART, PHOTO, MODE_COVERS, MODE_MEDIA } from '@/data/brandArt';
 import { trackVisit } from '@/lib/track';
@@ -30,27 +31,6 @@ const homeContent = {
   tagline: 'Ανακάλυψε τα δύο αρχικά events και τα διαθέσιμα ψηφιακά Game Modes.',
   cta: { label: 'ΕΠΙΛΟΓΗ EXPERIENCE', path: '/site#modes' },
 };
-
-function HomeProgram() {
-  return (
-    <section id="program" className="px-4 py-16 sm:py-20">
-      <div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-5">
-        <div className="rounded-2xl border border-tarot-gold/20 bg-[#111] p-6 sm:p-8">
-          <div className="text-[10px] tracking-[0.4em] text-tarot-gold/65 uppercase mb-3">Program</div>
-          <h2 className="font-display text-2xl sm:text-3xl text-tarot-gold">ΠΡΟΓΡΑΜΜΑ & ΣΤΑΔΙΑ</h2>
-          <p className="mt-3 text-sm leading-relaxed text-white/60">Κάθε event και Mode διαθέτει ξεχωριστό πρόγραμμα. Άνοιξε την αντίστοιχη παρουσίαση για να δεις τα στάδια και τη ροή του.</p>
-          <a href="#modes" className="inline-flex mt-5 text-xs font-bold tracking-[0.18em] text-tarot-gold uppercase">Επιλογή Mode ↗</a>
-        </div>
-        <div id="faq" className="rounded-2xl border border-tarot-gold/20 bg-[#111] p-6 sm:p-8">
-          <div className="text-[10px] tracking-[0.4em] text-tarot-gold/65 uppercase mb-3">FAQ</div>
-          <h2 className="font-display text-2xl sm:text-3xl text-tarot-gold">ΣΥΧΝΕΣ ΕΡΩΤΗΣΕΙΣ</h2>
-          <p className="mt-3 text-sm leading-relaxed text-white/60">Οι ερωτήσεις και οι απαντήσεις διαφέρουν ανά εμπειρία. Επίλεξε event ή Mode για να δεις τις αντίστοιχες πληροφορίες και τους κανόνες.</p>
-          <a href="#modes" className="inline-flex mt-5 text-xs font-bold tracking-[0.18em] text-tarot-gold uppercase">Δες τις εμπειρίες ↗</a>
-        </div>
-      </div>
-    </section>
-  );
-}
 
 export default function Site() {
   const navigate = useNavigate();
@@ -101,7 +81,8 @@ export default function Site() {
           <SiteModes onSelect={setEvent} />
           <SiteVideo c={{ videoTitle: 'VIDEO & TRAILERS' }} />
           <SiteGallery initialTab="all" />
-          <HomeProgram />
+          <HomeProgram onSelect={setEvent} />
+          <HomeFaq />
           <SiteRegistration c={pageContent} onRegister={register} />
           <SiteContact c={pageContent} onRegister={register} isHome />
         </>

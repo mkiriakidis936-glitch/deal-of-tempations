@@ -1,3 +1,4 @@
+import { lazy, Suspense } from 'react';
 import { Toaster } from "@/components/ui/toaster"
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
@@ -8,26 +9,26 @@ import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import ScrollToTop from './components/ScrollToTop';
 import GlobalDesignProvider from '@/components/GlobalDesignProvider';
 // Add page imports here
-import Tablet from '@/pages/Tablet';
-import TVScreen from '@/pages/TV';
-import Isolation from '@/pages/Isolation';
-import Play from '@/pages/Play';
-import Intake from '@/pages/Intake';
-import Admin from '@/pages/Admin';
-import Invitation from '@/pages/Invitation';
-import VIPInvitationPage from '@/pages/VIPInvitationPage';
-import Promo from '@/pages/Promo';
-import GiftUnlock from '@/pages/GiftUnlock';
-import PajamaForm from '@/pages/PajamaForm';
-import ModeForm from '@/pages/ModeForm';
-import PajamaInvite from '@/pages/PajamaInvite';
-import Site from '@/pages/Site';
-import Login from '@/pages/Login';
-import Register from '@/pages/Register';
-import ForgotPassword from '@/pages/ForgotPassword';
-import ResetPassword from '@/pages/ResetPassword';
-import PublicForms from '@/pages/PublicForms';
-import VIPAccess from '@/pages/VIPAccess';
+const Tablet = lazy(() => import('@/pages/Tablet'));
+const TVScreen = lazy(() => import('@/pages/TV'));
+const Isolation = lazy(() => import('@/pages/Isolation'));
+const Play = lazy(() => import('@/pages/Play'));
+const Intake = lazy(() => import('@/pages/Intake'));
+const Admin = lazy(() => import('@/pages/Admin'));
+const Invitation = lazy(() => import('@/pages/Invitation'));
+const VIPInvitationPage = lazy(() => import('@/pages/VIPInvitationPage'));
+const Promo = lazy(() => import('@/pages/Promo'));
+const GiftUnlock = lazy(() => import('@/pages/GiftUnlock'));
+const PajamaForm = lazy(() => import('@/pages/PajamaForm'));
+const ModeForm = lazy(() => import('@/pages/ModeForm'));
+const PajamaInvite = lazy(() => import('@/pages/PajamaInvite'));
+const Site = lazy(() => import('@/pages/Site'));
+const Login = lazy(() => import('@/pages/Login'));
+const Register = lazy(() => import('@/pages/Register'));
+const ForgotPassword = lazy(() => import('@/pages/ForgotPassword'));
+const ResetPassword = lazy(() => import('@/pages/ResetPassword'));
+const PublicForms = lazy(() => import('@/pages/PublicForms'));
+const VIPAccess = lazy(() => import('@/pages/VIPAccess'));
 
 // Game-master screens (tablet + admin) need an admin account.
 const RequireAdmin = ({ children }) => {
@@ -54,6 +55,7 @@ const AuthenticatedApp = () => {
 
   // Render the main app
   return (
+    <Suspense fallback={<div className="fixed inset-0 flex items-center justify-center bg-background"><div className="w-8 h-8 border-4 border-slate-200 border-t-slate-800 rounded-full animate-spin" /></div>}>
     <Routes>
       {/* Add your page Route elements here */}
       <Route path="/" element={<RequireAdmin><Tablet /></RequireAdmin>} />
@@ -79,6 +81,7 @@ const AuthenticatedApp = () => {
       <Route path="/site" element={<Site />} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
+    </Suspense>
   );
 };
 

@@ -39,7 +39,15 @@ export function mediaRoutes() {
   const r = express.Router();
 
   // Public feedback photo upload: image-only, strict size limit, random filename.
+  const publicUploads = new Map();
   r.post('/public-image', async (req, res) => {
+    const ip = req.ip || req.socket.remoteAddress || 'unknown';
+    const nowTs = Date.now();
+    let bucket = publicUploads.get(ip);
+    if (!bucket || nowTs - bucket.startedAt >= 3600_000) { bucket = { startedAt: nowTs, count: 0 }; publicUploads.set(ip, bucket); }
+    if (bucket.count >= 20) return res.status(429).json({ error: 'Πολλά ανεβάσματα. Δοκίμασε ξανά αργότερα.' });
+    bucket.count += 1;
+    if (publicUploads.size > 5000) for (const [k, v] of publicUploads) if (nowTs - v.startedAt >= 3600_000) publicUploads.delete(k);
     const original = path.basename(String(req.query.name || 'photo'));
     const ext = path.extname(original).toLowerCase();
     const allowed = new Set(['.jpg', '.jpeg', '.png', '.webp']);
@@ -53,11 +61,21 @@ export function mediaRoutes() {
     try {
       await pipeline(req, counter, fs.createWriteStream(tmp));
       if (!size) throw new Error('EMPTY');
+      // το περιεχόμενο πρέπει να είναι πραγματικά εικόνα (όχι απλώς όνομα .jpg)
+      const fh = await fsp.open(tmp, 'r');
+      const head = Buffer.alloc(12);
+      await fh.read(head, 0, 12, 0);
+      await fh.close();
+      const isJpg = head[0] === 0xff && head[1] === 0xd8 && head[2] === 0xff;
+      const isPng = head.subarray(0, 8).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]));
+      const isWebp = head.subarray(0, 4).toString() === 'RIFF' && head.subarray(8, 12).toString() === 'WEBP';
+      if (!(isJpg || isPng || isWebp)) throw new Error('BAD_TYPE');
       await fsp.rename(tmp, path.join(UPLOAD_DIR, name));
       return res.json({ url: `/media/${name}`, name, size, kind: 'image' });
     } catch (e) {
       await fsp.rm(tmp, { force: true });
       if (e.message === 'TOO_BIG') return res.status(413).json({ error: 'Η φωτογραφία πρέπει να είναι έως 8MB.' });
+      if (e.message === 'BAD_TYPE') return res.status(415).json({ error: 'Το αρχείο δεν είναι έγκυρη εικόνα.' });
       if (e.message === 'EMPTY') return res.status(400).json({ error: 'Το αρχείο είναι κενό.' });
       return res.status(400).json({ error: 'Η μεταφόρτωση απέτυχε.' });
     }
