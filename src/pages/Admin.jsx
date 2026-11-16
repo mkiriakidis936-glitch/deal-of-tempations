@@ -17,7 +17,6 @@ import AdminSessions from '@/components/admin/AdminSessions';
 import AdminSessionRecovery from '@/components/admin/AdminSessionRecovery';
 import AdminEpisodeArchive from '@/components/admin/AdminEpisodeArchive';
 import AdminPlayers from '@/components/admin/AdminPlayers';
-import AdminGuide from '@/components/admin/AdminGuide';
 import AdminIntakes from '@/components/admin/AdminIntakes';
 import AdminShowCasting from '@/components/admin/AdminShowCasting';
 import AdminLinks from '@/components/admin/AdminLinks';
@@ -26,7 +25,6 @@ import AdminEventInfo from '@/components/admin/AdminEventInfo';
 import AdminGrandJury from '@/components/admin/AdminGrandJury';
 import AdminMeta from '@/components/admin/AdminMeta';
 import AdminLeaderboard from '@/components/admin/AdminLeaderboard';
-import AdminBlitz from '@/components/admin/AdminBlitz';
 import AdminMedia from '@/components/admin/AdminMedia';
 import AdminSite from '@/components/admin/AdminSite';
 import AdminCustomScenarios from '@/components/admin/AdminCustomScenarios';
@@ -60,14 +58,12 @@ const NAV_GROUPS = [
   },
   {
     id: 'players',
-    label: '03 · ΠΑΙΚΤΕΣ & META-GAME',
+    label: '03 · ΠΑΙΚΤΕΣ',
     tabs: [
       { id: 'casting', label: '🎬 Επιλογή Επεισοδίου' },
       { id: 'players', label: '👥 Παίκτες & Ρόλοι' },
-      { id: 'blitz', label: '⚡ Blitz' },
       { id: 'achievements', label: '🏅 Επιτεύγματα' },
       { id: 'leaderboard', label: '🏆 Κατάταξη' },
-      { id: 'meta', label: '🔮 Meta-game & αρχεία' },
       { id: 'grandjury', label: '⚖️ Grand Jury' },
     ],
   },
@@ -113,7 +109,6 @@ const NAV_GROUPS = [
     tabs: [
       { id: 'settings', label: '⚙️ Ρυθμίσεις εφαρμογής' },
       { id: 'eventinfo', label: '🗓️ Πληροφορίες Event' },
-      { id: 'guide', label: '📖 Οδηγός χρήσης' },
       { id: 'notifications', label: '🔔 Ειδοποιήσεις PUSH' },
     ],
   },
@@ -314,15 +309,6 @@ export default function Admin() {
         );
       case 'links':
         return <AdminLinks sessions={sessions} selectedSession={activeSession} />;
-      case 'blitz':
-        return (
-          <AdminBlitz
-            sessions={sessions}
-            selectedSession={activeSession}
-            onSelect={selectSession}
-            onUpdate={handleUpdateSession}
-          />
-        );
       case 'leaderboard':
         return <AdminLeaderboard />;
       case 'visits':
@@ -335,10 +321,6 @@ export default function Admin() {
         return <AdminEventInfo />;
       case 'grandjury':
         return <AdminGrandJury />;
-      case 'guide':
-        return <AdminGuide />;
-      case 'meta':
-        return <AdminMeta />;
       default:
         return <AdminOverview sessions={sessions} loading={loading} onNavigate={setTab} />;
     }
