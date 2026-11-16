@@ -6,12 +6,12 @@ import AdminAchievementDefinitions from '@/components/admin/AdminAchievementDefi
 
 const SUB_TABS = [
   { id: 'chronicle', label: '📜 Chronicle' },
-  { id: 'archives', label: '📦 Archives' },
+  { id: 'archives', label: '📦 Αρχεία' },
   { id: 'vault', label: '🗝️ Vault' },
-  { id: 'hauntings', label: '👻 Hauntings' },
-  { id: 'memorials', label: '🕯️ Memorials' },
-  { id: 'profiles', label: '👤 Profiles' },
-  { id: 'achievements', label: '🏅 Achievements' },
+  { id: 'hauntings', label: '👻 Στοιχειώματα' },
+  { id: 'memorials', label: '🕯️ Μνημεία' },
+  { id: 'profiles', label: '👤 Προφίλ' },
+  { id: 'achievements', label: '🏅 Επιτεύγματα' },
 ];
 
 export default function AdminMeta({ initialTab = 'chronicle' }) {
@@ -83,8 +83,8 @@ export default function AdminMeta({ initialTab = 'chronicle' }) {
   return (
     <div className="space-y-4">
       <ComicPanel className="bg-secondary">
-        <div className="font-heading text-xl text-primary mb-1">🔮 META-GAME MANAGEMENT</div>
-        <div className="text-xs text-foreground/60">Chronicle · Archives · Vault · Hauntings · Memorials · Profiles · Achievements</div>
+        <div className="font-heading text-xl text-primary mb-1">🔮 ΔΙΑΧΕΙΡΙΣΗ META-GAME</div>
+        <div className="text-xs text-foreground/60">Χρονικό · Αρχεία · Θησαυροφυλάκιο · Στοιχειώματα · Μνημεία · Προφίλ · Επιτεύγματα</div>
       </ComicPanel>
 
       <div className="flex gap-2 flex-wrap">
@@ -129,7 +129,7 @@ export default function AdminMeta({ initialTab = 'chronicle' }) {
                   </div>
                   <div className="text-sm text-foreground/70">🏆 {a.winner || '—'}</div>
                   <div className="text-xs text-foreground/50">👥 {(a.playerNames || []).join(', ') || '—'}</div>
-                  <div className="text-xs text-foreground/40">{a.eventDate} · {(a.confessions || []).length} confessions · {(a.highlights || []).length} highlights</div>
+                  <div className="text-xs text-foreground/40">{a.eventDate} · {(a.εξομολογήσεις || []).length} εξομολογήσεις · {(a.σημαντικές στιγμές || []).length} σημαντικές στιγμές</div>
                 </div>
                 <ComicButton variant="red" size="sm" onClick={() => handleDelete(a.id)}>🗑️</ComicButton>
               </div>
@@ -211,8 +211,8 @@ export default function AdminMeta({ initialTab = 'chronicle' }) {
                   <div className="font-heading text-lg">{p.playerName}</div>
                   {p.identityName && <div className="text-xs text-primary">🎭 {p.identityName} ({p.identityArchetype || '—'})</div>}
                   <div className="flex flex-wrap gap-3 text-xs">
-                    <span>🎮 {p.totalSessions || 0} sessions</span>
-                    <span>🏆 {p.totalWins || 0} wins</span>
+                    <span>🎮 {p.totalSessions || 0} συνεδρίες</span>
+                    <span>🏆 {p.totalWins || 0} νίκες</span>
                     <span>💰 <input type="number" value={p.wallet || 0} className="w-16 bg-background/30 border border-border rounded px-1" onChange={(e) => handleUpdateProfile(p, 'wallet', Number(e.target.value))} /></span>
                     <span>⚖️ <input type="number" value={p.karma || 0} className="w-16 bg-background/30 border border-border rounded px-1" onChange={(e) => handleUpdateProfile(p, 'karma', Number(e.target.value))} /></span>
                     <span>🪙 {p.blackmailTokens || 0}</span>
