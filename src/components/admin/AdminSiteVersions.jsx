@@ -11,15 +11,17 @@ async function getVersionRecord() {
   return result.items?.[0] || null;
 }
 
-export async function saveSiteVersion(allContent, eventId) {
+export async function saveSiteVersion(allContent, eventId, nextContent) {
   const previous = allContent?.[eventId];
   if (!previous) return;
-  const record = await getVersionRecord();
+  const [record, user] = await Promise.all([getVersionRecord(), base44.auth.me().catch(() => null)]);
   const versions = Array.isArray(record?.value?.items) ? record.value.items : [];
   const snapshot = {
     id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
     eventId,
     createdAt: new Date().toISOString(),
+    changedBy: user?.email || user?.user?.email || 'Admin',
+    changedFields: [...new Set([...Object.keys(previous || {}), ...Object.keys(nextContent || {})])].filter((key) => JSON.stringify(previous?.[key]) !== JSON.stringify(nextContent?.[key])),
     content: JSON.parse(JSON.stringify(previous)),
   };
   const value = { items: [snapshot, ...versions].slice(0, LIMIT) };
@@ -72,8 +74,8 @@ export default function AdminSiteVersions({ eventId, onRestore }) {
         <div className="space-y-2">
           {versions.map((version) => (
             <div key={version.id} className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-border/50 p-2">
-              <div className="text-xs min-w-0">{new Date(version.createdAt).toLocaleString('el-GR')}</div>
-              <ComicButton size="sm" variant="dark" disabled={busy} onClick={() => restore(version)}>Επαναφορά στον editor</ComicButton>
+              <div className="text-xs min-w-0"><div>{new Date(version.createdAt).toLocaleString('el-GR')}</div><div className="text-[10px] text-foreground/50">Αλλαγή από: {version.changedBy || 'Admin'}</div><div className="text-[10px] text-foreground/50">Πεδία: {(version.changedFields || []).join(', ') || 'Περιεχόμενο'}</div></div>
+              <ComicButton size="sm" variant="dark" disabled={busy} onClick={() => restore(version)}>ΑΝΑΙΡΕΣΗ / ΕΠΑΝΑΦΟΡΑ</ComicButton>
             </div>
           ))}
         </div>

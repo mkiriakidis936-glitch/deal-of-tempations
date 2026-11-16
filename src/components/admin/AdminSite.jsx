@@ -75,7 +75,7 @@ export default function AdminSite({ focusScenario = false }) {
     setBusy(true); setMsg(null);
     try {
       if (rec?.id) {
-        await saveSiteVersion(all, ev);
+        await saveSiteVersion(all, ev, d);
         await base44.entities.AppSetting.update(rec.id, { value: next });
       }
       else setRec(await base44.entities.AppSetting.create({ key: SITE_KEY, value: next }));
