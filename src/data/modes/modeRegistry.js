@@ -15,7 +15,7 @@ export const NEW_MODES = [
     id: 'lockdown',
     name: 'PAJAMA LOCKDOWN 18+',
     icon: '🚨',
-    desc: 'Ψηφιακό Escape Room 60 λεπτών με Hostage Sacrifice, Sensory Cipher, Sabotage Override, mini-games, Exit Code και VIP Vault.',
+    desc: 'Ψηφιακό Escape Room 60 λεπτών με Team Cipher, Sensory Puzzles, Sabotage Override, mini-games, Exit Code και VIP Vault.',
     min: 3,
     max: 8,
     acts: ['lockdown'],
@@ -26,7 +26,7 @@ export const NEW_MODES = [
     id: 'beach_bar',
     name: 'BEACH BAR HOME LOCKDOWN',
     icon: '🍹',
-    desc: 'Home beach-bar party 2,5 ωρών με DJ, flip-flop dress code, Dance & Freeze, Shot & Truth Sync, τροχό και Flip-Flop Heist. Τα ποτά είναι πάντα προαιρετικά και αντικαθίστανται με μη αλκοολούχα.',
+    desc: 'Home beach-bar party 2,5 ωρών με DJ, flip-flop dress code, Dance & Freeze, Mocktail & Truth Sync, τροχό και Flip-Flop Heist. Τα ποτά είναι πάντα προαιρετικά και αντικαθίστανται με μη αλκοολούχα.',
     min: 3,
     max: 8,
     acts: ['beach'],
@@ -58,7 +58,7 @@ export const MODE_THEMES = {
 
 export const ACT_META = {
   board: { title: 'Act 1 · The Glam & Chaos Board', minutes: 60 },
-  midnight: { title: 'Act 2 · Midnight ASMR & Tickle Vault', minutes: 45 },
+  midnight: { title: 'Act 2 · Midnight ASMR & Secret Vault', minutes: 45 },
   lockdown: { title: 'Act 3 · Pajama Lockdown (18+)', minutes: 60 },
   morning: { title: 'Act 4 · Extended Morning Escape & VIP Vault', minutes: 45 },
   beach: { title: 'Beach Bar Home Lockdown', minutes: 150 },
