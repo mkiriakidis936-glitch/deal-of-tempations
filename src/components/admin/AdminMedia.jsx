@@ -44,8 +44,8 @@ export default function AdminMedia() {
   const [libraryFilter, setLibraryFilter] = useState('all');
   const [librarySearch, setLibrarySearch] = useState('');
   const LIBRARY_CATEGORIES = [
-    { id: 'heist', label: 'Heist' },
-    { id: 'pajama', label: 'Pajama' },
+    { id: 'heist', label: 'Ληστεία' },
+    { id: 'pajama', label: 'Πιτζάμα' },
     { id: 'branding', label: 'Εταιρική ταυτότητα' },
     { id: 'uncategorized', label: 'Χωρίς κατηγορία' },
   ];
