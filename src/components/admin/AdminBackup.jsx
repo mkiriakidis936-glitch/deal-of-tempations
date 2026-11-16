@@ -132,8 +132,8 @@ export default function AdminBackup() {
       </ComicPanel>
 
       <ComicPanel className="bg-card space-y-3">
-        <div className="font-heading text-lg text-primary">MEDIA BACKUP — ΦΩΤΟΓΡΑΦΙΕΣ & ΒΙΝΤΕΟ</div>
-        <div className="text-xs text-foreground/60 font-body">Δημιουργεί συμπιεσμένο αρχείο .tar.gz με όλα τα ανεβασμένα αρχεία του Media Library. Η επαναφορά κρατά πρώτα αντίγραφο των τωρινών αρχείων στον server και επαναφέρει τα αρχεία με τα αρχικά τους ονόματα.</div>
+        <div className="font-heading text-lg text-primary">ΑΝΤΙΓΡΑΦΟ ΠΟΛΥΜΕΣΩΝ — ΦΩΤΟΓΡΑΦΙΕΣ & ΒΙΝΤΕΟ</div>
+        <div className="text-xs text-foreground/60 font-body">Δημιουργεί συμπιεσμένο αρχείο .tar.gz με όλα τα ανεβασμένα αρχεία του Βιβλιοθήκη πολυμέσων. Η επαναφορά κρατά πρώτα αντίγραφο των τωρινών αρχείων στον server και επαναφέρει τα αρχεία με τα αρχικά τους ονόματα.</div>
         <div className="flex flex-wrap gap-2">
           <ComicButton variant="yellow" size="md" disabled={busy} onClick={downloadMediaNow}>⬇ ΚΑΤΕΒΑΣΜΑ MEDIA BACKUP</ComicButton>
           <input ref={mediaFileRef} type="file" accept=".tar.gz,application/gzip" className="hidden" onChange={onMediaRestorePick} />
