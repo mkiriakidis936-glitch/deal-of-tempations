@@ -215,7 +215,7 @@ export const VIP_VAULT = [
 ];
 
 
-const UNSAFE_EXTENDED_COPY = /hogtie|blindfold|restraint|δεσίμ|δεμέν|δέσιμο|ακινητοπ|zip.?ties|duct tape|παγάκι|παγάκια|γαργαλ|tickle|σφηνάκ|\bshot\b|αλκοόλ|alcohol|χωρίς χέρια|μάτια κλειστά|τυφλά|περιορισμός κίνησης|αγγίζ|ακουμπ|σπρώξ|δέσε|δεμένη|δεμένος/i;
+const UNSAFE_EXTENDED_COPY = /hogtie|blindfold|restraint|δεσίμ|δεμέν|δέσιμο|ακινητοπ|zip.?ties|duct tape|παγάκι|παγάκια|γαργαλ|tickle|σφηνάκ|\bshot\b|αλκοόλ|alcohol|χωρίς χέρια|μάτια κλειστά|τυφλά|περιορισμός κίνησης|αγγίζ|ακουμπ|touch|μασάζ|massage|άγγιγμα|σπρώξ|δέσε|δεμένη|δεμένος/i;
 const SAFE_EXTENDED_CHALLENGE = 'Προαιρετικό ψηφιακό challenge χωρίς σωματική επαφή, περιορισμό κίνησης ή αλκοόλ. Ολοκλήρωσε ένα quiz ή επίλεξε PASS / STOP.';
 function sanitizeExtendedCopy(value, id = '') {
   if (Array.isArray(value)) {
@@ -237,7 +237,7 @@ function sanitizeExtendedCopy(value, id = '') {
   return value;
 }
 [
-  GLAM_CARDS, CHAOS_CARDS, CHAOS_POWERS, SHOP, SECRET_MISSIONS,
+  ROUTES, GLAM_CARDS, CHAOS_CARDS, CHAOS_POWERS, SHOP, SECRET_MISSIONS,
   EXTENDED_GLAM_CARDS, EXTENDED_CHAOS_CARDS, EXTENDED_SECRET_MISSIONS,
   EXTENDED_CHAOS_MARKET_CARDS, BLIND_TEXTURES, WHISPER_QUESTIONS,
   ASMR_CLIPS, MORNING_CLUES, VIP_VAULT,
