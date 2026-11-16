@@ -278,7 +278,7 @@ export const MIDNIGHT_PACT_OFFER = 'Δέξου εθελοντικά ένα ψη�
 
 
 const SAFE_GAME_COPY_KEYS = new Set(['name', 'label', 'title', 'role', 'desc', 'text', 'detail', 'challenge', 'setup', 'action', 'success', 'cost']);
-const UNSAFE_GAME_COPY = /hogtie|blindfold|restraint|δεσίμ|δεμέν|δέσιμο|δένονται|ακινητοπ|zip.?ties|duct tape|παγάκι|παγάκια|ice cube|γαργαλ|tickle|σφηνάκ|\bshot\b|αλκοόλ|alcohol|χωρίς χέρια|χωρίς να χρησιμοποι|touch|μασάζ|massage|άγγιγμα|μάτια κλειστά|τυφλά|ακινησία|περιορισμός κίνησης/i;
+const UNSAFE_GAME_COPY = /hogtie|blindfold|restraint|δεσίμ|δεμέν|δέσιμο|δένονται|ακινητοπ|zip.?ties|duct tape|παγάκι|παγάκια|ice cube|γαργαλ|tickle|σφηνάκ|\bshot\b|αλκοόλ|alcohol|χωρίς χέρια|χωρίς να χρησιμοποι|ακουμπ|κλείσε τα μάτια|touch|μασάζ|massage|άγγιγμα|μάτια κλειστά|κλείσε τα μάτια|κλείστε τα μάτια|τυφλά|ακινησία|περιορισμός κίνησης/i;
 const SAFE_GAME_CHALLENGE = 'Προαιρετική ψηφιακή δοκιμασία: λύσε έναν σύντομο γρίφο ή quiz. PASS και STOP είναι πάντα διαθέσιμα.';
 
 function sanitizeGameCopy(value, id = '') {
