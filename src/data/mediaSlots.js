@@ -37,5 +37,4 @@ export const MODE_COVER_SLOTS = [
   { id: 'modeCover_pedi_extended', modeId: 'pedi_extended', label: 'Pedi-Glam Extended' },
   { id: 'modeCover_lockdown', modeId: 'lockdown', label: 'Pajama Lockdown' },
   { id: 'modeCover_beach_bar', modeId: 'beach_bar', label: 'Beach Bar Lockdown' },
-  { id: 'modeCover_marathon_4h', modeId: 'marathon_4h', label: '5H Pajama Marathon' },
 ];
