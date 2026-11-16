@@ -111,10 +111,10 @@ export default function AdminGrandJury() {
           })}
 
           <ComicPanel className="bg-primary/20">
-            <div className="font-heading text-sm mb-2">📝 Χειροκίνητα Logs</div>
+            <div className="font-heading text-sm mb-2">📝 Χειροκίνητες καταγραφές</div>
             <div className="space-y-1 mb-3">
               {manualLogs.length === 0 ? (
-                <div className="text-xs text-foreground/40 italic">Καθόλου χειροκίνητα logs</div>
+                <div className="text-xs text-foreground/40 italic">Δεν υπάρχουν χειροκίνητες καταγραφές</div>
               ) : (
                 manualLogs.map((m, i) => (
                   <div key={i} className="text-xs comic-panel-sm p-2 bg-card flex justify-between items-start gap-2">
@@ -127,7 +127,7 @@ export default function AdminGrandJury() {
             <textarea
               value={manualText}
               onChange={(e) => setManualText(e.target.value)}
-              placeholder="Προσθήκη χειροκίνητου log..."
+              placeholder="Προσθήκη χειροκίνητης καταγραφής..."
               className="w-full border-2 border-border rounded px-2 py-1 text-sm bg-card"
               rows={2}
             />
