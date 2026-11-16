@@ -1,8 +1,5 @@
 import React from 'react';
 import ComicPanel from '@/components/comic/ComicPanel';
-import AdminEventInfo from '@/components/admin/AdminEventInfo';
-import AdminBackup from '@/components/admin/AdminBackup';
-import AdminGuide from '@/components/admin/AdminGuide';
 import AdminGlobalDesign from '@/components/admin/AdminGlobalDesign';
 
 export default function AdminSettings() {
@@ -16,9 +13,6 @@ export default function AdminSettings() {
           <div className="text-[10px] text-foreground/50">DEAL OF TEMPTATION</div>
         </div>
       </ComicPanel>
-      <AdminEventInfo />
-      <AdminBackup />
-      <AdminGuide />
       <AdminGlobalDesign />
     </div>
   );
