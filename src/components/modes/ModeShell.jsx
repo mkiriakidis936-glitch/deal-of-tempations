@@ -7,7 +7,7 @@ import GameDurationClock from '@/components/shared/GameDurationClock';
 export default function ModeShell({ modeId, ctx, state, act, children, onQR, onEnd, showTimer = true }) {
   const theme = MODE_THEMES[modeId] || MODE_THEMES.lockdown;
   const meta = modeMeta(modeId);
-  const actTitle = modeId === 'marathon_4h' && act === 'board' ? 'Act 1 · Pajama Pedi-Glam' : (ACT_META[act]?.title || act);
+  const actTitle = modeId === 'marathon_4h' && act === 'board' ? 'Act 1 · Pajama Pedi-Glam' : modeId === 'marathon_4h' && act === 'lockdown' ? 'Act 3 · Pajama Lockdown (18+)' : (ACT_META[act]?.title || act);
   const [showLog, setShowLog] = useState(false);
   const { mg, stopped, toggleStop, centralStopped } = ctx;
   useEffect(() => { setGameStopActive(stopped); }, [stopped]);
