@@ -89,7 +89,7 @@ export default function ModeGame({ state, updateState, onEnd, onQR, playerProfil
         </div>
       )}
 
-      {act === 'board' && <ActBoard ctx={ctx} onDone={nextAct} />}
+      {(act === 'board' || act === 'pedi_glam') && <ActBoard ctx={ctx} onDone={nextAct} />}
       {act === 'midnight' && <ActMidnight ctx={ctx} onDone={nextAct} />}
       {act === 'lockdown' && <ActLockdown ctx={ctx} standalone={!multi} onDone={(res) => { setMg({ lockdownResult: res }); if (multi) nextAct(); else finishAll(); }} />}
       {act === 'morning' && <ActMorning ctx={ctx} onFinish={finishAll} />}
