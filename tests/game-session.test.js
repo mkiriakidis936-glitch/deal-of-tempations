@@ -12,7 +12,7 @@ const players = [
   { id: 'p1', name: 'Player 1', vipProfile: { boundaries: ['own-only'] } },
 ];
 
-test('all five approved digital modes are registered with fixed durations', () => {
+test('all four approved digital modes are registered with fixed durations', () => {
   assert.deepEqual(NEW_MODES.map((mode) => mode.id), [
     'pedi_extended', 'lockdown', 'beach_bar', 'marathon_4h',
   ]);
