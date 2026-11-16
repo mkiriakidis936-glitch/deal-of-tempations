@@ -6,7 +6,6 @@ import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import ScrollToTop from './components/ScrollToTop';
-import MediaEditMode from '@/components/shared/MediaEditMode';
 import GlobalDesignProvider from '@/components/GlobalDesignProvider';
 // Add page imports here
 import Tablet from '@/pages/Tablet';
@@ -89,7 +88,6 @@ function App() {
           <GlobalDesignProvider />
           <ScrollToTop />
           <AuthenticatedApp />
-          <MediaEditMode />
         </Router>
         <Toaster />
       </QueryClientProvider>
