@@ -12,9 +12,12 @@ if (import.meta.env.PROD && 'serviceWorker' in navigator) {
   window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js').catch(() => {}))
 }
 
-// Πρώτα φορτώνονται οι δικές σου φωτογραφίες/βίντεο (Admin → Φωτογραφίες & Βίντεο), μετά ανοίγει η εφαρμογή.
+// Ξεκινά παράλληλα η λήψη του App και των media overrides.
+// Το React αποδίδεται μόνο αφού εφαρμοστούν τα overrides, ώστε να μη φανεί
+// προσωρινά το αρχικό περιεχόμενο αντί για τις ρυθμίσεις του Admin.
+const appPromise = import('@/App.jsx');
 loadMedia().finally(async () => {
-  const { default: App } = await import('@/App.jsx')
+  const { default: App } = await appPromise;
   ReactDOM.createRoot(document.getElementById('root')).render(
     <App />
   )
