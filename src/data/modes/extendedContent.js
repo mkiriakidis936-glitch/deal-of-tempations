@@ -230,7 +230,7 @@ function sanitizeExtendedCopy(value, id = '') {
   for (const [key, current] of Object.entries(value)) {
     if (typeof current === 'string' && UNSAFE_EXTENDED_COPY.test(current)) {
       value[key] = ['title', 'name', 'label'].includes(key)
-        ? `Safe Digital Challenge ${value.id || id}`.trim()
+        ? 'Safe Digital Challenge'
         : SAFE_EXTENDED_CHALLENGE;
     } else if (current && typeof current === 'object') sanitizeExtendedCopy(current, value.id || id);
   }
