@@ -1,0 +1,208 @@
+/* DEAL OF TEMPTATION — unified visual experience layer
+   Visual-only overrides. No application state, rules, content or interactions. */
+:root, .dark {
+  --background: 270 28% 5%;
+  --foreground: 42 34% 93%;
+  --card: 268 22% 9%;
+  --card-foreground: 42 34% 93%;
+  --popover: 268 24% 8%;
+  --popover-foreground: 42 34% 93%;
+  --primary: 43 72% 61%;
+  --primary-foreground: 265 35% 7%;
+  --secondary: 268 18% 13%;
+  --secondary-foreground: 42 28% 90%;
+  --muted: 267 14% 17%;
+  --muted-foreground: 38 14% 66%;
+  --accent: 276 42% 28%;
+  --accent-foreground: 42 35% 95%;
+  --destructive: 354 58% 48%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 42 28% 24%;
+  --input: 268 18% 12%;
+  --ring: 43 78% 65%;
+  --surface-1: 268 24% 7%;
+  --surface-2: 268 20% 11%;
+  --surface-3: 270 16% 17%;
+  --hairline: 42 38% 88%;
+  --shadow-color: 270 70% 2%;
+  --radius: .9rem;
+  color-scheme: dark;
+}
+html { background: #09070d; }
+body {
+  color: #f4eddf;
+  background:
+    radial-gradient(ellipse at 50% -18%, rgba(123, 63, 173, .20), transparent 48%),
+    radial-gradient(ellipse at 4% 48%, rgba(93, 47, 135, .10), transparent 36%),
+    radial-gradient(ellipse at 100% 100%, rgba(174, 132, 49, .075), transparent 34%),
+    #09070d !important;
+  background-attachment: fixed;
+  font-family: var(--font-ui);
+}
+h1, h2, h3, h4, h5 { text-wrap: balance; }
+::selection { background: rgba(218, 178, 91, .34); color: #fff8e9; }
+
+/* Shared luxury surfaces */
+.comic-dots, .comic-dots-dark {
+  background-color: #09070d;
+  background-image:
+    radial-gradient(ellipse at 50% 0%, rgba(128, 74, 175, .17), transparent 58%),
+    radial-gradient(circle, rgba(230, 205, 150, .045) 1px, transparent 1px);
+  background-size: auto, 34px 34px;
+}
+.comic-panel, .comic-panel-sm, .ds-surface {
+  position: relative;
+  border: 1px solid rgba(213, 178, 105, .19) !important;
+  border-radius: 17px !important;
+  background:
+    linear-gradient(145deg, rgba(255,255,255,.045), transparent 42%),
+    linear-gradient(160deg, rgba(34, 25, 43, .96), rgba(15, 12, 20, .98)) !important;
+  box-shadow:
+    0 22px 58px rgba(0,0,0,.34),
+    0 1px 0 rgba(255,255,255,.045) inset,
+    0 0 28px rgba(111,65,151,.055) !important;
+}
+.comic-panel { padding: clamp(14px, 2vw, 22px); }
+.comic-panel-sm { border-radius: 13px !important; }
+.comic-panel:hover, .comic-panel-sm:hover {
+  border-color: rgba(220, 185, 108, .34) !important;
+}
+.ds-rule {
+  background: linear-gradient(90deg, transparent, rgba(218,181,103,.72), transparent) !important;
+  box-shadow: 0 0 12px rgba(218,181,103,.18);
+}
+.ds-eyebrow, .ds-label { letter-spacing: .22em; }
+.ds-title, .comic-text-stroke, .comic-text-stroke-thin {
+  text-shadow: 0 0 28px rgba(202,160,82,.16), 0 2px 18px rgba(0,0,0,.55);
+}
+
+/* Buttons: consistent metal / glass finish while preserving their handlers */
+button, [role="button"] {
+  -webkit-tap-highlight-color: transparent;
+}
+.comic-boom, button.comic-boom {
+  border: 1px solid rgba(218,181,103,.36) !important;
+  border-radius: 12px !important;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.09), transparent 52%),
+    linear-gradient(135deg, #3a2b47, #1b1524 72%) !important;
+  color: #f4e8ce !important;
+  box-shadow: 0 9px 24px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,255,255,.10) !important;
+}
+.comic-boom:hover {
+  border-color: rgba(235,199,121,.78) !important;
+  box-shadow: 0 0 0 1px rgba(218,181,103,.12), 0 12px 30px rgba(0,0,0,.36), 0 0 24px rgba(202,160,82,.10) !important;
+}
+button:focus-visible, [role="button"]:focus-visible {
+  outline: 2px solid #e7c77d !important;
+  outline-offset: 3px !important;
+}
+button:disabled { filter: saturate(.55); }
+
+/* Forms and selectors */
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+select, textarea {
+  border-color: rgba(210,181,127,.22) !important;
+  border-radius: 11px !important;
+  background: rgba(10,8,15,.78) !important;
+  color: #f5eddf !important;
+  box-shadow: inset 0 1px 4px rgba(0,0,0,.24);
+}
+input::placeholder, textarea::placeholder { color: rgba(226,213,190,.42) !important; }
+input:focus, select:focus, textarea:focus {
+  border-color: rgba(225,190,112,.72) !important;
+  box-shadow: 0 0 0 3px rgba(218,181,103,.10), 0 0 20px rgba(218,181,103,.07) !important;
+}
+
+/* Game setup, mode tiles and the 24-space board: dimensional presentation */
+[class*="grid"] > button,
+[class*="grid"] > [role="button"],
+.game-board button, .game-board [role="button"],
+[data-game-board] button, [data-box], .game-square,
+.box-card, .vault-box, .case-box, .briefcase {
+  border-radius: 14px;
+  transition: border-color .22s ease, box-shadow .22s ease, filter .22s ease, transform .22s ease;
+}
+.game-board button, [data-game-board] button, [data-box],
+.game-square, .box-card, .vault-box, .case-box, .briefcase {
+  border: 1px solid rgba(219,183,106,.34);
+  box-shadow: 0 10px 24px rgba(0,0,0,.30), inset 0 1px 0 rgba(255,255,255,.09);
+}
+.game-board button:hover, [data-game-board] button:hover, [data-box]:hover,
+.game-square:hover, .box-card:hover, .vault-box:hover, .case-box:hover, .briefcase:hover {
+  filter: brightness(1.12);
+  box-shadow: 0 14px 30px rgba(0,0,0,.38), 0 0 22px rgba(218,181,103,.13), inset 0 1px 0 rgba(255,255,255,.13);
+}
+[class*="grid"] > button:hover, [class*="grid"] > [role="button"]:hover {
+  border-color: rgba(225,190,112,.52);
+}
+
+/* Tablet / Host control room */
+.admin-root {
+  background:
+    radial-gradient(ellipse at 50% -12%, rgba(118,69,158,.18), transparent 54%),
+    #09070d !important;
+}
+.admin-root .comic-panel, .admin-root .comic-panel-sm {
+  backdrop-filter: blur(12px);
+}
+.admin-root nav button, .admin-root [role="tab"] {
+  border-radius: 11px;
+  transition: background .2s ease, color .2s ease, border-color .2s ease;
+}
+.admin-root nav button:hover, .admin-root [role="tab"]:hover {
+  background: rgba(196,157,88,.10);
+}
+.admin-root table { border-collapse: separate; border-spacing: 0; }
+.admin-root th {
+  color: #d9bd83;
+  font-family: var(--font-ui);
+  font-size: .72rem;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+.admin-root td, .admin-root th { border-color: rgba(210,181,127,.13) !important; }
+
+/* TV / stage — richer depth, cleaner overlays */
+.dot-tv-shell {
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(128,70,175,.22), transparent 48%),
+    radial-gradient(ellipse at 50% 100%, rgba(206,164,82,.13), transparent 50%),
+    #07060a !important;
+}
+.dot-tv-shell .comic-panel, .dot-tv-shell .comic-panel-sm {
+  border-color: rgba(224,190,119,.26) !important;
+  background: linear-gradient(145deg, rgba(38,27,49,.94), rgba(12,10,16,.97)) !important;
+  backdrop-filter: blur(14px);
+}
+.dot-tv-moment {
+  border-color: rgba(231,197,125,.72);
+  box-shadow: 0 30px 100px rgba(0,0,0,.68), 0 0 90px rgba(139,92,246,.22), 0 0 38px rgba(218,181,103,.12), inset 0 1px 0 rgba(255,255,255,.10);
+}
+
+/* Mobile controller and touch surfaces */
+body.dot-mobile-experience {
+  background:
+    radial-gradient(ellipse at 50% -10%, rgba(118,69,158,.20), transparent 50%),
+    #09070d !important;
+}
+body.dot-mobile-experience .comic-panel,
+body.dot-mobile-experience .comic-panel-sm {
+  border-radius: 15px !important;
+}
+body.dot-mobile-experience button, body.dot-mobile-experience [role="button"] {
+  min-height: 42px;
+}
+@media (max-width: 760px) {
+  .comic-panel { padding: 14px; }
+  .dot-tv-shell .dot-tv-hud { backdrop-filter: blur(10px); }
+}
+@media (min-width: 1200px) {
+  .admin-root > div { max-width: 1440px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .comic-panel, .comic-panel-sm, .comic-boom,
+  [class*="grid"] > button, [data-box], .game-square {
+    transition: none !important;
+  }
+}
