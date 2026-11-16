@@ -293,7 +293,7 @@ function sanitizeGameCopy(value, id = '') {
   for (const [key, current] of Object.entries(value)) {
     if (typeof current === 'string' && SAFE_GAME_COPY_KEYS.has(key) && UNSAFE_GAME_COPY.test(current)) {
       value[key] = ['name', 'label', 'title', 'role'].includes(key)
-        ? `SAFE DIGITAL CHALLENGE ${id}`.trim()
+        ? 'SAFE DIGITAL CHALLENGE'
         : key === 'cost' ? '1 Glam Token' : SAFE_GAME_CHALLENGE;
     } else if (current && typeof current === 'object') {
       sanitizeGameCopy(current, value.id || id);
