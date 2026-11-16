@@ -41,6 +41,8 @@ if (fs.existsSync(dist)) {
     '/pajama-form': { title: 'Deal of Temptation — Φόρμα Pajama', desc: 'Συμπλήρωσε τη φόρμα σου για το Pajama Pedi-Glam.' },
     '/modes-form': { title: 'Deal of Temptation — Φόρμα συμμετοχής', desc: 'Διάλεξε mode και συμπλήρωσε τη φόρμα συμμετοχής σου.' },
     '/gift-unlock': { title: 'Deal of Temptation — Ξεκλείδωσε το δώρο σου', desc: 'Βάλε τον κωδικό σου και ξεκλείδωσε το δώρο.' },
+    '/vip-access': { title: 'Deal of Temptation — VIP Access / Digital Vault', desc: 'Ιδιωτική VIP πρόσβαση και ψηφιακό Vault.' },
+    '/forms': { title: 'Deal of Temptation — Δημόσιες φόρμες', desc: 'Αίτηση συμμετοχής, αίτημα εκδήλωσης και feedback.' },
   };
   const esc = (v) => String(v).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
   const renderIndex = (req) => {

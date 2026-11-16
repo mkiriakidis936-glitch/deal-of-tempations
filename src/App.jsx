@@ -26,6 +26,8 @@ import Login from '@/pages/Login';
 import Register from '@/pages/Register';
 import ForgotPassword from '@/pages/ForgotPassword';
 import ResetPassword from '@/pages/ResetPassword';
+import PublicForms from '@/pages/PublicForms';
+import VIPAccess from '@/pages/VIPAccess';
 
 // Game-master screens (tablet + admin) need an admin account.
 const RequireAdmin = ({ children }) => {
@@ -67,6 +69,8 @@ const AuthenticatedApp = () => {
       <Route path="/promo" element={<Promo />} />
       <Route path="/invitation" element={<Invitation />} />
       <Route path="/vip/:token" element={<VIPInvitationPage />} />
+      <Route path="/vip-access" element={<VIPAccess />} />
+      <Route path="/forms" element={<PublicForms />} />
       <Route path="/welcome" element={<Navigate to="/invitation" replace />} />
       <Route path="/pajama-form" element={<PajamaForm />} />
       <Route path="/modes-form" element={<ModeForm />} />

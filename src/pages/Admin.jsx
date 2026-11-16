@@ -32,6 +32,7 @@ import AdminNotifications from '@/components/admin/AdminNotifications';
 import AdminVisits from '@/components/admin/AdminVisits';
 import AdminDigitalInvitations from '@/components/admin/AdminDigitalInvitations';
 import AdminExtra4 from '@/components/admin/AdminExtra4';
+import AdminSecretVault from '@/components/admin/AdminSecretVault';
 import { setActiveSessionCode } from '@/lib/activeSession';
 
 const NAV_GROUPS = [
@@ -75,6 +76,7 @@ const NAV_GROUPS = [
       { id: 'website', label: '🌐 Ιστοσελίδα' },
       { id: 'invitations', label: '✉️ Ψηφιακές προσκλήσεις' },
       { id: 'forms', label: '📝 Φόρμες & δηλώσεις συμμετοχής' },
+      { id: 'secret-vault', label: '🔐 VIP Vault & αιτήσεις' },
       { id: 'links', label: '🔗 Σύνδεσμοι & QR' },
     ],
   },
@@ -242,6 +244,8 @@ export default function Admin() {
         return <AdminMedia />;
       case 'invitations':
         return <AdminDigitalInvitations />;
+      case 'secret-vault':
+        return <AdminSecretVault />;
       case 'notifications':
         return <AdminNotifications />;
       case 'forms':

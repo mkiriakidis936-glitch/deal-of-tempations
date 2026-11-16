@@ -9,6 +9,7 @@ export const ENTITIES = [
   'Achievement', 'AppSetting', 'BacheloretteIntake', 'BlackmailVault', 'Chronicle', 'GameContent',
   'GameSession', 'GameSessionSnapshot', 'Haunting', 'InvitationRSVP', 'Memorial', 'PajamaContent', 'PajamaIntake',
   'PlayerIntake', 'PlayerProfile', 'SessionArchive', 'VIPInvitation', 'VIPInvitationSubmission',
+  'PublicFormSubmission', 'VIPAccessProfile', 'VIPAccessSession', 'VIPVaultCertificate',
 ];
 
 // Who may do what. Default for every operation is "public" (the phones/TV
@@ -23,6 +24,10 @@ const rules = {
   InvitationRSVP:     { read: ADMIN, update: ADMIN, delete: ADMIN },
   VIPInvitation: { read: ADMIN, create: ADMIN, update: ADMIN, delete: ADMIN },
   VIPInvitationSubmission: { read: ADMIN, update: ADMIN, delete: ADMIN },
+  PublicFormSubmission: { read: ADMIN, update: ADMIN, delete: ADMIN },
+  VIPAccessProfile: { read: ADMIN, update: ADMIN, delete: ADMIN },
+  VIPAccessSession: { read: ADMIN, update: ADMIN, delete: ADMIN },
+  VIPVaultCertificate: { read: ADMIN, create: ADMIN, update: ADMIN, delete: ADMIN },
   Achievement:        { create: ADMIN, update: ADMIN, delete: ADMIN },
   // configuration / content: everybody reads, only admins change
   AppSetting:     { create: ADMIN, update: ADMIN, delete: ADMIN },
@@ -404,8 +409,146 @@ function broadcast(entity, event) {
 setInterval(() => { for (const set of streams.values()) for (const subscriber of set) subscriber.res.write(': ping\n\n'); }, 25000).unref();
 
 
+
 export function entityRoutes() {
   const r = express.Router();
+
+  // Public intake forms: submissions are stored centrally and readable only by Admin.
+  const publicFormKinds = new Set(['join-heist', 'event-request', 'feedback']);
+  const publicFormBuckets = new Map();
+  r.post('/public-forms/:type', async (req, res, next) => {
+    try {
+      const type = String(req.params.type || '');
+      if (!publicFormKinds.has(type)) return res.status(404).json({ error: 'Η φόρμα δεν βρέθηκε.' });
+      const ip = req.ip || req.socket.remoteAddress || 'unknown';
+      const now = Date.now();
+      const bucket = publicFormBuckets.get(ip) || { at: now, count: 0 };
+      if (now - bucket.at > 3600000) { bucket.at = now; bucket.count = 0; }
+      if (bucket.count >= 12) return res.status(429).json({ error: 'Έγιναν πολλές υποβολές. Δοκίμασε αργότερα.' });
+      bucket.count += 1; publicFormBuckets.set(ip, bucket);
+      const body = req.body || {};
+      const clean = (v, max = 1200) => typeof v === 'string' ? v.trim().slice(0, max) : '';
+      const data = {
+        type,
+        name: clean(body.name, 100),
+        contact: clean(body.contact, 160),
+        email: clean(body.email, 160),
+        eventType: clean(body.eventType, 100),
+        eventDate: clean(body.eventDate, 40),
+        guests: clean(body.guests, 30),
+        message: clean(body.message, 3000),
+        suggestion: clean(body.suggestion, 3000),
+        photoUrl: '',
+        status: 'new',
+        submittedAt: new Date().toISOString(),
+      };
+      if (!data.name || (type === 'join-heist' && !data.contact) || (type === 'event-request' && !data.eventType) ||
+          (type === 'feedback' && !data.message && !data.suggestion)) {
+        return res.status(400).json({ error: 'Συμπλήρωσε τα υποχρεωτικά πεδία.' });
+      }
+      const { rows } = await query(
+        "INSERT INTO records (id, entity, data, created_by) VALUES ($1, 'PublicFormSubmission', $2, NULL) RETURNING *",
+        [crypto.randomUUID(), JSON.stringify(data)],
+      );
+      const rec = toRecord(rows[0]);
+      broadcast('PublicFormSubmission', { type: 'create', id: rec.id, data: rec });
+      notifyNewSubmission('PublicFormSubmission', rec);
+      return res.json({ success: true, id: rec.id });
+    } catch (error) { return next(error); }
+  });
+
+  // VIP lock: the access phrase is read only from Railway's server environment.
+  const vipTokenHash = (value) => crypto.createHash('sha256').update(String(value || '')).digest('hex');
+  const requireVipSession = async (req, res, next) => {
+    try {
+      const token = String(req.headers.authorization || '').replace(/^Bearer\s+/i, '');
+      if (!token || token.length < 32) return res.status(401).json({ error: 'Απαιτείται VIP πρόσβαση.' });
+      const { rows } = await query(
+        "SELECT id, data FROM records WHERE entity = 'VIPAccessSession' AND data->>'tokenHash' = $1 AND data->>'active' = 'true' LIMIT 1",
+        [vipTokenHash(token)],
+      );
+      const session = rows[0];
+      if (!session || !session.data.expiresAt || Date.parse(session.data.expiresAt) <= Date.now()) {
+        return res.status(401).json({ error: 'Η VIP πρόσβαση έληξε. Ξεκλείδωσε ξανά.' });
+      }
+      req.vipSession = { id: session.id, data: session.data };
+      return next();
+    } catch (error) { return next(error); }
+  };
+  r.post('/vip-access/unlock', async (req, res) => {
+    const expected = process.env.VIP_ACCESS_CODE || '';
+    const supplied = String(req.body?.code || '');
+    const a = Buffer.from(supplied);
+    const b = Buffer.from(expected);
+    if (!expected || !a.length || a.length !== b.length || !crypto.timingSafeEqual(a, b)) {
+      return res.status(401).json({ error: 'Ο κωδικός VIP δεν είναι σωστός.' });
+    }
+    const token = crypto.randomBytes(32).toString('base64url');
+    const expiresAt = new Date(Date.now() + 12 * 60 * 60 * 1000).toISOString();
+    await query(
+      "INSERT INTO records (id, entity, data) VALUES ($1, 'VIPAccessSession', $2)",
+      [crypto.randomUUID(), JSON.stringify({ tokenHash: vipTokenHash(token), active: true, expiresAt, createdAt: new Date().toISOString() })],
+    );
+    return res.json({ token, expiresAt });
+  });
+  r.get('/vip-access/vault', requireVipSession, async (req, res, next) => {
+    try {
+      const [{ rows: profiles }, { rows: archives }, { rows: certificates }] = await Promise.all([
+        query("SELECT id, data FROM records WHERE entity = 'VIPAccessProfile' AND data->>'sessionId' = $1 ORDER BY created_date DESC LIMIT 1", [req.vipSession.id]),
+        query("SELECT id, data FROM records WHERE entity = 'SessionArchive' ORDER BY created_date DESC LIMIT 50"),
+        query("SELECT id, data FROM records WHERE entity = 'VIPVaultCertificate' ORDER BY created_date DESC LIMIT 50"),
+      ]);
+      return res.json({
+        profile: profiles[0] ? { id: profiles[0].id, ...profiles[0].data } : null,
+        certificates: certificates.map((row) => ({ id: row.id, ...row.data })),
+        archives: archives.map((row) => ({
+          id: row.id, mode: row.data.mode || '', winner: row.data.winner || '',
+          eventDate: row.data.eventDate || '', playerCount: (row.data.playerNames || []).length,
+          stats: row.data.stats || {}, highlights: row.data.highlights || [],
+        })),
+        hiddenModes: [
+          { id: 'midnight-interrogation', name: 'Midnight Interrogation Room', description: 'Ψηφιακή ανάκριση με ερωτήσεις, μυστικά και επιλογές PASS.' },
+          { id: 'vip-vault-sabotage', name: 'VIP Vault Sabotage / Inside Mole', description: 'Κρυφός ρόλος, ψηφοφορίες και αποστολές σαμποτάζ μέσα στο παιχνίδι.' },
+          { id: 'barefoot-maze', name: 'Barefoot Maze', description: 'Ψηφιακός γρίφος διαδρομής και επιλογών — χωρίς δεμένα μάτια ή φυσική μετακίνηση.' },
+        ],
+        unratedDeck: [
+          'Wheel of Temptation','Blind Touch (consent-based digital choice)','Police Escort (role-play prompt)',
+          'Ice Pass (optional object-choice prompt)','Confession or Lockdown','Role Reversal',
+          'Whisper Challenge','Triple Cuff Chain (digital chain puzzle)','Barefoot Tango (music / choice challenge)',
+          'Blackmail Auction (fictional secret bidding)','Decibel Scream Test (optional sound meter)',
+          'Ultimate Lockdown Trigger',
+        ],
+      });
+    } catch (error) { return next(error); }
+  });
+  r.post('/vip-access/profile', requireVipSession, async (req, res, next) => {
+    try {
+      const body = req.body || {};
+      const text = (v, max = 500) => typeof v === 'string' ? v.trim().slice(0, max) : '';
+      const preferences = Array.isArray(body.preferences) ? body.preferences.filter((v) => ['questions','missions','surprises','roleplay','puzzles'].includes(v)).slice(0, 5) : [];
+      const boundaries = Array.isArray(body.boundaries) ? body.boundaries.filter((v) => ['touch','restraints','blindfolds','alcohol','personal-disclosure'].includes(v)).slice(0, 5) : [];
+      if (!text(body.displayName, 80) || body.adultConfirmed !== true || body.consentConfirmed !== true || text(body.safeWord, 40).length < 2) {
+        return res.status(400).json({ error: 'Απαιτείται όνομα, επιβεβαίωση 18+, συναίνεση και προσωπική λέξη STOP.' });
+      }
+      const profile = {
+        sessionId: req.vipSession.id, displayName: text(body.displayName, 80),
+        safeWord: text(body.safeWord, 40), intensity: Math.min(5, Math.max(1, Number(body.intensity) || 3)),
+        preferences, boundaries, updatedAt: new Date().toISOString(),
+        adultConfirmed: true, consentConfirmed: true,
+      };
+      const { rows: existing } = await query("SELECT id FROM records WHERE entity = 'VIPAccessProfile' AND data->>'sessionId' = $1 ORDER BY created_date DESC LIMIT 1", [req.vipSession.id]);
+      let saved;
+      if (existing[0]) {
+        const { rows } = await query("UPDATE records SET data = $1::jsonb, updated_date = now() WHERE id = $2 RETURNING *", [JSON.stringify(profile), existing[0].id]);
+        saved = rows[0];
+      } else {
+        const { rows } = await query("INSERT INTO records (id, entity, data) VALUES ($1, 'VIPAccessProfile', $2) RETURNING *", [crypto.randomUUID(), JSON.stringify(profile)]);
+        saved = rows[0];
+      }
+      return res.json({ success: true, profile: { id: saved.id, ...saved.data } });
+    } catch (error) { return next(error); }
+  });
+
 
   const tokenMatches = (provided, expected) => {
     const a = Buffer.from(String(provided || ''));
