@@ -7,7 +7,7 @@ import { saveAdminSettingVersion } from '@/lib/adminVersionHistory';
 import { listMedia } from '@/lib/media';
 
 const KEY = 'admin_form_questions';
-const FORM_TYPES = [{ id: 'modes', label: 'Επιλογή Modes' }, { id: 'pajama', label: 'Pajama Form' }, { id: 'heist', label: 'Arrest & Heist Intake' }, { id: 'invitation', label: 'Invitation Form' }];
+const FORM_TYPES = [{ id: 'modes', label: 'Επιλογή Modes' }, { id: 'pajama', label: 'Φόρμα Pajama' }, { id: 'heist', label: 'Ερωτηματολόγιο Arrest & Heist' }, { id: 'invitation', label: 'Φόρμα πρόσκλησης' }];
 const blank = () => ({ id: `q-${Date.now()}-${Math.random().toString(36).slice(2,6)}`, label: '', type: 'text', options: [], required: false, image: '' });
 
 export default function AdminFormsBuilder() {
@@ -66,7 +66,7 @@ export default function AdminFormsBuilder() {
 
   return <div className="space-y-3">
     <ComicPanel className="bg-card space-y-2">
-      <div className="font-heading text-xl text-primary">FORMS MANAGER</div>
+      <div className="font-heading text-xl text-primary">ΔΙΑΧΕΙΡΙΣΗ ΦΟΡΜΩΝ</div>
       <p className="text-xs text-foreground/60">Διαχείριση πρόσθετων ερωτήσεων στις υπάρχουσες φόρμες. Τα υφιστάμενα πεδία, οι υποχρεωτικοί έλεγχοι και η διαδικασία υποβολής παραμένουν αμετάβλητα.</p>
       <select className="w-full rounded border border-border bg-background p-2" value={formType} onChange={(e) => { setFormType(e.target.value); setEditing(null); }} >{FORM_TYPES.map((form) => <option key={form.id} value={form.id}>{form.label}</option>)}</select>
       <ComicButton onClick={() => setEditing(blank())}>＋ ΝΕΑ ΕΡΩΤΗΣΗ</ComicButton>
@@ -77,7 +77,7 @@ export default function AdminFormsBuilder() {
       <label className="block text-xs font-bold">Ερώτηση / τίτλος<input className="mt-1 w-full rounded border border-border bg-background p-2" value={editing.label} onChange={(e) => update({ label: e.target.value })} /></label>
       <label className="block text-xs font-bold">Τύπος απάντησης<select className="mt-1 w-full rounded border border-border bg-background p-2" value={editing.type} onChange={(e) => update({ type: e.target.value })}><option value="text">Σύντομο κείμενο</option><option value="textarea">Μεγάλο κείμενο</option><option value="select">Επιλογή από λίστα</option></select></label>
       {editing.type === 'select' && <label className="block text-xs font-bold">Επιλογές (μία ανά γραμμή)<textarea rows={4} className="mt-1 w-full rounded border border-border bg-background p-2" value={(editing.options || []).join('\n')} onChange={(e) => update({ options: e.target.value.split('\n') })} /></label>}
-      <label className="block text-xs font-bold">Εικόνα από Media Library<select className="mt-1 w-full rounded border border-border bg-background p-2" value={editing.image || ''} onChange={(e) => update({ image: e.target.value })}><option value="">Χωρίς εικόνα</option>{mediaItems.filter((media) => media.kind === 'image').map((media) => <option key={media.url} value={media.url}>{media.name}</option>)}</select></label>
+      <label className="block text-xs font-bold">Εικόνα από βιβλιοθήκη πολυμέσων<select className="mt-1 w-full rounded border border-border bg-background p-2" value={editing.image || ''} onChange={(e) => update({ image: e.target.value })}><option value="">Χωρίς εικόνα</option>{mediaItems.filter((media) => media.kind === 'image').map((media) => <option key={media.url} value={media.url}>{media.name}</option>)}</select></label>
       <label className="block text-xs font-bold">Ή URL εικόνας<input className="mt-1 w-full rounded border border-border bg-background p-2" value={editing.image || ''} onChange={(e) => update({ image: e.target.value })} placeholder="https://..." /></label>
       {editing.image && <img src={editing.image} alt="" className="max-h-36 rounded-lg object-cover" />}
       <label className="flex items-center gap-2 text-xs"><input type="checkbox" checked={!!editing.required} onChange={(e) => update({ required: e.target.checked })} /> Υποχρεωτική ερώτηση</label>
@@ -93,7 +93,7 @@ export default function AdminFormsBuilder() {
       </ComicPanel>)}
     </div>
     {editing && <ComicPanel className="bg-card space-y-2">
-      <div className="font-heading text-sm text-primary">LIVE PREVIEW · FORM QUESTION</div>
+      <div className="font-heading text-sm text-primary">ΖΩΝΤΑΝΗ ΠΡΟΕΠΙΣΚΟΠΗΣΗ · ΕΡΩΤΗΣΗ ΦΟΡΜΑΣ</div>
       {editing.image && <img src={editing.image} alt="" className="max-h-40 w-full rounded-lg object-cover" />}
       <div className="font-bold">{editing.label || 'Η ερώτηση θα εμφανιστεί εδώ'} {editing.required ? '*' : ''}</div>
       {editing.type === 'select'
