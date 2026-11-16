@@ -25,7 +25,7 @@ export default function AdminOverview({ sessions = [], loading = false, onNaviga
       Promise.all([base44.entities.PublicFormSubmission.filter({ status: 'new' }, { limit: 500 }), base44.entities.PlayerIntake.filter({}, { limit: 500 }), base44.entities.PajamaIntake.filter({}, { limit: 500 }), base44.entities.BacheloretteIntake.filter({}, { limit: 500 })]),
       base44.entities.VIPInvitation.filter({ active: true }, { limit: 100 }),
       request('GET', '/api/backup/list'),
-    ]).then(([achievements]) => {
+    ]).then(([achievements, requests, vip, backup]) => {
       if (!mounted) return;
       setExtra({
         achievements: achievements.status === 'fulfilled' ? (achievements.value.items || []).length : null,

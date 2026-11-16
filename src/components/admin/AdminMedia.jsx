@@ -29,12 +29,12 @@ const removeUrl = (value, url) => {
 };
 const mb = (n) => (n >= 1048576 ? `${(n / 1048576).toFixed(1)} MB` : `${Math.max(1, Math.round(n / 1024))} KB`);
 
-function Thumb({ src, video, audio, className = '' }) {
+function Thumb({ src, video, audio, className = '', objectPosition = '50% 50%' }) {
   if (!src) return <div className={`bg-black/40 ${className}`} />;
   if (audio) return <div className={`bg-black/30 flex items-center justify-center p-2 ${className}`}><audio src={src} controls preload="metadata" className="w-full" /></div>;
   return video
-    ? <video src={src} controls muted playsInline preload="metadata" className={`bg-black object-cover ${className}`} />
-    : <img src={src} alt="" loading="lazy" className={`object-contain ${className}`} />;
+    ? <video src={src} controls muted playsInline preload="metadata" style={{ objectPosition }} className={`bg-black object-cover ${className}`} />
+    : <img src={src} alt="" loading="lazy" style={{ objectPosition }} className={`object-contain ${className}`} />;
 }
 
 export default function AdminMedia() {
@@ -141,6 +141,7 @@ export default function AdminMedia() {
 
   const isUsed = (url) => Object.entries(ov).some(([k, v]) => k !== 'libraryCategories' && containsUrl(v, url));
   const setLibraryCategory = (url, category) => run(`category-${url}`, () => save({ ...ov, libraryCategories: { ...(ov.libraryCategories || {}), [url]: category } }), 'Η κατηγορία αποθηκεύτηκε ✓');
+  const setLibraryFocalPoint = (url, focalPoint) => run(`focal-${url}`, () => save({ ...ov, libraryFocalPoints: { ...(ov.libraryFocalPoints || {}), [url]: focalPoint } }), 'Το σημείο εστίασης αποθηκεύτηκε ✓');
   const assignLibraryImageToSlot = (url, slotId) => run(`slot-${url}`, async () => {
     await save({ ...ov, [slotId]: url, libraryCategories: { ...(ov.libraryCategories || {}), [url]: 'branding' } });
   }, 'Η εικόνα ανατέθηκε στο σημείο ✓');
@@ -383,7 +384,7 @@ export default function AdminMedia() {
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2">
           {library.filter((f) => (libraryFilter === 'all' || categoryOf(f.url) === libraryFilter) && f.name.toLowerCase().includes(librarySearch.toLowerCase())).map((f) => (
             <div key={f.name} className="border-2 border-border/40 rounded overflow-hidden bg-secondary/40">
-              <Thumb video={f.kind === 'video'} audio={f.kind === 'audio'} src={f.url} className="w-full aspect-square" />
+              <Thumb video={f.kind === 'video'} audio={f.kind === 'audio'} src={f.url} objectPosition={ov.libraryFocalPoints?.[f.url] || '50% 50%'} className="w-full aspect-square" />
               <div className="p-1 text-[10px] leading-tight break-all">{f.name.replace(/^[a-z0-9]+-[a-f0-9]{6}-/, '')}<br />{mb(f.size)}{isUsed(f.url) ? ' · σε χρήση' : ''}</div>
               {<div className="p-1 space-y-1">
                 <div className="text-[10px] text-foreground/60">Κατηγορία</div>
@@ -391,6 +392,10 @@ export default function AdminMedia() {
                   {LIBRARY_CATEGORIES.map((c) => <option key={c.id} value={c.id}>{c.label}</option>)}
                 </select>
                 {(f.kind === 'image' || f.kind === 'graphic') && <>
+                  <div className="text-[10px] text-foreground/60">Σημείο εστίασης</div>
+                  <select value={ov.libraryFocalPoints?.[f.url] || '50% 50%'} disabled={!!busy} onChange={(e) => setLibraryFocalPoint(f.url, e.target.value)} className="w-full rounded bg-black/50 border border-border/50 p-1 text-[10px]">
+                    <option value="50% 50%">Κέντρο</option><option value="50% 0%">Πάνω</option><option value="50% 100%">Κάτω</option><option value="0% 50%">Αριστερά</option><option value="100% 50%">Δεξιά</option>
+                  </select>
                   <div className="grid grid-cols-2 gap-1">
                     <button disabled={!!busy} onClick={() => addLibraryImageToGallery(f.url, 'heistPhotos')} className="text-[10px] py-1 rounded bg-black/50 disabled:opacity-30">+ Heist</button>
                     <button disabled={!!busy} onClick={() => addLibraryImageToGallery(f.url, 'pajamaPhotos')} className="text-[10px] py-1 rounded bg-black/50 disabled:opacity-30">+ Pajama</button>

@@ -105,6 +105,7 @@ export default function AdminEventCenter({ sessions: initialSessions = [], selec
     if (!selected || !window.confirm(`Να διαγραφεί οριστικά το Event ${event.title || selected.mode} (${selected.sessionCode}); Θα διαγραφούν και οι προσκλήσεις/συμμετοχές που είναι συνδεδεμένες με αυτό. Θα διατηρηθεί αντίγραφο της παρτίδας για ανάκτηση.`)) return;
     setBusy(true);
     try {
+      const invitationIds = new Set(vipInvitations.map((invitation) => invitation.id));
       for (const invitation of vipInvitations) {
         const submissions = await base44.entities.VIPInvitationSubmission.filter({ invitationId: invitation.id }, { limit: 500 });
         for (const submission of submissions.items || []) {
@@ -113,6 +114,11 @@ export default function AdminEventCenter({ sessions: initialSessions = [], selec
           await base44.entities.VIPInvitationSubmission.delete(submission.id);
         }
         await base44.entities.VIPInvitation.delete(invitation.id);
+      }
+      for (const row of vipSubmissions.filter((submission) => !invitationIds.has(submission.invitationId))) {
+        const intakes = await base44.entities.PlayerIntake.filter({ vipSubmissionId: row.submissionId }, { limit: 100 });
+        for (const intake of intakes.items || []) await base44.entities.PlayerIntake.delete(intake.id);
+        await base44.entities.VIPInvitationSubmission.delete(row.id);
       }
       for (const row of rsvps) await base44.entities.InvitationRSVP.delete(row.id);
       for (const row of publicSubmissions) await base44.entities.PublicFormSubmission.delete(row.id);
