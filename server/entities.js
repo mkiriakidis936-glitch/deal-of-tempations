@@ -280,9 +280,23 @@ export function validatePlayerPatch(current, patch, playerId) {
   if ('mg' in patch) {
     const old = current.mg || {};
     const next = patch.mg;
-    if (!isObject(next) || Object.keys(next).some((key) => !['stop', 'stopAt', 'stopBy', 'timer'].includes(key)) ||
-        old.stop || next.stop !== true || next.stopBy !== playerId ||
-        !Number.isFinite(next.stopAt) || (next.timer !== null && next.timer !== undefined && !isObject(next.timer))) return false;
+    if (!isObject(next)) return false;
+    const stopPatch = Object.keys(next).every((key) => ['stop', 'stopAt', 'stopBy', 'timer'].includes(key)) &&
+      !old.stop && next.stop === true && next.stopBy === playerId &&
+      Number.isFinite(next.stopAt) && (next.timer === null || next.timer === undefined || isObject(next.timer));
+    const action = next.playerAction;
+    const actionTypes = new Set([
+      'board_roll', 'board_route', 'board_complete', 'board_pass',
+      'midnight_pass', 'lockdown_exit_code', 'morning_clue', 'morning_code',
+      'beach_checkin',
+    ]);
+    let validAction = Object.keys(next).length === 1 && isObject(action) &&
+      action.playerId === playerId && actionTypes.has(action.type) && Number.isFinite(action.at);
+    if (validAction && action.type === 'board_route') validAction = ['glam', 'chaos'].includes(action.route);
+    if (validAction && action.type === 'lockdown_exit_code') validAction = /^\\d{4}$/.test(String(action.code || ''));
+    if (validAction && action.type === 'morning_clue') validAction = Number.isInteger(action.index) && action.index >= 0 && action.index < 4;
+    if (validAction && action.type === 'morning_code') validAction = /^\\d{4}$/.test(String(action.code || ''));
+    if (!stopPatch && !validAction) return false;
   }
 
   if ('players' in patch) {
