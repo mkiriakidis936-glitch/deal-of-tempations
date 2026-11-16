@@ -27,7 +27,7 @@ export default function ModeGame({ state, updateState, onEnd, onQR, playerProfil
   const ctx = { ...modeContext, playerProfiles, playerProfilesReady };
   const { mg, setMg, log } = ctx;
   const meta = modeMeta(state.mode);
-  const configuredDurationMinutes = meta?.minutes || 0;
+  const configuredDurationMinutes = Number(state.gameDurationMinutes) || meta?.minutes || 0;
   useEffect(() => {
     if (!configuredDurationMinutes || mg.timerModeId === state.mode) return;
     setMg({ timer: timerStart(configuredDurationMinutes * 60), timerModeId: state.mode });
@@ -56,9 +56,10 @@ export default function ModeGame({ state, updateState, onEnd, onQR, playerProfil
 
   const elapsedMin = Math.floor((Date.now() - (mg.startedAt || Date.now())) / 60000);
   const elapsedLabel = `${Math.floor(elapsedMin / 60)}:${String(elapsedMin % 60).padStart(2, '0')}`;
-  const totalMinutes = meta.minutes || 300;
+  const totalMinutes = configuredDurationMinutes || meta.minutes || 300;
   const totalLabel = `${Math.floor(totalMinutes / 60)}:${String(totalMinutes % 60).padStart(2, '0')}`;
-  const actMinutes = (a) => meta.actDurations?.[a] ?? ACT_META[a].minutes;
+  const baseActTotal = acts.reduce((sum, item) => sum + (meta.actDurations?.[item] ?? ACT_META[item].minutes), 0);
+  const actMinutes = (a) => Math.max(1, Math.round(((meta.actDurations?.[a] ?? ACT_META[a].minutes) / baseActTotal) * totalMinutes));
 
   return (
     <ModeShell modeId={state.mode} ctx={ctx} act={act} onQR={onQR} onEnd={onEnd}>
