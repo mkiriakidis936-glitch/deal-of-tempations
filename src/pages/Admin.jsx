@@ -1,39 +1,39 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { lazy, Suspense, useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { base44, request } from '@/api/base44Client';
 import ComicPanel from '@/components/comic/ComicPanel';
 import ComicButton from '@/components/comic/ComicButton';
 import AdminNav, { AdminTabBar } from '@/components/admin/AdminNav';
 import AdminSessionBar from '@/components/admin/AdminSessionBar';
-import AdminContentHub from '@/components/admin/AdminContentHub';
-import AdminContent from '@/components/admin/AdminContent';
-import AdminDashboard from '@/components/admin/AdminDashboard';
-import AdminOverview from '@/components/admin/AdminOverview';
-import AdminInbox from '@/components/admin/AdminInbox';
-import AdminEventCenter from '@/components/admin/AdminEventCenter';
-import AdminSettings from '@/components/admin/AdminSettings';
-import AdminBackup from '@/components/admin/AdminBackup';
-import AdminSessions from '@/components/admin/AdminSessions';
-import AdminSessionRecovery from '@/components/admin/AdminSessionRecovery';
-import AdminEpisodeArchive from '@/components/admin/AdminEpisodeArchive';
-import AdminPlayers from '@/components/admin/AdminPlayers';
-import AdminIntakes from '@/components/admin/AdminIntakes';
-import AdminShowCasting from '@/components/admin/AdminShowCasting';
-import AdminLinks from '@/components/admin/AdminLinks';
-import AdminRSVP from '@/components/admin/AdminRSVP';
-import AdminEventInfo from '@/components/admin/AdminEventInfo';
-import AdminGrandJury from '@/components/admin/AdminGrandJury';
-import AdminMeta from '@/components/admin/AdminMeta';
-import AdminLeaderboard from '@/components/admin/AdminLeaderboard';
-import AdminMedia from '@/components/admin/AdminMedia';
-import AdminSite from '@/components/admin/AdminSite';
-import AdminCustomScenarios from '@/components/admin/AdminCustomScenarios';
-import AdminFormsBuilder from '@/components/admin/AdminFormsBuilder';
-import AdminNotifications from '@/components/admin/AdminNotifications';
-import AdminVisits from '@/components/admin/AdminVisits';
-import AdminDigitalInvitations from '@/components/admin/AdminDigitalInvitations';
-import AdminExtra4 from '@/components/admin/AdminExtra4';
-import AdminSecretVault from '@/components/admin/AdminSecretVault';
+const AdminContentHub = lazy(() => import('@/components/admin/AdminContentHub'));
+const AdminContent = lazy(() => import('@/components/admin/AdminContent'));
+const AdminDashboard = lazy(() => import('@/components/admin/AdminDashboard'));
+const AdminOverview = lazy(() => import('@/components/admin/AdminOverview'));
+const AdminInbox = lazy(() => import('@/components/admin/AdminInbox'));
+const AdminEventCenter = lazy(() => import('@/components/admin/AdminEventCenter'));
+const AdminSettings = lazy(() => import('@/components/admin/AdminSettings'));
+const AdminBackup = lazy(() => import('@/components/admin/AdminBackup'));
+const AdminSessions = lazy(() => import('@/components/admin/AdminSessions'));
+const AdminSessionRecovery = lazy(() => import('@/components/admin/AdminSessionRecovery'));
+const AdminEpisodeArchive = lazy(() => import('@/components/admin/AdminEpisodeArchive'));
+const AdminPlayers = lazy(() => import('@/components/admin/AdminPlayers'));
+const AdminIntakes = lazy(() => import('@/components/admin/AdminIntakes'));
+const AdminShowCasting = lazy(() => import('@/components/admin/AdminShowCasting'));
+const AdminLinks = lazy(() => import('@/components/admin/AdminLinks'));
+const AdminRSVP = lazy(() => import('@/components/admin/AdminRSVP'));
+const AdminEventInfo = lazy(() => import('@/components/admin/AdminEventInfo'));
+const AdminGrandJury = lazy(() => import('@/components/admin/AdminGrandJury'));
+const AdminMeta = lazy(() => import('@/components/admin/AdminMeta'));
+const AdminLeaderboard = lazy(() => import('@/components/admin/AdminLeaderboard'));
+const AdminMedia = lazy(() => import('@/components/admin/AdminMedia'));
+const AdminSite = lazy(() => import('@/components/admin/AdminSite'));
+const AdminCustomScenarios = lazy(() => import('@/components/admin/AdminCustomScenarios'));
+const AdminFormsBuilder = lazy(() => import('@/components/admin/AdminFormsBuilder'));
+const AdminNotifications = lazy(() => import('@/components/admin/AdminNotifications'));
+const AdminVisits = lazy(() => import('@/components/admin/AdminVisits'));
+const AdminDigitalInvitations = lazy(() => import('@/components/admin/AdminDigitalInvitations'));
+const AdminExtra4 = lazy(() => import('@/components/admin/AdminExtra4'));
+const AdminSecretVault = lazy(() => import('@/components/admin/AdminSecretVault'));
 import { setActiveSessionCode } from '@/lib/activeSession';
 
 const NAV_GROUPS = [
@@ -358,7 +358,9 @@ export default function Admin() {
             </ComicPanel>
           </div>
           <div className="flex-1 min-w-0 w-full">
-            {renderTab()}
+            <Suspense fallback={<div className="rounded-xl border border-border bg-card p-6 text-center text-sm text-foreground/60">Φόρτωση ενότητας…</div>}>
+              {renderTab()}
+            </Suspense>
           </div>
         </div>
 
