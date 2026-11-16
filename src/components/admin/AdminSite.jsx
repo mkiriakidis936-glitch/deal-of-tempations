@@ -94,7 +94,7 @@ export default function AdminSite({ focusScenario = false }) {
   return (
     <div className="space-y-3">
       <ComicPanel className="bg-card space-y-3">
-        <div className="font-heading text-xl text-primary">🌐 SITE & ΣΕΝΑΡΙΟ</div>
+        <div className="font-heading text-xl text-primary">🌐 ΙΣΤΟΣΕΛΙΔΑ & ΣΕΝΑΡΙΟ</div>
         <p className="text-xs text-foreground/70">
           Γράψε τι είναι το παιχνίδι (σενάριο) και άλλαξε όλα τα κείμενα του /site, ξεχωριστά για κάθε event. Οι φωτογραφίες αλλάζουν από την καρτέλα 🖼️.
         </p>
@@ -102,7 +102,7 @@ export default function AdminSite({ focusScenario = false }) {
           {SITE_EVENTS.map((e) => (
             <ComicButton key={e.id} size="sm" variant={ev === e.id ? 'yellow' : 'dark'} onClick={() => setEv(e.id)}>{e.label}</ComicButton>
           ))}
-          <a href={`/site${ev === 'heist' ? '' : `?event=${ev}`}`} target="_blank" rel="noreferrer" className="inline-flex items-center px-3 text-xs font-bold underline">👁️ Δες το site</a>
+          <a href={`/site${ev === 'heist' ? '' : `?event=${ev}`}`} target="_blank" rel="noreferrer" className="inline-flex items-center px-3 text-xs font-bold underline">👁️ Προβολή ιστοσελίδας</a>
         </div>
         {msg && <div className={`text-sm font-bold ${msg.ok ? 'text-green-400' : 'text-red-400'}`}>{msg.text}</div>}
       </ComicPanel>
@@ -128,17 +128,17 @@ export default function AdminSite({ focusScenario = false }) {
             <option value="/invitation">/invitation (ερωτηματολόγιο Heist)</option>
             <option value="/pajama-form">/pajama-form (φόρμα Pajama)</option>
             <option value="/pajama-invite">/pajama-invite (κράτηση θέσης)</option>
-            <option value="/modes-form">/modes-form (φόρμα με επιλογή mode)</option>
+            <option value="/modes-form">/modes-form (φόρμα επιλογής λειτουργίας)</option>
             <option value="/modes-form?mode=pedi_extended">/modes-form → Pedi-Glam Extended</option>
             <option value="/modes-form?mode=lockdown">/modes-form → Pajama Lockdown</option>
             <option value="/modes-form?mode=beach_bar">/modes-form → Beach Bar Lockdown</option>
             <option value="/modes-form?mode=marathon_4h">/modes-form → 4H Marathon</option>
           </select>
         </Field>
-        <Field label="Ημερομηνία & ώρα αυτού του event" hint="Αν το αφήσεις κενό, χρησιμοποιείται η γενική ημερομηνία από τα Πρακτικά.">
+        <Field label="Ημερομηνία & ώρα αυτής της εκδήλωσης" hint="Αν το αφήσεις κενό, χρησιμοποιείται η γενική ημερομηνία από τα Πρακτικά.">
           <input type="datetime-local" className={inp} value={d.date || ''} onChange={(e) => up({ date: e.target.value })} />
         </Field>
-        <Field label="Κουμπί στο μενού (όνομα event)"><Text value={d.tab} onChange={(v) => up({ tab: v })} /></Field>
+        <Field label="Κουμπί στο μενού (όνομα εκδήλωσης)"><Text value={d.tab} onChange={(v) => up({ tab: v })} /></Field>
       </ComicPanel>
 
       <ComicPanel className="bg-card space-y-3">
