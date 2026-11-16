@@ -3,17 +3,17 @@ import { base44 } from '@/api/base44Client';
 import ComicPanel from '@/components/comic/ComicPanel';
 import ComicButton from '@/components/comic/ComicButton';
 import { GAME_MODES, TOENAIL_PERKS } from '@/data/gameConfig';
-import { isNewMode, modeMeta } from '@/data/modes/modeRegistry';
+import { isNewλειτουργία, modeMeta } from '@/data/modes/modeRegistry';
 
 const CAST_KEY = 'show_casting_plan';
 const SHOE_TO_LEVEL = { boots: 3, sneakers: 2, sandals: 1, barefoot: 0 };
 
 function modesForIntake(item, source) {
   if (source === 'pajama') {
-    if (Array.isArray(item.preferredModes) && item.preferredModes.length) return item.preferredModes;
+    if (Array.isArray(item.preferredλειτουργίαs) && item.preferredλειτουργίαs.length) return item.preferredλειτουργίαs;
     return item.formType === 'modes' ? [] : ['pajama'];
   }
-  return [item.vipGameMode || 'classic'];
+  return [item.vipGameλειτουργία || 'classic'];
 }
 
 function normalizeName(value) {
@@ -21,7 +21,7 @@ function normalizeName(value) {
 }
 
 function playerLimits(mode) {
-  if (isNewMode(mode)) {
+  if (isNewλειτουργία(mode)) {
     const meta = modeMeta(mode);
     return { min: meta.min, max: meta.max };
   }
@@ -31,7 +31,7 @@ function playerLimits(mode) {
 }
 
 export default function AdminShowCasting() {
-  const [mode, setMode] = useState('classic');
+  const [mode, setλειτουργία] = useState('classic');
   const [playerIntakes, setPlayerIntakes] = useState([]);
   const [pajamaIntakes, setPajamaIntakes] = useState([]);
   const [selected, setSelected] = useState([]);
@@ -55,7 +55,7 @@ export default function AdminShowCasting() {
       const current = record?.value && typeof record.value === 'object' ? record.value : null;
       setPlan(current ? { ...current, settingId: record.id } : null);
       if (current?.mode && Array.isArray(current.players)) {
-        setMode(current.mode);
+        setλειτουργία(current.mode);
         setSelected(current.players.map((player) => normalizeName(player.name)).filter(Boolean));
       }
     } catch (error) {
@@ -84,7 +84,7 @@ export default function AdminShowCasting() {
         nailColor: '',
         vipProfile: null,
         accommodation: '',
-        preferredModes: [],
+        preferredλειτουργίαs: [],
       };
       previous.sourceIds.push({ source, id: item.id });
       previous.shoeType = item.shoeType || previous.shoeType;
@@ -92,7 +92,7 @@ export default function AdminShowCasting() {
       previous.nailColor = item.nailColor || previous.nailColor;
       previous.vipProfile = item.vipProfile || previous.vipProfile;
       previous.accommodation = item.accommodation || item.stayAtVilla || item.vipProfile?.answers?.stayAtVilla || previous.accommodation;
-      previous.preferredModes = [...new Set([...previous.preferredModes, ...modes])];
+      previous.preferredλειτουργίαs = [...new Set([...previous.preferredλειτουργίαs, ...modes])];
       byName.set(key, previous);
     };
     playerIntakes.forEach((item) => add(item, 'player'));
@@ -133,7 +133,7 @@ export default function AdminShowCasting() {
 
   async function publish() {
     if (selectedCandidates.length < limits.min || selectedCandidates.length > limits.max) {
-      setMessage(`Για το συγκεκριμένο Mode απαιτούνται ${limits.min}–${limits.max} παίκτριες.`);
+      setMessage(`Για το συγκεκριμένο λειτουργία απαιτούνται ${limits.min}–${limits.max} παίκτριες.`);
       return;
     }
     setSaving(true);
@@ -174,8 +174,8 @@ export default function AdminShowCasting() {
     <div className="space-y-4">
       <ComicPanel className="bg-card space-y-3">
         <div>
-          <div className="font-heading text-xl text-primary">SHOW CASTING · ΕΠΙΛΟΓΗ ΕΠΕΙΣΟΔΙΟΥ</div>
-          <p className="text-sm text-foreground/65">Οι υπάρχουσες φόρμες συγκεντρώνονται εδώ. Επίλεξε το Mode που θα πραγματοποιηθεί και τις παίκτριες του συγκεκριμένου επεισοδίου.</p>
+          <div className="font-heading text-xl text-primary">ΕΠΙΛΟΓΗ ΣΥΜΜΕΤΕΧΟΥΣΩΝ · ΕΠΙΛΟΓΗ ΕΠΕΙΣΟΔΙΟΥ</div>
+          <p className="text-sm text-foreground/65">Οι υπάρχουσες φόρμες συγκεντρώνονται εδώ. Επίλεξε το λειτουργία που θα πραγματοποιηθεί και τις παίκτριες του συγκεκριμένου επεισοδίου.</p>
         </div>
         <div className="space-y-2">
           <div className="text-xs font-bold text-foreground/60">ΕΠΙΛΟΓΕΣ ΠΑΙΚΤΡΙΩΝ ΑΝΑ MODE</div>
@@ -184,7 +184,7 @@ export default function AdminShowCasting() {
               <button
                 key={item.id}
                 type="button"
-                onClick={() => { setMode(item.id); setSelected([]); }}
+                onClick={() => { setλειτουργία(item.id); setSelected([]); }}
                 className={`rounded-lg border p-2 text-left ${mode === item.id ? 'border-primary bg-primary/10' : 'border-border/60 bg-secondary'}`}
               >
                 <div className="text-xs font-bold">{item.name}</div>
@@ -196,7 +196,7 @@ export default function AdminShowCasting() {
         </div>
         <label className="block space-y-1 text-sm font-bold">
           ΤΕΛΙΚΟ MODE
-          <select value={mode} onChange={(event) => { setMode(event.target.value); setSelected([]); }} className="w-full rounded-lg border-2 border-border bg-background px-3 py-2">
+          <select value={mode} onChange={(event) => { setλειτουργία(event.target.value); setSelected([]); }} className="w-full rounded-lg border-2 border-border bg-background px-3 py-2">
             {GAME_MODES.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
           </select>
         </label>
@@ -205,7 +205,7 @@ export default function AdminShowCasting() {
           <span>Επιλεγμένες: <strong>{selectedCandidates.length}/{limits.max}</strong> · Ελάχιστο: {limits.min}</span>
         </div>
         {candidates.length === 0 ? (
-          <div className="rounded-lg border border-border/60 bg-secondary p-4 text-sm text-foreground/65">Δεν βρέθηκαν συμμετοχές για αυτό το Mode στις υπάρχουσες φόρμες.</div>
+          <div className="rounded-lg border border-border/60 bg-secondary p-4 text-sm text-foreground/65">Δεν βρέθηκαν συμμετοχές για αυτό το λειτουργία στις υπάρχουσες φόρμες.</div>
         ) : (
           <div className="space-y-2">
             {candidates.map((item) => {
@@ -216,7 +216,7 @@ export default function AdminShowCasting() {
                   <span className="min-w-0 flex-1">
                     <span className="block font-bold">{item.name}</span>
                     <span className="block text-xs text-foreground/55">
-                      {item.sourceIds.map((source) => source.source === 'player' ? 'Player Intake' : 'Pajama / Modes Form').join(' · ')}
+                      {item.sourceIds.map((source) => source.source === 'player' ? 'Player Intake' : 'Pajama / λειτουργίαs Form').join(' · ')}
                       {item.accommodation ? ` · ${item.accommodation === 'yes' || item.accommodation === true ? 'Παραμονή στο σπίτι' : item.accommodation === 'no' || item.accommodation === false ? 'Μόνο μία βραδιά Game Show' : item.accommodation}` : ''}
                     </span>
                   </span>
