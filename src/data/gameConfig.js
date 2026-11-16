@@ -98,7 +98,7 @@ export const TOENAIL_PERKS = [
   { id: 'glitter', name: 'Glitch Code', icon: '🪩', color: '#a855f7', desc: 'Αλλαγή κάρτας ή ψηφιακής πρόκλησης.' },
 ];
 
-// ===== HIDDEN ROLES =====// ===== HIDDEN ROLES =====
+// ===== HIDDEN ROLES =====
 export const HIDDEN_ROLES = [
   { id: 'cop', name: 'Υπαστυνόμος', icon: '🚔', desc: 'Προβλέπει την πιο Καταζητούμενη. Αν σωστά, +ασυλία στο τέλος.' },
   { id: 'hacker', name: 'Χάκερ', icon: '💻', desc: 'Ακυρώνει σφάλμα (Glitch/Blackout) ή αντιστρέφει φορά κίνησης.' },
@@ -140,7 +140,7 @@ export const BOMB_TYPING_TYPES = [
   { id: 'spitlock', name: 'Memory Code', icon: '🧠', desc: 'Απομνημόνευση και εισαγωγή κωδικού.' },
 ];
 
-export const BOMB_RIDDLES_ALPHAexport const BOMB_RIDDLES_ALPHA = [
+export const BOMB_RIDDLES_ALPHA = [
   { id: 1, code: '2460', question: 'Ο κωδικός της βόμβας έχει 4 ψηφία. Το 1ο ψηφίο είναι το μισό του 2ου. Το 3ο ψηφίο είναι το άθροισμα του 1ου και του 2ου. Το 4ο ψηφίο είναι το μηδέν. Αν το άθροισμα και των 4 ψηφίων είναι 12, ποιος είναι ο κωδικός;', answer: '2460', logic: '2, 4, 2+4=6, 0 → 2+4+6+0 = 12' },
   { id: 2, code: 'hole', question: 'Όσο πιο πολύ υλικό αφαιρείς από μένα, τόσο μεγαλύτερος γίνομαι. Τι είμαι;', answer: 'Η Τρύπα', logic: 'Τρύπα στο χρηματοκιβώτιο/τοίχο.' },
   { id: 3, code: 'clock', question: 'Τρέχω συνεχώς αλλά δεν έχω πόδια. Έχω πρόσωπο/καντράν αλλά δεν έχω μάτια. Αν σταματήσω, η βόμβα εκρήγνυται. Τι είμαι;', answer: 'Το Ρολόι / Χρονόμετρο', logic: '' },
@@ -163,11 +163,11 @@ export const BOMB_PASO_TRIALS = [
   { id: 'dare', name: 'ΑΚΡΑΙΟ ΘΑΡΡΟΣ (Extreme Dare)', desc: 'Λύσε έναν σύντομο γρίφο ή ολοκλήρωσε ένα ψηφιακό quiz μέσα στον διαθέσιμο χρόνο.', success: 'Σωστή απάντηση ή ελεύθερη επιλογή PASS.' },
 ];
 
-// ===== WHEEL OF MISFORTUNE =====// ===== WHEEL OF MISFORTUNE =====
+// ===== WHEEL OF MISFORTUNE =====
 export const WHEEL_BINDING_MATERIALS = ['Κάρτα PASS', 'Glam Tokens', 'Ψηφιακό Quiz', 'Κάρτα Bonus'];
 export const WHEEL_TICKLE_TOOLS = ['Γρίφος', 'Trivia', 'Memory Sequence', 'Karaoke Prompt'];
 
-// ===== ARREST & HEIST MODE =====// ===== ARREST & HEIST MODE =====
+// ===== ARREST & HEIST MODE =====
 export const ARREST_HEIST_LADDER = [
   { step: 1, label: 'Έλεγχος Εγγράφων', icon: '🚔', detail: 'Απάντησε σε μία σύντομη ερώτηση γνώσεων.' },
   { step: 2, label: 'Κρυπτογράφηση', icon: '🔐', detail: 'Λύσε έναν ψηφιακό γρίφο κρυπτογράφησης.' },
