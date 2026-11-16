@@ -7,7 +7,7 @@ import { fmt, sfx, timerLeft, timerPause, useTick, setGameStopActive } from '@/l
 import { enablePlayerPush } from '@/lib/push';
 import GameDurationClock from '@/components/shared/GameDurationClock';
 
-// Οθόνη κινητού (/play) για τα 4 νέα modes.
+// Οθόνη κινητού (/play) για τα ψηφιακά modes.
 export default function ModeMobile({ state, me, updateState, onChangePlayer, sessionCode }) {
   const mg = state.mg || {};
   const meta = modeMeta(state.mode);
