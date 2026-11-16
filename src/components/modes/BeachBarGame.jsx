@@ -148,9 +148,10 @@ function Dance({ ctx, bb, setBb, T, addDrink, flopOn }) {
     log(`📯 FREEZE! ${cmd}`);
   }
   function loser(p, fromMobile = false) {
-    if (!canAssignVipActivity(ctx, p, { activityLabel: 'Freeze challenge' })) { if (fromMobile) setBb({ playerAction: null }); return; }
+    if (!canAssignVipActivity(ctx, p, { activityLabel: 'Freeze challenge' })) { if (fromMobile) ctx.setMg({ playerAction: null }); return; }
     addDrink(p.id);
-    setBb({ phase: 'wheel', loser: p.id, freeze: null, ...(fromMobile ? { playerAction: null } : {}) });
+    setBb({ phase: 'wheel', loser: p.id, freeze: null });
+    if (fromMobile) ctx.setMg({ playerAction: null });
     log(`🥤 ${p.name} ολοκλήρωσε το Freeze — mocktail counter και Τροχός Προκλήσεων`);
   }
 
@@ -203,7 +204,7 @@ function Wheel({ ctx, bb, setBb, T, flopOn }) {
   function spin(fromMobile = false, requestedPlayerId = who) {
     if (spinning) return;
     const selectedPlayer = players.find((player) => player.id === requestedPlayerId);
-    if (!canAssignVipActivity(ctx, selectedPlayer, { activityLabel: 'Wheel challenge' })) { if (fromMobile) setBb({ playerAction: null }); return; }
+    if (!canAssignVipActivity(ctx, selectedPlayer, { activityLabel: 'Wheel challenge' })) { if (fromMobile) ctx.setMg({ playerAction: null }); return; }
     setSpinning(true);
     setRun(false);
     let n = 0;
@@ -217,7 +218,8 @@ function Wheel({ ctx, bb, setBb, T, flopOn }) {
         const c = pick(BEACH_WHEEL);
         setCat(c.cat);
         setSpinning(false);
-        setBb({ wheel: { card: c, pid: requestedPlayerId, at: Date.now() }, loser: null, ...(fromMobile ? { playerAction: null } : {}) });
+        setBb({ wheel: { card: c, pid: requestedPlayerId, at: Date.now() }, loser: null });
+        if (fromMobile) ctx.setMg({ playerAction: null });
         log(`🎡 ${nameOf(requestedPlayerId)}: «${c.title}»`);
         sfx.ok();
         if (c.loseFlop) setBb({ flops: { ...(bb.flops || {}), [who]: false } });
@@ -232,10 +234,12 @@ function Wheel({ ctx, bb, setBb, T, flopOn }) {
       setWho(action.playerId);
       spin(true, action.playerId);
     } else if (action.type === 'beach_wheel_done' && action.playerId === bb.wheel?.pid && card) {
-      setBb({ wheel: null, phase: 'dance', playerAction: null });
+      setBb({ wheel: null, phase: 'dance' });
+      ctx.setMg({ playerAction: null });
       setRun(false);
     } else if (action.type === 'beach_wheel_again' && action.playerId === bb.wheel?.pid && card) {
-      setBb({ wheel: null, playerAction: null });
+      setBb({ wheel: null });
+      ctx.setMg({ playerAction: null });
       setRun(false);
     }
   }, [ctx.mg?.playerAction?.at, bb.loser, bb.wheel?.pid, card, spin, setBb]);
