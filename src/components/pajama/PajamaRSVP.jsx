@@ -6,11 +6,12 @@ export default function PajamaRSVP() {
   const [name, setName] = useState('');
   const [saving, setSaving] = useState(false);
   const [done, setDone] = useState(false);
+  const sessionCode = new URLSearchParams(window.location.search).get('event') || new URLSearchParams(window.location.search).get('sessionCode') || '';
 
   async function load() {
     try {
       const { items } = await base44.entities.InvitationRSVP.filter(
-        { confirmed: true, event: 'pajama' },
+        { confirmed: true, event: 'pajama', ...(sessionCode ? { sessionCode } : {}) },
         { sort: '-created_date', limit: 100 }
       );
       setList(items || []);
@@ -26,7 +27,7 @@ export default function PajamaRSVP() {
     if (!clean || saving) return;
     setSaving(true);
     try {
-      await base44.entities.InvitationRSVP.create({ name: clean, confirmed: true, event: 'pajama' });
+      await base44.entities.InvitationRSVP.create({ name: clean, confirmed: true, event: 'pajama', ...(sessionCode ? { sessionCode } : {}) });
       setName('');
       setDone(true);
       await load();

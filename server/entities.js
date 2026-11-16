@@ -765,10 +765,16 @@ export function entityRoutes() {
       const token = crypto.randomBytes(32).toString('base64url');
       const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
       const gameMode = String(req.body?.gameMode || 'classic');
+      const sessionCode = String(req.body?.sessionCode || '').trim().toUpperCase();
+      if (sessionCode) {
+        const { rows: sessions } = await query("SELECT id FROM records WHERE entity = 'GameSession' AND data->>'sessionCode' = $1 LIMIT 1", [sessionCode]);
+        if (!sessions[0]) return res.status(400).json({ error: 'Το επιλεγμένο Event δεν βρέθηκε.' });
+      }
       const allowedGameModes = ['classic', 'marathon', 'arrest_heist', 'pajama', 'pedi_extended', 'lockdown', 'beach_bar'];
       if (!allowedGameModes.includes(gameMode)) return res.status(400).json({ error: 'Επίλεξε έγκυρο παιχνίδι.' });
       const data = {
         gameMode,
+        ...(sessionCode ? { sessionCode } : {}),
         title: 'VIP INVITATION',
         gameTitle: 'DEAL OF TEMPTATION',
         intro: 'Έχεις λάβει μια προσωπική πρόσκληση σε μια ξεχωριστή εμπειρία. Επιβεβαίωσε τη συμμετοχή σου και συμπλήρωσε το προσωπικό σου προφίλ.',
@@ -955,6 +961,7 @@ export function entityRoutes() {
       const customAnswerLabels = Object.fromEntries(configuredQuestions.map((question) => [question.id, question.label]));
       const data = {
         invitationId: invitations[0].id,
+        ...(invitations[0].data?.sessionCode ? { sessionCode: invitations[0].data.sessionCode } : {}),
         submissionId,
         gameMode,
         name: body.name.trim(),
@@ -1057,7 +1064,7 @@ export function entityRoutes() {
         }
         inserted = await client.query(
           "INSERT INTO records (id, entity, data, created_by) VALUES ($1, 'InvitationRSVP', $2, NULL) ON CONFLICT ((data->>'submissionId')) WHERE entity = 'InvitationRSVP' AND data ? 'submissionId' DO NOTHING RETURNING *",
-          [crypto.randomUUID(), JSON.stringify({ name: body.name.trim(), confirmed: true, submissionId })],
+          [crypto.randomUUID(), JSON.stringify({ name: body.name.trim(), confirmed: true, submissionId, ...(body.sessionCode ? { sessionCode: String(body.sessionCode).trim().toUpperCase() } : {}) })],
         );
         rsvpCreated = inserted.rows.length > 0;
         if (rsvpCreated) rsvpRecord = toRecord(inserted.rows[0]);

@@ -100,6 +100,7 @@ export default function InvitationIntakeForm({ onDone }) {
         name: form.name.trim(),
         customAnswers: form.customAnswers,
         submissionId: form.submissionId,
+        sessionCode: new URLSearchParams(window.location.search).get('event') || new URLSearchParams(window.location.search).get('sessionCode') || '',
       });
       try { localStorage.removeItem(DRAFT_KEY); } catch { /* ignore */ }
       onDone();

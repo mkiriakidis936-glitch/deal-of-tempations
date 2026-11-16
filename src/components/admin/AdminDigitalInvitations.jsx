@@ -30,6 +30,8 @@ export default function AdminDigitalInvitations() {
   const [vipBusy, setVipBusy] = useState(false);
   const [vipMessage, setVipMessage] = useState('');
   const [vipGameMode, setVipGameMode] = useState('classic');
+  const [sessions, setSessions] = useState([]);
+  const [sessionCode, setSessionCode] = useState('');
 
   useEffect(() => {
     base44.entities.AppSetting.filter({ key: KEY }, { limit: 1 }).then(({ items: rows }) => {
@@ -38,6 +40,7 @@ export default function AdminDigitalInvitations() {
       setItems(Array.isArray(rec?.value?.items) ? rec.value.items : []);
     }).catch((e) => setMessage(e.message));
     loadVipInvitations();
+    base44.entities.GameSession.filter({}, { sort: '-created_date', limit: 100 }).then(({ items: rows }) => setSessions(rows || [])).catch((e) => setVipMessage(e.message || 'Δεν φορτώθηκαν τα Events.'));
   }, []);
 
   async function loadVipInvitations() {
@@ -70,7 +73,7 @@ export default function AdminDigitalInvitations() {
     setVipBusy(true);
     setVipMessage('');
     try {
-      const invitation = await request('POST', '/api/entities/vip-invitations', { gameMode: vipGameMode });
+      const invitation = await request('POST', '/api/entities/vip-invitations', { gameMode: vipGameMode, sessionCode: sessionCode || null });
       setVipInvitations((current) => [invitation, ...current]);
       setVipMessage('Η VIP πρόσκληση δημιουργήθηκε και είναι έτοιμη για αποστολή.');
     } catch (e) { setVipMessage(e.message || 'Δεν δημιουργήθηκε η VIP πρόσκληση.'); }
@@ -136,7 +139,8 @@ export default function AdminDigitalInvitations() {
       <ComicButton disabled={vipBusy} onClick={createVipInvitation}>＋ ΔΗΜΙΟΥΡΓΙΑ ΕΤΟΙΜΗΣ VIP ΠΡΟΣΚΛΗΣΗΣ</ComicButton>
       {vipMessage && <div className="text-sm font-bold text-foreground">{vipMessage}</div>}
       <label className="block space-y-1 text-sm font-bold text-[#d8bd72]">ΣΥΝΔΕΣΗ ΜΕ ΠΑΙΧΝΙΔΙ<select value={vipGameMode} onChange={(e) => setVipGameMode(e.target.value)} className="w-full rounded-lg border border-[#b99a45]/50 bg-black px-3 py-3 text-sm text-[#f4e6bd]">{GAME_MODES.map((mode) => <option key={mode.id} value={mode.id}>{mode.name}</option>)}</select></label>
-      <p className="text-xs text-foreground/55">Η VIP φόρμα έχει δικές της ερωτήσεις και δεν επηρεάζει το απλή φόρμα πρόσκλησης.</p>
+      <label className="block space-y-1 text-sm font-bold text-[#d8bd72]">ΣΥΝΔΕΣΗ ΜΕ EVENT<select value={sessionCode} onChange={(e) => setSessionCode(e.target.value)} className="w-full rounded-lg border border-[#b99a45]/50 bg-black px-3 py-3 text-sm text-[#f4e6bd]"><option value="">Χωρίς σύνδεση με Event</option>{sessions.map((session) => <option key={session.id} value={session.sessionCode}>{session.event?.title || session.mode} · {session.sessionCode}</option>)}</select></label>
+      <p className="text-xs text-foreground/55">Η πρόσκληση και οι απαντήσεις της συνδέονται με το επιλεγμένο Event.</p>
     </ComicPanel>
 
     {vipInvitations.map((invitation) => {

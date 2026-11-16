@@ -114,7 +114,10 @@ export default function Tablet() {
   }, [joinByCode]);
 
   async function startNewSession(data) {
-    const created = await createSession(data);
+    const created = await createSession({
+      ...data,
+      event: { title: String(data.mode || 'Game').replace(/_/g, ' ').toUpperCase(), sessionCode: data.sessionCode, createdFrom: 'game-setup', guests: [] },
+    });
     setActiveSessionCode(data.sessionCode);
     return created;
   }

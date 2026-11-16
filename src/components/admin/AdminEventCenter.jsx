@@ -15,12 +15,14 @@ export default function AdminEventCenter({ sessions: initialSessions = [], onDel
   const [message, setMessage] = useState('');
   const [guestName, setGuestName] = useState('');
   const [guestContact, setGuestContact] = useState('');
+  const [draft, setDraft] = useState({ title: '', scheduledAt: '', venue: '', capacity: '' });
   const [busy, setBusy] = useState(false);
 
   useEffect(() => { setSessions(initialSessions); if (!selectedId && initialSessions[0]) setSelectedId(initialSessions[0].id); }, [initialSessions]);
   const selected = sessions.find((s) => s.id === selectedId) || null;
   const event = selected?.event || {};
   const guests = Array.isArray(event.guests) ? event.guests : [];
+  useEffect(() => { setDraft({ title: event.title || selected?.mode || '', scheduledAt: event.scheduledAt || '', venue: event.venue || '', capacity: event.capacity ?? '' }); }, [selectedId]);
 
   const loadRelated = useCallback(async () => {
     if (!selected) { setRsvps([]); setVipInvitations([]); setVipSubmissions([]); return; }
@@ -51,6 +53,7 @@ export default function AdminEventCenter({ sessions: initialSessions = [], onDel
     try {
       const updated = await base44.entities.GameSession.update(selected.id, { event: { ...event, ...patch, sessionCode: selected.sessionCode, createdFrom: 'game-setup' } });
       setSessions((current) => current.map((s) => s.id === selected.id ? updated : s));
+      setDraft({ title: updated.event?.title || '', scheduledAt: updated.event?.scheduledAt || '', venue: updated.event?.venue || '', capacity: updated.event?.capacity ?? '' });
       setMessage('Οι πληροφορίες του Event αποθηκεύτηκαν.');
     } catch (error) { setMessage(error.message || 'Δεν αποθηκεύτηκαν οι πληροφορίες.'); }
     finally { setBusy(false); }
@@ -90,7 +93,7 @@ export default function AdminEventCenter({ sessions: initialSessions = [], onDel
   function printGuests() {
     if (!selected) return;
     const rows = guests.map((g, i) => `<tr><td>${i + 1}</td><td>${String(g.name || '').replace(/[&<>"]/g, '')}</td><td>${String(g.contact || '').replace(/[&<>"]/g, '')}</td></tr>`).join('');
-    const w = window.open('', '_blank', 'noopener,noreferrer');
+    const w = window.open('', '_blank');
     if (!w) { setMessage('Ο browser μπλόκαρε το παράθυρο εκτύπωσης.'); return; }
     w.document.write(`<!doctype html><html lang="el"><meta charset="utf-8"><title>Καλεσμένοι ${selected.sessionCode}</title><style>body{font:14px Arial;padding:24px}table{width:100%;border-collapse:collapse}td,th{border:1px solid #aaa;padding:8px;text-align:left}</style><h1>${event.title || selected.mode}</h1><p>${selected.sessionCode} · ${event.scheduledAt || ''} · ${event.venue || ''}</p><table><thead><tr><th>#</th><th>Όνομα</th><th>Επικοινωνία</th></tr></thead><tbody>${rows}</tbody></table><script>window.print()<\/script></html>`);
     w.document.close();
@@ -100,12 +103,6 @@ export default function AdminEventCenter({ sessions: initialSessions = [], onDel
     if (!selected || !window.confirm(`Να διαγραφεί οριστικά το Event ${event.title || selected.mode} (${selected.sessionCode}); Θα διαγραφούν και οι προσκλήσεις/συμμετοχές που είναι συνδεδεμένες με αυτό. Θα διατηρηθεί αντίγραφο της παρτίδας για ανάκτηση.`)) return;
     setBusy(true);
     try {
-      await base44.entities.GameSessionSnapshot.create({
-        sessionId: selected.id, sessionCode: selected.sessionCode, mode: selected.state?.mode || selected.mode || '',
-        stage: Number(selected.state?.stage ?? 0), playerCount: Array.isArray(selected.state?.players) ? selected.state.players.length : 0,
-        label: 'Αυτόματο αντίγραφο πριν από διαγραφή Event', state: JSON.parse(JSON.stringify(selected.state || {})),
-        sourceUpdatedAt: selected.updated_date || selected.created_date || null,
-      });
       for (const invitation of vipInvitations) {
         const submissions = await base44.entities.VIPInvitationSubmission.filter({ invitationId: invitation.id }, { limit: 500 });
         for (const submission of submissions.items || []) {
@@ -116,7 +113,6 @@ export default function AdminEventCenter({ sessions: initialSessions = [], onDel
         await base44.entities.VIPInvitation.delete(invitation.id);
       }
       for (const row of rsvps) await base44.entities.InvitationRSVP.delete(row.id);
-      for (const row of vipSubmissions) await base44.entities.VIPInvitationSubmission.delete(row.id);
       const snapshots = await base44.entities.GameSessionSnapshot.filter({ sessionId: selected.id }, { limit: 500 });
       for (const snapshot of snapshots.items || []) if (snapshot.label !== 'Αυτόματο αντίγραφο πριν από διαγραφή Event') await base44.entities.GameSessionSnapshot.delete(snapshot.id);
       await onDeleteSession?.(selected.id);
@@ -142,11 +138,11 @@ export default function AdminEventCenter({ sessions: initialSessions = [], onDel
     {!selected ? <ComicPanel className="bg-card text-sm text-foreground/60">Δεν υπάρχει Event. Ξεκίνησε παιχνίδι από την κανονική επιλογή Game και Mode για να δημιουργηθεί.</ComicPanel> : <>
       <ComicPanel className="bg-card space-y-2">
         <div className="font-heading text-lg">ΣΤΟΙΧΕΙΑ EVENT</div>
-        <label className="block text-xs font-bold">Τίτλος<input value={event.title || ''} onChange={(e) => saveEvent({ title: e.target.value })} className="mt-1 w-full rounded border border-border bg-background p-2" /></label>
-        <label className="block text-xs font-bold">Ημερομηνία / ώρα<input type="datetime-local" value={event.scheduledAt || ''} onChange={(e) => saveEvent({ scheduledAt: e.target.value })} className="mt-1 w-full rounded border border-border bg-background p-2" /></label>
-        <label className="block text-xs font-bold">Χώρος<input value={event.venue || ''} onChange={(e) => saveEvent({ venue: e.target.value })} className="mt-1 w-full rounded border border-border bg-background p-2" /></label>
-        <label className="block text-xs font-bold">Διαθέσιμες θέσεις<input type="number" min="0" value={event.capacity ?? ''} onChange={(e) => saveEvent({ capacity: e.target.value === '' ? null : Number(e.target.value) })} className="mt-1 w-full rounded border border-border bg-background p-2" /></label>
-        <div className="text-[11px] text-foreground/50">Κωδικός σύνδεσης: {selected.sessionCode} · Mode: {selected.mode}</div>
+        <label className="block text-xs font-bold">Τίτλος<input value={draft.title} onChange={(e) => setDraft((d) => ({ ...d, title: e.target.value }))} className="mt-1 w-full rounded border border-border bg-background p-2" /></label>
+        <label className="block text-xs font-bold">Ημερομηνία / ώρα<input type="datetime-local" value={draft.scheduledAt} onChange={(e) => setDraft((d) => ({ ...d, scheduledAt: e.target.value }))} className="mt-1 w-full rounded border border-border bg-background p-2" /></label>
+        <label className="block text-xs font-bold">Χώρος<input value={draft.venue} onChange={(e) => setDraft((d) => ({ ...d, venue: e.target.value }))} className="mt-1 w-full rounded border border-border bg-background p-2" /></label>
+        <label className="block text-xs font-bold">Διαθέσιμες θέσεις<input type="number" min="0" value={draft.capacity} onChange={(e) => setDraft((d) => ({ ...d, capacity: e.target.value }))} className="mt-1 w-full rounded border border-border bg-background p-2" /></label>
+        <ComicButton disabled={busy} onClick={() => saveEvent({ ...draft, capacity: draft.capacity === '' ? null : Number(draft.capacity) })}>ΑΠΟΘΗΚΕΥΣΗ ΣΤΟΙΧΕΙΩΝ EVENT</ComicButton><div className="text-[11px] text-foreground/50">Κωδικός σύνδεσης: {selected.sessionCode} · Mode: {selected.mode}</div>
       </ComicPanel>
       <ComicPanel className="bg-card space-y-2">
         <div className="font-heading text-lg">ΠΡΟΣΘΗΚΗ ΚΑΛΕΣΜΕΝΟΥ</div>
