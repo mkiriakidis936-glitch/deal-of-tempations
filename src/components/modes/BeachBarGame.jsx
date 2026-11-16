@@ -28,6 +28,21 @@ export default function BeachBarGame({ ctx, onEnd }) {
     log(`🩴 ${nameOf(action.playerId)} ολοκλήρωσε το Beach Bar check-in από το κινητό`);
   }, [mg.playerAction?.at, players, bb.checkin, setMg, log, nameOf]);
 
+  useEffect(() => {
+    const action = mg.playerAction;
+    if (action?.type !== 'beach_finale_response' || !players.some((player) => player.id === action.playerId)) return;
+    setMg((cur) => {
+      const current = cur.bb || {};
+      const challenge = current.finalChallenge || {};
+      if (!challenge.card || challenge.responses?.[action.playerId]) return { playerAction: null };
+      return {
+        playerAction: null,
+        bb: { ...current, finalChallenge: { ...challenge, responses: { ...(challenge.responses || {}), [action.playerId]: action.value } } },
+      };
+    });
+    log(`🏖️ ${nameOf(action.playerId)} ${action.value === 'done' ? 'ολοκλήρωσε' : 'επέλεξε PASS στο'} τελικό Beach Bar challenge`);
+  }, [mg.playerAction?.at, players, setMg, log, nameOf]);
+
 
   return (
     <div className="space-y-3">
@@ -306,10 +321,29 @@ function Finale({ ctx, bb, setBb, flopOn, onEnd }) {
           ))}
         </div>
       ) : (
-        <div className="rounded-lg p-4 text-center space-y-2" style={{ background: '#2a2000', border: '2px solid #FFD700' }}>
+        <div className="rounded-lg p-4 text-center space-y-3" style={{ background: '#2a2000', border: '2px solid #FFD700' }}>
           <div className="font-display text-4xl" style={{ color: '#FFD700' }}>👑 BEACH QUEEN: {nameOf(queen)}</div>
-          <div className="font-body">Διαλέγει την τελική ομαδική δοκιμασία της βραδιάς!</div>
-          <Btn color="bg-emerald-700" onClick={onEnd}>🏆 Τίτλοι & τέλος</Btn>
+          {!bb.finalChallenge?.card ? (
+            <>
+              <div className="font-body">Η Beach Queen ξεκινά την τελική ομαδική δοκιμασία.</div>
+              <Btn color="bg-amber-600 text-black" onClick={() => {
+                const card = pick(BEACH_WHEEL);
+                setBb({ finalChallenge: { card, startedAt: Date.now(), responses: {} } });
+                log(`🏖️ Ξεκίνησε το τελικό ομαδικό challenge: ${card.title}`);
+              }}>🎴 ΕΝΑΡΞΗ ΤΕΛΙΚΟΥ ΟΜΑΔΙΚΟΥ CHALLENGE</Btn>
+            </>
+          ) : (
+            <>
+              <div className="text-left rounded-lg bg-black/40 p-3 space-y-1">
+                <div className="font-heading text-xl text-amber-200">{bb.finalChallenge.card.title}</div>
+                <p className="text-sm">{bb.finalChallenge.card.text}</p>
+              </div>
+              <div className="text-sm text-left space-y-1">
+                {players.map((p) => <div key={p.id} className="flex justify-between"><span>{p.name}</span><b>{bb.finalChallenge.responses?.[p.id] === 'done' ? '✓ Ολοκλήρωσε' : bb.finalChallenge.responses?.[p.id] === 'pass' ? 'PASS' : 'Εκκρεμεί'}</b></div>)}
+              </div>
+              <Btn color="bg-emerald-700" disabled={!players.length || !players.every((p) => bb.finalChallenge.responses?.[p.id])} onClick={onEnd}>🏆 ΟΛΟΚΛΗΡΩΣΗ & ΤΙΤΛΟΙ</Btn>
+            </>
+          )}
         </div>
       )}
     </Panel>
