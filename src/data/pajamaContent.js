@@ -257,7 +257,7 @@ function sanitizePajamaCopy(value, id = '') {
   for (const [key, current] of Object.entries(value)) {
     if (typeof current === 'string' && UNSAFE_PAJAMA_COPY.test(current)) {
       value[key] = ['title', 'name', 'label'].includes(key)
-        ? `Safe Digital Challenge ${value.id || id}`.trim()
+        ? 'Safe Digital Challenge'
         : SAFE_PAJAMA_CHALLENGE;
     } else if (current && typeof current === 'object') sanitizePajamaCopy(current, value.id || id);
   }
