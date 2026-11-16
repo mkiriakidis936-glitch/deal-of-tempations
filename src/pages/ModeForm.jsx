@@ -44,7 +44,7 @@ export default function ModeForm() {
   const set = (k, v) => setForm((f) => ({ ...f, [k]: v }));
   const toggleMode = (id) => set('modes', form.modes.includes(id) ? form.modes.filter((m) => m !== id) : [...form.modes, id]);
   const has = (...ids) => form.modes.some((m) => ids.includes(m));
-  const pajamaish = has('pedi_extended', 'lockdown');
+  const pajamaish = has('lockdown', 'marathon_4h');
   const beachish = has('beach_bar');
   const canSend = form.name.trim() && form.modes.length > 0 && form.adult && form.safeWordConfirmed && customQuestionsValid && !saving;
 

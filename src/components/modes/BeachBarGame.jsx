@@ -20,6 +20,30 @@ export default function BeachBarGame({ ctx, onEnd }) {
   const drinks = bb.drinks || {};
   const addDrink = (id, n = 1) => setBb({ drinks: { ...drinks, [id]: (drinks[id] || 0) + n } });
 
+  useEffect(() => {
+    const action = mg.playerAction;
+    if (action?.type !== 'beach_checkin' || !players.some((player) => player.id === action.playerId)) return;
+    const checkin = { ...(bb.checkin || {}), [action.playerId]: true };
+    setMg((cur) => ({ playerAction: null, bb: { ...(cur.bb || {}), checkin } }));
+    log(`🩴 ${nameOf(action.playerId)} ολοκλήρωσε το Beach Bar check-in από το κινητό`);
+  }, [mg.playerAction?.at, players, bb.checkin, setMg, log, nameOf]);
+
+  useEffect(() => {
+    const action = mg.playerAction;
+    if (action?.type !== 'beach_finale_response' || !players.some((player) => player.id === action.playerId)) return;
+    setMg((cur) => {
+      const current = cur.bb || {};
+      const challenge = current.finalChallenge || {};
+      if (!challenge.card || challenge.responses?.[action.playerId]) return { playerAction: null };
+      return {
+        playerAction: null,
+        bb: { ...current, finalChallenge: { ...challenge, responses: { ...(challenge.responses || {}), [action.playerId]: action.value } } },
+      };
+    });
+    log(`🏖️ ${nameOf(action.playerId)} ${action.value === 'done' ? 'ολοκλήρωσε' : 'επέλεξε PASS στο'} τελικό Beach Bar challenge`);
+  }, [mg.playerAction?.at, players, setMg, log, nameOf]);
+
+
   return (
     <div className="space-y-3">
       <div className="flex flex-wrap gap-2">
@@ -47,7 +71,7 @@ export default function BeachBarGame({ ctx, onEnd }) {
         </div>
       </Panel>
 
-      {bb.phase === 'checkin' && <CheckIn ctx={ctx} bb={bb} setBb={setBb} onStart={() => { setBb({ phase: 'dance', flops: Object.fromEntries(players.map((p) => [p.id, true])) }); log('🍹 Το Beach Bar άνοιξε!'); }} />}
+      {bb.phase === 'checkin' && <CheckIn ctx={ctx} bb={bb} setBb={setBb} onStart={() => { setBb({ phase: 'dance', flops: Object.fromEntries(players.map((p) => [p.id, p.hasFlipFlops !== false])) }); log('🍹 Το Beach Bar άνοιξε!'); }} />}
       {bb.phase === 'dance' && <Dance ctx={ctx} bb={bb} setBb={setBb} T={T} addDrink={addDrink} flopOn={flopOn} />}
       {bb.phase === 'wheel' && <Wheel ctx={ctx} bb={bb} setBb={setBb} T={T} flopOn={flopOn} />}
       {bb.phase === 'truth' && <Truth ctx={ctx} bb={bb} setBb={setBb} T={T} addDrink={addDrink} />}
@@ -123,12 +147,20 @@ function Dance({ ctx, bb, setBb, T, addDrink, flopOn }) {
     setBb({ freeze: { cmd, at: Date.now() } });
     log(`📯 FREEZE! ${cmd}`);
   }
-  function loser(p) {
-    if (!canAssignVipActivity(ctx, p, { activityLabel: 'Freeze challenge' })) return;
+  function loser(p, fromMobile = false) {
+    if (!canAssignVipActivity(ctx, p, { activityLabel: 'Freeze challenge' })) { if (fromMobile) ctx.setMg({ playerAction: null }); return; }
     addDrink(p.id);
     setBb({ phase: 'wheel', loser: p.id, freeze: null });
+    if (fromMobile) ctx.setMg({ playerAction: null });
     log(`🥤 ${p.name} ολοκλήρωσε το Freeze — mocktail counter και Τροχός Προκλήσεων`);
   }
+
+  useEffect(() => {
+    const action = ctx.mg?.playerAction;
+    if (action?.type !== 'beach_freeze_loser' || !bb.freeze) return;
+    const player = players.find((item) => item.id === action.playerId);
+    if (player) loser(player, true);
+  }, [ctx.mg?.playerAction?.at, bb.freeze, players]);
 
   return (
     <Panel title="🎶 The Dance & Freeze Arena" accent={TURQ}>
@@ -169,10 +201,10 @@ function Wheel({ ctx, bb, setBb, T, flopOn }) {
   const [run, setRun] = useState(false);
   const left = useLocalCountdown(card?.secs || 0, run, () => { sfx.alarm(); setRun(false); });
 
-  function spin() {
+  function spin(fromMobile = false, requestedPlayerId = who) {
     if (spinning) return;
-    const selectedPlayer = players.find((player) => player.id === who);
-    if (!canAssignVipActivity(ctx, selectedPlayer, { activityLabel: 'Wheel challenge' })) return;
+    const selectedPlayer = players.find((player) => player.id === requestedPlayerId);
+    if (!canAssignVipActivity(ctx, selectedPlayer, { activityLabel: 'Wheel challenge' })) { if (fromMobile) ctx.setMg({ playerAction: null }); return; }
     setSpinning(true);
     setRun(false);
     let n = 0;
@@ -186,13 +218,31 @@ function Wheel({ ctx, bb, setBb, T, flopOn }) {
         const c = pick(BEACH_WHEEL);
         setCat(c.cat);
         setSpinning(false);
-        setBb({ wheel: { card: c, pid: who, at: Date.now() }, loser: null });
-        log(`🎡 ${nameOf(who)}: «${c.title}»`);
+        setBb({ wheel: { card: c, pid: requestedPlayerId, at: Date.now() }, loser: null });
+        if (fromMobile) ctx.setMg({ playerAction: null });
+        log(`🎡 ${nameOf(requestedPlayerId)}: «${c.title}»`);
         sfx.ok();
         if (c.loseFlop) setBb({ flops: { ...(bb.flops || {}), [who]: false } });
       }
     }, 110);
   }
+
+  useEffect(() => {
+    const action = ctx.mg?.playerAction;
+    if (!action) return;
+    if (action.type === 'beach_wheel_spin' && action.playerId === bb.loser && !card) {
+      setWho(action.playerId);
+      spin(true, action.playerId);
+    } else if (action.type === 'beach_wheel_done' && action.playerId === bb.wheel?.pid && card) {
+      setBb({ wheel: null, phase: 'dance' });
+      ctx.setMg({ playerAction: null });
+      setRun(false);
+    } else if (action.type === 'beach_wheel_again' && action.playerId === bb.wheel?.pid && card) {
+      setBb({ wheel: null });
+      ctx.setMg({ playerAction: null });
+      setRun(false);
+    }
+  }, [ctx.mg?.playerAction?.at, bb.loser, bb.wheel?.pid, card, spin, setBb]);
 
   const meta = WHEEL_CATEGORIES.find((c) => c.id === (card ? card.cat : cat));
   return (
@@ -230,8 +280,26 @@ function Truth({ ctx, bb, setBb, T, addDrink }) {
   const [who, setWho] = useState(players[0]?.id || '');
   const [q, setQ] = useState(null);
   const [state, setState] = useState('idle'); // idle | decide | quiz
-  const left = useLocalCountdown(BEACH_STEP_SECONDS, state === 'decide', () => { setState('quiz'); sfx.alarm(); log(`🚨 ${nameOf(who)} άργησε — ενεργοποιήθηκε ψηφιακό quiz`); });
+  const left = useLocalCountdown(BEACH_STEP_SECONDS, state === 'decide', () => { setState('quiz'); setBb({ truth: { ...(bb.truth || {}), status: 'quiz' } }); sfx.alarm(); log(`🚨 ${nameOf(who)} άργησε — ενεργοποιήθηκε ψηφιακό quiz`); });
   const tk = useLocalCountdown(20, state === 'quiz', () => sfx.alarm());
+
+  function respond(value, fromMobile = false) {
+    if (!q || state !== 'decide') return;
+    if (value === 'truth') {
+      setState('idle'); setQ(null); sfx.ok(); log(`🗣️ ${nameOf(who)} είπε αλήθεια`);
+    } else {
+      addDrink(who, 2); setState('idle'); setQ(null); log(`🥤 ${nameOf(who)} επέλεξε mocktail / PASS`);
+    }
+    setBb({ truth: null });
+    if (fromMobile) ctx.setMg({ playerAction: null });
+  }
+
+  useEffect(() => {
+    const action = ctx.mg?.playerAction;
+    if (action?.type === 'beach_truth_response' && action.playerId === who) respond(action.value, true);
+  }, [ctx.mg?.playerAction?.at, who, q, state]);
+
+
 
   return (
     <Panel title="🥤 Mocktail & Truth Sync" accent={CORAL}>
@@ -243,7 +311,7 @@ function Truth({ ctx, bb, setBb, T, addDrink }) {
         <Btn color="bg-rose-600" onClick={() => {
           const selectedPlayer = players.find((player) => player.id === who);
           if (!canAssignVipActivity(ctx, selectedPlayer, { activityType: 'questions', activityLabel: 'ερωτήσεις' })) return;
-          setQ(pick(SHOT_TRUTH)); setState('decide'); setBb({ truth: { who, at: Date.now() } });
+          const question = pick(SHOT_TRUTH); setQ(question); setState('decide'); setBb({ truth: { who, at: Date.now(), question, status: 'decide' } });
         }}>🎴 Νέα ερώτηση 18+</Btn>
       </div>
       {q && (
@@ -253,8 +321,8 @@ function Truth({ ctx, bb, setBb, T, addDrink }) {
           {state === 'decide' && (
             <div className="flex flex-wrap gap-2 items-center">
               <b className="font-display text-4xl w-16">{Math.ceil(left)}″</b>
-              <Btn color="bg-emerald-700" onClick={() => { setState('idle'); setQ(null); sfx.ok(); log(`🗣️ ${nameOf(who)} είπε αλήθεια`); }}>🗣️ TRUTH</Btn>
-              <Btn color="bg-orange-600" onClick={() => { addDrink(who, 2); setState('idle'); setQ(null); log(`🥤 ${nameOf(who)} επέλεξε mocktail`); }}>🥤 MOCKTAIL / PASS</Btn>
+              <Btn color="bg-emerald-700" onClick={() => respond('truth')}>🗣️ TRUTH</Btn>
+              <Btn color="bg-orange-600" onClick={() => respond('mocktail')}>🥤 MOCKTAIL / PASS</Btn>
             </div>
           )}
           {state === 'quiz' && (
@@ -297,10 +365,29 @@ function Finale({ ctx, bb, setBb, flopOn, onEnd }) {
           ))}
         </div>
       ) : (
-        <div className="rounded-lg p-4 text-center space-y-2" style={{ background: '#2a2000', border: '2px solid #FFD700' }}>
+        <div className="rounded-lg p-4 text-center space-y-3" style={{ background: '#2a2000', border: '2px solid #FFD700' }}>
           <div className="font-display text-4xl" style={{ color: '#FFD700' }}>👑 BEACH QUEEN: {nameOf(queen)}</div>
-          <div className="font-body">Διαλέγει την τελική ομαδική δοκιμασία της βραδιάς!</div>
-          <Btn color="bg-emerald-700" onClick={onEnd}>🏆 Τίτλοι & τέλος</Btn>
+          {!bb.finalChallenge?.card ? (
+            <>
+              <div className="font-body">Η Beach Queen ξεκινά την τελική ομαδική δοκιμασία.</div>
+              <Btn color="bg-amber-600 text-black" onClick={() => {
+                const card = pick(BEACH_WHEEL);
+                setBb({ finalChallenge: { card, startedAt: Date.now(), responses: {} } });
+                log(`🏖️ Ξεκίνησε το τελικό ομαδικό challenge: ${card.title}`);
+              }}>🎴 ΕΝΑΡΞΗ ΤΕΛΙΚΟΥ ΟΜΑΔΙΚΟΥ CHALLENGE</Btn>
+            </>
+          ) : (
+            <>
+              <div className="text-left rounded-lg bg-black/40 p-3 space-y-1">
+                <div className="font-heading text-xl text-amber-200">{bb.finalChallenge.card.title}</div>
+                <p className="text-sm">{bb.finalChallenge.card.text}</p>
+              </div>
+              <div className="text-sm text-left space-y-1">
+                {players.map((p) => <div key={p.id} className="flex justify-between"><span>{p.name}</span><b>{bb.finalChallenge.responses?.[p.id] === 'done' ? '✓ Ολοκλήρωσε' : bb.finalChallenge.responses?.[p.id] === 'pass' ? 'PASS' : 'Εκκρεμεί'}</b></div>)}
+              </div>
+              <Btn color="bg-emerald-700" disabled={!players.length || !players.every((p) => bb.finalChallenge.responses?.[p.id])} onClick={onEnd}>🏆 ΟΛΟΚΛΗΡΩΣΗ & ΤΙΤΛΟΙ</Btn>
+            </>
+          )}
         </div>
       )}
     </Panel>

@@ -18,12 +18,12 @@ export default function VIPInvitationPage() {
   const [answers, setAnswers] = useState({
     personality: 'bold',
     competitiveness: '3',
-    difficulty: '3',
     activityPreferences: { questions: 'no', missions: 'no', surprises: 'no' },
     unexpectedChallenge: 'no',
     activeParticipation: 'yes',
     stayAtVilla: 'no',
   });
+  const [adultConfirmed, setAdultConfirmed] = useState(false);
   const [saving, setSaving] = useState(false);
   const [done, setDone] = useState(false);
   const [customAnswers, setCustomAnswers] = useState({});
@@ -44,7 +44,7 @@ export default function VIPInvitationPage() {
     ...current,
     activityPreferences: { ...current.activityPreferences, [key]: checked ? 'yes' : 'no' },
   }));
-  const valid = name.trim().length > 0 && customQuestionsValid && !saving;
+  const valid = name.trim().length > 0 && adultConfirmed && customQuestionsValid && !saving;
   const gameName = GAME_MODES.find((mode) => mode.id === invitation?.gameMode)?.name || invitation?.gameMode || '—';
 
   async function submit(event) {
@@ -54,7 +54,7 @@ export default function VIPInvitationPage() {
     setError('');
     try {
       await request('POST', `/api/entities/vip-invitations/${encodeURIComponent(token)}/submit`, {
-        submissionId, name: name.trim(), avatar, answers, customAnswers,
+        submissionId, name: name.trim(), avatar, answers, customAnswers, adultConfirmed,
       });
       setDone(true);
     } catch (e) { setError(e.message || 'Δεν αποθηκεύτηκε η συμμετοχή.'); }
@@ -116,7 +116,6 @@ export default function VIPInvitationPage() {
           <h2 style={{ color: '#e5cf91', fontSize: 16, margin: '0 0 16px' }}>3. ΠΡΟΤΙΜΗΣΕΙΣ ΠΑΙΧΝΙΔΙΟΥ</h2>
           <div style={fieldStyle}><label style={labelStyle}>ΠΟΙΟ ΕΙΔΟΣ ΔΟΚΙΜΑΣΙΩΝ ΠΡΟΤΙΜΑΣ;</label><select value={answers.preferredTestType || ''} onChange={(e) => setAnswer('preferredTestType', e.target.value)} style={inputStyle}><option value="">Επίλεξε…</option>{GAME_MODES.map((mode) => <option key={mode.id} value={mode.name}>{mode.name}</option>)}</select></div>
           <div style={fieldStyle}><label style={labelStyle}>ΠΡΟΤΙΜΑΣ… (ΜΠΟΡΕΙΣ ΝΑ ΕΠΙΛΕΞΕΙΣ ΠΕΡΙΣΣΟΤΕΡΑ)</label>{[['questions','ΕΡΩΤΗΣΕΙΣ'],['missions','ΑΠΟΣΤΟΛΕΣ'],['surprises','ΕΚΠΛΗΞΕΙΣ']].map(([key,label]) => <label key={key} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0', color: '#f4e8c5' }}><input type="checkbox" checked={answers.activityPreferences?.[key] === 'yes'} onChange={(e) => setActivity(key, e.target.checked)} style={{ accentColor: '#c9a94e', width: 17, height: 17 }} />{label}</label>)}</div>
-          <div style={fieldStyle}><label style={labelStyle}>ΠΟΣΟ ΔΥΣΚΟΛΕΣ ΘΕΛΕΙΣ ΤΙΣ ΔΟΚΙΜΑΣΙΕΣ;</label>{range('difficulty')}</div>
           <div style={fieldStyle}><label style={labelStyle}>ΘΑ ΕΠΕΛΕΓΕΣ ΜΙΑ ΑΠΡΟΒΛΕΠΤΗ ΠΡΟΚΛΗΣΗ;</label>{yesNo('unexpectedChallenge')}</div>
         </section>
 
@@ -151,6 +150,7 @@ export default function VIPInvitationPage() {
           />
         </section>}
 
+        <label style={{ display: 'flex', alignItems: 'flex-start', gap: 10, color: '#f4e8c5', fontSize: 13, margin: '18px 0' }}><input type="checkbox" checked={adultConfirmed} onChange={(e) => setAdultConfirmed(e.target.checked)} style={{ accentColor: '#c9a94e', marginTop: 3 }} /><span>Επιβεβαιώνω ότι είμαι 18 ετών ή μεγαλύτερη. *</span></label>
         {error && <p role="alert" style={{ color: '#f1a0a0', fontSize: 13, marginBottom: 14 }}>{error}</p>}
         <button type="submit" disabled={!valid} style={{ width: '100%', borderRadius: 10, padding: '14px 16px', border: '1px solid #e0c36b', background: !valid ? '#4a4025' : 'linear-gradient(110deg,#8b6a24,#d9bd68,#8b6a24)', color: '#100e09', fontWeight: 800, letterSpacing: '.12em', opacity: !valid ? .65 : 1 }}>
           {saving ? 'ΑΠΟΘΗΚΕΥΣΗ…' : 'ΕΠΙΒΕΒΑΙΩΣΗ ΣΥΜΜΕΤΟΧΗΣ'}

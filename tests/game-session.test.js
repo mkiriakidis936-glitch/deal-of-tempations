@@ -12,17 +12,11 @@ const players = [
   { id: 'p1', name: 'Player 1', vipProfile: { boundaries: ['own-only'] } },
 ];
 
-test('all four approved digital modes are registered with fixed durations', () => {
-  assert.deepEqual(NEW_MODES.map((mode) => mode.id), [
-    'pedi_extended', 'lockdown', 'beach_bar', 'marathon_4h',
-  ]);
-  assert.equal(NEW_MODES.find((mode) => mode.id === 'lockdown').minutes, 60);
-  assert.equal(NEW_MODES.find((mode) => mode.id === 'marathon_4h').minutes, 240);
+test('approved digital modes exclude Pedi-Glam Extended and use five-hour duration', () => {
+  assert.deepEqual(NEW_MODES.map((mode) => mode.id), ['lockdown', 'beach_bar', 'marathon_4h']);
+  assert.equal(NEW_MODES.some((mode) => mode.id === 'pedi_extended'), false);
+  assert.ok(NEW_MODES.every((mode) => mode.minutes === 300));
   assert.deepEqual(NEW_MODES.find((mode) => mode.id === 'marathon_4h').acts, ['board', 'midnight', 'lockdown', 'morning']);
-  assert.equal(NEW_MODES.find((mode) => mode.id === 'marathon_4h').actDurations.board
-    + NEW_MODES.find((mode) => mode.id === 'marathon_4h').actDurations.midnight
-    + NEW_MODES.find((mode) => mode.id === 'marathon_4h').actDurations.lockdown
-    + NEW_MODES.find((mode) => mode.id === 'marathon_4h').actDurations.morning, 240);
 });
 
 test('player session response never exposes another player VIP profile', () => {
@@ -41,6 +35,15 @@ test('mobile STOP is accepted only as the validated minimal STOP patch', () => {
   assert.equal(validatePlayerPatch(current, valid, 'p1'), true);
   assert.equal(validatePlayerPatch(current, { mg: { ...current.mg, stop: true, stopAt: 1000, stopBy: 'p1' } }, 'p1'), false);
   assert.equal(validatePlayerPatch(current, { mg: { stop: true, stopAt: 1000, stopBy: 'p0' } }, 'p1'), false);
+});
+
+test('mode mobile actions accept only the signed-in player and supported action payloads', () => {
+  const current = { players, mg: { stop: false } };
+  assert.equal(validatePlayerPatch(current, { mg: { playerAction: { playerId: 'p1', type: 'board_roll', at: 1000 } } }, 'p1'), true);
+  assert.equal(validatePlayerPatch(current, { mg: { playerAction: { playerId: 'p0', type: 'board_roll', at: 1000 } } }, 'p1'), false);
+  assert.equal(validatePlayerPatch(current, { mg: { playerAction: { playerId: 'p1', type: 'board_route', route: 'unknown', at: 1000 } } }, 'p1'), false);
+  assert.equal(validatePlayerPatch(current, { mg: { playerAction: { playerId: 'p1', type: 'morning_code', code: '12A4', at: 1000 } } }, 'p1'), false);
+  assert.equal(validatePlayerPatch(current, { mg: { playerAction: { playerId: 'p1', type: 'beach_finale_response', value: 'done', at: 1000 } } }, 'p1'), true);
 });
 
 test('Absolute Interrogation accepts only the current player own boolean vote', () => {
@@ -102,4 +105,10 @@ test('private auction bids and interrogation votes are redacted for other player
 test('database startup migration does not delete session history records', async () => {
   const db = await readFile(new URL('../server/db.js', import.meta.url), 'utf8');
   assert.doesNotMatch(db, /DELETE\s+FROM\s+records/i);
+});
+
+test('VIP invitation submission requires server-side 18+ confirmation and no difficulty field', async () => {
+  const source = await readFile(new URL('../server/entities.js', import.meta.url), 'utf8');
+  assert.match(source, /body\.adultConfirmed !== true/);
+  assert.doesNotMatch(source, /'difficulty',\s*'unexpectedChallenge'/);
 });

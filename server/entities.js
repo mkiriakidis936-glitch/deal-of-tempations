@@ -280,9 +280,25 @@ export function validatePlayerPatch(current, patch, playerId) {
   if ('mg' in patch) {
     const old = current.mg || {};
     const next = patch.mg;
-    if (!isObject(next) || Object.keys(next).some((key) => !['stop', 'stopAt', 'stopBy', 'timer'].includes(key)) ||
-        old.stop || next.stop !== true || next.stopBy !== playerId ||
-        !Number.isFinite(next.stopAt) || (next.timer !== null && next.timer !== undefined && !isObject(next.timer))) return false;
+    if (!isObject(next)) return false;
+    const stopPatch = Object.keys(next).every((key) => ['stop', 'stopAt', 'stopBy', 'timer'].includes(key)) &&
+      !old.stop && next.stop === true && next.stopBy === playerId &&
+      Number.isFinite(next.stopAt) && (next.timer === null || next.timer === undefined || isObject(next.timer));
+    const action = next.playerAction;
+    const actionTypes = new Set([
+      'board_roll', 'board_route', 'board_complete', 'board_pass',
+      'midnight_pass', 'lockdown_exit_code', 'morning_clue', 'morning_code',
+      'beach_checkin', 'beach_finale_response', 'beach_freeze_loser', 'beach_wheel_spin', 'beach_wheel_done', 'beach_wheel_again', 'beach_truth_response',
+    ]);
+    let validAction = Object.keys(next).length === 1 && isObject(action) &&
+      action.playerId === playerId && actionTypes.has(action.type) && Number.isFinite(action.at);
+    if (validAction && action.type === 'board_route') validAction = ['glam', 'chaos'].includes(action.route);
+    if (validAction && action.type === 'beach_finale_response') validAction = ['done', 'pass'].includes(action.value);
+    if (validAction && action.type === 'beach_truth_response') validAction = ['truth', 'mocktail'].includes(action.value);
+    if (validAction && action.type === 'lockdown_exit_code') validAction = /^\d{4}$/.test(String(action.code || ''));
+    if (validAction && action.type === 'morning_clue') validAction = Number.isInteger(action.index) && action.index >= 0 && action.index < 4;
+    if (validAction && action.type === 'morning_code') validAction = /^\d{4}$/.test(String(action.code || ''));
+    if (!stopPatch && !validAction) return false;
   }
 
   if ('players' in patch) {
@@ -827,7 +843,7 @@ export function entityRoutes() {
         const { rows: sessions } = await query("SELECT id FROM records WHERE entity = 'GameSession' AND data->>'sessionCode' = $1 LIMIT 1", [sessionCode]);
         if (!sessions[0]) return res.status(400).json({ error: 'Το επιλεγμένο Event δεν βρέθηκε.' });
       }
-      const allowedGameModes = ['classic', 'marathon', 'arrest_heist', 'pajama', 'pedi_extended', 'lockdown', 'beach_bar', 'marathon_4h'];
+      const allowedGameModes = ['classic', 'marathon', 'arrest_heist', 'pajama', 'lockdown', 'beach_bar', 'marathon_4h'];
       if (!allowedGameModes.includes(gameMode)) return res.status(400).json({ error: 'Επίλεξε έγκυρο παιχνίδι.' });
       const data = {
         gameMode,
@@ -946,7 +962,7 @@ export function entityRoutes() {
     return formLimit(req, res, async () => {
       const body = req.body || {};
       const submissionId = typeof body.submissionId === 'string' ? body.submissionId.trim() : '';
-      if (!/^[A-Za-z0-9_-]{16,100}$/.test(submissionId) ||
+      if (body.adultConfirmed !== true || !/^[A-Za-z0-9_-]{16,100}$/.test(submissionId) ||
           typeof body.name !== 'string' || !body.name.trim() || body.name.trim().length > 80 ||
           typeof body.avatar !== 'string' || body.avatar.length > 32 ||
           !isObject(body.answers || {})) {
@@ -974,7 +990,7 @@ export function entityRoutes() {
       }
       const allowedKeys = new Set([
         'displayName', 'personality', 'competitiveness', 'preferredTestType',
-        'activityPreferences', 'difficulty', 'unexpectedChallenge', 'activeParticipation',
+        'activityPreferences', 'unexpectedChallenge', 'activeParticipation',
         'boundaries', 'surpriseWish', 'shoeSize', 'plannedOutfit', 'shoesToWear',
         'nailColor', 'slipperType', 'pajamaType', 'stayAtVilla', 'favoriteDrink',
       ]);
@@ -986,7 +1002,7 @@ export function entityRoutes() {
           !['yes', 'no', ''].includes(answers.activeParticipation || '') ||
           !['yes', 'no', ''].includes(answers.stayAtVilla || '') ||
           !['questions', 'missions', 'surprises'].every((key) => ['yes', 'no'].includes(answers.activityPreferences?.[key] || 'no')) ||
-          !['competitiveness', 'difficulty'].every((key) => answers[key] === undefined || answers[key] === '' || /^[1-5]$/.test(String(answers[key]))) ||
+          !['competitiveness'].every((key) => answers[key] === undefined || answers[key] === '' || /^[1-5]$/.test(String(answers[key]))) ||
           (answers.activityPreferences !== undefined && (!isObject(answers.activityPreferences) || Object.keys(answers.activityPreferences).some((key) => !['questions', 'missions', 'surprises'].includes(key))))) {
         return res.status(400).json({ error: 'Έλεγξε τις απαντήσεις της VIP φόρμας και δοκίμασε ξανά.' });
       }
@@ -997,7 +1013,6 @@ export function entityRoutes() {
         'Ανταγωνιστικότητα': answers.competitiveness || '',
         'Προτιμώμενο είδος δοκιμασιών': answers.preferredTestType || '',
         'Προτιμήσεις δραστηριοτήτων': Object.entries(answers.activityPreferences || {}).filter(([, value]) => value === 'yes').map(([key]) => ({ questions: 'Ερωτήσεις', missions: 'Αποστολές', surprises: 'Εκπλήξεις' }[key])).join(', '),
-        'Δυσκολία δοκιμασιών': answers.difficulty || '',
         'Απρόβλεπτη πρόκληση': answers.unexpectedChallenge === 'yes' ? 'ΝΑΙ' : answers.unexpectedChallenge === 'no' ? 'ΟΧΙ' : '',
         'Ενεργή συμμετοχή': answers.activeParticipation === 'yes' ? 'ΝΑΙ' : answers.activeParticipation === 'no' ? 'ΟΧΙ' : '',
         'Τι δεν επιθυμείς να περιλαμβάνει το παιχνίδι': answers.boundaries || '',
@@ -1027,6 +1042,7 @@ export function entityRoutes() {
         answers,
         customAnswers,
         answerLabels,
+        adultConfirmed: true,
         confirmed: true,
         submittedAt: new Date().toISOString(),
       };

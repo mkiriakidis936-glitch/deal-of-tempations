@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Panel, Btn } from '@/components/modes/ModeShell';
 import { GATE_TOKENS, BLIND_TEXTURES, WHISPER_QUESTIONS, ASMR_CLIPS } from '@/data/modes/extendedContent';
 import { pick, sfx, whisper, useLocalCountdown } from '@/lib/modeKit';
@@ -12,7 +12,14 @@ export default function ActMidnight({ ctx, onDone }) {
   const [tab, setTab] = useState('blind');
   const seatIdx = (mg.seat || 0) % Math.max(1, players.length);
   const seat = players[seatIdx];
-  const nextSeat = () => setMg({ seat: (seatIdx + 1) % players.length });
+  const nextSeat = (fromMobile = false) => setMg({ seat: (seatIdx + 1) % players.length, ...(fromMobile ? { playerAction: null } : {}) });
+
+  useEffect(() => {
+    const action = mg.playerAction;
+    if (action?.type !== 'midnight_pass' || action.playerId !== seat?.id) return;
+    nextSeat(true);
+    log(`⏭️ ${seat.name} επέλεξε PASS στο Midnight`);
+  }, [mg.playerAction?.at, seat?.id, nextSeat, log]);
 
   const canPlay = (p) => (tokens[p.id] || 0) >= GATE_TOKENS || entered[p.id];
 

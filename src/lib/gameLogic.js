@@ -125,6 +125,9 @@ export function createInitialState(mode, intensity, players) {
     ...createPlayer(`p${i}`, p.name, p.footwearLevel, p.toenailPerk),
     slipperType: p.slipperType || '',
     nailColor: p.nailColor || '',
+    pajamaStyle: p.pajamaStyle || '',
+    bringsOwnSlippers: p.bringsOwnSlippers !== false,
+    hasFlipFlops: p.hasFlipFlops !== false,
     ...(p.vipProfile ? { vipProfile: p.vipProfile } : {}),
   }));
   if (isNewMode(mode)) {

@@ -33,11 +33,13 @@ export function canAssignVipActivity(ctx, player, { activityType = null, activit
     window.alert(`${player.name} έχει δηλώσει ότι δεν επιθυμεί ενεργή συμμετοχή.`);
     return false;
   }
-  if (activityType && answers.activityPreferences?.[activityType] === 'no') {
+  const normalizedLabel = normalizeName(activityLabel);
+  const inferredType = activityType || (/(mission|αποστολ)/.test(normalizedLabel) ? 'missions' : /(surprise|απροβλεπτ|τροχο|wheel|chaos)/.test(normalizedLabel) ? 'surprises' : /(question|ερωτησ|quiz|trivia|test|δοκιμασ)/.test(normalizedLabel) ? 'questions' : null);
+  if (inferredType && answers.activityPreferences?.[inferredType] === 'no') {
     window.alert(`${player.name} δεν έχει επιλέξει συμμετοχή σε ${activityLabel}.`);
     return false;
   }
-  if (activityType === 'surprises' && answers.unexpectedChallenge === 'no') {
+  if (inferredType === 'surprises' && answers.unexpectedChallenge === 'no') {
     window.alert(`${player.name} δεν έχει επιλέξει απρόβλεπτες εκπλήξεις.`);
     return false;
   }

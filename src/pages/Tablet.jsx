@@ -297,6 +297,22 @@ export default function Tablet() {
     return () => clearInterval(interval);
   }, [session?.id, state?.midnightPact?.phase]);
 
+  React.useEffect(() => {
+    if (!session || !state?.gameStartedAt || state.gameTimeExpired) return undefined;
+    const checkDuration = () => {
+      const pausedMs = Math.max(0, Number(state.gamePausedMs || 0));
+      const pausedNow = state.gamePausedAt ? Date.now() - state.gamePausedAt : 0;
+      const elapsed = Date.now() - state.gameStartedAt - pausedMs - pausedNow;
+      const durationMs = Math.max(1, Number(state.gameDurationMinutes) || 300) * 60000;
+      if (elapsed >= durationMs) {
+        trackedUpdate({ gameTimeExpired: true, stopActive: true, gamePausedAt: state.gamePausedAt || Date.now() });
+      }
+    };
+    checkDuration();
+    const timerId = setInterval(checkDuration, 1000);
+    return () => clearInterval(timerId);
+  }, [session?.id, state?.gameStartedAt, state?.gameDurationMinutes, state?.gamePausedMs, state?.gamePausedAt, state?.gameTimeExpired, trackedUpdate]);
+
   if (showSplash) {
     return <SplashScreen onComplete={() => { setShowSplash(false); sessionStorage.setItem('dotSplash', '1'); }} />;
   }
@@ -559,6 +575,15 @@ export default function Tablet() {
       <WantedStrobePanic wantedLevel={wantedLevel} playerName={mostWantedName} />
       <StopButton active={state.stopActive} onToggle={handleStop} />
       <GameDurationClock state={displayState} />
+      {state.gameTimeExpired && (
+        <div className="fixed inset-0 z-[120] bg-black/95 flex items-center justify-center p-5">
+          <div className="w-full max-w-lg rounded-2xl border-2 border-amber-400 bg-zinc-950 p-6 text-center space-y-4">
+            <div className="font-display text-4xl sm:text-6xl text-amber-300">ΟΙ 5 ΩΡΕΣ ΟΛΟΚΛΗΡΩΘΗΚΑΝ</div>
+            <p className="text-white/80">Το παιχνίδι ολοκληρώθηκε αυτόματα. Η συνέχεια έχει παγώσει.</p>
+            <button onClick={() => archiveAndDelete()} className="w-full rounded-lg bg-amber-400 px-5 py-4 font-heading text-lg text-black">ΑΡΧΕΙΟΘΕΤΗΣΗ & ΤΕΛΟΣ</button>
+          </div>
+        </div>
+      )}
       <div className="fixed top-3 left-3 z-50">
         <BountyMultiplier state={state} />
       </div>

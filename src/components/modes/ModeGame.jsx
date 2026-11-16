@@ -11,7 +11,7 @@ import { modeMeta, ACT_META, MODE_THEMES } from '@/data/modes/modeRegistry';
 import { useModeCtx, useTick, timerStart } from '@/lib/modeKit';
 import { COLLECTIONS, applyScenarioCollections } from '@/lib/modesContentStore';
 
-// Tablet (game master) για τα τέσσερα ψηφιακά modes. Κάθε mode = λίστα από acts.
+// Tablet (game master) για τα ψηφιακά modes. Κάθε mode = λίστα από acts.
 export default function ModeGame({ state, updateState, onEnd, onQR, playerProfiles = [], playerProfilesReady = true }) {
   const [, setContentReady] = useState(false);
   useEffect(() => {
@@ -33,10 +33,25 @@ export default function ModeGame({ state, updateState, onEnd, onQR, playerProfil
     if (!configuredDurationMinutes || mg.timerModeId === state.mode) return;
     setMg({ timer: timerStart(configuredDurationMinutes * 60), timerModeId: state.mode });
   }, [state.mode, configuredDurationMinutes, mg.timerModeId, setMg]);
+  useEffect(() => {
+    if (!state.gameStartedAt || mg.finishedAll || mg.gameTimeExpired) return undefined;
+    const expireIfNeeded = () => {
+      if (mg.stop || state.stopActive || state.extra4?.control?.status === 'paused') return;
+      const pausedMs = Math.max(0, Number(state.gamePausedMs || 0));
+      const pausedNow = state.gamePausedAt ? Date.now() - state.gamePausedAt : 0;
+      const elapsed = Date.now() - state.gameStartedAt - pausedMs - pausedNow;
+      if (elapsed >= configuredDurationMinutes * 60000) {
+        setMg({ finishedAll: true, gameTimeExpired: true, timer: { ...(mg.timer || {}), running: false, remaining: 0 } });
+      }
+    };
+    expireIfNeeded();
+    const id = setInterval(expireIfNeeded, 500);
+    return () => clearInterval(id);
+  }, [state.gameStartedAt, state.gamePausedMs, state.gamePausedAt, state.stopActive, state.extra4?.control?.status, mg.stop, mg.finishedAll, mg.gameTimeExpired, configuredDurationMinutes, setMg]);
   const acts = meta.acts;
   const actIndex = Math.min(mg.actIndex || 0, acts.length - 1);
   const act = acts[actIndex];
-  const actTitleFor = (item) => state.mode === 'marathon_4h' && item === 'board' ? 'Act 1 · Pajama Pedi-Glam' : ACT_META[item].title;
+  const actTitleFor = (item) => state.mode === 'marathon_4h' && item === 'board' ? 'Act 1 · Pajama Pedi-Glam' : state.mode === 'marathon_4h' && item === 'lockdown' ? 'Act 3 · Pajama Lockdown (18+)' : ACT_META[item].title;
   const theme = MODE_THEMES[state.mode];
   const multi = acts.length > 1;
   useTick(true, 15000);
@@ -48,11 +63,11 @@ export default function ModeGame({ state, updateState, onEnd, onQR, playerProfil
   }
   const finishAll = () => setMg({ finishedAll: true });
 
-  if (mg.vipUnrated?.active || mg.vipUnrated?.completed || mg.vipUnrated?.stoppedAt) { return <ModeShell modeId={state.mode} ctx={ctx} onQR={onQR} onEnd={onEnd}><VIPUnratedMode ctx={ctx} /></ModeShell>; }
+  if (mg.vipUnrated?.active || mg.vipUnrated?.completed || mg.vipUnrated?.stoppedAt) { return <ModeShell modeId={state.mode} ctx={ctx} state={state} onQR={onQR} onEnd={onEnd}><VIPUnratedMode ctx={ctx} /></ModeShell>; }
 
   if (mg.finishedAll) {
     return (
-      <ModeShell modeId={state.mode} ctx={ctx} onQR={onQR} onEnd={onEnd} showTimer={false}>
+      <ModeShell modeId={state.mode} ctx={ctx} state={state} onQR={onQR} onEnd={onEnd} showTimer={false}>
         <Results ctx={ctx} theme={theme} onEnd={onEnd} />
       </ModeShell>
     );
@@ -66,7 +81,7 @@ export default function ModeGame({ state, updateState, onEnd, onQR, playerProfil
   const actMinutes = (a) => Math.max(1, Math.round(((meta.actDurations?.[a] ?? ACT_META[a].minutes) / baseActTotal) * totalMinutes));
 
   return (
-    <ModeShell modeId={state.mode} ctx={ctx} act={act} onQR={onQR} onEnd={onEnd}>
+    <ModeShell modeId={state.mode} ctx={ctx} state={state} act={act} onQR={onQR} onEnd={onEnd}>
       {multi && (
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
           {acts.map((a, i) => (

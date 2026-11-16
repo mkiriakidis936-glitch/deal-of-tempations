@@ -12,14 +12,8 @@ const SHOE_TO_LEVEL = { boots: 3, sneakers: 2, sandals: 1, barefoot: 0 };
 
 const NAIL_COLORS = ['Red', 'Pink', 'White', 'Black', 'Nude', 'French', 'Blue', 'Purple', 'Green', 'Orange', 'Gold', 'Silver', 'None'];
 
-const DURATION_OPTIONS = [
-  { id: 'express', minutes: 60, icon: '⚡', name: 'EXPRESS · 1 ΩΡΑ', desc: 'Πραγματικό χρονόμετρο 60 λεπτών.' },
-  { id: 'standard', minutes: 180, icon: '🎲', name: 'STANDARD · 3 ΩΡΕΣ', desc: 'Πραγματικό χρονόμετρο 180 λεπτών.' },
-  { id: 'ultra', minutes: 300, icon: '🏆', name: 'ULTRA MARATHON · 5 ΩΡΕΣ', desc: 'Πραγματικό χρονόμετρο 300 λεπτών.' },
-];
 
 export default function SetupScreen({ onStart }) {
-  const [duration, setDuration] = useState('standard');
   const [mode, setMode] = useState('classic');
   const [intensity, setIntensity] = useState('standard');
   const [safeWord, setSafeWord] = useState('');
@@ -48,6 +42,9 @@ export default function SetupScreen({ onStart }) {
         toenailPerk: TOENAIL_PERKS[idx % TOENAIL_PERKS.length].id,
         slipperType: pjByName[n]?.slipperType || '',
         nailColor: pjByName[n]?.nailColor || 'Pink',
+        bringsOwnSlippers: pjByName[n]?.bringsOwnSlippers ?? true,
+        hasFlipFlops: pjByName[n]?.hasFlipFlops ?? true,
+        pajamaStyle: pjByName[n]?.pajamaStyle || '',
         ...(vipByName[n]?.vipProfile ? { vipProfile: vipByName[n].vipProfile } : {}),
       }));
     });
@@ -74,7 +71,7 @@ export default function SetupScreen({ onStart }) {
       const pjByName = {};
       approved.forEach((i) => {
         const n = i.name.trim();
-        pjByName[n] = { slipperType: i.slipperType || '', nailColor: i.nailColor || '' };
+        pjByName[n] = { slipperType: i.slipperType || '', nailColor: i.nailColor || '', bringsOwnSlippers: i.bringsOwnSlippers, hasFlipFlops: i.hasFlipFlops, pajamaStyle: i.pajamaStyle || '' };
       });
 
       const names = [];
@@ -139,10 +136,6 @@ export default function SetupScreen({ onStart }) {
     setPlayers(players.map((p, i) => (i === idx ? { ...p, [field]: value } : p)));
   }
 
-  function handleDuration(d) {
-    setDuration(d.id);
-  }
-
   function handleModeChange(m) {
     setMode(m.id);
     const selectedModeMeta = isNewMode(m.id) ? modeMeta(m.id) : null;
@@ -161,10 +154,10 @@ export default function SetupScreen({ onStart }) {
         ...vipForMode,
       ])];
       if (wanted.length > 0) {
-        const byName = Object.fromEntries([...pajamaApproved, ...intakes].filter((i) => i.name).map((i) => [i.name.trim(), i]));
+        const byName = Object.fromEntries([...intakes, ...pajamaApproved].filter((i) => i.name).map((i) => [i.name.trim(), i]));
         const next = [...new Set(wanted)].slice(0, meta.max).map((n, idx) => ({
           name: n, footwearLevel: 2, toenailPerk: TOENAIL_PERKS[idx % TOENAIL_PERKS.length].id,
-          slipperType: byName[n]?.slipperType || '', nailColor: byName[n]?.nailColor || 'Pink',
+          slipperType: byName[n]?.slipperType || '', nailColor: byName[n]?.nailColor || 'Pink', bringsOwnSlippers: byName[n]?.bringsOwnSlippers ?? true, hasFlipFlops: byName[n]?.hasFlipFlops ?? true, pajamaStyle: byName[n]?.pajamaStyle || '',
           ...(byName[n]?.vipProfile ? { vipProfile: byName[n].vipProfile } : {}),
         }));
         while (next.length < meta.min) next.push({ name: '', footwearLevel: 2, toenailPerk: 'pink' });
@@ -198,12 +191,12 @@ export default function SetupScreen({ onStart }) {
     const selectedScenario = customScenarios.find((scenario) => scenario.id === selectedScenarioId && scenario.modeId === mode);
     const selectedIntensity = mode === 'classic' ? intensity : 'standard';
     if (!safeWord.trim() || !safeWordConfirmed) return;
-    const selectedDuration = newMode ? { id: 'standard', minutes: newMode.minutes } : (DURATION_OPTIONS.find((option) => option.id === duration) || DURATION_OPTIONS[1]);
-    const state = { ...createInitialState(mode, selectedIntensity, valid), gameDurationMinutes: selectedDuration.minutes, safetyProfile: { safeWord: safeWord.trim(), confirmedAt: Date.now() }, testMode,
+    const selectedDuration = { id: 'ultra', minutes: 300 };
+    const state = { ...createInitialState(mode, selectedIntensity, valid), gameDurationMinutes: selectedDuration.minutes, gameStartedAt: Date.now(), gamePausedMs: 0, gamePausedAt: null, safetyProfile: { safeWord: safeWord.trim(), confirmedAt: Date.now() }, testMode,
       ...(selectedScenario ? { customScenario: { id: selectedScenario.id, name: selectedScenario.name, description: selectedScenario.description, collections: selectedScenario.collections || [] } } : {})
     };
     if (mode === 'beach_bar') {
-      state.mg = { ...state.mg, alcoholFree: true };
+      state.mg = { ...state.mg, alcoholFree: true, bb: { ...(state.mg.bb || {}), flops: Object.fromEntries(state.players.map((player) => [player.id, player.hasFlipFlops !== false])) } };
     }
     await onStart({
       sessionCode: generateSessionCode(),
@@ -245,25 +238,7 @@ export default function SetupScreen({ onStart }) {
 
         <ComicPanel>
           <h2 className="font-heading text-2xl mb-3 text-primary">ΔΙΑΡΚΕΙΑ ΠΑΙΧΝΙΔΙΟΥ</h2>
-          {newMode ? (
-            <div className="comic-panel-sm p-3 bg-primary/10 border border-primary/40">
-              <div className="font-heading text-xl text-foreground">⏱ ΣΤΑΘΕΡΗ ΔΙΑΡΚΕΙΑ · {newMode.minutes >= 60 ? `${Math.floor(newMode.minutes / 60)} ΩΡΕΣ${newMode.minutes % 60 ? ` ΚΑΙ ${newMode.minutes % 60} ΛΕΠΤΑ` : ''}` : `${newMode.minutes} ΛΕΠΤΑ`}</div>
-              <div className="text-sm text-foreground/70 font-body">Η διάρκεια καθορίζεται από το επιλεγμένο Mode.</div>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              {DURATION_OPTIONS.map((d) => (
-                <button
-                  key={d.id}
-                  onClick={() => handleDuration(d)}
-                  className={`comic-panel-sm p-3 text-left transition-all ${duration === d.id ? 'bg-primary/20 ring-2 ring-primary scale-[1.02]' : 'bg-secondary'}`}
-                >
-                  <div className="font-heading text-xl text-foreground">{d.icon} {d.name}</div>
-                  <div className="text-sm text-foreground/70 font-body">{d.desc}</div>
-                </button>
-              ))}
-            </div>
-          )}
+          <div className="comic-panel-sm p-3 bg-primary/10 border border-primary/40"><div className="font-heading text-xl text-foreground">⏱ ΣΤΑΘΕΡΗ ΔΙΑΡΚΕΙΑ · 5 ΩΡΕΣ</div><div className="text-sm text-foreground/70 font-body">Όλα τα modes έχουν συνολική διάρκεια 5 ωρών.</div></div>
         </ComicPanel>
 
         <ComicPanel className="bg-card space-y-3">
@@ -435,7 +410,9 @@ export default function SetupScreen({ onStart }) {
                   placeholder={`Όνομα ${idx + 1}`}
                   className="flex-1 min-w-0 px-3 py-1.5 border-2 border-border rounded-lg font-bold bg-background text-foreground focus:outline-none focus:ring-2 ring-primary font-body"
                 />
-                {newMode ? null : mode === 'pajama' ? (
+                {newMode && mode === 'marathon_4h' ? (
+                  <div className="w-full rounded-lg bg-primary/10 px-2 py-1 text-xs text-foreground/80">{p.pajamaStyle ? `Πιτζάμα: ${p.pajamaStyle} · ` : ''}{p.slipperType ? `Παντόφλες: ${p.slipperType} · ` : ''}{p.hasFlipFlops === false ? 'Χρειάζεται σαγιονάρες' : 'Έχει σαγιονάρες'}</div>
+                ) : newMode ? null : mode === 'pajama' ? (
                   <>
                     <input
                       type="text"
