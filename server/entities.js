@@ -58,7 +58,7 @@ const noChangesOutsideKeys = (before, after, keys) => {
 const onlyOwnMapEntryChanged = (before, after, playerId) => {
   if (!isObject(before) || !isObject(after)) return false;
   return Object.entries(after).every(([key, value]) =>
-    key === playerId || key.startsWith('__redacted_') || (Object.prototype.hasOwnProperty.call(before, key) && sameJson(before[key], value))
+    key === playerId || (Object.prototype.hasOwnProperty.call(before, key) && sameJson(before[key], value))
   );
 };
 const deepMerge = (target, patch, field = '', allowClear = false) => {
@@ -106,7 +106,7 @@ function validatePlayerPatch(current, patch, playerId) {
     'mobileVotes', 'electricChairVotes', 'juryTrial', 'grandJury', 'privateMessages',
     'sealedVotes', 'miniGameVolunteers', 'miniGameVotes', 'miniGameRatings',
     'snitchVotes', 'history', 'timeCapsule', 'lastWish', 'midnightPact',
-    'pajama', 'mg', 'players', 'extra4',
+    'pajama', 'mg', 'players', 'extra4', 'absoluteInterrogation', 'bailoutAuction',
   ]);
   if (Object.keys(patch).some((key) => !allowed.has(key))) return false;
   const player = (current.players || []).find((item) => item.id === playerId);
@@ -249,10 +249,40 @@ function validatePlayerPatch(current, patch, playerId) {
         !Number.isFinite(oldActivity.responseStartAt) || Date.now() < oldActivity.responseStartAt) return false;
   }
 
+  if ('absoluteInterrogation' in patch) {
+    const old = current.absoluteInterrogation || {};
+    const next = patch.absoluteInterrogation;
+    const step = Number(old.step || 0);
+    if (!old.active || old.targetId === playerId || !isObject(next) ||
+        !noChangesOutsideKeys(old, next, ['votes']) || !isObject(next.votes) ||
+        !Number.isInteger(step) || step < 0 || step > 2) return false;
+    const beforeVotes = old.votes || {};
+    const afterVotes = next.votes;
+    for (const key of Object.keys(afterVotes)) {
+      if (key !== String(step) && (!Object.prototype.hasOwnProperty.call(beforeVotes, key) || !sameJson(beforeVotes[key], afterVotes[key]))) return false;
+    }
+    const beforeStep = beforeVotes[step] || {};
+    const afterStep = afterVotes[step] || {};
+    if (!onlyOwnMapEntryChanged(beforeStep, afterStep, playerId)) return false;
+    if (afterStep[playerId] !== undefined && typeof afterStep[playerId] !== 'boolean') return false;
+  }
+
+  if ('bailoutAuction' in patch) {
+    const old = current.bailoutAuction || {};
+    const next = patch.bailoutAuction;
+    if (!old.active || old.targetId === playerId || !isObject(next) ||
+        !noChangesOutsideKeys(old, next, ['bids']) || !isObject(next.bids) ||
+        !onlyOwnMapEntryChanged(old.bids || {}, next.bids, playerId)) return false;
+    const bid = next.bids[playerId];
+    if (bid !== undefined && (!Number.isFinite(bid) || bid <= 0)) return false;
+  }
+
   if ('mg' in patch) {
     const old = current.mg || {};
     const next = patch.mg;
-    if (!isObject(next) || Object.keys(next).some((key) => !['stop', 'stopAt', 'stopBy', 'timer'].includes(key)) || old.stop || next.stop !== true || next.stopBy !== playerId) return false;
+    if (!isObject(next) || Object.keys(next).some((key) => !['stop', 'stopAt', 'stopBy', 'timer'].includes(key)) ||
+        old.stop || next.stop !== true || next.stopBy !== playerId ||
+        !Number.isFinite(next.stopAt) || (next.timer !== null && next.timer !== undefined && !isObject(next.timer))) return false;
   }
 
   if ('players' in patch) {
@@ -294,6 +324,13 @@ function validatePlayerPatch(current, patch, playerId) {
 function sanitizePublicSession(record, playerId = null) {
   if (!record?.state || !isObject(record.state)) return record;
   const state = { ...record.state };
+  if (Array.isArray(state.players)) {
+    state.players = state.players.map((player) => {
+      if (!isObject(player) || !Object.prototype.hasOwnProperty.call(player, 'vipProfile')) return player;
+      const { vipProfile, ...publicPlayer } = player;
+      return playerId && player.id === playerId ? { ...publicPlayer, vipProfile } : publicPlayer;
+    });
+  }
   if (Array.isArray(state.history)) state.history = state.history.filter((event) => !['truth', 'dare', 'confession'].includes(event?.type));
   const ownMap = (value) => {
     if (!playerId || !isObject(value) || value[playerId] === undefined) return {};
@@ -344,6 +381,21 @@ function sanitizePublicSession(record, playerId = null) {
   if (state.midnightPact) state.midnightPact = { ...state.midnightPact, offers: countOnlyMap(state.midnightPact.offers) };
   if (state.lastWish) state.lastWish = { ...state.lastWish, votes: countOnlyMap(state.lastWish.votes, true) };
   if (state.timeCapsule) state.timeCapsule = ownMap(state.timeCapsule);
+  if (state.absoluteInterrogation && isObject(state.absoluteInterrogation)) {
+    state.absoluteInterrogation = {
+      ...state.absoluteInterrogation,
+      votes: Object.fromEntries(Object.entries(state.absoluteInterrogation.votes || {}).map(([step, votes]) => [
+        step,
+        ownMap(votes),
+      ])),
+    };
+  }
+  if (state.bailoutAuction && isObject(state.bailoutAuction)) {
+    state.bailoutAuction = {
+      ...state.bailoutAuction,
+      bids: countOnlyMap(state.bailoutAuction.bids),
+    };
+  }
   if (state.extra4?.liveFeed && isObject(state.extra4.liveFeed)) {
     const liveFeed = { ...state.extra4.liveFeed };
     delete liveFeed.sourceToken;
