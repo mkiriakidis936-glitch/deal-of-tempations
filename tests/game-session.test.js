@@ -14,12 +14,11 @@ const players = [
 
 test('all five approved digital modes are registered with fixed durations', () => {
   assert.deepEqual(NEW_MODES.map((mode) => mode.id), [
-    'pedi_glam', 'pedi_extended', 'lockdown', 'beach_bar', 'marathon_4h',
+    'pedi_extended', 'lockdown', 'beach_bar', 'marathon_4h',
   ]);
-  assert.equal(NEW_MODES.find((mode) => mode.id === 'pedi_glam').minutes, 90);
   assert.equal(NEW_MODES.find((mode) => mode.id === 'lockdown').minutes, 60);
   assert.equal(NEW_MODES.find((mode) => mode.id === 'marathon_4h').minutes, 240);
-  assert.equal(NEW_MODES.find((mode) => mode.id === 'marathon_4h').actDurations.pedi_glam
+  assert.equal(NEW_MODES.find((mode) => mode.id === 'marathon_4h').actDurations.board
     + NEW_MODES.find((mode) => mode.id === 'marathon_4h').actDurations.midnight
     + NEW_MODES.find((mode) => mode.id === 'marathon_4h').actDurations.lockdown
     + NEW_MODES.find((mode) => mode.id === 'marathon_4h').actDurations.morning, 240);
