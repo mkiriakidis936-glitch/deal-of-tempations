@@ -121,7 +121,7 @@ export const GAME_MODES = [
   { id: 'pajama', name: 'PAJAMA PEDI-GLAM', icon: '🩴', desc: 'Μένουν στο σπίτι. Πιτζάμες, νύχια, παντόφλες, ψηφιακές προκλήσεις και ομαδικά quiz. 44 κουτιά, νύχτα & πρωί.' },
 ];
 
-// Τα πέντε ψηφιακά modes ορίζονται στο data/modes/modeRegistry.js
+// Τα τέσσερα ψηφιακά modes ορίζονται στο data/modes/modeRegistry.js
 import { NEW_MODES } from '@/data/modes/modeRegistry';
 NEW_MODES.forEach((m) => GAME_MODES.push({ id: m.id, name: m.name, icon: m.icon, desc: m.desc }));
 
