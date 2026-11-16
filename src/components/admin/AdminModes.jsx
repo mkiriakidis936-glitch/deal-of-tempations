@@ -99,15 +99,15 @@ export default function AdminModes() {
           {NEW_MODES.map((m) => (
             <div key={m.id} className="rounded-lg border-2 border-border/40 bg-secondary/40 p-2 text-sm">
               <div className="font-heading">{m.icon} {m.name}</div>
-              <div className="text-[11px] opacity-70">Παίκτριες {m.min}-{m.max} · Acts: {m.acts.join(' → ')}</div>
+              <div className="text-[11px] opacity-70">Παίκτριες {m.min}-{m.max} · Δραστηριότητες: {m.acts.join(' → ')}</div>
               <div className="text-[11px] mt-1 flex gap-3 flex-wrap">
                 <a className="underline" target="_blank" rel="noreferrer" href={`${ORIGIN}/modes-form?mode=${m.id}`}>📝 Φόρμα</a>
-                <a className="underline" target="_blank" rel="noreferrer" href={`${ORIGIN}/site?event=${SITE_IDS[m.id]}`}>🌐 Site</a>
+                <a className="underline" target="_blank" rel="noreferrer" href={`${ORIGIN}/site?event=${SITE_IDS[m.id]}`}>🌐 Ιστοσελίδα</a>
               </div>
             </div>
           ))}
         </div>
-        <p className="text-[11px] text-foreground/60">Έναρξη παιχνιδιού: Tablet → Επιλογή Mode. Εγκρίσεις φορμών: Ερωτηματολόγια → Pajama. Κείμενα του site: 🌐 Site & Σενάριο.</p>
+        <p className="text-[11px] text-foreground/60">Έναρξη παιχνιδιού: Tablet → Επιλογή Mode. Εγκρίσεις φορμών: Ερωτηματολόγια → Pajama. Κείμενα της ιστοσελίδας: 🌐 Ιστοσελίδα & Σενάριο.</p>
       </ComicPanel>
 
       <ComicPanel className="bg-card space-y-2">
@@ -148,8 +148,8 @@ export default function AdminModes() {
         </ComicPanel>
       )}
       <ComicPanel className="bg-card space-y-2">
-        <div className="font-heading text-sm text-primary">LIVE PREVIEW · GAME CONTENT</div>
-        <div className="text-[10px] text-foreground/50">Προεπισκόπηση της λίστας όπως είναι τώρα στον editor — οι αλλαγές εμφανίζονται πριν από την αποθήκευση.</div>
+        <div className="font-heading text-sm text-primary">ΖΩΝΤΑΝΗ ΠΡΟΕΠΙΣΚΟΠΗΣΗ · ΠΕΡΙΕΧΟΜΕΝΟ ΠΑΙΧΝΙΔΙΟΥ</div>
+        <div className="text-[10px] text-foreground/50">Προεπισκόπηση της λίστας όπως είναι τώρα στο εργαλείο επεξεργασίας — οι αλλαγές εμφανίζονται πριν από την αποθήκευση.</div>
         <div className="text-xs font-bold">{col?.label || 'Περιεχόμενο'} · {list.length} στοιχεία</div>
         <div className="grid sm:grid-cols-2 gap-2">
           {list.map((item, index) => {
