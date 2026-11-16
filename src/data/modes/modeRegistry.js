@@ -1,4 +1,4 @@
-// Τα 4 νέα ψηφιακά game modes (από το PDF "Μεγάλο Update").
+// Τα 3 διαθέσιμα ψηφιακά game modes (από το PDF "Μεγάλο Update").
 export const NEW_MODES = [
   {
     id: 'pedi_extended',
