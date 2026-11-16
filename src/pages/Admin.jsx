@@ -40,33 +40,39 @@ import { setActiveSessionCode } from '@/lib/activeSession';
 const NAV_GROUPS = [
   {
     id: 'overview',
-    label: '01 · ΚΕΝΤΡΙΚΟΣ ΠΙΝΑΚΑΣ',
+    label: '01 · ΚΕΝΤΡΙΚΗ ΕΙΚΟΝΑ',
     tabs: [
       { id: 'dashboard', label: '📊 Επισκόπηση' },
       { id: 'inbox', label: '📥 Εισερχόμενα' },
       { id: 'events', label: '🎟️ Events & καλεσμένοι' },
-      { id: 'statistics', label: '📈 Στατιστικά' },
+      { id: 'statistics', label: '📈 Στατιστικά & επισκέψεις' },
     ],
   },
   {
-    id: 'game-management',
-    label: '02 · ΔΙΑΧΕΙΡΙΣΗ ΠΑΙΧΝΙΔΙΟΥ',
+    id: 'game',
+    label: '02 · ΠΑΙΧΝΙΔΙ & ΖΩΝΤΑΝΟΣ ΕΛΕΓΧΟΣ',
     tabs: [
       { id: 'modes', label: '🎮 Λειτουργίες παιχνιδιού' },
+      { id: 'extra4', label: '✦ EXTRA 4.0' },
+      { id: 'live', label: '⏯️ Ζωντανός έλεγχος' },
     ],
   },
   {
     id: 'players',
-    label: '03 · ΔΙΑΧΕΙΡΙΣΗ ΠΑΙΚΤΩΝ',
+    label: '03 · ΠΑΙΚΤΕΣ & META-GAME',
     tabs: [
       { id: 'casting', label: '🎬 Επιλογή Επεισοδίου' },
       { id: 'players', label: '👥 Παίκτες & Ρόλοι' },
+      { id: 'blitz', label: '⚡ Blitz' },
       { id: 'achievements', label: '🏅 Επιτεύγματα' },
+      { id: 'leaderboard', label: '🏆 Κατάταξη' },
+      { id: 'meta', label: '🔮 Meta-game & αρχεία' },
+      { id: 'grandjury', label: '⚖️ Grand Jury' },
     ],
   },
   {
     id: 'content',
-    label: '04 · ΠΕΡΙΕΧΟΜΕΝΟ',
+    label: '04 · ΠΕΡΙΕΧΟΜΕΝΟ & ΣΕΝΑΡΙΑ',
     tabs: [
       { id: 'editor', label: '🃏 Κάρτες & επεξεργασία παιχνιδιού' },
       { id: 'scenarios', label: '🎭 Σενάρια' },
@@ -74,22 +80,20 @@ const NAV_GROUPS = [
     ],
   },
   {
-    id: 'experiences',
-    label: '05 · ΕΜΠΕΙΡΙΕΣ',
+    id: 'website',
+    label: '05 · ΙΣΤΟΣΕΛΙΔΑ',
     tabs: [
       { id: 'website', label: '🌐 Ιστοσελίδα' },
+    ],
+  },
+  {
+    id: 'experiences',
+    label: '06 · ΠΡΟΣΚΛΗΣΕΙΣ & ΣΥΜΜΕΤΟΧΕΣ',
+    tabs: [
       { id: 'invitations', label: '✉️ Ψηφιακές προσκλήσεις' },
       { id: 'forms', label: '📝 Φόρμες & δηλώσεις συμμετοχής' },
       { id: 'secret-vault', label: '🔐 VIP Vault & αιτήσεις' },
       { id: 'links', label: '🔗 Σύνδεσμοι & QR' },
-    ],
-  },
-  {
-    id: 'live-control',
-    label: '06 · ΖΩΝΤΑΝΟΣ ΕΛΕΓΧΟΣ',
-    tabs: [
-      { id: 'extra4', label: '✦ EXTRA 4.0' },
-      { id: 'live', label: '⏯️ Ζωντανός έλεγχος' },
     ],
   },
   {
@@ -103,15 +107,11 @@ const NAV_GROUPS = [
   },
   {
     id: 'settings',
-    label: '08 · ΡΥΘΜΙΣΕΙΣ',
+    label: '08 · ΡΥΘΜΙΣΕΙΣ & ΥΠΟΣΤΗΡΙΞΗ',
     tabs: [
       { id: 'settings', label: '⚙️ Ρυθμίσεις εφαρμογής' },
-    ],
-  },
-  {
-    id: 'notifications',
-    label: '09 · ΕΙΔΟΠΟΙΗΣΕΙΣ',
-    tabs: [
+      { id: 'eventinfo', label: '🗓️ Πληροφορίες Event' },
+      { id: 'guide', label: '📖 Οδηγός χρήσης' },
       { id: 'notifications', label: '🔔 Ειδοποιήσεις PUSH' },
     ],
   },
