@@ -52,7 +52,7 @@ function clean(c, list) {
 }
 
 // Αντικαθιστά το περιεχόμενο των λιστών στη μνήμη (ή επαναφέρει τα αρχικά αν λείπει).
-const UNSAFE_MODE_COPY = /hogtie|blindfold|restraint|δεσίμ|δεμέν|δέσιμο|ακινητοπ|zip.?ties|duct tape|παγάκι|παγάκια|γαργαλ|tickle|σφηνάκ|\bshot\b|αλκοόλ|alcohol|χωρίς χέρια|μάτια κλειστά|τυφλά|περιορισμός κίνησης|αγγίζ|ακουμπ|touch|μασάζ|massage|άγγιγμα|σπρώξ|κράτα ομήρους/i;
+const UNSAFE_MODE_COPY = /hogtie|blindfold|restraint|δεσίμ|δεμέν|δέσιμο|ακινητοπ|zip.?ties|duct tape|παγάκι|παγάκια|γαργαλ|tickle|σφηνάκ|\bshot\b|αλκοόλ|alcohol|χωρίς χέρια|μάτια κλειστά|κλείσε τα μάτια|κλείστε τα μάτια|τυφλά|περιορισμός κίνησης|αγγίζ|ακουμπ|touch|μασάζ|massage|άγγιγμα|σπρώξ|κράτα ομήρους/i;
 const SAFE_MODE_CHALLENGE = 'Προαιρετικό ψηφιακό challenge: ολοκλήρωσε ένα quiz ή επίλεξε PASS / STOP.';
 function sanitizeModeCopy(value, id = '') {
   if (Array.isArray(value)) {
