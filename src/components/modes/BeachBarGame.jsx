@@ -238,8 +238,7 @@ function Wheel({ ctx, bb, setBb, T, flopOn }) {
       ctx.setMg({ playerAction: null });
       setRun(false);
     } else if (action.type === 'beach_wheel_again' && action.playerId === bb.wheel?.pid && card) {
-      setBb({ wheel: null });
-      ctx.setMg({ playerAction: null });
+      spin(true, action.playerId);
       setRun(false);
     }
   }, [ctx.mg?.playerAction?.at, bb.loser, bb.wheel?.pid, card, spin, setBb]);

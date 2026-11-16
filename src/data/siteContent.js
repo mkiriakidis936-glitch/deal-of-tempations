@@ -114,56 +114,26 @@ const modeFaq = (what, duration) => [
 ];
 
 SITE_EVENTS.push(
-  { id: 'extended', label: '💅 PEDI-GLAM EXTENDED' },
   { id: 'lockdown', label: '🚨 PAJAMA LOCKDOWN' },
   { id: 'beachbar', label: '🍹 BEACH BAR LOCKDOWN' },
 );
 
 Object.assign(DEFAULT_SITE, {
-  extended: {
-    tab: 'Pedi-Glam Extended',
-    overline: 'Pajama Pedi-Glam & Tickle Secrets · Extended Edition · 18+',
-    titleLines: ['PEDI-GLAM', 'EXTENDED'],
-    tagline: 'Ταμπλό με διακλαδώσεις, Glam Tokens και κρυφές αποστολές στο κινητό σου.',
-    date: '',
-    cta: { label: 'ΚΛΕΙΣΕ ΘΕΣΗ', path: '/modes-form?mode=pedi_extended' },
-    scenarioKicker: 'Το παιχνίδι',
-    scenarioTitle: 'ΤΙ ΕΙΝΑΙ ΤΟ PEDI-GLAM EXTENDED',
-    scenario: [
-      'Παίζετε πάνω σε ψηφιακό φιδωτό ταμπλό που σε αναγκάζει να διαλέξεις: «The Glam Route», τον ασφαλή δρόμο με ερωτήσεις, μυστικά και foot-spa, ή «The Chaos & Trap Route», με παγίδες, δεσίματα και σαμποτάζ, αλλά διπλούς πόντους αν τερματίσεις.',
-      'Κερδίζεις Glam Tokens με τις δοκιμασίες και τα επιτυχημένα σαμποτάζ. Τα ξοδεύεις για ασυλία, για να δωροδοκήσεις μια φίλη ή για Chaos Cards εναντίον αντιπάλου. Στο κινητό σου φτάνουν κρυφές αποστολές που οι άλλες δεν βλέπουν.',
-      'Μετά τα μεσάνυχτα ακολουθεί το Midnight ASMR & Tickle Vault, και το πρωί ο καφές σερβίρεται μόνο αν λύσετε το Morning Escape.',
-    ],
-    highlights: ['Glam Route ή Chaos Route', 'Glam Tokens & Market', 'Μυστικές αποστολές στο κινητό', 'Midnight Vault & Morning Escape'],
-    videoKicker: 'Το τρέιλερ',
-    videoTitle: '30 ΔΕΥΤΕΡΟΛΕΠΤΑ ΑΠΟ ΤΗ ΝΥΧΤΑ',
-    programKicker: 'Πρόγραμμα',
-    programTitle: 'ΤΡΕΙΣ ΠΡΑΞΕΙΣ',
-    programNote: 'Περίπου 2,5 ώρες.',
-    program: [
-      { roman: 'I', title: 'The Glam & Chaos Board', subtitle: '', meta: '45′', group: 'Βράδυ', lines: ['Ρίχνεις ζάρι, διαλέγεις δρόμο και μαζεύεις τα πρώτα Glam Tokens. Χρειάζεσαι 5 για να περάσεις την πύλη.'] },
-      { roman: 'II', title: 'Midnight ASMR & Tickle Vault', subtitle: '', meta: '45′', group: 'Μεσάνυχτα', lines: ['Χαμηλά φώτα, μάσκα ύπνου και ψιθυριστές εξομολογήσεις.'] },
-      { roman: 'III', title: 'Extended Morning Escape', subtitle: '', meta: '45′', group: 'Πρωί', lines: ['Λύστε τον γρίφο με τα στοιχεία που είναι κρυμμένα στο δωμάτιο για να σερβιριστεί ο καφές.'] },
-    ],
-    info: modeInfo('Πιτζάμες και παντόφλες. Άνετα και χνουδωτά.', 'Φρέσκο μανικιούρ, κινητό με φόρτιση και τις δικές σου παντόφλες.'),
-    participation: 'Κλειστή λίστα, 18+, λίγες θέσεις. Στη φόρμα δηλώνεις και τα όριά σου.',
-    faq: modeFaq('Ένα ψηφιακό παιχνίδι ταμπλό για πιτζάμα πάρτι, με επιλογή δρόμου, tokens και κρυφές αποστολές. Κλειστή λίστα, 18+.', 'Περίπου 2,5 ώρες, από το βραδινό ταμπλό ως τον πρωινό καφέ.'),
-  },
   lockdown: {
     tab: 'Pajama Lockdown',
     overline: 'Pajama Lockdown · 18+ Girls-Only Escape Room',
     titleLines: ['PAJAMA', 'LOCKDOWN'],
-    tagline: 'Εξήντα λεπτά. Ένα κλειδωμένο κινητό. Μόνο οι πιο έξυπνες και τολμηρές απόδρασαν.',
+    tagline: 'Πέντε ώρες. Ένα κλειδωμένο κινητό. Μόνο οι πιο έξυπνες και τολμηρές απόδρασαν.',
     date: '',
     cta: { label: 'ΚΛΕΙΣΕ ΘΕΣΗ', path: '/modes-form?mode=lockdown' },
     scenarioKicker: 'Το παιχνίδι',
     scenarioTitle: 'ΤΙ ΕΙΝΑΙ ΤΟ PAJAMA LOCKDOWN',
     scenario: [
-      'Ένα 100% ψηφιακό escape room, μόνο για γυναίκες 18+. Με το που ανοίγει η εφαρμογή, η οθόνη γίνεται κατάμαυρη με κόκκινα neon, ηχεί συναγερμός και ξεκινά αντίστροφη μέτρηση 60 λεπτών.',
+      'Ένα 100% ψηφιακό escape room, μόνο για γυναίκες 18+. Με το που ανοίγει η εφαρμογή, η οθόνη γίνεται κατάμαυρη με κόκκινα neon, ηχεί συναγερμός και ξεκινά αντίστροφη μέτρηση 5 ωρών.',
       'Σε τρία επίπεδα λύνετε γρίφους, αισθησιακά τεστ υφής, ψιθύρους ASMR και φυσικές δοκιμασίες συνεργασίας. Κάθε λάθος σας κοστίζει χρόνο.',
       'Αν συμπληρώσετε τον 4ψήφιο κωδικό πριν μηδενιστεί το ρολόι, ξεκλειδώνει το VIP Vault. Αν όχι, σας περιμένει η απόλυτη ποινή.',
     ],
-    highlights: ['60 λεπτά, 3 επίπεδα', '10 ψηφιακά mini-games', 'Spicy Truth Wheel', 'VIP Vault'],
+    highlights: ['5 ώρες, 3 επίπεδα', '10 ψηφιακά mini-games', 'Spicy Truth Wheel', 'VIP Vault'],
     videoKicker: 'Το τρέιλερ',
     videoTitle: '30 ΔΕΥΤΕΡΟΛΕΠΤΑ ΑΠΟ ΤΟ LOCKDOWN',
     programKicker: 'Πώς παίζεται',
@@ -176,7 +146,7 @@ Object.assign(DEFAULT_SITE, {
     ],
     info: modeInfo('Πιτζάμες. Μαύρο ή κόκκινο είναι ευπρόσδεκτο.', 'Παράταιρες κάλτσες, μάσκα ύπνου, σατέν κορδέλες και κινητό με φόρτιση.'),
     participation: 'Κλειστή λίστα, 18+, λίγες θέσεις. Στη φόρμα δηλώνεις και τα όριά σου.',
-    faq: modeFaq('Ένα ψηφιακό escape room 18+ με γρίφους, φυσικές δοκιμασίες και χρονόμετρο 60 λεπτών.', 'Το ίδιο το Lockdown διαρκεί 60 λεπτά. Μαζί με την προετοιμασία και το τέλος, περίπου 75′.'),
+    faq: modeFaq('Ένα ψηφιακό escape room 18+ με γρίφους, φυσικές δοκιμασίες και χρονόμετρο 5 ωρών.', 'Το Lockdown διαρκεί συνολικά 5 ώρες.'),
   },
   beachbar: {
     tab: 'Beach Bar Lockdown',
@@ -197,7 +167,7 @@ Object.assign(DEFAULT_SITE, {
     videoTitle: '30 ΔΕΥΤΕΡΟΛΕΠΤΑ ΑΠΟ ΤΟ BEACH BAR',
     programKicker: 'Ροή βραδιάς',
     programTitle: 'ΠΕΝΤΕ ΦΑΣΕΙΣ',
-    programNote: 'Σύνολο 3-4 ώρες. Το αλκοόλ είναι προαιρετικό: υπάρχει και εκδοχή με χυμούς.',
+    programNote: 'Συνολική διάρκεια 5 ώρες. Το αλκοόλ είναι προαιρετικό: υπάρχει και εκδοχή με χυμούς.',
     program: [
       { roman: 'I', title: 'Check-in', subtitle: '', meta: '', group: '', lines: ['Φοράτε σαγιονάρες και επιβεβαιώνετε ότι είστε έτοιμες.'] },
       { roman: 'II', title: 'Dance & Freeze', subtitle: '', meta: '', group: '', lines: ['Χορός. Όταν ακούσετε την κόρνα, εκτελείτε την εντολή. Η τελευταία χάνει.'] },
@@ -207,7 +177,7 @@ Object.assign(DEFAULT_SITE, {
     ],
     info: modeInfo('Καλοκαιρινό: σαγιονάρες, άνετα ρούχα, μαγιό ή κάτι δροσερό.', 'Σαγιονάρες (υποχρεωτικές), μεγάλη διάθεση και κινητό με φόρτιση.'),
     participation: 'Κλειστή λίστα, 18+, λίγες θέσεις. Στη φόρμα δηλώνεις αν πίνεις αλκοόλ και τα όριά σου.',
-    faq: modeFaq('Ένα beach bar party game με χορό, ποτό, σαγιονάρες και ποινές. Κλειστή λίστα, 18+.', 'Περίπου 3-4 ώρες.'),
+    faq: modeFaq('Ένα beach bar party game με χορό, ποτό, σαγιονάρες και ποινές. Κλειστή λίστα, 18+.', 'Περίπου 5 ώρες.'),
   },
 });
 
