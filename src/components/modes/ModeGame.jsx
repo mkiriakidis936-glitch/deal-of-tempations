@@ -11,7 +11,7 @@ import { modeMeta, ACT_META, MODE_THEMES } from '@/data/modes/modeRegistry';
 import { useModeCtx, useTick, timerStart } from '@/lib/modeKit';
 import { COLLECTIONS, applyScenarioCollections } from '@/lib/modesContentStore';
 
-// Tablet (game master) για τα πέντε ψηφιακά modes. Κάθε mode = λίστα από acts.
+// Tablet (game master) για τα τέσσερα ψηφιακά modes. Κάθε mode = λίστα από acts.
 export default function ModeGame({ state, updateState, onEnd, onQR, playerProfiles = [], playerProfilesReady = true }) {
   const [, setContentReady] = useState(false);
   useEffect(() => {
@@ -89,7 +89,7 @@ export default function ModeGame({ state, updateState, onEnd, onQR, playerProfil
         </div>
       )}
 
-      {(act === 'board' || act === 'pedi_glam') && <ActBoard ctx={ctx} onDone={nextAct} />}
+      {act === 'board' && <ActBoard ctx={ctx} onDone={nextAct} />}
       {act === 'midnight' && <ActMidnight ctx={ctx} onDone={nextAct} />}
       {act === 'lockdown' && <ActLockdown ctx={ctx} standalone={!multi} onDone={(res) => { setMg({ lockdownResult: res }); if (multi) nextAct(); else finishAll(); }} />}
       {act === 'morning' && <ActMorning ctx={ctx} onFinish={finishAll} />}
