@@ -244,7 +244,7 @@ export const PAJAMA_SECRETS = [
 
 // Safety normalization for the legacy Pajama mode. IDs and scoring remain unchanged.
 const UNSAFE_PAJAMA_COPY = /hogtie|blindfold|restraint|δεσίμ|δεμέν|δέσιμο|ακινητοπ|zip.?ties|duct tape|παγάκι|παγάκια|γαργαλ|tickle|σφηνάκ|\bshot\b|αλκοόλ|alcohol|χωρίς χέρια|μάτια κλειστά|τυφλά|περιορισμός κίνησης|αγγίζ|ακουμπ|touch|μασάζ|massage|άγγιγμα|σπρώξ|κράτα ομήρους|τρέξε|περπάτησε.*σκοτάδι/i;
-const SAFE_PAJAMA_CHALLENGE = 'Προαιρετική ψηφιακή δοκιμασία: ολοκλήρωσε ένα σύντομο quiz ή γρίφο. Μπορείς να επιλέξεις PASS ή STOP. Δεν απαιτείται σωματική επαφή ή επικίνδυνη κίνηση.';
+const SAFE_PAJAMA_CHALLENGE = 'Προαιρετική ψηφιακή δοκιμασία: ολοκλήρωσε ένα σύντομο quiz ή γρίφο. PASS και STOP είναι πάντα διαθέσιμα.';
 function sanitizePajamaCopy(value, id = '') {
   if (Array.isArray(value)) {
     value.forEach((item, index) => {
