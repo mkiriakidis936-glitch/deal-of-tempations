@@ -37,6 +37,15 @@ test('mobile STOP is accepted only as the validated minimal STOP patch', () => {
   assert.equal(validatePlayerPatch(current, { mg: { stop: true, stopAt: 1000, stopBy: 'p0' } }, 'p1'), false);
 });
 
+test('mode mobile actions accept only the signed-in player and supported action payloads', () => {
+  const current = { players, mg: { stop: false } };
+  assert.equal(validatePlayerPatch(current, { mg: { playerAction: { playerId: 'p1', type: 'board_roll', at: 1000 } } }, 'p1'), true);
+  assert.equal(validatePlayerPatch(current, { mg: { playerAction: { playerId: 'p0', type: 'board_roll', at: 1000 } } }, 'p1'), false);
+  assert.equal(validatePlayerPatch(current, { mg: { playerAction: { playerId: 'p1', type: 'board_route', route: 'unknown', at: 1000 } } }, 'p1'), false);
+  assert.equal(validatePlayerPatch(current, { mg: { playerAction: { playerId: 'p1', type: 'morning_code', code: '12A4', at: 1000 } } }, 'p1'), false);
+  assert.equal(validatePlayerPatch(current, { mg: { playerAction: { playerId: 'p1', type: 'beach_finale_response', value: 'done', at: 1000 } } }, 'p1'), true);
+});
+
 test('Absolute Interrogation accepts only the current player own boolean vote', () => {
   const current = {
     players,
