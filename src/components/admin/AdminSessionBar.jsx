@@ -15,7 +15,7 @@ const PJ_PHASES = {
 };
 
 const LINKS = [
-  { label: '📱 Tablet', href: '/' },
+  { label: '📱 Ταμπλέτα', href: '/' },
   { label: '📺 TV', href: '/tv' },
   { label: '📲 Κινητά', href: '/play' },
 ];
@@ -50,7 +50,7 @@ export default function AdminSessionBar({ sessions, activeSession, onSelect }) {
             ))}
           </select>
         ) : (
-          <span className="text-xs text-foreground/60 font-body">καμία — ξεκίνα από το Tablet</span>
+          <span className="text-xs text-foreground/60 font-body">καμία — ξεκίνα από την ταμπλέτα</span>
         )}
         {info && (
           <span className="text-[11px] font-body text-foreground/70">
