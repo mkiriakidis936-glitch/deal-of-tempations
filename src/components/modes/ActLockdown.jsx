@@ -61,7 +61,7 @@ export default function ActLockdown({ ctx, onDone, standalone }) {
     sfx.alarm();
     const durationSeconds = standalone ? LOCKDOWN_SECONDS : MARATHON_LOCKDOWN_SECONDS;
     setMg({ timer: timerStart(durationSeconds), ld: { ...ld, stage: 'l1', revealed: [false, false, false, false], correct: 0, wrong: 0, qOrder: shuffle(HOSTAGE_QUESTIONS.map((_, i) => i)), qi: 0 } });
-    log(`🚨 THE PAJAMA LOCKDOWN HAS BEGUN — ${standalone ? '5 ώρες' : '75′'}`);
+    log(`🚨 THE PAJAMA LOCKDOWN HAS BEGUN — ${standalone ? '5 ώρες' : '60′'}`);
   }
 
   const revealed = ld.revealed || [false, false, false, false];
