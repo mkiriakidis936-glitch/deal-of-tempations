@@ -240,8 +240,8 @@ export default function AdminPlayers({ sessions, selectedSession, onSelect, onUp
                 <div>
                   <label className="font-bold block mb-1">💅 Προνόμιο</label>
                   <select
-                    value={edit.toenailΠρονόμιο || ''}
-                    onChange={(e) => editField(p.id, 'toenailΠρονόμιο', e.target.value || null)}
+                    value={edit.toenailPerk || ''}
+                    onChange={(e) => editField(p.id, 'toenailPerk', e.target.value || null)}
                     className="w-full border-2 border-border rounded px-1 py-1"
                   >
                     <option value="">— Κανένα —</option>
