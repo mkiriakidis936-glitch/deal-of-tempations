@@ -6,7 +6,7 @@ export default function PajamaBindingStatus({ bindings, players, onUnbind }) {
 
   return (
     <div className="rounded-xl border border-pink-500/40 bg-pink-950/60 p-2">
-      <div className="font-heading text-xs text-pink-200 mb-1">⛓️ ΔΕΣΙΜΑΤΑ ΣΕ ΙΣΧΥ</div>
+      <div className="font-heading text-xs text-pink-200 mb-1">🧩 ΨΗΦΙΑΚΕΣ ΠΡΟΚΛΗΣΕΙΣ ΣΕ ΕΞΕΛΙΞΗ</div>
       <div className="space-y-1">
         {entries.map(([id, b]) => {
           const player = (players || []).find((p) => p.id === id);
@@ -21,7 +21,7 @@ export default function PajamaBindingStatus({ bindings, players, onUnbind }) {
                   onClick={() => onUnbind(id)}
                   className="px-2 py-0.5 rounded bg-pink-800 text-pink-100 font-heading text-[10px]"
                 >
-                  ΑΠΟΔΕΣΜΟΣ
+                  ΟΛΟΚΛΗΡΩΣΗ
                 </button>
               )}
             </div>
