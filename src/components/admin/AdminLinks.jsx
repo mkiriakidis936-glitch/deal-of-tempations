@@ -17,6 +17,8 @@ const GUEST_LINKS = [
   { id: 'pajama-invite', label: '🩴 Πρόσκληση Pajama', path: '/pajama-invite', desc: 'Το μυστηριώδες link που στέλνεις — οδηγεί στη φόρμα.' },
   { id: 'pajama', label: '🩴 Φόρμα Pajama', path: '/pajama-form', desc: 'Η φόρμα που συμπληρώνουν — μετά την εγκρίνεις στη Διαχείριση → Ερωτηματολόγια.' },
   { id: 'modes-form', label: '🎮 Φόρμα Νέων Modes', path: '/modes-form', desc: 'Η φόρμα όπου η καλεσμένη διαλέγει ένα ή περισσότερα modes (Pedi-Glam Extended, Lockdown, Beach Bar, 4H Marathon). Τις εγκρίνεις στο Διαχείριση → Ερωτηματολόγια.' },
+  { id: 'public-forms', label: '📝 Δημόσιες Φόρμες', path: '/forms', desc: 'Join the Heist, Custom Event Request και Feedback / Hall of Shame.' },
+  { id: 'vip-access', label: '🔐 VIP Access & Digital Vault', path: '/vip-access', desc: 'VIP Secret Pass, προσωπικό προφίλ, όρια και πρόσβαση στο ιδιωτικό Vault.' },
 ];
 
 const OPTIONAL_LINKS = [
