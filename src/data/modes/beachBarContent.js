@@ -97,7 +97,13 @@ export const BEACH_PHASES = [
 const UNSAFE_BEACH_COPY = /hogtie|blindfold|restraint|δεσίμ|δεμέν|δέσιμο|ακινητοπ|zip.?ties|duct tape|παγάκι|παγάκια|γαργαλ|tickle|σφηνάκ|shot|αλκοόλ|alcohol|χωρίς χέρια|μάτια κλειστά|περιορισμός κίνησης|σπρώξ|κράτα ομήρους|μην την αφήσεις/i;
 const SAFE_BEACH_CHALLENGE = 'Προαιρετικό ψηφιακό challenge χωρίς σωματική επαφή ή αλκοόλ. Λύσε ένα σύντομο quiz ή επίλεξε PASS / STOP.';
 function sanitizeBeachItems(value, id = '') {
-  if (Array.isArray(value)) { value.forEach((item) => sanitizeBeachItems(item, item?.id || id)); return value; }
+  if (Array.isArray(value)) {
+    value.forEach((item, index) => {
+      if (typeof item === 'string' && UNSAFE_BEACH_COPY.test(item)) value[index] = SAFE_BEACH_CHALLENGE;
+      else sanitizeBeachItems(item, item?.id || id);
+    });
+    return value;
+  }
   if (!value || typeof value !== 'object') return value;
   for (const [key, current] of Object.entries(value)) {
     if (key === 'restraint' && current === true) { value[key] = false; continue; }
