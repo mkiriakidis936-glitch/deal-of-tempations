@@ -89,7 +89,7 @@ export async function saveModesContent(next) {
 export function applyScenarioCollections(modeId, selectedIds = []) {
   const selected = new Set(selectedIds);
   const relevant = COLLECTIONS.filter((collection) => {
-    if (modeId === 'pedi_extended' || modeId === 'marathon_4h') return /Pedi-Glam|Act 1|Act 2|Act 4|Marathon/i.test(collection.group);
+    if (modeId === 'pedi_extended') return /Pedi-Glam|Act 1|Act 2|Act 4|Marathon/i.test(collection.group);
     if (modeId === 'lockdown') return /Pajama Lockdown/i.test(collection.group);
     if (modeId === 'beach_bar') return /Beach Bar/i.test(collection.group);
     return false;
