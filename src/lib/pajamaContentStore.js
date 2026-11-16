@@ -27,7 +27,7 @@ function defaultRows() {
   return [...cards, ...secrets];
 }
 
-const UNSAFE_PAJAMA_ROW = /hogtie|blindfold|restraint|δεσίμ|δεμέν|δέσιμο|ακινητοπ|zip.?ties|duct tape|παγάκι|παγάκια|γαργαλ|tickle|σφηνάκ|\bshot\b|αλκοόλ|alcohol|χωρίς χέρια|μάτια κλειστά|τυφλά|περιορισμός κίνησης|αγγίζ|ακουμπ|touch|μασάζ|massage|άγγιγμα|σπρώξ|κράτα ομήρους|τρέξε|περπάτησε.*σκοτάδι/i;
+const UNSAFE_PAJAMA_ROW = /hogtie|blindfold|restraint|δεσίμ|δεμέν|δέσιμο|ακινητοπ|zip.?ties|duct tape|παγάκι|παγάκια|γαργαλ|tickle|σφηνάκ|\bshot\b|αλκοόλ|alcohol|χωρίς χέρια|μάτια κλειστά|κλείσε τα μάτια|κλείστε τα μάτια|τυφλά|περιορισμός κίνησης|αγγίζ|ακουμπ|touch|μασάζ|massage|άγγιγμα|σπρώξ|κράτα ομήρους|τρέξε|περπάτησε.*σκοτάδι/i;
 const SAFE_PAJAMA_ROW = 'Προαιρετική ψηφιακή δοκιμασία: ολοκλήρωσε ένα σύντομο quiz ή γρίφο. PASS και STOP είναι πάντα διαθέσιμα.';
 const safeRowText = (value) => typeof value === 'string' && UNSAFE_PAJAMA_ROW.test(value) ? SAFE_PAJAMA_ROW : value;
 
