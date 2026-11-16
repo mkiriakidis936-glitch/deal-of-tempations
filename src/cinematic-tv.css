@@ -186,3 +186,50 @@
 @media (prefers-reduced-motion: reduce) {
   .dot-tv-orb, .dot-tv-hud, .dot-tv-stage { animation: none !important; }
 }
+
+
+/* Premium mobile controller — safe-area, touch response and readable surfaces */
+body.dot-mobile-experience {
+  background: #09080d;
+  overscroll-behavior-y: none;
+  -webkit-tap-highlight-color: transparent;
+}
+body.dot-mobile-experience button,
+body.dot-mobile-experience [role="button"] {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform .14s ease, filter .14s ease, box-shadow .14s ease;
+}
+body.dot-mobile-experience button:active,
+body.dot-mobile-experience [role="button"]:active {
+  transform: scale(.975);
+  filter: brightness(1.12);
+}
+body.dot-mobile-experience input,
+body.dot-mobile-experience select,
+body.dot-mobile-experience textarea {
+  font-size: max(16px, 1em);
+}
+body.dot-mobile-experience .fixed.bottom-0,
+body.dot-mobile-experience .fixed.inset-x-0 {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+body.dot-mobile-experience .comic-panel,
+body.dot-mobile-experience .comic-panel-sm {
+  border-color: rgba(220, 185, 102, .22);
+  box-shadow: 0 14px 36px rgba(0, 0, 0, .25), inset 0 1px 0 rgba(255,255,255,.035);
+}
+body.dot-mobile-experience :focus-visible {
+  outline: 2px solid #e5c477;
+  outline-offset: 3px;
+}
+@media (prefers-reduced-motion: reduce) {
+  body.dot-mobile-experience *,
+  body.dot-mobile-experience *::before,
+  body.dot-mobile-experience *::after {
+    scroll-behavior: auto !important;
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
+}
