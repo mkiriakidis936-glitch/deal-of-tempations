@@ -52,9 +52,32 @@ function clean(c, list) {
 }
 
 // Αντικαθιστά το περιεχόμενο των λιστών στη μνήμη (ή επαναφέρει τα αρχικά αν λείπει).
+const UNSAFE_MODE_COPY = /hogtie|blindfold|restraint|δεσίμ|δεμέν|δέσιμο|ακινητοπ|zip.?ties|duct tape|παγάκι|παγάκια|γαργαλ|tickle|σφηνάκ|shot|αλκοόλ|alcohol|χωρίς χέρια|μάτια κλειστά|τυφλά|περιορισμός κίνησης|αγγίζ|ακουμπ|σπρώξ|κράτα ομήρους/i;
+const SAFE_MODE_CHALLENGE = 'Προαιρετικό ψηφιακό challenge χωρίς σωματική επαφή, περιορισμό κίνησης ή αλκοόλ. Ολοκλήρωσε ένα σύντομο quiz ή επίλεξε PASS / STOP.';
+function sanitizeModeCopy(value, id = '') {
+  if (Array.isArray(value)) {
+    return value.map((item) => typeof item === 'string'
+      ? (UNSAFE_MODE_COPY.test(item) ? SAFE_MODE_CHALLENGE : item)
+      : sanitizeModeCopy(item, item?.id || id));
+  }
+  if (!value || typeof value !== 'object') return value;
+  const safe = { ...value };
+  if (safe.restraint === true) safe.restraint = false;
+  for (const [key, current] of Object.entries(safe)) {
+    if (typeof current === 'string' && UNSAFE_MODE_COPY.test(current)) {
+      safe[key] = ['title', 'name', 'label'].includes(key)
+        ? `Safe Digital Challenge ${safe.id || id}`.trim()
+        : SAFE_MODE_CHALLENGE;
+    } else if (current && typeof current === 'object') {
+      safe[key] = sanitizeModeCopy(current, safe.id || id);
+    }
+  }
+  return safe;
+}
+
 export function applyModesContent(overrides = {}) {
   COLLECTIONS.forEach((c) => {
-    const next = clean(c, overrides[c.id]) || DEFAULTS[c.id];
+    const next = sanitizeModeCopy(clean(c, overrides[c.id]) || DEFAULTS[c.id]);
     const runtimeNext = c.toRuntime ? c.toRuntime(next) : next;
     const target = c.targetArr || c.arr;
     target.splice(0, target.length, ...JSON.parse(JSON.stringify(runtimeNext)));
