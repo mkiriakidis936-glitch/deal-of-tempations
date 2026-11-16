@@ -198,7 +198,7 @@ export default function SetupScreen({ onStart }) {
     const selectedScenario = customScenarios.find((scenario) => scenario.id === selectedScenarioId && scenario.modeId === mode);
     const selectedIntensity = mode === 'classic' ? intensity : 'standard';
     if (!safeWord.trim() || !safeWordConfirmed) return;
-    const selectedDuration = DURATION_OPTIONS.find((option) => option.id === duration) || DURATION_OPTIONS[1];
+    const selectedDuration = newMode ? { id: 'fixed', minutes: newMode.minutes } : (DURATION_OPTIONS.find((option) => option.id === duration) || DURATION_OPTIONS[1]);
     const state = { ...createInitialState(mode, selectedIntensity, valid), gameDurationMinutes: selectedDuration.minutes, safetyProfile: { safeWord: safeWord.trim(), confirmedAt: Date.now() }, testMode,
       ...(selectedScenario ? { customScenario: { id: selectedScenario.id, name: selectedScenario.name, description: selectedScenario.description, collections: selectedScenario.collections || [] } } : {})
     };
@@ -245,18 +245,25 @@ export default function SetupScreen({ onStart }) {
 
         <ComicPanel>
           <h2 className="font-heading text-2xl mb-3 text-primary">ΔΙΑΡΚΕΙΑ ΠΑΙΧΝΙΔΙΟΥ</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            {DURATION_OPTIONS.map((d) => (
-              <button
-                key={d.id}
-                onClick={() => handleDuration(d)}
-                className={`comic-panel-sm p-3 text-left transition-all ${duration === d.id ? 'bg-primary/20 ring-2 ring-primary scale-[1.02]' : 'bg-secondary'}`}
-              >
-                <div className="font-heading text-xl text-foreground">{d.icon} {d.name}</div>
-                <div className="text-sm text-foreground/70 font-body">{d.desc}</div>
-              </button>
-            ))}
-          </div>
+          {newMode ? (
+            <div className="comic-panel-sm p-3 bg-primary/10 border border-primary/40">
+              <div className="font-heading text-xl text-foreground">⏱ ΣΤΑΘΕΡΗ ΔΙΑΡΚΕΙΑ · {newMode.minutes >= 60 ? `${Math.floor(newMode.minutes / 60)} ΩΡΕΣ${newMode.minutes % 60 ? ` ΚΑΙ ${newMode.minutes % 60} ΛΕΠΤΑ` : ''}` : `${newMode.minutes} ΛΕΠΤΑ`}</div>
+              <div className="text-sm text-foreground/70 font-body">Η διάρκεια καθορίζεται από το επιλεγμένο Mode.</div>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              {DURATION_OPTIONS.map((d) => (
+                <button
+                  key={d.id}
+                  onClick={() => handleDuration(d)}
+                  className={`comic-panel-sm p-3 text-left transition-all ${duration === d.id ? 'bg-primary/20 ring-2 ring-primary scale-[1.02]' : 'bg-secondary'}`}
+                >
+                  <div className="font-heading text-xl text-foreground">{d.icon} {d.name}</div>
+                  <div className="text-sm text-foreground/70 font-body">{d.desc}</div>
+                </button>
+              ))}
+            </div>
+          )}
         </ComicPanel>
 
         <ComicPanel className="bg-card space-y-3">
