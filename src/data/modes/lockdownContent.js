@@ -112,7 +112,7 @@ export const TRUE_FALSE = [
 ];
 
 
-const UNSAFE_LOCKDOWN_COPY = /hogtie|blindfold|restraint|δεσίμ|δεμέν|δέσιμο|ακινητοπ|zip.?ties|duct tape|παγάκι|παγάκια|γαργαλ|tickle|σφηνάκ|\bshot\b|αλκοόλ|alcohol|χωρίς χέρια|μάτια κλειστά|τυφλά|περιορισμός κίνησης|αγγίζ|ακουμπ|σπρώξ|δέσε|δεμένη|δεμένος/i;
+const UNSAFE_LOCKDOWN_COPY = /hogtie|blindfold|restraint|δεσίμ|δεμέν|δέσιμο|ακινητοπ|zip.?ties|duct tape|παγάκι|παγάκια|γαργαλ|tickle|σφηνάκ|\bshot\b|αλκοόλ|alcohol|χωρίς χέρια|μάτια κλειστά|τυφλά|περιορισμός κίνησης|αγγίζ|ακουμπ|touch|μασάζ|massage|άγγιγμα|σπρώξ|δέσε|δεμένη|δεμένος/i;
 const SAFE_LOCKDOWN_CHALLENGE = 'Προαιρετικό ψηφιακό challenge χωρίς σωματική επαφή, περιορισμό κίνησης ή αλκοόλ. Ολοκλήρωσε ένα quiz ή επίλεξε PASS / STOP.';
 function sanitizeLockdownCopy(value, id = '') {
   if (Array.isArray(value)) {
@@ -136,3 +136,4 @@ function sanitizeLockdownCopy(value, id = '') {
   BINDING_OPTIONS, HOSTAGE_QUESTIONS, CONFESSION_LOCK, SPICY_WHEEL,
   FOOT_ID, WHISPER_CLUES, MINI_GAMES, TRUE_FALSE,
 ].forEach((items) => sanitizeLockdownCopy(items));
+if (UNSAFE_LOCKDOWN_COPY.test(LOCKDOWN_MESSAGE)) LOCKDOWN_MESSAGE = SAFE_LOCKDOWN_CHALLENGE;
