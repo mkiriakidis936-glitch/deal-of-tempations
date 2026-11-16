@@ -35,7 +35,7 @@ export default function ActMorning({ ctx, onFinish }) {
       log(`☀️ ${nameOf(action.playerId)} δοκίμασε λανθασμένο Coffee Code`);
       sfx.fail();
     }
-  }, [mg.playerAction?.at]);
+  }, [mg.playerAction?.at, found, code, setMg, log, nameOf]);
 
   function toggleClue(i) {
     const next = found.includes(i) ? found.filter((x) => x !== i) : [...found, i];
