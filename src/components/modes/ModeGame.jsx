@@ -11,7 +11,7 @@ import { modeMeta, ACT_META, MODE_THEMES } from '@/data/modes/modeRegistry';
 import { useModeCtx, useTick, timerStart } from '@/lib/modeKit';
 import { COLLECTIONS, applyScenarioCollections } from '@/lib/modesContentStore';
 
-// Tablet (game master) για τα 4 νέα modes. Κάθε mode = λίστα από acts.
+// Tablet (game master) για τα πέντε ψηφιακά modes. Κάθε mode = λίστα από acts.
 export default function ModeGame({ state, updateState, onEnd, onQR, playerProfiles = [], playerProfilesReady = true }) {
   const [, setContentReady] = useState(false);
   useEffect(() => {
