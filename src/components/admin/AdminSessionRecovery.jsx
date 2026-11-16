@@ -13,7 +13,7 @@ const dateLabel = (value) => {
 
 export default function AdminSessionRecovery() {
   const [sessions, setSessions] = useState([]);
-  const [snapshots, setSnapshots] = useState([]);
+  const [σημεία επαναφοράς, setSnapshots] = useState([]);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(null);
   const [message, setMessage] = useState(null);
@@ -38,15 +38,15 @@ export default function AdminSessionRecovery() {
 
   useEffect(() => { load(); }, [load]);
 
-  const snapshotsBySession = useMemo(() => {
+  const σημεία επαναφοράςBySession = useMemo(() => {
     const grouped = new Map();
-    snapshots.forEach((snapshot) => {
+    σημεία επαναφοράς.forEach((snapshot) => {
       const key = snapshot.sessionId;
       if (!grouped.has(key)) grouped.set(key, []);
       grouped.get(key).push(snapshot);
     });
     return grouped;
-  }, [snapshots]);
+  }, [σημεία επαναφοράς]);
 
   async function createSnapshot(session, label = 'Χειροκίνητο αντίγραφο') {
     const state = session.state || {};
@@ -119,16 +119,16 @@ export default function AdminSessionRecovery() {
     }
   }
 
-  if (loading) return <ComicPanel className="bg-card text-center py-8"><div className="font-heading text-xl comic-pulse">ΦΟΡΤΩΣΗ ΙΣΤΟΡΙΚΟΥ ΚΑΙ SNAPSHOTS…</div></ComicPanel>;
+  if (loading) return <ComicPanel className="bg-card text-center py-8"><div className="font-heading text-xl comic-pulse">ΦΟΡΤΩΣΗ ΙΣΤΟΡΙΚΟΥ ΚΑΙ ΣΗΜΕΙΑ ΕΠΑΝΑΦΟΡΑΣ…</div></ComicPanel>;
 
   return (
     <div className="space-y-4">
       <ComicPanel className="bg-secondary">
-        <div className="font-heading text-xl text-primary">🛟 SESSION RECOVERY</div>
+        <div className="font-heading text-xl text-primary">🛟 ΑΝΑΚΤΗΣΗ ΣΥΝΕΔΡΙΑΣ</div>
         <p className="mt-1 text-xs text-foreground/65">Αποθήκευση σημείων επαναφοράς και ασφαλής συνέχιση υπάρχουσας συνεδρίας. Η επαναφορά δημιουργεί πρώτα snapshot της τρέχουσας κατάστασης.</p>
         <div className="mt-3 flex flex-wrap gap-2">
           <span className="rounded-lg bg-background/60 px-3 py-2 text-xs font-bold">{sessions.length} συνεδρίες</span>
-          <span className="rounded-lg bg-background/60 px-3 py-2 text-xs font-bold">{snapshots.length} snapshots</span>
+          <span className="rounded-lg bg-background/60 px-3 py-2 text-xs font-bold">{σημεία επαναφοράς.length} σημεία επαναφοράς</span>
           <ComicButton size="sm" variant="dark" onClick={load}>↻ Ανανέωση</ComicButton>
         </div>
       </ComicPanel>
@@ -140,17 +140,17 @@ export default function AdminSessionRecovery() {
       ) : sessions.map((session) => {
         const state = session.state || {};
         const history = Array.isArray(state.history) ? state.history : [];
-        const sessionSnapshots = snapshotsBySession.get(session.id) || [];
+        const sessionSnapshots = σημεία επαναφοράςBySession.get(session.id) || [];
         const isExpanded = expanded === session.id;
         return (
           <ComicPanel key={session.id} className="bg-card space-y-3">
             <button type="button" onClick={() => setExpanded(isExpanded ? null : session.id)} className="w-full flex items-start justify-between gap-3 text-left">
               <span className="min-w-0">
                 <span className="block font-heading text-lg">{session.sessionCode || 'Χωρίς κωδικό'}</span>
-                <span className="block text-xs text-foreground/60">{MODE_NAMES[state.mode || session.mode] || state.mode || session.mode || 'Mode μη διαθέσιμο'} · Stage {state.stage ?? '—'} · {(state.players || []).length} παίκτες</span>
+                <span className="block text-xs text-foreground/60">{MODE_NAMES[state.mode || session.mode] || state.mode || session.mode || 'Mode μη διαθέσιμο'} · Στάδιο {state.stage ?? '—'} · {(state.players || []).length} παίκτες</span>
                 <span className="block text-[11px] text-foreground/45">Τελευταία ενημέρωση: {dateLabel(session.updated_date || session.created_date)}</span>
               </span>
-              <span className="shrink-0 text-xs font-bold">{sessionSnapshots.length} snapshots {isExpanded ? '▲' : '▼'}</span>
+              <span className="shrink-0 text-xs font-bold">{sessionSnapshots.length} σημεία επαναφοράς {isExpanded ? '▲' : '▼'}</span>
             </button>
             <div className="flex flex-wrap gap-2">
               <ComicButton size="sm" variant="green" disabled={busy === session.id} onClick={() => saveSnapshot(session)}>{busy === session.id ? '…' : '＋ Αποθήκευση snapshot'}</ComicButton>
@@ -159,7 +159,7 @@ export default function AdminSessionRecovery() {
             {isExpanded && (
               <div className="space-y-3 border-t border-border/40 pt-3">
                 <div>
-                  <div className="mb-2 text-xs font-bold">ΔΙΑΘΕΣΙΜΑ SNAPSHOTS</div>
+                  <div className="mb-2 text-xs font-bold">ΔΙΑΘΕΣΙΜΑ ΣΗΜΕΙΑ ΕΠΑΝΑΦΟΡΑΣ</div>
                   {sessionSnapshots.length === 0 ? <div className="text-xs text-foreground/50">Δεν υπάρχει snapshot για αυτή τη συνεδρία.</div> : (
                     <div className="space-y-2">
                       {sessionSnapshots.map((snapshot) => (
@@ -167,7 +167,7 @@ export default function AdminSessionRecovery() {
                           <div className="flex flex-wrap items-start justify-between gap-2">
                             <div className="min-w-0">
                               <div className="text-sm font-bold">{snapshot.label || 'Snapshot'}</div>
-                              <div className="text-[11px] text-foreground/55">{dateLabel(snapshot.created_date)} · Stage {snapshot.stage ?? '—'} · {snapshot.playerCount ?? 0} παίκτες</div>
+                              <div className="text-[11px] text-foreground/55">{dateLabel(snapshot.created_date)} · Στάδιο {snapshot.stage ?? '—'} · {snapshot.playerCount ?? 0} παίκτες</div>
                             </div>
                             <div className="flex gap-2">
                               <ComicButton size="sm" variant="yellow" disabled={busy === snapshot.id} onClick={() => restoreSnapshot(snapshot)}>↶ Επαναφορά</ComicButton>
@@ -181,12 +181,12 @@ export default function AdminSessionRecovery() {
                 </div>
                 <div>
                   <div className="mb-2 text-xs font-bold">ΠΡΟΣΦΑΤΟ ΙΣΤΟΡΙΚΟ ΠΑΙΧΝΙΔΙΟΥ</div>
-                  {history.length === 0 ? <div className="text-xs text-foreground/50">Δεν υπάρχουν καταχωρισμένα events.</div> : (
+                  {history.length === 0 ? <div className="text-xs text-foreground/50">Δεν υπάρχουν καταχωρισμένα συμβάντα.</div> : (
                     <div className="max-h-64 space-y-1 overflow-y-auto rounded-lg bg-background/50 p-2">
                       {[...history].reverse().map((event, index) => (
                         <div key={event.id || event.timestamp || index} className="flex gap-2 border-b border-border/30 py-1 text-xs last:border-0">
                           <span className="shrink-0 text-foreground/40">{dateLabel(event.timestamp)}</span>
-                          <span className="font-bold">{event.type || 'Event'}</span>
+                          <span className="font-bold">{event.type || 'Συμβάν'}</span>
                           <span className="min-w-0 break-words text-foreground/65">{event.player || event.description || ''}</span>
                         </div>
                       ))}
