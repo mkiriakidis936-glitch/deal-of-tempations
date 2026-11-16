@@ -10,8 +10,8 @@ export default function AdminGuide() {
         <div className="font-heading text-2xl mb-2">📖 ΟΔΗΓΟΣ ΠΑΙΧΝΙΔΙΟΥ</div>
         <div className="text-sm space-y-1">
           <p><strong>Ροή:</strong> Setup → Stage 0 (Συνεχόμενα Σφηνάκια + STOP Test + Κρυφοί Ρόλοι) → Stage 1 (Περιπολία / Ταμπλό) → Stage 2 (Ανάκριση) → Stage 3 (Φινάλε).</p>
-          <p><strong>Στόχος:</strong> Μάζεψε Loot, απέφυγε Wanted Stars, ή到达 στο Safehouse. Όποια φτάσει 5 Stars → Most Wanted → Ανάκριση/Φινάλε.</p>
-          <p><strong>Safe Word:</strong> Ορίζεται στο Setup. Αν πει κάποια το safe word → ΠΑΥΣΗ άμεσα.</p>
+          <p><strong>Στόχος:</strong> Μάζεψε Loot, απέφυγε Αστέρια καταζητούμενης, ή到达 στο Ασφαλές καταφύγιο. Όποια φτάσει 5 Stars → Πλέον καταζητούμενη → Ανάκριση/Φινάλε.</p>
+          <p><strong>Λέξη ασφαλείας:</strong> Ορίζεται στο Setup. Αν πει κάποια το safe word → ΠΑΥΣΗ άμεσα.</p>
         </div>
       </ComicPanel>
 
@@ -81,9 +81,9 @@ export default function AdminGuide() {
         <div className="font-heading text-lg mb-1">⚠️ ΣΥΜΒΟΥΛΕΣ</div>
         <ul className="text-xs space-y-1 list-disc pl-4">
           <li>Πάντα να επιβεβαιώνεις το safe word πριν ξεκινήσει το παιχνίδι.</li>
-          <li>Στο Marathon, οι ομάδες είναι Alpha (κόκκινο) και Beta (μπλε).</li>
-          <li>Bomb Event: η παίκτρια με τα περισσότερα Wanted Stars είναι ο στόχος.</li>
-          <li>Στο Finale, η Most Wanted πρέπει να απαντήσει όλες τις Αλήθειες ή παραμένει δεμένη.</li>
+          <li>Στο Marathon, οι ομάδες είναι Άλφα (κόκκινο) και Βήτα (μπλε).</li>
+          <li>Γεγονός βόμβας: η παίκτρια με τα περισσότερα Αστέρια καταζητούμενης είναι ο στόχος.</li>
+          <li>Στο Φινάλε, η Πλέον καταζητούμενη πρέπει να απαντήσει όλες τις Αλήθειες ή παραμένει δεμένη.</li>
           <li>Χρησιμοποίησε το ⚙️ ΕΡΓΑΛΕΙΑ για QR, Bomb, Flashbang, ή νέο παιχνίδι.</li>
         </ul>
       </ComicPanel>
