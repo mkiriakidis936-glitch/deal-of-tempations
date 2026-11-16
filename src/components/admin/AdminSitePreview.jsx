@@ -9,8 +9,8 @@ export default function AdminSitePreview({ content }) {
   return (
     <section className="rounded-xl border-2 border-primary/50 overflow-hidden bg-[#090909] text-white">
       <div className="bg-primary/15 border-b border-primary/30 px-4 py-3">
-        <div className="text-xs font-bold tracking-widest text-primary">LIVE PREVIEW · ΜΗ ΑΠΟΘΗΚΕΥΜΕΝΕΣ ΑΛΛΑΓΕΣ</div>
-        <div className="text-[10px] text-foreground/60 mt-1">Προεπισκόπηση των πραγματικών sections του public site.</div>
+        <div className="text-xs font-bold tracking-widest text-primary">ΖΩΝΤΑΝΗ ΠΡΟΕΠΙΣΚΟΠΗΣΗ · ΜΗ ΑΠΟΘΗΚΕΥΜΕΝΕΣ ΑΛΛΑΓΕΣ</div>
+        <div className="text-[10px] text-foreground/60 mt-1">Προεπισκόπηση των πραγματικών sections του δημόσιας ιστοσελίδας.</div>
       </div>
       <div className="relative px-5 py-14 text-center bg-gradient-to-b from-[#332719] via-[#15110d] to-[#090909]">
         <div className="text-[10px] tracking-[0.35em] text-[#c7a76b] uppercase">{c.overline}</div>
