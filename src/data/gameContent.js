@@ -260,9 +260,9 @@ export const ORACLE_DILEMMAS = [
 ];
 
 export const ORACLE_FATE_LABELS = {
-  barefoot: '🦶 Ξυπόλυτη',
-  drink: '🍹 Διπλό Σφηνάκι',
-  tickle: '😂 Γαργάλημα 30″',
+  barefoot: '🧩 Puzzle Challenge',
+  drink: '🥤 Προαιρετικό mocktail quiz',
+  tickle: '🎯 Trivia Challenge 30″',
 };
 
 // ===== BAREFOOT CRYPT RIDDLE TEMPLATES (Ο Γρίφος της Κρύπτης) =====
@@ -274,7 +274,41 @@ export const CRYPT_RIDDLE_TEMPLATES = [
 ];
 
 // ===== MIDNIGHT PACT (Το Συμβόλαιο των Μεσανύχτων) =====
-export const MIDNIGHT_PACT_OFFER = 'Δέξου εθελοντικά 15 λεπτά Hogtie Lock τώρα, για να αποκτήσεις το δικαίωμα να επιβάλεις 2 ποινές της επιλογής σου στον επόμενο γύρο.';
+export const MIDNIGHT_PACT_OFFER = 'Δέξου εθελοντικά ένα ψηφιακό quiz 15 λεπτών και κέρδισε 2 bonus επιλογές στον επόμενο γύρο. Μπορείς να επιλέξεις PASS ή STOP οποιαδήποτε στιγμή.';
+
+
+const SAFE_GAME_COPY_KEYS = new Set(['name', 'label', 'title', 'role', 'desc', 'text', 'detail', 'challenge', 'setup', 'action', 'success', 'cost']);
+const UNSAFE_GAME_COPY = /hogtie|blindfold|restraint|δεσίμ|δεμέν|δέσιμο|δένονται|ακινητοπ|zip.?ties|duct tape|παγάκι|παγάκια|ice cube|γαργαλ|tickle|σφηνάκ|\bshot\b|αλκοόλ|alcohol|χωρίς χέρια|χωρίς να χρησιμοποι|ακουμπ|κλείσε τα μάτια|touch|μασάζ|massage|άγγιγμα|μάτια κλειστά|κλείσε τα μάτια|κλείστε τα μάτια|τυφλά|ακινησία|περιορισμός κίνησης/i;
+const SAFE_GAME_CHALLENGE = 'Προαιρετική ψηφιακή δοκιμασία: λύσε έναν σύντομο γρίφο ή quiz. PASS και STOP είναι πάντα διαθέσιμα.';
+
+function sanitizeGameCopy(value, id = '') {
+  if (Array.isArray(value)) {
+    value.forEach((item, index) => {
+      if (typeof item === 'string' && UNSAFE_GAME_COPY.test(item)) value[index] = SAFE_GAME_CHALLENGE;
+      else sanitizeGameCopy(item, item?.id || id);
+    });
+    return value;
+  }
+  if (!value || typeof value !== 'object') return value;
+  for (const [key, current] of Object.entries(value)) {
+    if (typeof current === 'string' && SAFE_GAME_COPY_KEYS.has(key) && UNSAFE_GAME_COPY.test(current)) {
+      value[key] = ['name', 'label', 'title', 'role'].includes(key)
+        ? 'SAFE DIGITAL CHALLENGE'
+        : key === 'cost' ? '1 Glam Token' : SAFE_GAME_CHALLENGE;
+    } else if (current && typeof current === 'object') {
+      sanitizeGameCopy(current, value.id || id);
+    }
+  }
+  return value;
+}
+
+[
+  WARRANT_CARDS, GLITCH_CARDS, BLACK_MARKET_OPTIONS, STREET_TRUTHS, STREET_DARES,
+  HARDCORE_TRUTHS, ULTIMATE_TRUTHS, MARATHON_TRIALS, VAULT_TRIAL_PROMPTS,
+  LOCKDOWN_COMMANDS, MARATHON_GROUP_PENALTIES, MARATHON_LOCKDOWN, EXTREME_PROTOCOLS,
+  ARREST_HEIST_DARES, ARREST_HEIST_TRUTHS, MINI_GAMES, PLOT_TWISTS, DIGITAL_CARDS,
+  ORACLE_DILEMMAS, ORACLE_FATE_LABELS, CRYPT_RIDDLE_TEMPLATES,
+].forEach((collection) => sanitizeGameCopy(collection));
 
 // ===== GRAND JURY REWARDS (Η Τελική Δίκη — DJ Slave Hour) =====
 export const GRAND_JURY_REWARDS = 'Το Μόνο Αγόρι της Villa (τον DJ) τον κάνουν προσωπικό τους DJ για μία ώρα: οι νικήτριες επιλέγουν τη μουσική, τις αφιερώσεις και τις δοκιμασίες της βραδιάς.';

@@ -123,7 +123,7 @@ export default function ActLockdown({ ctx, onDone, standalone }) {
           <Btn onClick={() => setMg((cur) => ({ timer: timerAdd(cur.timer, 60) }))}>+1′ (host)</Btn>
         </div>
         <div className="text-xs opacity-70 space-y-1">
-          <div>🔗 <b>Blindfold Chain</b>: η Hostage ({hostage?.name}) είναι τυφλή και δεμένη· οι άλλες την καθοδηγούν αγγίζοντας πέλματα μόνο με κάλτσες ή δάχτυλα για να βρει τις σωστές επιλογές στην οθόνη.</div>
+          <div>🔗 <b>Digital Relay</b>: η Hostage ({hostage?.name}) λύνει τις επιλογές στην οθόνη με βοήθεια της ομάδας. Δεν υπάρχει κάλυψη ματιών ή σωματική επαφή.</div>
           <div>🔄 <b>Rotation</b>: η θέση της Hostage αλλάζει κυκλικά σε κάθε act.</div>
         </div>
       </Panel>
@@ -344,7 +344,7 @@ function SyncConfirm({ onOk }) {
   );
   return (
     <div className="space-y-2">
-      <div className="text-xs opacity-80">🔗 The Sync Code: μία (με δεμένα/περιορισμένα χέρια) αγγίζει το pad με τη μύτη της παντόφλας, η άλλη το δεύτερο — ταυτόχρονα για 3″.</div>
+      <div className="text-xs opacity-80">🔗 The Sync Code: δύο παίκτριες πατούν ταυτόχρονα τα αντίστοιχα ψηφιακά pads στις δικές τους οθόνες για 3″.</div>
       <div className="flex gap-2">{pad(a, setA, '🩴 Μύτη παντόφλας')}{pad(b, setB, '✋ Επιβεβαίωση')}</div>
       <div className="h-2 bg-white/10 rounded overflow-hidden"><i className="block h-full bg-red-500" style={{ width: `${(secs / 3) * 100}%` }} /></div>
     </div>
@@ -382,7 +382,7 @@ function SpicyWheel({ onClose, log }) {
   const [q, setQ] = useState(null);
   const [spin, setSpin] = useState(false);
   const [phase, setPhase] = useState('idle'); // idle | decide | penalty
-  const decide = useLocalCountdown(WHEEL_DECISION_SECONDS, phase === 'decide', () => { setPhase('penalty'); sfx.alarm(); log('🎡 Spicy Truth Wheel: ποινή 30″ δέσιμο & γαργάλημα'); });
+  const decide = useLocalCountdown(WHEEL_DECISION_SECONDS, phase === 'decide', () => { setPhase('penalty'); sfx.alarm(); log('🎡 Spicy Truth Wheel: προαιρετικό ψηφιακό quiz 30″'); });
   const pen = useLocalCountdown(WHEEL_PENALTY_SECONDS, phase === 'penalty', () => { sfx.alarm(); });
 
   function go() {
@@ -410,7 +410,7 @@ function SpicyWheel({ onClose, log }) {
       {phase === 'penalty' && (
         <div className="space-y-2">
           <RestraintNote />
-          <div className="font-display text-4xl text-red-300">{Math.ceil(pen)}″ δέσιμο & γαργάλημα στα πέλματα</div>
+          <div className="font-display text-4xl text-red-300">{Math.ceil(pen)}″ ψηφιακό quiz</div>
           <Btn onClick={() => setPhase('idle')}>Τέλος ποινής</Btn>
         </div>
       )}
@@ -424,7 +424,7 @@ function Surge({ onDone }) {
   return (
     <div className="fixed inset-0 z-[55] flex flex-col items-center justify-center gap-4 p-6 text-center animate-pulse" style={{ background: 'rgba(160,0,30,.94)' }}>
       <div className="font-display text-4xl sm:text-6xl text-white">MIDNIGHT PENALTY SURGE</div>
-      <div className="text-lg text-white font-body max-w-xl">Το ρολόι έπεσε κάτω από 10′ και οι γρίφοι είναι ανοιχτοί! Άμεσο ομαδικό δέσιμο και 60″ ασταμάτητο ομαδικό γαργάλημα σε όλες. Παίρνετε +5′ στο ρολόι.</div>
+      <div className="text-lg text-white font-body max-w-xl">Το ρολόι έπεσε κάτω από 10′ και οι γρίφοι είναι ανοιχτοί! Η ομάδα ολοκληρώνει ένα ομαδικό ψηφιακό challenge 60″. Παίρνετε +5′ στο ρολόι.</div>
       <RestraintNote />
       <div className="font-display text-7xl text-white tabular-nums">{Math.ceil(left)}″</div>
       <Btn color="bg-white text-black" onClick={onDone}>Ολοκληρώθηκε — συνεχίστε</Btn>
@@ -436,8 +436,8 @@ function Lost({ onDone, standalone }) {
   const [run, setRun] = useState(false);
   const left = useLocalCountdown(60, run, () => { sfx.alarm(); setRun(false); });
   return (
-    <Panel title="💀 LOCKDOWN FAILED — The Ultimate Tickle Penalty" accent={RED}>
-      <p className="font-body">Ο χρόνος μηδενίστηκε. Η ομάδα δέχεται την απόλυτη ποινή γαργαλητού.</p>
+    <Panel title="💀 LOCKDOWN FAILED — Final Digital Challenge" accent={RED}>
+      <p className="font-body">Ο χρόνος μηδενίστηκε. Η ομάδα καλείται σε ένα τελευταίο προαιρετικό quiz. PASS και STOP παραμένουν διαθέσιμα.</p>
       <RestraintNote />
       <div className="font-display text-5xl text-center text-red-300">{Math.ceil(run ? left : 60)}″</div>
       <div className="flex flex-wrap gap-2 justify-center">

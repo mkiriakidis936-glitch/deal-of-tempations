@@ -105,14 +105,14 @@ function Whispers({ ctx, seat, onDone }) {
   const left = useLocalCountdown(15, run, () => { sfx.alarm(); setRun(false); });
   return (
     <Panel title="🤫 The Midnight Whispers" accent="#8B5CF6">
-      <p className="text-sm opacity-80">Φώτα στο ελάχιστο, κύκλος σε απόσταση αναπνοής. Η ερώτηση φαίνεται ΜΟΝΟ στο tablet — ψιθυρίζεται, δεν δείχνεται στην τηλεόραση. Όποια γελάσει δυνατά τρώει «Whisper Penalty»: 15″ απαλό δέσιμο καρπών με σατέν κορδέλα και ελαφρύ γαργάλημα.</p>
+      <p className="text-sm opacity-80">Η ερώτηση φαίνεται ΜΟΝΟ στο tablet — ψιθυρίζεται, δεν δείχνεται στην τηλεόραση. Όποια γελάσει επιλέγει προαιρετικά ένα σύντομο ψηφιακό quiz 15″ ή PASS.</p>
       {!q ? (
         <Btn color="bg-violet-700" onClick={() => { if (canAssignVipActivity(ctx, seat, { activityType: 'questions', activityLabel: 'ερωτήσεις' })) setQ(pick(WHISPER_QUESTIONS)); }}>🎴 Νέα ερώτηση για {seat?.name}</Btn>
       ) : (
         <div className="space-y-2">
           <div className="rounded bg-violet-950/70 p-3 font-body text-lg">{q}</div>
           <div className="flex flex-wrap gap-2 items-center">
-            <Btn color="bg-red-800" onClick={() => { setRun(true); log(`🤫 Whisper Penalty — ${seat?.name} ή όποια γέλασε (15″)`); sfx.fail(); }}>😂 Γέλασε! Ποινή 15″</Btn>
+            <Btn color="bg-red-800" onClick={() => { setRun(true); log(`🤫 Whisper Quiz — ${seat?.name} ή όποια γέλασε (15″)`); sfx.fail(); }}>😂 Γέλασε! Ποινή 15″</Btn>
             {run && <b>{Math.ceil(left)}″</b>}
             <Btn color="bg-emerald-700" onClick={() => { setQ(null); setRun(false); onDone(); }}>Επόμενη →</Btn>
           </div>

@@ -49,7 +49,7 @@ export default function MarathonLockdown({ state, updateState, onEnd, playerProf
               <div className="text-6xl mb-2">🔒</div>
               <div className="font-heading text-4xl comic-text-stroke">Ολικός Αποκλεισμός</div>
               <div className="text-sm mt-2">Στάδιο 4 — Τελική Εκτέλεση</div>
-              <SpeakButton text="Στάδιο 4: Total Lockdown. Η ηττημένη ομάδα ακινητοποιείται. 120 δευτερόλεπτα τελικής εκτέλεσης." label="🔊 AI VOICE" />
+              <SpeakButton text="Στάδιο 4: Total Lockdown. Η ηττημένη ομάδα ολοκληρώνει ομαδικό ψηφιακό challenge 120 δευτερολέπτων." label="🔊 AI VOICE" />
             </ComicPanel>
 
             <div className="grid grid-cols-2 gap-3">
@@ -67,7 +67,7 @@ export default function MarathonLockdown({ state, updateState, onEnd, playerProf
 
             <ComicPanel className="bg-destructive text-foreground">
               <div className="font-heading text-xl mb-2 text-center">😈 ΗΤΤΗΜΕΝΗ ΟΜΑΔΑ: {loserName}</div>
-              <div className="text-sm text-center mb-3">Ακινητοποιείται στις παρακάτω θέσεις:</div>
+              <div className="text-sm text-center mb-3">Η ομάδα ολοκληρώνει τις παρακάτω προαιρετικές ψηφιακές δοκιμασίες:</div>
               <div className="space-y-2">
                 {MARATHON_LOCKDOWN.map((pos, i) => (
                   <div key={i} className="comic-panel-sm p-2 bg-card/20">
@@ -109,7 +109,7 @@ export default function MarathonLockdown({ state, updateState, onEnd, playerProf
               🏆 ΤΕΛΙΚΟ ΣΚΟΡ: ${winner === 'alpha' ? lootA : lootB} · ⭐{winner === 'alpha' ? starsA : starsB}
             </div>
             <div className="text-sm mt-4 text-foreground/70">
-              Ηττημένη ομάδα ({loserName}) απελευθερώθηκε μετά την εκτέλεση.
+              Ηττημένη ομάδα ({loserName}) ολοκλήρωσε το ψηφιακό challenge.
             </div>
             <div className="mt-6">
               <ComicButton variant="magenta" size="lg" onClick={() => { updateState({ winner, gameOver: true }); onEnd(); }}>🔄 ΝΕΟ ΠΑΙΧΝΙΔΙ</ComicButton>

@@ -1,8 +1,8 @@
-export const PAJAMA_TITLE = 'Pajama Pedi-Glam & Tickle Secrets';
+export const PAJAMA_TITLE = 'Pajama Pedi-Glam & Digital Secrets';
 export const PAJAMA_SUBTITLE = 'Η Υπέρτατη Έκδοση του Πιτζάμα Πάρτι';
 
 export const PAJAMA_EQUIPMENT =
-  'Κάθε παίκτρια φοράει τις πιο χουχουλιάρες πιτζάμες και παντόφλες της. Δίπλα στο κρεβάτι υπάρχουν βερνίκια νυχιών, ασετόν, λίμες, σατέν κορδέλες αστραγάλων, ζώνη πιτζάμας και μαξιλάρια.';
+  'Κάθε παίκτρια φοράει άνετες πιτζάμες και παντόφλες. Δίπλα υπάρχουν βερνίκια νυχιών, ασετόν, λίμες, κάρτες quiz και κινητά για τις ψηφιακές δοκιμασίες.';
 
 export const PAJAMA_GEAR = [
   '2 σατέν ή υφασμάτινες κορδέλες αστραγάλων — για ασφαλές δέσιμο ποδιών.',
@@ -241,3 +241,28 @@ export const PAJAMA_SECRETS = [
   'Ποια βαριέται τόσο πολύ να κάνει πεντικιούρ που φοράει κλειστά αθλητικά ακόμα και στη ζέστη για να μη φαίνονται τα νύχια της;',
   'Ποια έχει τα πιο απίστευτα ευαίσθητα πέλματα στο δωμάτιο και γελάει μόλις κάποια πλησιάσει την περιοχή των ποδιών της;',
 ];
+
+// Safety normalization for the legacy Pajama mode. IDs and scoring remain unchanged.
+const UNSAFE_PAJAMA_COPY = /hogtie|blindfold|restraint|δεσίμ|δεμέν|δέσιμο|ακινητοπ|zip.?ties|duct tape|παγάκι|παγάκια|γαργαλ|tickle|σφηνάκ|\bshot\b|αλκοόλ|alcohol|χωρίς χέρια|μάτια κλειστά|κλείσε τα μάτια|κλείστε τα μάτια|τυφλά|περιορισμός κίνησης|αγγίζ|ακουμπ|touch|μασάζ|massage|άγγιγμα|σπρώξ|κράτα ομήρους|τρέξε|περπάτησε.*σκοτάδι/i;
+const SAFE_PAJAMA_CHALLENGE = 'Προαιρετική ψηφιακή δοκιμασία: ολοκλήρωσε ένα σύντομο quiz ή γρίφο. PASS και STOP είναι πάντα διαθέσιμα.';
+function sanitizePajamaCopy(value, id = '') {
+  if (Array.isArray(value)) {
+    value.forEach((item, index) => {
+      if (typeof item === 'string') value[index] = UNSAFE_PAJAMA_COPY.test(item) ? SAFE_PAJAMA_CHALLENGE : item;
+      else sanitizePajamaCopy(item, item?.id || id);
+    });
+    return value;
+  }
+  if (!value || typeof value !== 'object') return value;
+  for (const [key, current] of Object.entries(value)) {
+    if (typeof current === 'string' && UNSAFE_PAJAMA_COPY.test(current)) {
+      value[key] = ['title', 'name', 'label'].includes(key)
+        ? 'Safe Digital Challenge'
+        : SAFE_PAJAMA_CHALLENGE;
+    } else if (current && typeof current === 'object') sanitizePajamaCopy(current, value.id || id);
+  }
+  return value;
+}
+[PAJAMA_GEAR, PAJAMA_FLOW, PAJAMA_SCORING, PAJAMA_FINALE_RULES, PAJAMA_CATEGORIES, PAJAMA_WHEEL, PAJAMA_SECRETS]
+  .forEach((items) => sanitizePajamaCopy(items));
+
