@@ -1,16 +1,5 @@
-// Τα πέντε εγκεκριμένα ψηφιακά game modes.
+// Τα τέσσερα εγκεκριμένα ψηφιακά game modes.
 export const NEW_MODES = [
-  {
-    id: 'pedi_glam',
-    name: 'PAJAMA PEDI-GLAM',
-    icon: '💅',
-    desc: '90 λεπτά Sensory & Pamper Edition με ASMR, περιποίηση, μάσκες, πινέλα, κρέμες, Glam Tokens και εξομολογήσεις.',
-    min: 2,
-    max: 8,
-    acts: ['pedi_glam'],
-    actDurations: { pedi_glam: 90 },
-    minutes: 90,
-  },
   {
     id: 'pedi_extended',
     name: 'PEDI-GLAM EXTENDED',
@@ -51,8 +40,8 @@ export const NEW_MODES = [
     desc: 'Τετράωρη εμπειρία τεσσάρων Acts: Pedi-Glam, Midnight ASMR, 60 λεπτά Pajama Lockdown και Morning Escape.',
     min: 2,
     max: 8,
-    acts: ['pedi_glam', 'midnight', 'lockdown', 'morning'],
-    actDurations: { pedi_glam: 90, midnight: 45, lockdown: 60, morning: 45 },
+    acts: ['board', 'midnight', 'lockdown', 'morning'],
+    actDurations: { board: 90, midnight: 45, lockdown: 60, morning: 45 },
     minutes: 240,
   },
 ];
@@ -61,7 +50,6 @@ export const isNewMode = (id) => NEW_MODES.some((m) => m.id === id);
 export const modeMeta = (id) => NEW_MODES.find((m) => m.id === id);
 
 export const MODE_THEMES = {
-  pedi_glam: { bg: '#0A0A0A', accent: '#FF69B4', accent2: '#FFD700' },
   pedi_extended: { bg: '#0A0A0A', accent: '#FF2A85', accent2: '#FFD700' },
   lockdown: { bg: '#0A0A0A', accent: '#FF003C', accent2: '#FF6B8A' },
   beach_bar: { bg: '#0D0D11', accent: '#00F2FE', accent2: '#FF3366' },
@@ -69,7 +57,6 @@ export const MODE_THEMES = {
 };
 
 export const ACT_META = {
-  pedi_glam: { title: 'Act 1 · Pajama Pedi-Glam', minutes: 90 },
   board: { title: 'Act 1 · The Glam & Chaos Board', minutes: 60 },
   midnight: { title: 'Act 2 · Midnight ASMR & Tickle Vault', minutes: 45 },
   lockdown: { title: 'Act 3 · Pajama Lockdown (18+)', minutes: 60 },
