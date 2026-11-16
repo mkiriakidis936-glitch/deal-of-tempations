@@ -248,7 +248,7 @@ export default function Admin() {
       case 'inbox':
         return <AdminInbox sessions={sessions} />;
       case 'events':
-        return <AdminEventCenter sessions={sessions} onDeleteSession={handleDeleteSession} onRefreshSessions={loadSessions} />;
+        return <AdminEventCenter sessions={sessions} selectedSession={activeSession} onDeleteSession={handleDeleteSession} onRefreshSessions={loadSessions} />;
       case 'modes':
         return <AdminContentHub />;
       case 'editor':

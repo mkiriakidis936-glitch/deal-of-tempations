@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { GAME_MODES } from '@/data/gameConfig';
+import { request } from '@/api/base44Client';
 
 const QUICK_LINKS = [
   { id: 'modes', icon: '🎮', title: 'Λειτουργίες παιχνιδιού', detail: 'Διαχείριση λειτουργιών' },
@@ -16,16 +17,22 @@ function MetricCard({ icon, label, value, note, accent }) {
 }
 
 export default function AdminOverview({ sessions = [], loading = false, onNavigate = () => {} }) {
-  const [extra, setExtra] = useState({ achievements: null, connection: 'loading' });
+  const [extra, setExtra] = useState({ achievements: null, connection: 'loading', newRequests: null, vipInvitations: null, backup: null });
   useEffect(() => {
     let mounted = true;
     Promise.allSettled([
       base44.entities.Achievement.filter({}, { limit: 500 }),
+      Promise.all([base44.entities.PublicFormSubmission.filter({ status: 'new' }, { limit: 500 }), base44.entities.PlayerIntake.filter({}, { limit: 500 }), base44.entities.PajamaIntake.filter({}, { limit: 500 }), base44.entities.BacheloretteIntake.filter({}, { limit: 500 })]),
+      base44.entities.VIPInvitation.filter({ active: true }, { limit: 100 }),
+      request('GET', '/api/backup/list'),
     ]).then(([achievements]) => {
       if (!mounted) return;
       setExtra({
         achievements: achievements.status === 'fulfilled' ? (achievements.value.items || []).length : null,
         connection: achievements.status === 'fulfilled' ? 'connected' : 'error',
+        newRequests: requests.status === 'fulfilled' ? requests.value.reduce((sum, result) => sum + (result.items || []).filter((item) => !item.status || ['new','Νέο'].includes(item.status)).length, 0) : null,
+        vipInvitations: vip.status === 'fulfilled' ? (vip.value.items || []).length : null,
+        backup: backup.status === 'fulfilled' ? (backup.value.items || []).sort((a, b) => Number(b.modified) - Number(a.modified))[0] || null : null,
       });
     });
     return () => { mounted = false; };
@@ -58,6 +65,15 @@ export default function AdminOverview({ sessions = [], loading = false, onNaviga
       </div>
     </section>
 
+    <section className="rounded-2xl border border-border/70 bg-card p-4 sm:p-5 space-y-3">
+      <div><div className="font-heading text-xl">Τι να κάνω τώρα</div><p className="text-xs text-foreground/55">Άμεσες εκκρεμότητες από τα αποθηκευμένα δεδομένα.</p></div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-2">
+        <div className="rounded-xl bg-secondary/70 p-3"><div className="text-[10px] text-foreground/55">ΝΕΕΣ ΑΙΤΗΣΕΙΣ</div><div className="mt-1 text-2xl font-bold">{extra.newRequests ?? '—'}</div><button onClick={() => onNavigate('inbox')} className="mt-1 text-xs font-bold text-primary">Άνοιγμα εισερχομένων →</button></div>
+        <div className="rounded-xl bg-secondary/70 p-3"><div className="text-[10px] text-foreground/55">ΕΠΟΜΕΝΟ EVENT</div><div className="mt-1 text-sm font-bold">{recent[0]?.event?.title || recent[0]?.mode || 'Δεν υπάρχει Event'}</div><div className="mt-1 text-[10px] text-foreground/55">{recent[0]?.sessionCode || 'Ξεκίνα από Game & Mode'}</div><button onClick={() => onNavigate('events')} className="mt-1 text-xs font-bold text-primary">Άνοιγμα Events →</button></div>
+        <div className="rounded-xl bg-secondary/70 p-3"><div className="text-[10px] text-foreground/55">ΕΝΕΡΓΕΣ VIP ΠΡΟΣΚΛΗΣΕΙΣ</div><div className="mt-1 text-2xl font-bold">{extra.vipInvitations ?? '—'}</div><button onClick={() => onNavigate('invitations')} className="mt-1 text-xs font-bold text-primary">Άνοιγμα προσκλήσεων →</button></div>
+        <div className="rounded-xl bg-secondary/70 p-3"><div className="text-[10px] text-foreground/55">ΤΕΛΕΥΤΑΙΟ BACKUP</div><div className="mt-1 text-sm font-bold">{extra.backup ? new Date(extra.backup.modified).toLocaleString('el-GR') : 'Μη διαθέσιμο'}</div><button onClick={() => onNavigate('settings')} className="mt-1 text-xs font-bold text-primary">Άνοιγμα αντιγράφων →</button></div>
+      </div>
+    </section>
     <section className="grid grid-cols-2 xl:grid-cols-4 gap-3">
       <MetricCard icon="🎮" label="Λειτουργίες παιχνιδιού" value={GAME_MODES.length} note="Διαθέσιμες λειτουργίες" accent="bg-amber-400" />
       <MetricCard icon="👥" label="Παίκτριες" value={playerCount} note="Μοναδικοί παίκτες στις αποθηκευμένες παρτίδες" accent="bg-sky-400" />

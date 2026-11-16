@@ -150,6 +150,12 @@ export function pushRoutes() {
     res.json({ devices, history });
   });
 
+  r.delete('/notifications/:id', requireAdmin, async (req, res) => {
+    const result = await query('DELETE FROM notifications WHERE id = $1 RETURNING id', [req.params.id]);
+    if (!result.rowCount) return res.status(404).json({ error: 'Η ειδοποίηση δεν βρέθηκε.' });
+    res.json({ success: true });
+  });
+
   r.post('/test', requireAdmin, async (_req, res) => {
     await notifyAdmins({ title: '🔔 Δοκιμή', body: 'Οι ειδοποιήσεις δουλεύουν!', url: '/admin?tab=notifications' });
     res.json({ success: true });

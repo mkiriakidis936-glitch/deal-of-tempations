@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
+import { request } from '@/api/base44Client';
 import ComicPanel from '@/components/comic/ComicPanel';
 import ComicButton from '@/components/comic/ComicButton';
 import {
@@ -27,6 +28,14 @@ export default function AdminNotifications() {
   }, []);
 
   useEffect(() => { load(); return onInstallChange(() => setInstallable(canInstall())); }, [load]);
+
+  async function deleteHistoryItem(item) {
+    if (!window.confirm('Να διαγραφεί αυτή η ειδοποίηση από το ιστορικό;')) return;
+    try {
+      await request('DELETE', `/api/push/notifications/${item.id}`);
+      setStatus((current) => ({ ...current, history: current.history.filter((entry) => entry.id !== item.id) }));
+    } catch (error) { setMsg({ ok: false, text: error.message || 'Η διαγραφή απέτυχε.' }); }
+  }
 
   const run = async (fn, okText) => {
     setBusy(true); setMsg(null);
@@ -99,11 +108,7 @@ export default function AdminNotifications() {
         <div className="font-heading text-lg">🕘 ΤΕΛΕΥΤΑΙΕΣ ΕΙΔΟΠΟΙΗΣΕΙΣ</div>
         {!status.history.length && <div className="text-xs text-foreground/60">Δεν έχει έρθει καμία ακόμα.</div>}
         {status.history.map((n) => (
-          <a key={n.id} href={n.url || '/admin'} className="block border-2 border-border/40 rounded-lg p-2 bg-secondary/40 hover:bg-secondary">
-            <div className="text-sm font-bold">{n.title}</div>
-            <div className="text-xs text-foreground/70">{n.body}</div>
-            <div className="text-[10px] text-foreground/50">{when(n.created_date)}</div>
-          </a>
+          <div key={n.id} className="flex items-start gap-2 border-2 border-border/40 rounded-lg p-2 bg-secondary/40"><a href={n.url || '/admin'} className="min-w-0 flex-1 hover:underline"><div className="text-sm font-bold">{n.title}</div><div className="text-xs text-foreground/70">{n.body}</div><div className="text-[10px] text-foreground/50">{when(n.created_date)}</div></a><ComicButton size="sm" variant="red" onClick={() => deleteHistoryItem(n)}>ΔΙΑΓΡΑΦΗ</ComicButton></div>
         ))}
       </ComicPanel>
     </div>

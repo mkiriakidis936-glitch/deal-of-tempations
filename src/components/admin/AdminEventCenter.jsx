@@ -5,12 +5,13 @@ import ComicButton from '@/components/comic/ComicButton';
 
 const csvCell = (value) => '"' + String(value ?? '').replace(/"/g, '""') + '"';
 
-export default function AdminEventCenter({ sessions: initialSessions = [], onDeleteSession, onRefreshSessions }) {
+export default function AdminEventCenter({ sessions: initialSessions = [], selectedSession = null, onDeleteSession, onRefreshSessions }) {
   const [sessions, setSessions] = useState(initialSessions);
   const [selectedId, setSelectedId] = useState(initialSessions[0]?.id || '');
   const [rsvps, setRsvps] = useState([]);
   const [vipInvitations, setVipInvitations] = useState([]);
   const [vipSubmissions, setVipSubmissions] = useState([]);
+  const [publicSubmissions, setPublicSubmissions] = useState([]);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
   const [guestName, setGuestName] = useState('');
@@ -18,7 +19,7 @@ export default function AdminEventCenter({ sessions: initialSessions = [], onDel
   const [draft, setDraft] = useState({ title: '', scheduledAt: '', venue: '', capacity: '' });
   const [busy, setBusy] = useState(false);
 
-  useEffect(() => { setSessions(initialSessions); if (!selectedId && initialSessions[0]) setSelectedId(initialSessions[0].id); }, [initialSessions]);
+  useEffect(() => { setSessions(initialSessions); if (selectedSession?.id) setSelectedId(selectedSession.id); else if (!selectedId && initialSessions[0]) setSelectedId(initialSessions[0].id); }, [initialSessions, selectedSession?.id]);
   const selected = sessions.find((s) => s.id === selectedId) || null;
   const event = selected?.event || {};
   const guests = Array.isArray(event.guests) ? event.guests : [];
@@ -28,12 +29,13 @@ export default function AdminEventCenter({ sessions: initialSessions = [], onDel
     if (!selected) { setRsvps([]); setVipInvitations([]); setVipSubmissions([]); return; }
     setLoading(true);
     try {
-      const [r, v, vs] = await Promise.all([
+      const [r, v, vs, ps] = await Promise.all([
         base44.entities.InvitationRSVP.filter({ sessionCode: selected.sessionCode }, { sort: '-created_date', limit: 500 }),
         base44.entities.VIPInvitation.filter({ sessionCode: selected.sessionCode }, { sort: '-created_date', limit: 200 }),
         base44.entities.VIPInvitationSubmission.filter({ sessionCode: selected.sessionCode }, { sort: '-created_date', limit: 500 }),
+        base44.entities.PublicFormSubmission.filter({ sessionCode: selected.sessionCode }, { sort: '-created_date', limit: 500 }),
       ]);
-      setRsvps(r.items || []); setVipInvitations(v.items || []); setVipSubmissions(vs.items || []);
+      setRsvps(r.items || []); setVipInvitations(v.items || []); setVipSubmissions(vs.items || []); setPublicSubmissions(ps.items || []);
       setMessage('');
     } catch (error) { setMessage(error.message || 'Δεν φορτώθηκαν οι συμμετοχές του Event.'); }
     finally { setLoading(false); }
@@ -113,6 +115,9 @@ export default function AdminEventCenter({ sessions: initialSessions = [], onDel
         await base44.entities.VIPInvitation.delete(invitation.id);
       }
       for (const row of rsvps) await base44.entities.InvitationRSVP.delete(row.id);
+      for (const row of publicSubmissions) await base44.entities.PublicFormSubmission.delete(row.id);
+      const linkedIntakes = await base44.entities.PlayerIntake.filter({ sessionCode: selected.sessionCode }, { limit: 500 });
+      for (const intake of linkedIntakes.items || []) await base44.entities.PlayerIntake.delete(intake.id);
       const snapshots = await base44.entities.GameSessionSnapshot.filter({ sessionId: selected.id }, { limit: 500 });
       for (const snapshot of snapshots.items || []) if (snapshot.label !== 'Αυτόματο αντίγραφο πριν από διαγραφή Event') await base44.entities.GameSessionSnapshot.delete(snapshot.id);
       await onDeleteSession?.(selected.id);

@@ -1047,6 +1047,11 @@ export function entityRoutes() {
       if (!/^[A-Za-z0-9-]{16,100}$/.test(submissionId) || typeof body.name !== 'string' || !body.name.trim()) {
         return res.status(400).json({ error: 'Invalid invitation submission.' });
       }
+      const sessionCode = String(body.sessionCode || '').trim().toUpperCase();
+      if (sessionCode) {
+        const { rows: sessions } = await query("SELECT id FROM records WHERE entity = 'GameSession' AND data->>'sessionCode' = $1 LIMIT 1", [sessionCode]);
+        if (!sessions[0]) return res.status(400).json({ error: 'Το Event της πρόσκλησης δεν βρέθηκε.' });
+      }
       const client = await pool.connect();
       let playerRecord;
       let rsvpRecord;
@@ -1069,7 +1074,7 @@ export function entityRoutes() {
         }
         inserted = await client.query(
           "INSERT INTO records (id, entity, data, created_by) VALUES ($1, 'InvitationRSVP', $2, NULL) ON CONFLICT ((data->>'submissionId')) WHERE entity = 'InvitationRSVP' AND data ? 'submissionId' DO NOTHING RETURNING *",
-          [crypto.randomUUID(), JSON.stringify({ name: body.name.trim(), confirmed: true, submissionId, ...(body.sessionCode ? { sessionCode: String(body.sessionCode).trim().toUpperCase() } : {}) })],
+          [crypto.randomUUID(), JSON.stringify({ name: body.name.trim(), confirmed: true, submissionId, ...(sessionCode ? { sessionCode } : {}) })],
         );
         rsvpCreated = inserted.rows.length > 0;
         if (rsvpCreated) rsvpRecord = toRecord(inserted.rows[0]);
