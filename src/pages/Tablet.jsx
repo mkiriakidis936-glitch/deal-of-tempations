@@ -35,6 +35,7 @@ import BarefootCrypt from '@/components/tablet/BarefootCrypt';
 import MidnightPact from '@/components/tablet/MidnightPact';
 import GrandJuryControl from '@/components/tablet/GrandJuryControl';
 import ShowDirector from '@/components/tablet/ShowDirector';
+import NewsControl from '@/components/tablet/NewsControl';
 import PrivateMessageSender from '@/components/tablet/PrivateMessageSender';
 import SealedVoteControl from '@/components/tablet/SealedVoteControl';
 import EventQueue from '@/components/tablet/EventQueue';
@@ -421,6 +422,7 @@ export default function Tablet() {
         {overlay === 'pact' && <MidnightPact state={displayState} updateState={trackedUpdate} onClose={() => setOverlay(null)} />}
         {overlay === 'grandjury' && <GrandJuryControl state={displayState} updateState={trackedUpdate} onClose={() => setOverlay(null)} />}
         {overlay === 'showdirector' && <ShowDirector state={displayState} updateState={trackedUpdate} onClose={() => setOverlay(null)} />}
+        {overlay === 'news' && <NewsControl state={displayState} updateState={trackedUpdate} onClose={() => setOverlay(null)} />}
         {overlay === 'privatemsg' && <PrivateMessageSender state={displayState} updateState={trackedUpdate} onClose={() => setOverlay(null)} />}
         {overlay === 'sealedvote' && <SealedVoteControl state={displayState} updateState={trackedUpdate} onClose={() => setOverlay(null)} />}
         {overlay === 'eventqueue' && <EventQueue state={displayState} updateState={trackedUpdate} onClose={() => setOverlay(null)} />}
@@ -650,6 +652,7 @@ export default function Tablet() {
       {overlay === 'pact' && <MidnightPact state={displayState} updateState={trackedUpdate} onClose={() => setOverlay(null)} />}
       {overlay === 'grandjury' && <GrandJuryControl state={displayState} updateState={trackedUpdate} onClose={() => setOverlay(null)} />}
       {overlay === 'showdirector' && <ShowDirector state={displayState} updateState={trackedUpdate} onClose={() => setOverlay(null)} />}
+        {overlay === 'news' && <NewsControl state={displayState} updateState={trackedUpdate} onClose={() => setOverlay(null)} />}
       {overlay === 'privatemsg' && <PrivateMessageSender state={displayState} updateState={trackedUpdate} onClose={() => setOverlay(null)} />}
       {overlay === 'sealedvote' && <SealedVoteControl state={displayState} updateState={trackedUpdate} onClose={() => setOverlay(null)} />}
       {overlay === 'eventqueue' && <EventQueue state={displayState} updateState={trackedUpdate} onClose={() => setOverlay(null)} />}
