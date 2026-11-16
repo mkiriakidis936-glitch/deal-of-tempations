@@ -202,7 +202,7 @@ export default function SetupScreen({ onStart }) {
     const selectedIntensity = mode === 'classic' ? intensity : 'standard';
     if (!safeWord.trim() || !safeWordConfirmed) return;
     const selectedDuration = { id: 'ultra', minutes: 300 };
-    const state = { ...createInitialState(mode, selectedIntensity, valid), gameDurationMinutes: selectedDuration.minutes, safetyProfile: { safeWord: safeWord.trim(), confirmedAt: Date.now() }, testMode,
+    const state = { ...createInitialState(mode, selectedIntensity, valid), gameDurationMinutes: selectedDuration.minutes, gameStartedAt: Date.now(), gamePausedMs: 0, gamePausedAt: null, safetyProfile: { safeWord: safeWord.trim(), confirmedAt: Date.now() }, testMode,
       ...(selectedScenario ? { customScenario: { id: selectedScenario.id, name: selectedScenario.name, description: selectedScenario.description, collections: selectedScenario.collections || [] } } : {})
     };
     if (mode === 'beach_bar') {
