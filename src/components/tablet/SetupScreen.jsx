@@ -154,7 +154,7 @@ export default function SetupScreen({ onStart }) {
         ...vipForMode,
       ])];
       if (wanted.length > 0) {
-        const byName = Object.fromEntries([...pajamaApproved, ...intakes].filter((i) => i.name).map((i) => [i.name.trim(), i]));
+        const byName = Object.fromEntries([...intakes, ...pajamaApproved].filter((i) => i.name).map((i) => [i.name.trim(), i]));
         const next = [...new Set(wanted)].slice(0, meta.max).map((n, idx) => ({
           name: n, footwearLevel: 2, toenailPerk: TOENAIL_PERKS[idx % TOENAIL_PERKS.length].id,
           slipperType: byName[n]?.slipperType || '', nailColor: byName[n]?.nailColor || 'Pink', bringsOwnSlippers: byName[n]?.bringsOwnSlippers ?? true, hasFlipFlops: byName[n]?.hasFlipFlops ?? true, pajamaStyle: byName[n]?.pajamaStyle || '',
@@ -196,7 +196,7 @@ export default function SetupScreen({ onStart }) {
       ...(selectedScenario ? { customScenario: { id: selectedScenario.id, name: selectedScenario.name, description: selectedScenario.description, collections: selectedScenario.collections || [] } } : {})
     };
     if (mode === 'beach_bar') {
-      state.mg = { ...state.mg, alcoholFree: true };
+      state.mg = { ...state.mg, alcoholFree: true, bb: { ...(state.mg.bb || {}), flops: Object.fromEntries(state.players.map((player) => [player.id, player.hasFlipFlops !== false])) } };
     }
     await onStart({
       sessionCode: generateSessionCode(),
@@ -410,7 +410,9 @@ export default function SetupScreen({ onStart }) {
                   placeholder={`Όνομα ${idx + 1}`}
                   className="flex-1 min-w-0 px-3 py-1.5 border-2 border-border rounded-lg font-bold bg-background text-foreground focus:outline-none focus:ring-2 ring-primary font-body"
                 />
-                {newMode ? null : mode === 'pajama' ? (
+                {newMode && mode === 'marathon_4h' ? (
+                  <div className="w-full rounded-lg bg-primary/10 px-2 py-1 text-xs text-foreground/80">{p.pajamaStyle ? `Πιτζάμα: ${p.pajamaStyle} · ` : ''}{p.slipperType ? `Παντόφλες: ${p.slipperType} · ` : ''}{p.hasFlipFlops === false ? 'Χρειάζεται σαγιονάρες' : 'Έχει σαγιονάρες'}</div>
+                ) : newMode ? null : mode === 'pajama' ? (
                   <>
                     <input
                       type="text"
