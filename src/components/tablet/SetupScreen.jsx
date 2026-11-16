@@ -48,6 +48,9 @@ export default function SetupScreen({ onStart }) {
         toenailPerk: TOENAIL_PERKS[idx % TOENAIL_PERKS.length].id,
         slipperType: pjByName[n]?.slipperType || '',
         nailColor: pjByName[n]?.nailColor || 'Pink',
+        bringsOwnSlippers: pjByName[n]?.bringsOwnSlippers ?? true,
+        hasFlipFlops: pjByName[n]?.hasFlipFlops ?? true,
+        pajamaStyle: pjByName[n]?.pajamaStyle || '',
         ...(vipByName[n]?.vipProfile ? { vipProfile: vipByName[n].vipProfile } : {}),
       }));
     });
@@ -74,7 +77,7 @@ export default function SetupScreen({ onStart }) {
       const pjByName = {};
       approved.forEach((i) => {
         const n = i.name.trim();
-        pjByName[n] = { slipperType: i.slipperType || '', nailColor: i.nailColor || '' };
+        pjByName[n] = { slipperType: i.slipperType || '', nailColor: i.nailColor || '', bringsOwnSlippers: i.bringsOwnSlippers, hasFlipFlops: i.hasFlipFlops, pajamaStyle: i.pajamaStyle || '' };
       });
 
       const names = [];
@@ -164,7 +167,7 @@ export default function SetupScreen({ onStart }) {
         const byName = Object.fromEntries([...pajamaApproved, ...intakes].filter((i) => i.name).map((i) => [i.name.trim(), i]));
         const next = [...new Set(wanted)].slice(0, meta.max).map((n, idx) => ({
           name: n, footwearLevel: 2, toenailPerk: TOENAIL_PERKS[idx % TOENAIL_PERKS.length].id,
-          slipperType: byName[n]?.slipperType || '', nailColor: byName[n]?.nailColor || 'Pink',
+          slipperType: byName[n]?.slipperType || '', nailColor: byName[n]?.nailColor || 'Pink', bringsOwnSlippers: byName[n]?.bringsOwnSlippers ?? true, hasFlipFlops: byName[n]?.hasFlipFlops ?? true, pajamaStyle: byName[n]?.pajamaStyle || '',
           ...(byName[n]?.vipProfile ? { vipProfile: byName[n].vipProfile } : {}),
         }));
         while (next.length < meta.min) next.push({ name: '', footwearLevel: 2, toenailPerk: 'pink' });
@@ -198,7 +201,7 @@ export default function SetupScreen({ onStart }) {
     const selectedScenario = customScenarios.find((scenario) => scenario.id === selectedScenarioId && scenario.modeId === mode);
     const selectedIntensity = mode === 'classic' ? intensity : 'standard';
     if (!safeWord.trim() || !safeWordConfirmed) return;
-    const selectedDuration = newMode ? { id: 'standard', minutes: newMode.minutes } : (DURATION_OPTIONS.find((option) => option.id === duration) || DURATION_OPTIONS[1]);
+    const selectedDuration = { id: 'ultra', minutes: 300 };
     const state = { ...createInitialState(mode, selectedIntensity, valid), gameDurationMinutes: selectedDuration.minutes, safetyProfile: { safeWord: safeWord.trim(), confirmedAt: Date.now() }, testMode,
       ...(selectedScenario ? { customScenario: { id: selectedScenario.id, name: selectedScenario.name, description: selectedScenario.description, collections: selectedScenario.collections || [] } } : {})
     };
@@ -245,25 +248,7 @@ export default function SetupScreen({ onStart }) {
 
         <ComicPanel>
           <h2 className="font-heading text-2xl mb-3 text-primary">ΔΙΑΡΚΕΙΑ ΠΑΙΧΝΙΔΙΟΥ</h2>
-          {newMode ? (
-            <div className="comic-panel-sm p-3 bg-primary/10 border border-primary/40">
-              <div className="font-heading text-xl text-foreground">⏱ ΣΤΑΘΕΡΗ ΔΙΑΡΚΕΙΑ · {newMode.minutes >= 60 ? `${Math.floor(newMode.minutes / 60)} ΩΡΕΣ${newMode.minutes % 60 ? ` ΚΑΙ ${newMode.minutes % 60} ΛΕΠΤΑ` : ''}` : `${newMode.minutes} ΛΕΠΤΑ`}</div>
-              <div className="text-sm text-foreground/70 font-body">Η διάρκεια καθορίζεται από το επιλεγμένο Mode.</div>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              {DURATION_OPTIONS.map((d) => (
-                <button
-                  key={d.id}
-                  onClick={() => handleDuration(d)}
-                  className={`comic-panel-sm p-3 text-left transition-all ${duration === d.id ? 'bg-primary/20 ring-2 ring-primary scale-[1.02]' : 'bg-secondary'}`}
-                >
-                  <div className="font-heading text-xl text-foreground">{d.icon} {d.name}</div>
-                  <div className="text-sm text-foreground/70 font-body">{d.desc}</div>
-                </button>
-              ))}
-            </div>
-          )}
+          <div className="comic-panel-sm p-3 bg-primary/10 border border-primary/40"><div className="font-heading text-xl text-foreground">⏱ ΣΤΑΘΕΡΗ ΔΙΑΡΚΕΙΑ · 5 ΩΡΕΣ</div><div className="text-sm text-foreground/70 font-body">Όλα τα modes έχουν συνολική διάρκεια 5 ωρών.</div></div>
         </ComicPanel>
 
         <ComicPanel className="bg-card space-y-3">
