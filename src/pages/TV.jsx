@@ -258,46 +258,7 @@ export default function TVScreen() {
 
       <div className={`flex-1 flex flex-col ${fullscreen ? 'p-2' : 'p-4 pt-14 pb-16'}`}>
         <div className="max-w-7xl mx-auto w-full flex-1 flex flex-col gap-3">
-          {!fullscreen && (
-            <TVTopStrip
-              wantedLevel={wantedLevel}
-              mostWantedName={mostWanted?.name}
-              totalLoot={totalLoot}
-              playerCount={state.players?.length || 0}
-              sessionCode={session.sessionCode}
-              stopActive={state.stopActive}
-            />
-          )}
 
-          {!fullscreen && isMarathon && state.stage > 0 && (
-            <div className="grid grid-cols-2 gap-3">
-              <div className="comic-panel bg-tarot-crimson p-3 text-center">
-                <div className="font-heading text-xl text-tarot-gold">ΟΜΑΔΑ ΑΛΦΑ</div>
-                <div className="text-2xl text-foreground">${state.teamAlpha?.loot?.toLocaleString() || 0}</div>
-                <div className="text-lg text-tarot-gold">⭐ {state.teamAlpha?.stars || 0}</div>
-              </div>
-              <div className="comic-panel bg-tarot-royal p-3 text-center">
-                <div className="font-heading text-xl text-tarot-gold">ΟΜΑΔΑ ΒΗΤΑ</div>
-                <div className="text-2xl text-foreground">${state.teamBeta?.loot?.toLocaleString() || 0}</div>
-                <div className="text-lg text-tarot-gold">⭐ {state.teamBeta?.stars || 0}</div>
-              </div>
-            </div>
-          )}
-
-          {!fullscreen && isArrestHeist && state.stage > 0 && (
-            <div className="grid grid-cols-2 gap-3">
-              <div className="comic-panel bg-tarot-wine p-3 text-center">
-                <div className="font-heading text-xl text-tarot-gold">💖 TEAM ALPHA</div>
-                <div className="text-2xl text-foreground">{state.teamA?.points || 0} πόντοι</div>
-                <div className="text-sm text-foreground/70">Αρχηγός: {ahLeaderA?.name || '—'} · Ποινή: {ahLeaderA?.penaltyStep || 0}/6</div>
-              </div>
-              <div className="comic-panel bg-tarot-teal p-3 text-center">
-                <div className="font-heading text-xl text-tarot-gold">💎 TEAM BETA</div>
-                <div className="text-2xl text-foreground">{state.teamB?.points || 0} πόντοι</div>
-                <div className="text-sm text-foreground/70">Αρχηγός: {ahLeaderB?.name || '—'} · Ποινή: {ahLeaderB?.penaltyStep || 0}/6</div>
-              </div>
-            </div>
-          )}
 
           {state.bombEvent && (
             <div className="comic-panel bg-destructive p-4 text-center comic-strobe">
@@ -309,12 +270,6 @@ export default function TVScreen() {
             </div>
           )}
 
-          {currentEvent && (
-            <div className="comic-panel bg-primary text-tarot-dark p-4 comic-pop text-center">
-              <div className="text-sm uppercase font-bold">🔴 Live Event</div>
-              <div className="font-heading text-3xl">{formatEvent(currentEvent)}</div>
-            </div>
-          )}
 
           <div className="flex-1 flex items-center justify-center">
             {state.stage === 0 && !isPajama ? (
@@ -341,26 +296,10 @@ export default function TVScreen() {
             )}
           </div>
 
-          {!fullscreen && state.stage > 0 && <BountyMultiplier state={state} />}
-
-          {!fullscreen && isMarathon && state.stage > 0 && <MarathonProtocol state={state} />}
-
-          {!fullscreen && state.stage > 0 && !isPajama && (
-            <div className="comic-panel bg-card p-3">
-              <div className="font-heading text-xl text-primary mb-2">👥 Παίκτριες</div>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                {state.players?.map((p, i) => (
-                  <PlayerCard key={p.id} player={p} isCurrent={i === state.currentPlayerIndex} compact />
-                ))}
-              </div>
-            </div>
-          )}
-
-          {!fullscreen && state.stage > 0 && <DecibelMeter label="SCREAM / LAUGH METER" size="lg" />}
         </div>
       </div>
 
-      <TVTicker items={formattedHistory} />
+      <TVTicker items={formattedHistory.slice(0, 4)} />
     </div>
   );
 }
