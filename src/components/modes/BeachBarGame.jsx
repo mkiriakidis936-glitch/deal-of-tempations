@@ -39,7 +39,7 @@ export default function BeachBarGame({ ctx, onEnd }) {
             <div key={p.id} className="rounded px-2 py-1 bg-background/50 flex items-center gap-2">
               <b>{p.name}</b>
               <button onClick={() => setBb({ flops: { ...(bb.flops || {}), [p.id]: !flopOn(p.id) } })} className={flopOn(p.id) ? '' : 'opacity-30'} title="σαγιονάρες">🩴</button>
-              <span>🥃{drinks[p.id] || 0}</span>
+              <span>🥤{drinks[p.id] || 0}</span>
               <span>⭐{(mg.scores || {})[p.id] || 0}</span>
               {(mg.immune || []).includes(p.id) && <span title="ασυλία">🛡️</span>}
             </div>
@@ -127,7 +127,7 @@ function Dance({ ctx, bb, setBb, T, addDrink, flopOn }) {
     if (!canAssignVipActivity(ctx, p, { activityLabel: 'Freeze challenge' })) return;
     addDrink(p.id);
     setBb({ phase: 'wheel', loser: p.id, freeze: null });
-    log(`🥃 ${p.name} έχασε στο Freeze — σφηνάκι και Τροχός Ποινών`);
+    log(`🥤 ${p.name} ολοκλήρωσε το Freeze — mocktail counter και Τροχός Προκλήσεων`);
   }
 
   return (
@@ -155,7 +155,7 @@ function Dance({ ctx, bb, setBb, T, addDrink, flopOn }) {
           <Btn onClick={() => setBb({ freeze: null })}>Ακύρωση</Btn>
         </div>
       )}
-      <div className="text-xs opacity-70">Η καθυστερημένη πίνει σφηνάκι και περνά αυτόματα στον Τροχό Ποινών. {T('')}</div>
+      <div className="text-xs opacity-70">Η καθυστερημένη επιλέγει mocktail ή PASS και περνά στον Τροχό Προκλήσεων. {T('')}</div>
     </Panel>
   );
 }
@@ -196,7 +196,7 @@ function Wheel({ ctx, bb, setBb, T, flopOn }) {
 
   const meta = WHEEL_CATEGORIES.find((c) => c.id === (card ? card.cat : cat));
   return (
-    <Panel title="🎡 The Tie, Hogtie & Tickle Wheel" accent={CORAL}>
+    <Panel title="🎡 The Digital Challenge Wheel" accent={CORAL}>
       <div className="flex flex-wrap gap-2 items-center">
         <select value={who} onChange={(e) => setWho(e.target.value)} className="px-2 py-2 rounded bg-background border border-border">
           {players.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
@@ -229,13 +229,13 @@ function Truth({ ctx, bb, setBb, T, addDrink }) {
   const { players, log, nameOf } = ctx;
   const [who, setWho] = useState(players[0]?.id || '');
   const [q, setQ] = useState(null);
-  const [state, setState] = useState('idle'); // idle | decide | tickle
-  const left = useLocalCountdown(BEACH_STEP_SECONDS, state === 'decide', () => { setState('tickle'); sfx.alarm(); log(`🚨 ${nameOf(who)} άργησε — συναγερμός ομαδικού γαργαλητού`); });
-  const tk = useLocalCountdown(20, state === 'tickle', () => sfx.alarm());
+  const [state, setState] = useState('idle'); // idle | decide | quiz
+  const left = useLocalCountdown(BEACH_STEP_SECONDS, state === 'decide', () => { setState('quiz'); sfx.alarm(); log(`🚨 ${nameOf(who)} άργησε — ενεργοποιήθηκε ψηφιακό quiz`); });
+  const tk = useLocalCountdown(20, state === 'quiz', () => sfx.alarm());
 
   return (
-    <Panel title="🥃 Shot & Truth Sync" accent={CORAL}>
-      <p className="text-sm opacity-80">Απαντάς ειλικρινά Ή πίνεις διπλό σφηνάκι. Αν αρνηθείς και τα δύο (ή αργήσεις πάνω από 5″), συναγερμός ομαδικού γαργαλητού στη χαμένη.</p>
+    <Panel title="🥤 Mocktail & Truth Sync" accent={CORAL}>
+      <p className="text-sm opacity-80">Απαντάς ειλικρινά ή επιλέγεις μη αλκοολούχο mocktail / PASS. Αν αργήσεις πάνω από 5″, ενεργοποιείται προαιρετικό ψηφιακό quiz.</p>
       <div className="flex flex-wrap gap-2 items-center">
         <select value={who} onChange={(e) => setWho(e.target.value)} className="px-2 py-2 rounded bg-background border border-border">
           {players.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
@@ -254,18 +254,18 @@ function Truth({ ctx, bb, setBb, T, addDrink }) {
             <div className="flex flex-wrap gap-2 items-center">
               <b className="font-display text-4xl w-16">{Math.ceil(left)}″</b>
               <Btn color="bg-emerald-700" onClick={() => { setState('idle'); setQ(null); sfx.ok(); log(`🗣️ ${nameOf(who)} είπε αλήθεια`); }}>🗣️ TRUTH</Btn>
-              <Btn color="bg-orange-600" onClick={() => { addDrink(who, 2); setState('idle'); setQ(null); log(`🥃 ${nameOf(who)} ήπιε διπλό σφηνάκι`); }}>🥃 DRINK (διπλό)</Btn>
+              <Btn color="bg-orange-600" onClick={() => { addDrink(who, 2); setState('idle'); setQ(null); log(`🥤 ${nameOf(who)} επέλεξε mocktail`); }}>🥤 MOCKTAIL / PASS</Btn>
             </div>
           )}
-          {state === 'tickle' && (
+          {state === 'quiz' && (
             <div className="space-y-2">
-              <div className="font-display text-4xl text-red-300 comic-pulse">🚨 ΣΥΝΑΓΕΡΜΟΣ ΓΑΡΓΑΛΗΤΟΥ — {Math.ceil(tk)}″</div>
+              <div className="font-display text-4xl text-red-300 comic-pulse">🧩 ΨΗΦΙΑΚΟ QUIZ — {Math.ceil(tk)}″</div>
               <Btn onClick={() => { setState('idle'); setQ(null); }}>Τέλος</Btn>
             </div>
           )}
         </div>
       )}
-      <div className="text-xs opacity-60">{T('Ο διπλός σφηνάκι μετράει στον μετρητή 🥃.')}</div>
+      <div className="text-xs opacity-60">{T('Το mocktail μετράει στον μετρητή 🥤.')}</div>
     </Panel>
   );
 }
@@ -279,7 +279,7 @@ function Finale({ ctx, bb, setBb, flopOn, onEnd }) {
   const queen = bb.queen;
   return (
     <Panel title="👑 The Last Queen Standing" accent="#FFD700">
-      <p className="text-sm opacity-80">Όσες έχουν χάσει τις σαγιονάρες τους (κλοπές ή ποινές) μπαίνουν στον τελικό γύρο: 3λεπτο χορευτικό challenge με δεμένους καρπούς. Όποια κρατήσει τον ρυθμό και δεν γελάσει στις παγίδες γαργαλητού γίνεται Beach Queen και διαλέγει την τελική ομαδική δοκιμασία.</p>
+      <p className="text-sm opacity-80">Όσες έχουν χάσει τις σαγιονάρες τους (κλοπές ή ποινές) μπαίνουν στον τελικό γύρο: 3λεπτο προαιρετικό Dance & Freeze challenge με ψηφιακές εντολές, χωρίς περιορισμό κίνησης ή σωματική επαφή. Η νικήτρια γίνεται Beach Queen και διαλέγει την τελική ομαδική δοκιμασία.</p>
       <div className="flex flex-wrap gap-2 text-sm">
         Φιναλίστ: {field.map((p) => <b key={p.id} className="px-2 py-0.5 rounded bg-background/60">{p.name}</b>)}
         {finalists.length < 2 && <span className="opacity-60">(λιγότερες από 2 χωρίς σαγιονάρες — παίζουν όλες)</span>}
