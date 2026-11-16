@@ -280,7 +280,7 @@ function Truth({ ctx, bb, setBb, T, addDrink }) {
   const [who, setWho] = useState(players[0]?.id || '');
   const [q, setQ] = useState(null);
   const [state, setState] = useState('idle'); // idle | decide | quiz
-  const left = useLocalCountdown(BEACH_STEP_SECONDS, state === 'decide', () => { setState('quiz'); sfx.alarm(); log(`🚨 ${nameOf(who)} άργησε — ενεργοποιήθηκε ψηφιακό quiz`); });
+  const left = useLocalCountdown(BEACH_STEP_SECONDS, state === 'decide', () => { setState('quiz'); setBb({ truth: { ...(bb.truth || {}), status: 'quiz' } }); sfx.alarm(); log(`🚨 ${nameOf(who)} άργησε — ενεργοποιήθηκε ψηφιακό quiz`); });
   const tk = useLocalCountdown(20, state === 'quiz', () => sfx.alarm());
 
   function respond(value, fromMobile = false) {
