@@ -19,7 +19,7 @@ export default function ActMidnight({ ctx, onDone }) {
     if (action?.type !== 'midnight_pass' || action.playerId !== seat?.id) return;
     nextSeat(true);
     log(`⏭️ ${seat.name} επέλεξε PASS στο Midnight`);
-  }, [mg.playerAction?.at, seat?.id]);
+  }, [mg.playerAction?.at, seat?.id, nextSeat, log]);
 
   const canPlay = (p) => (tokens[p.id] || 0) >= GATE_TOKENS || entered[p.id];
 
