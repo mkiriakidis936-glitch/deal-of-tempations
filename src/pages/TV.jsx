@@ -226,7 +226,7 @@ export default function TVScreen() {
         <MediaSpot src={PHOTO.tv || FILM.tv} slot="tv" className="w-full h-full object-cover" />
       </div>
       {state.stopActive && state.extra4?.control?.status !== 'emergency' && <div className="fixed inset-0 z-[100] bg-destructive/90 flex items-center justify-center text-center pointer-events-auto"><div className="font-heading text-7xl text-white">⏸ ΣΤΟΠ</div></div>}
-      <TVExperienceLayer sessionCode={session.sessionCode} mode={state.mode} playerCount={state.players?.length || 0} stage={state.stage} online={networkOnline} fullscreen={fullscreen} onToggleFullscreen={toggleFullscreen} />
+      <TVExperienceLayer sessionCode={session.sessionCode} mode={state.mode} playerCount={state.players?.length || 0} stage={state.stage} online={networkOnline} fullscreen={fullscreen} onToggleFullscreen={toggleFullscreen} event={currentEvent} />
       <Extra4TVOverlay state={state} />
       <Extra4LiveFeedTV sessionCode={session.sessionCode} token={feedToken} feed={state.extra4?.liveFeed || {}} />
       {(state.absoluteInterrogation?.active || state.interrogationVerdict || state.bailoutAuction?.active || state.blackBribe || state.sacrificeWheel || state.bailoutOutcome) && (
