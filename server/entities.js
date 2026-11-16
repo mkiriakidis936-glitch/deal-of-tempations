@@ -293,9 +293,9 @@ export function validatePlayerPatch(current, patch, playerId) {
     let validAction = Object.keys(next).length === 1 && isObject(action) &&
       action.playerId === playerId && actionTypes.has(action.type) && Number.isFinite(action.at);
     if (validAction && action.type === 'board_route') validAction = ['glam', 'chaos'].includes(action.route);
-    if (validAction && action.type === 'lockdown_exit_code') validAction = /^\\d{4}$/.test(String(action.code || ''));
+    if (validAction && action.type === 'lockdown_exit_code') validAction = /^\d{4}$/.test(String(action.code || ''));
     if (validAction && action.type === 'morning_clue') validAction = Number.isInteger(action.index) && action.index >= 0 && action.index < 4;
-    if (validAction && action.type === 'morning_code') validAction = /^\\d{4}$/.test(String(action.code || ''));
+    if (validAction && action.type === 'morning_code') validAction = /^\d{4}$/.test(String(action.code || ''));
     if (!stopPatch && !validAction) return false;
   }
 
