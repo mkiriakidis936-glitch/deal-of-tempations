@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import ComicPanel from '@/components/comic/ComicPanel';
 import ComicButton from '@/components/comic/ComicButton';
 import SessionQRCode from '@/components/shared/SessionQRCode';
@@ -10,6 +10,34 @@ export default function StageZero({ state, updateState }) {
   const [step, setStep] = useState('stop');
   const [revealIdx, setRevealIdx] = useState(null);
   const [stopTested, setStopTested] = useState(false);
+  const [tutorialRemaining, setTutorialRemaining] = useState(60);
+  const [tutorialActive, setTutorialActive] = useState(false);
+
+
+  useEffect(() => {
+    if (!tutorialActive) return undefined;
+    const startedAt = Date.now();
+    const interval = setInterval(() => {
+      const elapsed = Math.floor((Date.now() - startedAt) / 1000);
+      const remaining = Math.max(0, 60 - elapsed);
+      setTutorialRemaining(remaining);
+      const tutorialStep = Math.min(3, Math.floor(elapsed / 15));
+      updateState({
+        tutorialDemo: {
+          active: remaining > 0,
+          step: tutorialStep,
+          remaining,
+          startedAt,
+        },
+      });
+      if (remaining === 0) {
+        clearInterval(interval);
+        setTutorialActive(false);
+        updateState({ tutorialDemo: null });
+      }
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [tutorialActive]);
 
   async function handleStopTest() {
     await updateState({ stopActive: true });
@@ -40,7 +68,18 @@ export default function StageZero({ state, updateState }) {
 
   async function handleStart() {
     const history = addHistory(state, { type: 'game_start', detail: 'ΕΝΑΡΞΗ ΠΑΙΧΝΙΔΙΟΥ' });
-    await updateState({ stage: 1, history, countdownStartedAt: Date.now() });
+    await updateState({ stage: 1, history, tutorialDemo: null, countdownStartedAt: Date.now() });
+  }
+
+  async function startTutorial() {
+    setTutorialRemaining(60);
+    setTutorialActive(true);
+    await updateState({ tutorialDemo: { active: true, step: 0, remaining: 60, startedAt: Date.now() } });
+  }
+
+  async function stopTutorial() {
+    setTutorialActive(false);
+    await updateState({ tutorialDemo: null });
   }
 
   const isClassic = state.mode === 'classic';
@@ -124,9 +163,20 @@ export default function StageZero({ state, updateState }) {
         )}
 
         {step === 'start' && (
-          <ComicPanel className="bg-tarot-forest text-center py-6 comic-pop">
+          <ComicPanel className="bg-tarot-forest text-center py-6 comic-pop space-y-3">
             <div className="ds-title mb-3 text-2xl text-primary">Έτοιμες;</div>
-            <ComicButton variant="green" size="lg" onClick={handleStart}>
+            {!tutorialActive ? (
+              <ComicButton variant="purple" size="lg" onClick={startTutorial}>
+                ▶ ΔΙΑΔΡΑΣΤΙΚΟ TUTORIAL · 60″
+              </ComicButton>
+            ) : (
+              <div className="space-y-3">
+                <div className="font-heading text-3xl text-primary">TUTORIAL · {tutorialRemaining}″</div>
+                <p className="text-sm text-foreground/75">Ακολούθησε τα βήματα που εμφανίζονται στην TV. Δεν υπάρχουν ποινές ή πραγματική δέσμευση κατά την πρόβα.</p>
+                <ComicButton variant="dark" onClick={stopTutorial}>ΤΕΛΟΣ ΠΡΟΒΑΣ</ComicButton>
+              </div>
+            )}
+            <ComicButton variant="green" size="lg" onClick={handleStart} disabled={tutorialActive}>
               🎬 ΕΝΑΡΞΗ ΠΑΙΧΝΙΔΙΟΥ
             </ComicButton>
           </ComicPanel>

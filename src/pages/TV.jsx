@@ -26,6 +26,7 @@ import InterrogationTV from '@/components/tv/InterrogationTV';
 import SessionQRCode from '@/components/shared/SessionQRCode';
 import IntroSequenceTV from '@/components/tv/IntroSequenceTV';
 import TVLaunchVideos from '@/components/tv/TVLaunchVideos';
+import TutorialTV from '@/components/tv/TutorialTV';
 import PajamaRevealOverlay from '@/components/tv/PajamaRevealOverlay';
 import PajamaTV from '@/components/tv/PajamaTV';
 import SyncTimerDisplay from '@/components/shared/SyncTimerDisplay';
@@ -218,6 +219,7 @@ export default function TVScreen() {
       )}
       <LiveOverlay />
       <PajamaRevealOverlay />
+      <TutorialTV tutorial={state.tutorialDemo} />
       <TVLaunchVideos
         sessionCode={session.sessionCode}
         welcomeSrc={FILM.welcomeVideo}
