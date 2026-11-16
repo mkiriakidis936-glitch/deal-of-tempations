@@ -45,7 +45,6 @@ export default function AudioControl({ state, updateState, onClose }) {
     const Ctx = window.AudioContext || window.webkitAudioContext;
     if (!Ctx) return;
     const ctx = new Ctx();
-    const dest = ctx.destination;
     const osc1 = ctx.createOscillator();
     const osc2 = ctx.createOscillator();
     const gain = ctx.createGain();
