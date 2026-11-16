@@ -58,7 +58,7 @@ const noChangesOutsideKeys = (before, after, keys) => {
 const onlyOwnMapEntryChanged = (before, after, playerId) => {
   if (!isObject(before) || !isObject(after)) return false;
   return Object.entries(after).every(([key, value]) =>
-    key === playerId || (Object.prototype.hasOwnProperty.call(before, key) && sameJson(before[key], value))
+    key === playerId || key.startsWith('__redacted_') || (Object.prototype.hasOwnProperty.call(before, key) && sameJson(before[key], value))
   );
 };
 const deepMerge = (target, patch, field = '', allowClear = false) => {
@@ -393,7 +393,7 @@ export function sanitizePublicSession(record, playerId = null) {
   if (state.bailoutAuction && isObject(state.bailoutAuction)) {
     state.bailoutAuction = {
       ...state.bailoutAuction,
-      bids: countOnlyMap(state.bailoutAuction.bids),
+      bids: ownMap(state.bailoutAuction.bids),
     };
   }
   if (state.extra4?.liveFeed && isObject(state.extra4.liveFeed)) {
