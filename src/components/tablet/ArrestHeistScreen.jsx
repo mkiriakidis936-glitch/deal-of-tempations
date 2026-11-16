@@ -523,7 +523,7 @@ export default function ArrestHeistScreen({ state, updateState, onEnd, playerPro
                   </div>
                   <div className="text-xs mb-3 text-foreground/60">Όταν πατήσετε ΣΚΑΝΑΡΙΣΤΗΚΕ, η πατούσα παίρνει αυτόματη ασυλία.</div>
                   <div>
-                    <ComicButton variant="green" size="lg" onClick={() => { setTickleImmunity(true); setHeistPhase('code'); }}>📸 ΣΚΑΝΑΡΙΣΤΗΚΕ → CONTINUE</ComicButton>
+                    <ComicButton variant="green" size="lg" onClick={() => { setChallengeCompleted(true); setHeistPhase('code'); }}>📸 ΣΚΑΝΑΡΙΣΤΗΚΕ → CONTINUE</ComicButton>
                   </div>
                 </>
               )}
