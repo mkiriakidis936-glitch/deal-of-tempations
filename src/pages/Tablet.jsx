@@ -19,6 +19,7 @@ import PajamaMiniBar from '@/components/tablet/PajamaMiniBar';
 import WantedStrobePanic from '@/components/shared/WantedStrobePanic';
 import MobileVotePanel from '@/components/shared/MobileVotePanel';
 import StageZero from '@/components/tablet/StageZero';
+import GameDurationClock from '@/components/shared/GameDurationClock';
 import FlashbangOverlay from '@/components/shared/FlashbangOverlay';
 import BountyMultiplier from '@/components/shared/BountyMultiplier';
 import SessionQRCode from '@/components/shared/SessionQRCode';
@@ -488,6 +489,8 @@ export default function Tablet() {
       await trackedUpdate({
         ...timers,
         stopActive: false,
+        gamePausedMs: (state.gamePausedMs || 0) + (state.gamePausedAt ? Date.now() - state.gamePausedAt : 0),
+        gamePausedAt: null,
         pausedTimerRemaining: null,
         extra4: { ...extra4, control: { ...extra4.control, status: 'running', pausedAt: null, resumedAt: Date.now() } },
       });
@@ -497,6 +500,7 @@ export default function Tablet() {
     await trackedUpdate({
       ...timers,
       stopActive: true,
+      gamePausedAt: state.gamePausedAt || Date.now(),
       extra4: { ...extra4, control: { ...extra4.control, status: 'paused', pausedAt: Date.now() } },
     });
   }
@@ -543,6 +547,7 @@ export default function Tablet() {
     <div className="relative">
       <WantedStrobePanic wantedLevel={wantedLevel} playerName={mostWantedName} />
       <StopButton active={state.stopActive} onToggle={handleStop} />
+      <GameDurationClock state={displayState} />
       <div className="fixed top-3 left-3 z-50">
         <BountyMultiplier state={state} />
       </div>

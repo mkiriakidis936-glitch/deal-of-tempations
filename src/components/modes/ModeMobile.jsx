@@ -4,6 +4,7 @@ import { EXTENDED_CHAOS_MARKET_CARDS, GATE_TOKENS } from '@/data/modes/extendedC
 import { EXIT_CODE } from '@/data/modes/lockdownContent';
 import { fmt, sfx, timerLeft, timerPause, useTick, setGameStopActive } from '@/lib/modeKit';
 import { enablePlayerPush } from '@/lib/push';
+import GameDurationClock from '@/components/shared/GameDurationClock';
 
 // Οθόνη κινητού (/play) για τα 4 νέα modes.
 export default function ModeMobile({ state, me, updateState, onChangePlayer, sessionCode }) {
@@ -40,7 +41,7 @@ export default function ModeMobile({ state, me, updateState, onChangePlayer, ses
 
   function panic() {
     if (mg.stop) return;
-    updateState({ mg: { stop: true, stopAt: Date.now(), stopBy: me.id, timer: timerPause(mg.timer) } });
+    updateState({ mg: { ...mg, stop: true, stopAt: Date.now(), stopBy: me.id, timer: timerPause(mg.timer) }, gamePausedAt: state.gamePausedAt || Date.now() });
   }
 
   const ld = mg.ld || {};
@@ -55,6 +56,7 @@ export default function ModeMobile({ state, me, updateState, onChangePlayer, ses
   return (
     <div className="min-h-screen p-3 pb-24 text-foreground" style={{ background: theme.bg }}>
       <div className="max-w-md mx-auto space-y-3">
+        <GameDurationClock state={state} compact />
         <div className="text-center">
           <div className="font-display text-xl" style={{ color: theme.accent, textShadow: `0 0 12px ${theme.accent}88` }}>{meta.icon} {meta.name}</div>
           <div className="text-xs opacity-60">{me.name}</div>

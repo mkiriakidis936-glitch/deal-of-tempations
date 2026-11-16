@@ -13,12 +13,13 @@ const SHOE_TO_LEVEL = { boots: 3, sneakers: 2, sandals: 1, barefoot: 0 };
 const NAIL_COLORS = ['Red', 'Pink', 'White', 'Black', 'Nude', 'French', 'Blue', 'Purple', 'Green', 'Orange', 'Gold', 'Silver', 'None'];
 
 const DURATION_OPTIONS = [
-  { id: 'afternoon', icon: '☀️', name: 'Μία βραδιά', desc: 'Τελειώνει στο Finale — χωρίς διανυκτέρευση.' },
-  { id: '48h', icon: '🌙', name: 'Διανυκτέρευση', desc: 'Το mode ολοκληρώνεται κανονικά. Μετά ακολουθεί ύπνος ή χαλάρωση.' },
+  { id: 'express', minutes: 60, icon: '⚡', name: 'EXPRESS · 1 ΩΡΑ', desc: 'Πραγματικό χρονόμετρο 60 λεπτών.' },
+  { id: 'standard', minutes: 180, icon: '🎲', name: 'STANDARD · 3 ΩΡΕΣ', desc: 'Πραγματικό χρονόμετρο 180 λεπτών.' },
+  { id: 'ultra', minutes: 300, icon: '🏆', name: 'ULTRA MARATHON · 5 ΩΡΕΣ', desc: 'Πραγματικό χρονόμετρο 300 λεπτών.' },
 ];
 
 export default function SetupScreen({ onStart }) {
-  const [duration, setDuration] = useState('afternoon');
+  const [duration, setDuration] = useState('standard');
   const [mode, setMode] = useState('classic');
   const [intensity, setIntensity] = useState('standard');
   const [safeWord, setSafeWord] = useState('');
@@ -197,7 +198,8 @@ export default function SetupScreen({ onStart }) {
     const selectedScenario = customScenarios.find((scenario) => scenario.id === selectedScenarioId && scenario.modeId === mode);
     const selectedIntensity = mode === 'classic' ? intensity : 'standard';
     if (!safeWord.trim() || !safeWordConfirmed) return;
-    const state = { ...createInitialState(mode, selectedIntensity, valid), safetyProfile: { safeWord: safeWord.trim(), confirmedAt: Date.now() }, testMode,
+    const selectedDuration = DURATION_OPTIONS.find((option) => option.id === duration) || DURATION_OPTIONS[1];
+    const state = { ...createInitialState(mode, selectedIntensity, valid), gameDurationMinutes: selectedDuration.minutes, safetyProfile: { safeWord: safeWord.trim(), confirmedAt: Date.now() }, testMode,
       ...(selectedScenario ? { customScenario: { id: selectedScenario.id, name: selectedScenario.name, description: selectedScenario.description, collections: selectedScenario.collections || [] } } : {})
     };
     if (mode === 'beach_bar' && valid.some((p) => pajamaApproved.some((i) => (i.name || '').trim() === p.name.trim() && i.alcohol === 'free'))) {
@@ -242,8 +244,8 @@ export default function SetupScreen({ onStart }) {
         )}
 
         <ComicPanel>
-          <h2 className="font-heading text-2xl mb-3 text-primary">ΔΙΑΝΥΚΤΕΡΕΥΣΗ</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <h2 className="font-heading text-2xl mb-3 text-primary">ΔΙΑΡΚΕΙΑ ΠΑΙΧΝΙΔΙΟΥ</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             {DURATION_OPTIONS.map((d) => (
               <button
                 key={d.id}

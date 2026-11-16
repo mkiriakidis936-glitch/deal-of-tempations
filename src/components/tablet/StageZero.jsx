@@ -65,7 +65,7 @@ export default function StageZero({ state, updateState }) {
 
   async function handleStart() {
     const history = addHistory(state, { type: 'game_start', detail: 'ΕΝΑΡΞΗ ΠΑΙΧΝΙΔΙΟΥ' });
-    await updateState({ stage: 1, history, tutorialDemo: null, countdownStartedAt: Date.now() });
+    await updateState({ stage: 1, history, tutorialDemo: null, countdownStartedAt: Date.now(), gameStartedAt: Date.now(), gamePausedMs: 0, gamePausedAt: null, gameTimeExpiredAt: null });
   }
 
   async function startTutorial() {

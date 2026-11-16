@@ -210,7 +210,8 @@ export function useModeCtx(state, updateState) {
           missions[id] = { ...missions[id], expiresAt: missions[id].expiresAt + pausedFor };
         }
       });
-      setMg({
+      const next = {
+        ...cur,
         stop: false,
         stopBy: null,
         timer: timerResume(cur.timer),
@@ -218,9 +219,13 @@ export function useModeCtx(state, updateState) {
         ...(cur.startedAt ? { startedAt: cur.startedAt + pausedFor } : {}),
         ...(cur.actStartedAt ? { actStartedAt: cur.actStartedAt + pausedFor } : {}),
         ...(cur.morningTimer ? { morningTimer: cur.morningTimer + pausedFor } : {}),
-      });
+      };
+      mgRef.current = next;
+      updateState({ mg: next, gamePausedMs: (state.gamePausedMs || 0) + (state.gamePausedAt ? Date.now() - state.gamePausedAt : pausedFor), gamePausedAt: null });
     } else {
-      setMg({ stop: true, stopAt: Date.now(), timer: timerPause(cur.timer) });
+      const stopAt = Date.now();
+      setMg({ stop: true, stopAt, timer: timerPause(cur.timer) });
+      updateState({ gamePausedAt: state.gamePausedAt || stopAt });
     }
   }, [setMg, centralStopped]);
 
