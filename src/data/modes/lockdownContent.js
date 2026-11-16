@@ -1,7 +1,7 @@
 // Pajama Lockdown: 18+ Girls-Only Escape Room (Master Specification).
 
-export const LOCKDOWN_SECONDS = 5 * 60 * 60;
-export const MARATHON_LOCKDOWN_SECONDS = 75 * 60;
+export const LOCKDOWN_SECONDS = 60 * 60;
+export const MARATHON_LOCKDOWN_SECONDS = 60 * 60;
 export let EXIT_CODE = '6969';
 export const WRONG_ANSWER_PENALTY = 120; // +2 λεπτά
 export const SURGE_BELOW = 10 * 60;
@@ -110,3 +110,29 @@ export const TRUE_FALSE = [
   ['Το Escape Room λύνεται με συνεργασία.', true],
   ['Το 6969 διαβάζεται ίδιο ανάποδα αν γυρίσεις το κείμενο ανάποδα.', true],
 ];
+
+
+const UNSAFE_LOCKDOWN_COPY = /hogtie|blindfold|restraint|δεσίμ|δεμέν|δέσιμο|ακινητοπ|zip.?ties|duct tape|παγάκι|παγάκια|γαργαλ|tickle|σφηνάκ|shot|αλκοόλ|alcohol|χωρίς χέρια|μάτια κλειστά|τυφλά|περιορισμός κίνησης|αγγίζ|ακουμπ|σπρώξ|δέσε|δεμένη|δεμένος/i;
+const SAFE_LOCKDOWN_CHALLENGE = 'Προαιρετικό ψηφιακό challenge χωρίς σωματική επαφή, περιορισμό κίνησης ή αλκοόλ. Ολοκλήρωσε ένα quiz ή επίλεξε PASS / STOP.';
+function sanitizeLockdownCopy(value, id = '') {
+  if (Array.isArray(value)) {
+    value.forEach((item, index) => {
+      if (typeof item === 'string') value[index] = UNSAFE_LOCKDOWN_COPY.test(item) ? SAFE_LOCKDOWN_CHALLENGE : item;
+      else sanitizeLockdownCopy(item, item?.id || id);
+    });
+    return value;
+  }
+  if (!value || typeof value !== 'object') return value;
+  for (const [key, current] of Object.entries(value)) {
+    if (typeof current === 'string' && UNSAFE_LOCKDOWN_COPY.test(current)) {
+      value[key] = ['title', 'name', 'label'].includes(key)
+        ? `Safe Digital Challenge ${value.id || id}`.trim()
+        : SAFE_LOCKDOWN_CHALLENGE;
+    } else if (current && typeof current === 'object') sanitizeLockdownCopy(current, value.id || id);
+  }
+  return value;
+}
+[
+  BINDING_OPTIONS, HOSTAGE_QUESTIONS, CONFESSION_LOCK, SPICY_WHEEL,
+  FOOT_ID, WHISPER_CLUES, MINI_GAMES, TRUE_FALSE,
+].forEach((items) => sanitizeLockdownCopy(items));
