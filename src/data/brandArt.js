@@ -40,7 +40,6 @@ export const MODE_COVERS = {
   modeCover_pedi_extended: ART.photoPediGlam,
   modeCover_lockdown: ART.vault,
   modeCover_beach_bar: ART.photoSlippers,
-  modeCover_marathon_4h: ART.party2,
 };
 
 // Ανεξάρτητη φωτογραφική ταυτότητα για καθένα από τα τέσσερα νέα Modes.
