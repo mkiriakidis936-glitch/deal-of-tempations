@@ -10,7 +10,7 @@ const TARGETS = [
   { path: '/invitation', label: 'Heist Night — Πρόσκληση' },
   { path: '/pajama-invite', label: 'Pajama Pedi-Glam — Πρόσκληση' },
   { path: '/modes-form', label: 'Επιλογή λειτουργιών παιχνιδιού' },
-  { path: '/modes-form?mode=pedi_extended', label: 'Pedi Extended' },
+  { path: '/modes-form?mode=marathon_4h', label: 'Pajama Marathon 5H' },
   { path: '/modes-form?mode=lockdown', label: 'Lockdown' },
   { path: '/modes-form?mode=beach_bar', label: 'Beach Bar' },
   { path: '/forms', label: 'Δημόσιες Φόρμες — Join the Heist / Event Request / Feedback' },
