@@ -37,7 +37,7 @@ export default function ActLockdown({ ctx, onDone, standalone }) {
       log('🔐 Λανθασμένος κωδικός από κινητό — δοκίμασε ξανά');
       sfx.fail();
     }
-  }, [mg.playerAction?.at, ld.stage]);
+  }, [mg.playerAction?.at, ld, ld.stage, setMg, log]);
 
   // Λήξη χρόνου + Midnight Penalty Surge (μόνο από το tablet).
   const mgRef = useRef(mg);
