@@ -65,7 +65,7 @@ export default function ModeShell({ modeId, ctx, act, children, onQR, onEnd, sho
         <div className="fixed inset-0 z-[60] flex flex-col items-center justify-center gap-4 p-6 text-center" style={{ background: 'rgba(120,0,20,.92)' }}>
           <div className="font-display text-5xl sm:text-7xl text-white comic-pulse">⏸ ΣΤΟΠ</div>
           <p className="text-lg sm:text-2xl font-body text-white max-w-xl">
-            Όλα σταματούν. Λύστε αμέσως κάθε δέσιμο, κατεβάστε τις μάσκες και ελέγξτε ότι όλες είναι ΟΚ πριν συνεχίσετε.
+            Όλα σταματούν αμέσως. Όλες επιβεβαιώνουν ότι είναι καλά και συνεχίζετε μόνο όταν όλες συμφωνούν.
           </p>
           {centralStopped
             ? <div className="rounded-lg bg-black/40 px-5 py-3 text-sm text-white">Η παύση ελέγχεται αποκλειστικά από τον Director.</div>
@@ -92,11 +92,11 @@ export default function ModeShell({ modeId, ctx, act, children, onQR, onEnd, sho
   );
 }
 
-// Υπενθύμιση ασφάλειας για κάθε κάρτα με δέσιμο.
+// Κοινή υπενθύμιση ασφάλειας για κάθε ψηφιακή πρόκληση.
 export function RestraintNote() {
   return (
     <div className="rounded-md border border-amber-400/60 bg-amber-500/10 px-3 py-2 text-xs sm:text-sm text-amber-100 font-body">
-      🎀 Δέσιμο: χαλαρά και ποτέ σε σφιχτό κόμπο, ψαλίδι/εύκολη λύση δίπλα σου, ποτέ μόνη. Όποια πει «ΣΤΟΠ» λύνεται αμέσως.
+      Οι προκλήσεις είναι προαιρετικές, χωρίς σωματική επαφή ή περιορισμό κίνησης. PASS και STOP είναι πάντα διαθέσιμα.
     </div>
   );
 }
