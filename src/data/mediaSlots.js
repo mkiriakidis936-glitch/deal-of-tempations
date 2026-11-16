@@ -38,3 +38,9 @@ export const MODE_COVER_SLOTS = [
   { id: 'modeCover_lockdown', modeId: 'lockdown', label: 'Pajama Lockdown' },
   { id: 'modeCover_beach_bar', modeId: 'beach_bar', label: 'Beach Bar Lockdown' },
 ];
+
+// Ξεχωριστά σημεία για τα δύο βίντεο έναρξης στην οθόνη TV.
+export const VIDEO_SLOTS = [
+  { id: 'welcomeVideo', label: 'WELCOME VIDEO', where: 'TV — όταν συνδέεται σε ενεργή συνεδρία' },
+  { id: 'countdownVideo', label: 'COUNTDOWN VIDEO', where: 'TV — αμέσως μετά την εντολή Έναρξη Παιχνιδιού' },
+];

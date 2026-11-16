@@ -57,7 +57,7 @@ export const PHOTO = {
 };
 
 // Τα βίντεο είναι προαιρετικά. Δεν υπάρχει πλέον υποχρεωτικό/προεπιλεγμένο βίντεο.
-export const FILM = { agent: '' };
+export const FILM = { agent: '', welcomeVideo: '', countdownVideo: '' };
 for (const id of PHOTO_SPOT_IDS) FILM[id] = '';
 
 export const SITE_VIDEOS = []; // επιπλέον βίντεο για το /site (Admin → Φωτογραφίες & Βίντεο)
@@ -112,6 +112,8 @@ export function applyMediaOverrides(o = {}) {
 
   // Κάθε ένα από τα έξι σημεία δέχεται είτε φωτογραφία είτε βίντεο, ή παραμένει κενό.
   FILM.agent = clearVideos ? '' : (str(o.agent) || '');
+  FILM.welcomeVideo = clearVideos ? '' : (str(o.welcomeVideo) || '');
+  FILM.countdownVideo = clearVideos ? '' : (str(o.countdownVideo) || '');
   for (const id of PHOTO_SPOT_IDS) {
     const value = str(o[id]);
     if (emptySlots.includes(id)) {

@@ -5,7 +5,7 @@ import ComicButton from '@/components/comic/ComicButton';
 import AdminSettingVersionHistory from '@/components/admin/AdminSettingVersionHistory';
 import { saveAdminSettingVersion } from '@/lib/adminVersionHistory';
 import { ART, DEFAULTS, applyMediaOverrides } from '@/data/brandArt';
-import { IMAGE_SLOTS, PHOTO_SPOTS, PHOTO_SPOT_IDS, MODE_COVER_SLOTS, GALLERIES } from '@/data/mediaSlots';
+import { IMAGE_SLOTS, PHOTO_SPOTS, PHOTO_SPOT_IDS, VIDEO_SLOTS, MODE_COVER_SLOTS, GALLERIES } from '@/data/mediaSlots';
 import { NEW_MODES } from '@/data/modes/modeRegistry';
 import ModeMediaManager from '@/components/admin/ModeMediaManager';
 import { MEDIA_KEY, fetchOverrides, uploadMedia, listMedia, deleteMedia, deleteAllMedia } from '@/lib/media';
@@ -189,6 +189,8 @@ export default function AdminMedia() {
         modeMedia: nextModeMedia,
         ...(kind === 'video' || kind === 'all' ? {
           agent: undefined,
+          welcomeVideo: undefined,
+          countdownVideo: undefined,
           siteVideos: [],
           ...Object.fromEntries(PHOTO_SPOT_IDS.map((id) => [id, typeof ov[id] === 'string' && !isVideoFile(ov[id]) && kind === 'video' ? ov[id] : undefined])),
         } : {}),
@@ -256,6 +258,28 @@ export default function AdminMedia() {
                   <ComicButton size="sm" variant="dark" disabled={!!busy} onClick={() => reset(s.id)}>↩︎ Αρχικό</ComicButton>
                 </div>
                 <Progress id={s.id} />
+              </div>
+            );
+          })}
+        </div>
+      </ComicPanel>
+
+      <ComicPanel className="bg-card space-y-3">
+        <div className="font-heading text-lg">🎬 ΒΙΝΤΕΟ ΕΝΑΡΞΗΣ TV</div>
+        <p className="text-xs text-foreground/60">Ανέβασε ξεχωριστά τα δύο βίντεο. Το WELCOME παίζει όταν η TV συνδέεται στη συνεδρία. Το COUNTDOWN παίζει όταν ξεκινά το παιχνίδι από το Tablet.</p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {VIDEO_SLOTS.map((slot) => {
+            const src = ov[slot.id] || '';
+            return (
+              <div key={slot.id} className="border-2 border-border/40 rounded-lg p-3 bg-secondary/40 space-y-2">
+                <div className="font-heading text-base text-primary">{slot.label}</div>
+                <div className="text-xs text-foreground/60">{slot.where}</div>
+                {src ? <Thumb src={src} video className="w-full aspect-video rounded" /> : <div className="w-full aspect-video rounded bg-black/40 flex items-center justify-center text-xs text-foreground/50">Δεν έχει ανέβει βίντεο</div>}
+                <div className="flex flex-wrap gap-2">
+                  <ComicButton size="sm" disabled={!!busy} onClick={() => pick(slot.id, 'slot', vidOne)}>{src ? '↻ Αλλαγή βίντεο' : '⬆️ Ανέβασμα βίντεο'}</ComicButton>
+                  {src && <ComicButton size="sm" variant="dark" disabled={!!busy} onClick={() => run(slot.id, () => save({ ...ov, [slot.id]: undefined }), 'Το βίντεο αφαιρέθηκε ✓')}>🗑 Αφαίρεση</ComicButton>}
+                </div>
+                <Progress id={slot.id} />
               </div>
             );
           })}
