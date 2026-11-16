@@ -101,7 +101,7 @@ export default function ModeMobile({ state, me, updateState, onChangePlayer, ses
         {isLockdown && ld.stage === 'exit' && (
           <div className="rounded-lg p-3 space-y-2" style={{ background: '#120006', border: '1px solid #FF003C' }}>
             <div className="font-heading text-center">🔐 ΚΩΔΙΚΟΣ ΑΠΟΔΡΑΣΗΣ</div>
-            <input inputMode="numeric" maxLength={4} value={mobileCode} onChange={(e) => setMobileCode(e.target.value.replace(/\\D/g, '').slice(0, 4))} className="w-full rounded bg-black border border-red-700 p-3 text-center text-3xl tracking-[.5em]" placeholder="••••" />
+            <input inputMode="numeric" maxLength={4} value={mobileCode} onChange={(e) => setMobileCode(e.target.value.replace(/\D/g, '').slice(0, 4))} className="w-full rounded bg-black border border-red-700 p-3 text-center text-3xl tracking-[.5em]" placeholder="••••" />
             <button disabled={mobileCode.length !== 4 || !!mg.playerAction} onClick={() => { sendAction('lockdown_exit_code', { code: mobileCode }); setMobileCode(''); }} className="w-full rounded-lg bg-red-700 p-3 font-heading disabled:opacity-40">ΥΠΟΒΟΛΗ ΚΩΔΙΚΟΥ</button>
           </div>
         )}
@@ -152,7 +152,7 @@ export default function ModeMobile({ state, me, updateState, onChangePlayer, ses
                 </button>
               ))}
             </div>
-            <input inputMode="numeric" maxLength={4} value={mobileCode} onChange={(e) => setMobileCode(e.target.value.replace(/\\D/g, '').slice(0, 4))} className="w-full rounded bg-black border border-amber-600 p-3 text-center text-3xl tracking-[.5em]" placeholder="Κωδικός 4 ψηφίων" />
+            <input inputMode="numeric" maxLength={4} value={mobileCode} onChange={(e) => setMobileCode(e.target.value.replace(/\D/g, '').slice(0, 4))} className="w-full rounded bg-black border border-amber-600 p-3 text-center text-3xl tracking-[.5em]" placeholder="Κωδικός 4 ψηφίων" />
             <button disabled={mobileCode.length !== 4 || !!mg.playerAction || mg.vaultUnlocked} onClick={() => { sendAction('morning_code', { code: mobileCode }); setMobileCode(''); }} className="w-full rounded-lg bg-amber-500 p-3 font-heading text-black disabled:opacity-40">ΥΠΟΒΟΛΗ ΚΩΔΙΚΟΥ</button>
           </div>
         )}
