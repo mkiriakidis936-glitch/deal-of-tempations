@@ -60,22 +60,20 @@ export default function PajamaGiftTrial({ players, onDone, canAssign, canStart }
         <div className="rounded-xl border border-fuchsia-500/50 bg-fuchsia-950/40 p-3 space-y-2">
           <div className="font-heading text-lg text-fuchsia-100">THE ULTIMATE GROUP GIFT TRIAL</div>
           <p className="text-sm text-pink-50/90">
-            Η ομάδα επιλέγει <b>ομόφωνα ή με κλήρο</b> μία παίκτρια που θα θυσιαστεί. Δένεται αυστηρά —
-            hogtie με κλειστά μάτια, ή χέρια ψηλά σε δοκάρι με τα πόδια ενωμένα, ώστε να στέκεται μόνο στις μύτες.
+            Η ομάδα επιλέγει εθελοντικά μία παίκτρια για να ηγηθεί του τελικού ψηφιακού challenge. Η συμμετοχή είναι προαιρετική και μπορεί να διακοπεί με PASS ή STOP.
           </p>
           <p className="text-sm text-pink-50/90">
-            Οι υπόλοιπες φοράνε τις ειδικές κάλτσες, παίρνουν μικρόφωνο για καραόκε, χορεύουν γύρω της και
-            γαργαλάνε τα πέλματα ασταμάτητα. Η δεμένη πρέπει να κρατήσει <b>ισορροπία, χωρίς να πέσει και χωρίς να λυθεί</b>.
+            Οι υπόλοιπες συνεργάζονται σε karaoke trivia και ομαδικούς γρίφους. Η ομάδα προσπαθεί να ολοκληρώσει την πρόκληση μέσα στον διαθέσιμο χρόνο.
           </p>
         </div>
 
         {players.length < 2 ? (
           <div className="rounded-xl border border-amber-500/40 bg-amber-950/30 p-3 text-center space-y-3">
-            <p className="text-sm">Δεν υπάρχουν αρκετές διαθέσιμες συμμετοχές για την ομαδική δοκιμασία.</p>
+            <p className="text-sm">Δεν υπάρχουν αρκετές διαθέσιμες συμμετοχές για το ομαδικό quiz.</p>
             <button onClick={() => onDone({ success: false, sacrificedName: '', skipped: true, unlockedAt: Date.now() })} className="w-full py-3 rounded-lg font-heading text-lg bg-pink-600 text-white">ΠΑΡΑΛΕΙΨΗ ΔΟΚΙΜΑΣΙΑΣ → ΦΙΝΑΛΕ</button>
           </div>
         ) : <div className="rounded-xl border border-pink-500/40 bg-pink-950/50 p-3">
-          <div className="text-xs font-bold uppercase tracking-widest text-pink-300 mb-2">Η θυσία</div>
+          <div className="text-xs font-bold uppercase tracking-widest text-pink-300 mb-2">Η εθελόντρια</div>
           <div className="grid grid-cols-2 gap-2">
             {players.map((p) => (
               <button
@@ -148,7 +146,7 @@ export default function PajamaGiftTrial({ players, onDone, canAssign, canStart }
               ΤΟ ΔΩΡΟ ΞΕΚΛΕΙΔΩΘΗΚΕ
             </div>
             <div className="text-sm text-pink-100">
-              Η {sacrificed?.name} άντεξε. Μυστικός κωδικός για το Vault:
+              Η {sacrificed?.name} ολοκλήρωσε το challenge. Μυστικός κωδικός για το Vault:
             </div>
             <div className="font-heading text-2xl tracking-[0.25em] text-yellow-300 drop-shadow-[0_0_18px_rgba(255,215,0,0.8)]">
               {GIFT_CODE}
