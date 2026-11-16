@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { MODE_THEMES, modeMeta, ACT_META } from '@/data/modes/modeRegistry';
 import { fmt, timerLeft, useTick, setGameStopActive } from '@/lib/modeKit';
+import GameDurationClock from '@/components/shared/GameDurationClock';
 
 // Κοινό περίβλημα όλων των νέων modes: τίτλος, χρονόμετρο, ΣΤΟΠ για όλες, ημερολόγιο γεγονότων.
-export default function ModeShell({ modeId, ctx, act, children, onQR, onEnd, showTimer = true }) {
+export default function ModeShell({ modeId, ctx, state, act, children, onQR, onEnd, showTimer = true }) {
   const theme = MODE_THEMES[modeId] || MODE_THEMES.lockdown;
   const meta = modeMeta(modeId);
   const actTitle = modeId === 'marathon_4h' && act === 'board' ? 'Act 1 · Pajama Pedi-Glam' : (ACT_META[act]?.title || act);
@@ -16,6 +17,7 @@ export default function ModeShell({ modeId, ctx, act, children, onQR, onEnd, sho
 
   return (
     <div className="min-h-screen p-3 pb-28 text-foreground" style={{ background: theme.bg }}>
+      <GameDurationClock state={state} />
       <div className="max-w-5xl mx-auto space-y-3">
         <header className="flex items-center justify-between gap-3 pr-28">
           <div className="min-w-0">
