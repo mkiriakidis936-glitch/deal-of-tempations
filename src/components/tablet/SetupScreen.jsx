@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import ComicPanel from '@/components/comic/ComicPanel';
 import ComicButton from '@/components/comic/ComicButton';
-import { GAME_MODES, FOOTWEAR_LEVELS, TOENAIL_PERKS } from '@/data/gameConfig';
+import { GAME_MODES, FOOTWEAR_LEVELS, TOENAIL_PERKS, INTENSITY_LEVELS } from '@/data/gameConfig';
 import { createInitialState, generateSessionCode } from '@/lib/gameLogic';
 import { isNewMode, modeMeta } from '@/data/modes/modeRegistry';
 import { MODE_COVERS, MODE_MEDIA } from '@/data/brandArt';
@@ -20,6 +20,7 @@ const DURATION_OPTIONS = [
 export default function SetupScreen({ onStart }) {
   const [duration, setDuration] = useState('afternoon');
   const [mode, setMode] = useState('classic');
+  const [intensity, setIntensity] = useState('standard');
   const [players, setPlayers] = useState([
     { name: '', footwearLevel: 2, toenailPerk: 'red' },
     { name: '', footwearLevel: 2, toenailPerk: 'pink' },
@@ -192,7 +193,8 @@ export default function SetupScreen({ onStart }) {
     const valid = players.filter((p) => p.name.trim());
     if (valid.length < minPlayers) return;
     const selectedScenario = customScenarios.find((scenario) => scenario.id === selectedScenarioId && scenario.modeId === mode);
-    const state = { ...createInitialState(mode, 'standard', valid), testMode,
+    const selectedIntensity = mode === 'classic' ? intensity : 'standard';
+    const state = { ...createInitialState(mode, selectedIntensity, valid), testMode,
       ...(selectedScenario ? { customScenario: { id: selectedScenario.id, name: selectedScenario.name, description: selectedScenario.description, collections: selectedScenario.collections || [] } } : {})
     };
     state.countdownStartedAt = Date.now();
@@ -203,7 +205,7 @@ export default function SetupScreen({ onStart }) {
       sessionCode: generateSessionCode(),
       mode,
       duration,
-      intensity: 'standard',
+      intensity: selectedIntensity,
       stage: state.stage,
       state,
     });
@@ -298,6 +300,26 @@ export default function SetupScreen({ onStart }) {
             ))}
           </div>
         </ComicPanel>
+
+        {mode === 'classic' && (
+          <ComicPanel className="bg-card">
+            <h2 className="font-heading text-2xl mb-3 text-primary">2. ΕΝΤΑΣΗ ΠΑΙΧΝΙΔΙΟΥ</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+              {INTENSITY_LEVELS.map((level) => (
+                <button
+                  key={level.id}
+                  type="button"
+                  onClick={() => setIntensity(level.id)}
+                  className={`comic-panel-sm p-3 text-left transition-all ${intensity === level.id ? 'bg-primary/20 ring-2 ring-primary' : 'bg-secondary'}`}
+                  aria-pressed={intensity === level.id}
+                >
+                  <div className="font-heading text-lg text-foreground">{level.icon} {level.name}</div>
+                  <div className="text-xs text-foreground/70 font-body">{level.desc}</div>
+                </button>
+              ))}
+            </div>
+          </ComicPanel>
+        )}
 
         {newMode && (() => {
           const media = MODE_MEDIA[mode] || {};

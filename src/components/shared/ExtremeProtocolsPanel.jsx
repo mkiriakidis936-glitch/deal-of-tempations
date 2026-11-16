@@ -22,10 +22,12 @@ export default function ExtremeProtocolsPanel({ state, updateState }) {
   const [targetBId, setTargetBId] = useState(null);
   const lastEventCount = useRef(null);
 
-  const isUltra = false;
+  const isEnabled = state?.intensity === 'extreme' || state?.intensity === 'ultra';
+  const isUltra = state?.intensity === 'ultra';
   const eventCount = state?.history?.length || 0;
 
   useEffect(() => {
+    if (!isEnabled) { lastEventCount.current = eventCount; return; }
     if (lastEventCount.current === null) { lastEventCount.current = eventCount; return; }
     if (eventCount - lastEventCount.current < 2) return;
     lastEventCount.current = eventCount;
@@ -34,7 +36,7 @@ export default function ExtremeProtocolsPanel({ state, updateState }) {
     const pick = EXTREME_PROTOCOLS[Math.floor(Math.random() * EXTREME_PROTOCOLS.length)];
     setSelected(pick);
     setShow(true);
-  }, [eventCount]);
+  }, [eventCount, isEnabled, show, selected]);
   const players = state?.players || [];
   const target = players.find((p) => p.id === targetId);
   const targetB = players.find((p) => p.id === targetBId);
@@ -60,6 +62,8 @@ export default function ExtremeProtocolsPanel({ state, updateState }) {
     setActive(false);
     setTargetId(null);
   }
+
+  if (!isEnabled) return null;
 
   return (
     <>

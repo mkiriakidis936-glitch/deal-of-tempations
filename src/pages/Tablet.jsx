@@ -64,7 +64,6 @@ export default function Tablet() {
     const tactical = state.extra4?.tactical || {};
     if (tactical.modeId !== state.mode) {
       updateState({
-        ...(state.mg ? { mg: { ...state.mg, intensity: 'standard' } } : { intensity: 'standard' }),
         extra4: {
           ...(state.extra4 || {}),
           tactical: { ...tactical, level: 'standard', modeId: state.mode },
