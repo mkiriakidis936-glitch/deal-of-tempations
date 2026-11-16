@@ -62,6 +62,7 @@ export default function AdminIntakes() {
   }
 
   async function handleDeleteBach(id) {
+    if (!window.confirm('Να διαγραφεί οριστικά το Bachelorette intake;')) return;
     try {
       await base44.entities.BacheloretteIntake.delete(id);
       setBachIntakes((prev) => prev.filter((i) => i.id !== id));
