@@ -47,7 +47,7 @@ const NAV_GROUPS = [
     id: 'game-management',
     label: '02 · ΔΙΑΧΕΙΡΙΣΗ ΠΑΙΧΝΙΔΙΟΥ',
     tabs: [
-      { id: 'modes', label: '🎮 Game Modes' },
+      { id: 'modes', label: '🎮 Λειτουργίες παιχνιδιού' },
     ],
   },
   {
@@ -63,24 +63,24 @@ const NAV_GROUPS = [
     id: 'content',
     label: '04 · ΠΕΡΙΕΧΟΜΕΝΟ',
     tabs: [
-      { id: 'editor', label: '🃏 Decks & Game Editor' },
-      { id: 'scenarios', label: '🎭 Scenarios' },
-      { id: 'media', label: '🖼️ Media Library' },
+      { id: 'editor', label: '🃏 Κάρτες & επεξεργασία παιχνιδιού' },
+      { id: 'scenarios', label: '🎭 Σενάρια' },
+      { id: 'media', label: '🖼️ Βιβλιοθήκη πολυμέσων' },
     ],
   },
   {
     id: 'experiences',
-    label: '05 · EXPERIENCES',
+    label: '05 · ΕΜΠΕΙΡΙΕΣ',
     tabs: [
-      { id: 'website', label: '🌐 Website' },
-      { id: 'invitations', label: '✉️ Digital Invitations' },
-      { id: 'forms', label: '📝 Forms & RSVP' },
-      { id: 'links', label: '🔗 Links & QR' },
+      { id: 'website', label: '🌐 Ιστοσελίδα' },
+      { id: 'invitations', label: '✉️ Ψηφιακές προσκλήσεις' },
+      { id: 'forms', label: '📝 Φόρμες & δηλώσεις συμμετοχής' },
+      { id: 'links', label: '🔗 Σύνδεσμοι & QR' },
     ],
   },
   {
     id: 'live-control',
-    label: '06 · LIVE CONTROL',
+    label: '06 · ΖΩΝΤΑΝΟΣ ΕΛΕΓΧΟΣ',
     tabs: [
       { id: 'extra4', label: '✦ EXTRA 4.0' },
       { id: 'live', label: '⏯️ Ζωντανός έλεγχος' },
@@ -327,7 +327,7 @@ export default function Admin() {
       <div className="max-w-6xl mx-auto space-y-3">
         <ComicPanel className="bg-secondary flex items-center justify-between gap-2">
           <div className="min-w-0">
-            <div className="font-heading text-2xl sm:text-3xl comic-text-stroke text-primary">🔧 CONTROL CENTER</div>
+            <div className="font-heading text-2xl sm:text-3xl comic-text-stroke text-primary">🔧 ΚΕΝΤΡΟ ΕΛΕΓΧΟΥ</div>
             <div className="text-[11px] sm:text-xs font-bold text-foreground/70 font-body truncate">DEAL OF TEMPTATION — Κεντρική διαχείριση εφαρμογής</div>
           </div>
           <ComicButton variant="dark" size="sm" onClick={loadSessions} disabled={loading}>
@@ -354,7 +354,7 @@ export default function Admin() {
         </div>
 
         <div className="text-center text-xs text-foreground/50 pt-2 font-body">
-          🔧 Admin Panel — {sessions.length} συνεδρίες φορτωμένες
+          🔧 Πίνακας διαχείρισης — {sessions.length} συνεδρίες φορτωμένες
         </div>
       </div>
     </div>
