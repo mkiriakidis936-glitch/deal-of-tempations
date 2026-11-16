@@ -157,6 +157,20 @@ export default function ModeMobile({ state, me, updateState, onChangePlayer, ses
           </div>
         )}
 
+        {act === 'beach' && bb.phase === 'finale' && bb.finalChallenge?.card && (
+          <div className="rounded-lg p-3 space-y-2" style={{ background: '#211b08', border: '1px solid #FFD700' }}>
+            <div className="font-heading text-amber-200">🏖️ ΤΕΛΙΚΟ ΟΜΑΔΙΚΟ CHALLENGE</div>
+            <div className="font-heading">{bb.finalChallenge.card.title}</div>
+            <div className="text-sm">{bb.finalChallenge.card.text}</div>
+            {bb.finalChallenge.responses?.[me.id] ? <div className="text-center text-sm">Η επιλογή σου καταχωρήθηκε: {bb.finalChallenge.responses[me.id] === 'done' ? 'Ολοκλήρωσα' : 'PASS'}</div> : (
+              <div className="grid grid-cols-2 gap-2">
+                <button disabled={!!mg.playerAction} onClick={() => sendAction('beach_finale_response', { value: 'done' })} className="rounded-lg bg-emerald-700 p-3 font-heading disabled:opacity-40">ΟΛΟΚΛΗΡΩΣΑ</button>
+                <button disabled={!!mg.playerAction} onClick={() => sendAction('beach_finale_response', { value: 'pass' })} className="rounded-lg bg-secondary p-3 font-heading disabled:opacity-40">PASS</button>
+              </div>
+            )}
+          </div>
+        )}
+
         {act === 'beach' && bb.phase === 'checkin' && (
           <div className="rounded-lg p-3 space-y-2" style={{ background: '#071b20', border: '1px solid #00F2FE' }}>
             <div className="font-heading">🩴 BEACH BAR · CHECK-IN</div>
