@@ -233,3 +233,49 @@ body.dot-mobile-experience :focus-visible {
     transition-duration: .01ms !important;
   }
 }
+
+.dot-tv-moment {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  z-index: 48;
+  width: min(82vw, 720px);
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: clamp(18px, 3vw, 30px);
+  border: 1px solid rgba(226, 193, 120, .55);
+  border-radius: 18px;
+  background: linear-gradient(145deg, rgba(16, 11, 23, .94), rgba(35, 22, 42, .91));
+  box-shadow: 0 24px 90px rgba(0,0,0,.58), 0 0 70px rgba(139,92,246,.2), inset 0 1px 0 rgba(255,255,255,.08);
+  text-align: center;
+  backdrop-filter: blur(18px);
+  pointer-events: none;
+  animation: dot-tv-moment-in .42s cubic-bezier(.16,1,.3,1) both;
+}
+.dot-tv-moment-kicker {
+  color: #e4c77f;
+  font: 600 9px/1 var(--font-ui);
+  letter-spacing: .32em;
+}
+.dot-tv-moment strong {
+  color: #fff3d7;
+  font: 600 clamp(19px, 3vw, 34px)/1.15 var(--font-display);
+  letter-spacing: .08em;
+  text-shadow: 0 0 28px rgba(212,175,55,.25);
+}
+.dot-tv-moment small {
+  max-width: 100%;
+  color: rgba(241,229,204,.78);
+  font: 500 clamp(10px, 1.25vw, 14px)/1.4 var(--font-ui);
+  letter-spacing: .04em;
+}
+@keyframes dot-tv-moment-in {
+  from { opacity: 0; filter: blur(12px); transform: translate(-50%, -46%) scale(.96); }
+  to { opacity: 1; filter: blur(0); transform: translate(-50%, -50%) scale(1); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .dot-tv-moment { animation: none; }
+}
