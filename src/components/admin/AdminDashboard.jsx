@@ -26,7 +26,7 @@ export default function AdminDashboard({ sessions, loading }) {
     count: sessions.filter((s) => s.state?.intensity === i.id || s.intensity === i.id).length,
   }));
 
-  const stageNames = { 0: 'Stage 0 (Setup)', 1: 'Stage 1 (Patrol)', 2: 'Stage 2 (Interrogation)', 3: 'Stage 3 (Finale)' };
+  const stageNames = { 0: 'Στάδιο 0 (Προετοιμασία)', 1: 'Στάδιο 1 (Περιπολία)', 2: 'Στάδιο 2 (Ανάκριση)', 3: 'Στάδιο 3 (Φινάλε)' };
   const byStage = [0, 1, 2, 3].map((st) => ({
     stage: st,
     name: stageNames[st],
