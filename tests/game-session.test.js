@@ -18,6 +18,7 @@ test('all four approved digital modes are registered with fixed durations', () =
   ]);
   assert.equal(NEW_MODES.find((mode) => mode.id === 'lockdown').minutes, 60);
   assert.equal(NEW_MODES.find((mode) => mode.id === 'marathon_4h').minutes, 240);
+  assert.deepEqual(NEW_MODES.find((mode) => mode.id === 'marathon_4h').acts, ['board', 'midnight', 'lockdown', 'morning']);
   assert.equal(NEW_MODES.find((mode) => mode.id === 'marathon_4h').actDurations.board
     + NEW_MODES.find((mode) => mode.id === 'marathon_4h').actDurations.midnight
     + NEW_MODES.find((mode) => mode.id === 'marathon_4h').actDurations.lockdown

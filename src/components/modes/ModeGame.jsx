@@ -36,6 +36,7 @@ export default function ModeGame({ state, updateState, onEnd, onQR, playerProfil
   const acts = meta.acts;
   const actIndex = Math.min(mg.actIndex || 0, acts.length - 1);
   const act = acts[actIndex];
+  const actTitleFor = (item) => state.mode === 'marathon_4h' && item === 'board' ? 'Act 1 · Pajama Pedi-Glam' : ACT_META[item].title;
   const theme = MODE_THEMES[state.mode];
   const multi = acts.length > 1;
   useTick(true, 15000);
@@ -43,7 +44,7 @@ export default function ModeGame({ state, updateState, onEnd, onQR, playerProfil
   function nextAct() {
     if (actIndex + 1 >= acts.length) { setMg({ finishedAll: true }); log('🏁 Το παιχνίδι ολοκληρώθηκε'); return; }
     setMg({ actIndex: actIndex + 1, hostageIdx: (mg.hostageIdx || 0) + 1, actStartedAt: Date.now() });
-    log(`➡️ ${ACT_META[acts[actIndex + 1]].title}`);
+    log(`➡️ ${actTitleFor(acts[actIndex + 1])}`);
   }
   const finishAll = () => setMg({ finishedAll: true });
 
@@ -74,8 +75,8 @@ export default function ModeGame({ state, updateState, onEnd, onQR, playerProfil
               className="rounded-md p-2 text-xs"
               style={{ background: i === actIndex ? `${theme.accent}33` : '#ffffff0a', border: `1px solid ${i === actIndex ? theme.accent : '#ffffff22'}`, opacity: i < actIndex ? 0.5 : 1 }}
             >
-              <div className="font-heading">{i < actIndex ? '✓ ' : ''}{ACT_META[a].title.split(' · ')[0]}</div>
-              <div className="opacity-70">{ACT_META[a].title.split(' · ')[1]} · {actMinutes(a)}′</div>
+              <div className="font-heading">{i < actIndex ? '✓ ' : ''}{actTitleFor(a).split(' · ')[0]}</div>
+              <div className="opacity-70">{actTitleFor(a).split(' · ')[1]} · {actMinutes(a)}′</div>
             </div>
           ))}
         </div>
