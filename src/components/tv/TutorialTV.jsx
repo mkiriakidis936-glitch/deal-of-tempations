@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 
 const STEPS = [
   { title: '1 · ΣΥΝΔΕΣΗ ΚΙΝΗΤΟΥ', detail: 'Σκάναρε το QR της TV με την κάμερα του κινητού και άνοιξε την προσωπική οθόνη συμμετοχής.' },
@@ -8,6 +8,14 @@ const STEPS = [
 ];
 
 export default function TutorialTV({ tutorial }) {
+  const [remaining, setRemaining] = useState(tutorial?.remaining || 60);
+  useEffect(() => {
+    if (!tutorial?.active || !tutorial.startedAt) return undefined;
+    const tick = () => setRemaining(Math.max(0, 60 - Math.floor((Date.now() - tutorial.startedAt) / 1000)));
+    tick();
+    const interval = setInterval(tick, 250);
+    return () => clearInterval(interval);
+  }, [tutorial?.active, tutorial?.startedAt]);
   if (!tutorial?.active) return null;
   const step = STEPS[Math.max(0, Math.min(STEPS.length - 1, tutorial.step || 0))];
   return (
@@ -17,9 +25,9 @@ export default function TutorialTV({ tutorial }) {
         <div className="font-heading text-5xl sm:text-7xl text-[#f3df9e]">{step.title}</div>
         <p className="mx-auto max-w-3xl text-2xl sm:text-3xl leading-relaxed text-white">{step.detail}</p>
         <div className="mx-auto h-2 max-w-2xl overflow-hidden rounded-full bg-white/10">
-          <div className="h-full bg-[#c9a94e] transition-all" style={{ width: `${(tutorial.remaining / 60) * 100}%` }} />
+          <div className="h-full bg-[#c9a94e] transition-all" style={{ width: `${(remaining / 60) * 100}%` }} />
         </div>
-        <div className="font-heading text-4xl tabular-nums text-[#c9a94e]">{tutorial.remaining}″</div>
+        <div className="font-heading text-4xl tabular-nums text-[#c9a94e]">{remaining}″</div>
       </div>
     </div>
   );

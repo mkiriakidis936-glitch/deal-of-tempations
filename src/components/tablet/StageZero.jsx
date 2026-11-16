@@ -17,19 +17,16 @@ export default function StageZero({ state, updateState }) {
   useEffect(() => {
     if (!tutorialActive) return undefined;
     const startedAt = Date.now();
+    let lastPublishedStep = 0;
     const interval = setInterval(() => {
       const elapsed = Math.floor((Date.now() - startedAt) / 1000);
       const remaining = Math.max(0, 60 - elapsed);
       setTutorialRemaining(remaining);
       const tutorialStep = Math.min(3, Math.floor(elapsed / 15));
-      updateState({
-        tutorialDemo: {
-          active: remaining > 0,
-          step: tutorialStep,
-          remaining,
-          startedAt,
-        },
-      });
+      if (tutorialStep !== lastPublishedStep) {
+        lastPublishedStep = tutorialStep;
+        updateState({ tutorialDemo: { active: true, step: tutorialStep, remaining, startedAt } });
+      }
       if (remaining === 0) {
         clearInterval(interval);
         setTutorialActive(false);
