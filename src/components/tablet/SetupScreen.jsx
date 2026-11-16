@@ -195,6 +195,7 @@ export default function SetupScreen({ onStart }) {
     const state = { ...createInitialState(mode, 'standard', valid), testMode,
       ...(selectedScenario ? { customScenario: { id: selectedScenario.id, name: selectedScenario.name, description: selectedScenario.description, collections: selectedScenario.collections || [] } } : {})
     };
+    state.countdownStartedAt = Date.now();
     if (mode === 'beach_bar' && valid.some((p) => pajamaApproved.some((i) => (i.name || '').trim() === p.name.trim() && i.alcohol === 'free'))) {
       state.mg = { ...state.mg, alcoholFree: true };
     }

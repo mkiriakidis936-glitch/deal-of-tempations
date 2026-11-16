@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
 
-export default function TVLaunchVideos({ sessionCode, welcomeSrc, countdownSrc, introStartedAt, onCountdownComplete }) {
+export default function TVLaunchVideos({ sessionCode, welcomeSrc, countdownSrc, countdownStartedAt }) {
   const [active, setActive] = useState('idle');
   const [welcomedSession, setWelcomedSession] = useState('');
   const [countdownPlayedFor, setCountdownPlayedFor] = useState(null);
+  const [pendingCountdown, setPendingCountdown] = useState(false);
 
   useEffect(() => {
     if (!sessionCode) return;
@@ -12,15 +13,25 @@ export default function TVLaunchVideos({ sessionCode, welcomeSrc, countdownSrc, 
   }, [sessionCode, welcomeSrc, welcomedSession]);
 
   useEffect(() => {
-    if (!introStartedAt || !countdownSrc || countdownPlayedFor === introStartedAt) return;
-    setCountdownPlayedFor(introStartedAt);
-    setActive('countdown');
-  }, [introStartedAt, countdownSrc, countdownPlayedFor]);
+    if (!countdownStartedAt || !countdownSrc || countdownPlayedFor === countdownStartedAt) return;
+    setCountdownPlayedFor(countdownStartedAt);
+    const welcomeMustPlay = Boolean(welcomeSrc && welcomedSession !== sessionCode);
+    if (welcomeMustPlay) setPendingCountdown(true);
+    else setActive('countdown');
+  }, [countdownStartedAt, countdownSrc, welcomeSrc, welcomedSession, sessionCode, countdownPlayedFor]);
 
   const finish = () => {
-    if (active === 'welcome') setWelcomedSession(sessionCode);
-    if (active === 'countdown') onCountdownComplete?.();
-    setActive('idle');
+    if (active === 'welcome') {
+      setWelcomedSession(sessionCode);
+      if (pendingCountdown && countdownSrc) {
+        setPendingCountdown(false);
+        setActive('countdown');
+      } else {
+        setActive('idle');
+      }
+      return;
+    }
+    if (active === 'countdown') setActive('idle');
   };
 
   const src = active === 'welcome' ? welcomeSrc : active === 'countdown' ? countdownSrc : '';

@@ -150,7 +150,6 @@ function formatEvent(event) {
 export default function TVScreen() {
   const { session, state, loading, joinByCode } = useGameSession({ autoLoad: false });
   const [fullscreen, setFullscreen] = useState(false);
-  const [countdownCompletedAt, setCountdownCompletedAt] = useState(null);
   const feedToken = new URLSearchParams(window.location.search).get('feedToken') || '';
 
   // Sync με Admin & links: κωδικός στο URL ή η ενεργή συνεδρία του Admin ανοίγει πάντα εδώ.
@@ -168,7 +167,6 @@ export default function TVScreen() {
 
   useAudioSync(state);
 
-  React.useEffect(() => { setCountdownCompletedAt(null); }, [state?.intro?.startedAt]);
 
   const formattedHistory = useMemo(() => (state?.history || []).map(formatEvent), [state?.history]);
 
@@ -224,10 +222,9 @@ export default function TVScreen() {
         sessionCode={session.sessionCode}
         welcomeSrc={FILM.welcomeVideo}
         countdownSrc={FILM.countdownVideo}
-        introStartedAt={state.intro?.startedAt}
-        onCountdownComplete={() => setCountdownCompletedAt(Date.now())}
+        countdownStartedAt={state.countdownStartedAt}
       />
-      <IntroSequenceTV state={countdownCompletedAt && state.intro?.startedAt ? { ...state, intro: { ...state.intro, startedAt: countdownCompletedAt } } : state} />
+      <IntroSequenceTV state={state} />
       <NightTV state={state} />
       <WantedStrobePanic wantedLevel={wantedLevel} playerName={mostWanted?.name} />
       <ShowModeTV state={state} />
