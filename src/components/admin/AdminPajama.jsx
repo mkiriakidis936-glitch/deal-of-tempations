@@ -113,7 +113,7 @@ export default function AdminPajama() {
   return (
     <div className="space-y-3">
       <ComicPanel className="bg-secondary">
-        <div className="font-heading text-2xl text-pink-200">🩴 PAJAMA PEDI-GLAM — ΠΕΡΙΕΧΟΜΕΝΟ</div>
+        <div className="font-heading text-2xl text-pink-200">🩴 ΠΕΡΙΕΧΟΜΕΝΟ PAJAMA</div>
         <div className="text-xs text-foreground/60 mt-1">
           Επεξεργάσου κάρτες και μυστικά. Οι αλλαγές περνούν αμέσως στο παιχνίδι (Splash → Dashboard → Confessions).
         </div>
@@ -144,7 +144,7 @@ export default function AdminPajama() {
 
       {tab === 'secrets' && (
         <ComicPanel className="bg-card space-y-2">
-          <div className="font-heading text-lg">🤫 Ιδέες για Secret Confessions ({secrets.length})</div>
+          <div className="font-heading text-lg">🤫 Ιδέες για Μυστικές εξομολογήσεις ({secrets.length})</div>
           {secrets.map((row) => (
             <SecretRow key={row.id} row={row} onSave={saveSecret} onDelete={removeRow} />
           ))}
@@ -153,7 +153,7 @@ export default function AdminPajama() {
               value={newSecret}
               onChange={(e) => setNewSecret(e.target.value)}
               rows={2}
-              placeholder="Νέο μυστικό..."
+              placeholder="Νέα μυστική εξομολόγηση..."
               className="flex-1 px-2 py-1.5 rounded bg-slate-950/60 border border-pink-500/30 text-pink-50 text-sm focus:outline-none"
             />
             <ComicButton variant="green" size="sm" onClick={addSecret} disabled={!newSecret.trim()}>➕</ComicButton>
