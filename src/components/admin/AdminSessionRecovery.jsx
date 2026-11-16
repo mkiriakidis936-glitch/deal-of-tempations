@@ -13,7 +13,7 @@ const dateLabel = (value) => {
 
 export default function AdminSessionRecovery() {
   const [sessions, setSessions] = useState([]);
-  const [σημεία επαναφοράς, setSnapshots] = useState([]);
+  const [snapshots, setSnapshots] = useState([]);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(null);
   const [message, setMessage] = useState(null);
@@ -38,15 +38,15 @@ export default function AdminSessionRecovery() {
 
   useEffect(() => { load(); }, [load]);
 
-  const σημεία επαναφοράςBySession = useMemo(() => {
+  const snapshotsBySession = useMemo(() => {
     const grouped = new Map();
-    σημεία επαναφοράς.forEach((snapshot) => {
+    snapshots.forEach((snapshot) => {
       const key = snapshot.sessionId;
       if (!grouped.has(key)) grouped.set(key, []);
       grouped.get(key).push(snapshot);
     });
     return grouped;
-  }, [σημεία επαναφοράς]);
+  }, [snapshots]);
 
   async function createSnapshot(session, label = 'Χειροκίνητο αντίγραφο') {
     const state = session.state || {};
@@ -128,7 +128,7 @@ export default function AdminSessionRecovery() {
         <p className="mt-1 text-xs text-foreground/65">Αποθήκευση σημείων επαναφοράς και ασφαλής συνέχιση υπάρχουσας συνεδρίας. Η επαναφορά δημιουργεί πρώτα snapshot της τρέχουσας κατάστασης.</p>
         <div className="mt-3 flex flex-wrap gap-2">
           <span className="rounded-lg bg-background/60 px-3 py-2 text-xs font-bold">{sessions.length} συνεδρίες</span>
-          <span className="rounded-lg bg-background/60 px-3 py-2 text-xs font-bold">{σημεία επαναφοράς.length} σημεία επαναφοράς</span>
+          <span className="rounded-lg bg-background/60 px-3 py-2 text-xs font-bold">{snapshots.length} σημεία επαναφοράς</span>
           <ComicButton size="sm" variant="dark" onClick={load}>↻ Ανανέωση</ComicButton>
         </div>
       </ComicPanel>
