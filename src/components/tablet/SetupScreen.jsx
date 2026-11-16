@@ -202,7 +202,7 @@ export default function SetupScreen({ onStart }) {
     const state = { ...createInitialState(mode, selectedIntensity, valid), gameDurationMinutes: selectedDuration.minutes, safetyProfile: { safeWord: safeWord.trim(), confirmedAt: Date.now() }, testMode,
       ...(selectedScenario ? { customScenario: { id: selectedScenario.id, name: selectedScenario.name, description: selectedScenario.description, collections: selectedScenario.collections || [] } } : {})
     };
-    if (mode === 'beach_bar' && valid.some((p) => pajamaApproved.some((i) => (i.name || '').trim() === p.name.trim() && i.alcohol === 'free'))) {
+    if (mode === 'beach_bar') {
       state.mg = { ...state.mg, alcoholFree: true };
     }
     await onStart({
