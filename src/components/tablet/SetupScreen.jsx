@@ -208,7 +208,7 @@ export default function SetupScreen({ onStart }) {
     await onStart({
       sessionCode: generateSessionCode(),
       mode,
-      duration,
+      duration: selectedDuration.id,
       intensity: selectedIntensity,
       stage: state.stage,
       state,
