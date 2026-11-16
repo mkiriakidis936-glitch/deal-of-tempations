@@ -595,7 +595,7 @@ export function entityRoutes() {
       const token = crypto.randomBytes(32).toString('base64url');
       const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
       const gameMode = String(req.body?.gameMode || 'classic');
-      const allowedGameModes = ['classic', 'marathon', 'arrest_heist', 'pajama', 'villa_48h', 'pedi_glam', 'pedi_extended', 'lockdown', 'beach_bar', 'marathon_4h'];
+      const allowedGameModes = ['classic', 'marathon', 'arrest_heist', 'pajama', 'pedi_extended', 'lockdown', 'beach_bar'];
       if (!allowedGameModes.includes(gameMode)) return res.status(400).json({ error: 'Επίλεξε έγκυρο παιχνίδι.' });
       const data = {
         gameMode,
