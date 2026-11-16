@@ -2,27 +2,25 @@ import React, { useEffect, useState } from 'react';
 
 export default function TVLaunchVideos({ sessionCode, welcomeSrc, countdownSrc, countdownStartedAt }) {
   const [active, setActive] = useState('idle');
-  const [welcomedSession, setWelcomedSession] = useState('');
   const [countdownPlayedFor, setCountdownPlayedFor] = useState(null);
   const [pendingCountdown, setPendingCountdown] = useState(false);
 
   useEffect(() => {
     if (!sessionCode) return;
-    if (welcomeSrc && welcomedSession !== sessionCode) setActive('welcome');
-    else setActive('idle');
-  }, [sessionCode, welcomeSrc, welcomedSession]);
+    setActive(welcomeSrc ? 'welcome' : 'idle');
+    setCountdownPlayedFor(null);
+    setPendingCountdown(false);
+  }, [sessionCode, welcomeSrc]);
 
   useEffect(() => {
     if (!countdownStartedAt || !countdownSrc || countdownPlayedFor === countdownStartedAt) return;
     setCountdownPlayedFor(countdownStartedAt);
-    const welcomeMustPlay = Boolean(welcomeSrc && welcomedSession !== sessionCode);
-    if (welcomeMustPlay) setPendingCountdown(true);
+    if (welcomeSrc) setPendingCountdown(true);
     else setActive('countdown');
-  }, [countdownStartedAt, countdownSrc, welcomeSrc, welcomedSession, sessionCode, countdownPlayedFor]);
+  }, [countdownStartedAt, countdownSrc, welcomeSrc, countdownPlayedFor]);
 
   const finish = () => {
     if (active === 'welcome') {
-      setWelcomedSession(sessionCode);
       if (pendingCountdown && countdownSrc) {
         setPendingCountdown(false);
         setActive('countdown');
