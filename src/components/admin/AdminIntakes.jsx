@@ -96,7 +96,7 @@ export default function AdminIntakes() {
           disabled={bachEnabled === null}
           className={`comic-panel-sm w-full mt-2 p-2 flex items-center justify-between transition-all ${bachEnabled ? 'bg-tarot-forest' : 'bg-secondary'} disabled:opacity-50`}
         >
-          <span className="font-heading text-sm">📝 A&H INTAKE ΦΟΡΜΑ</span>
+          <span className="font-heading text-sm">📝 ΦΟΡΜΑ ΣΥΜΜΕΤΟΧΗΣ A&H</span>
           <span className="font-bold text-sm">{bachEnabled === null ? '…' : bachEnabled ? '🟢 ΕΝΕΡΓΟΠΟΙΗΜΕΝΟ' : '🔴 ΑΠΕΝΕΡΓΟΠΟΙΗΜΕΝΟ'}</span>
         </button>
         {intakes.length > 0 && (
@@ -146,7 +146,7 @@ export default function AdminIntakes() {
                       {i.nailColor && <span className="text-xs bg-tarot-wine/40 px-2 py-0.5 rounded font-bold">💅 {NAIL_LABELS[i.nailColor]}</span>}
                       <span className="text-xs bg-tarot-wine text-foreground px-2 py-0.5 rounded font-bold">{INTENSITY_LABELS[i.intensity]}</span>
                       {i.accommodation && <span className="text-xs bg-tarot-royal text-foreground px-2 py-0.5 rounded font-bold">{ACCOMMODATION_LABELS[i.accommodation]}</span>}
-                      {i.safeWordConfirmed && <span className="text-xs bg-tarot-forest text-foreground px-2 py-0.5 rounded font-bold">✓ Safe Word</span>}
+                      {i.safeWordConfirmed && <span className="text-xs bg-tarot-forest text-foreground px-2 py-0.5 rounded font-bold">✓ Λέξη ασφαλείας</span>}
                     </div>
                     <div className="flex gap-3 flex-wrap text-xs">
                       {Object.entries(COMFORT_LABELS).map(([key, label]) => (
@@ -185,12 +185,12 @@ export default function AdminIntakes() {
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex-1 space-y-1">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className="font-heading text-lg">⭐ Αρχηγός Alpha: {i.leaderName}</span>
-                      {i.opponentName && <span className="text-xs bg-tarot-teal/30 px-2 py-0.5 rounded font-bold">🛡️ Αρχηγός Beta: {i.opponentName}</span>}
+                      <span className="font-heading text-lg">⭐ Αρχηγός Άλφα: {i.leaderName}</span>
+                      {i.opponentName && <span className="text-xs bg-tarot-teal/30 px-2 py-0.5 rounded font-bold">🛡️ Αρχηγός Βήτα: {i.opponentName}</span>}
                       <span className="text-xs bg-background text-primary px-2 py-0.5 rounded font-bold">Κωδικός: {i.sessionCode}</span>
                       <span className="text-xs bg-tarot-wine text-foreground px-2 py-0.5 rounded font-bold">{INTENSITY_LABELS[i.intensity]}</span>
                       {i.accommodation && <span className="text-xs bg-tarot-royal text-foreground px-2 py-0.5 rounded font-bold">{ACCOMMODATION_LABELS[i.accommodation]}</span>}
-                      {i.safeWordConfirmed && <span className="text-xs bg-tarot-forest text-foreground px-2 py-0.5 rounded font-bold">✓ Safe Word</span>}
+                      {i.safeWordConfirmed && <span className="text-xs bg-tarot-forest text-foreground px-2 py-0.5 rounded font-bold">✓ Λέξη ασφαλείας</span>}
                     </div>
                     {i.secrets && <div className="text-xs bg-secondary p-1.5 rounded border border-border/20">🤫 {i.secrets}</div>}
                     {i.musicPreferences && <div className="text-xs">🎵 {i.musicPreferences}</div>}
