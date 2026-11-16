@@ -654,3 +654,115 @@ body {
     transition-duration: 0.01ms !important;
   }
 }
+
+
+/* ============================================================
+   VISUAL REFINEMENT — Admin, TV and touch layouts
+   Presentation only: no component state, routes or game rules.
+   ============================================================ */
+
+/* Admin workspace */
+.admin-root {
+  background-image:
+    radial-gradient(ellipse at 12% 0%, hsl(var(--primary) / 0.075), transparent 42%),
+    radial-gradient(ellipse at 92% 100%, hsl(var(--destructive) / 0.055), transparent 38%);
+}
+.admin-root .comic-panel {
+  border-color: hsl(var(--primary) / 0.16);
+  box-shadow: 0 14px 36px -28px hsl(var(--shadow-color) / 0.95), inset 0 1px 0 hsl(var(--hairline) / 0.035);
+}
+.admin-root nav[aria-label="Πλοήγηση διαχείρισης"] {
+  max-height: calc(100dvh - 2rem);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 0.2rem;
+}
+.admin-root nav[aria-label="Πλοήγηση διαχείρισης"] > div {
+  padding: 0.35rem 0.25rem 0.55rem;
+  border-bottom: 1px solid hsl(var(--border) / 0.35);
+}
+.admin-root nav[aria-label="Πλοήγηση διαχείρισης"] > div:last-child {
+  border-bottom: 0;
+}
+.admin-root nav[aria-label="Πλοήγηση διαχείρισης"] button {
+  min-height: 2.45rem;
+  line-height: 1.35;
+  letter-spacing: 0.005em;
+  border-color: hsl(var(--border) / 0.42);
+}
+.admin-root nav[aria-label="Πλοήγηση διαχείρισης"] button[aria-current="page"] {
+  box-shadow: 0 5px 18px -12px hsl(var(--primary) / 0.8), inset 3px 0 0 hsl(var(--primary));
+}
+.admin-root input,
+.admin-root select,
+.admin-root textarea {
+  border-color: hsl(var(--border) / 0.75);
+  border-radius: 0.65rem;
+}
+.admin-root input:focus,
+.admin-root select:focus,
+.admin-root textarea:focus {
+  border-color: hsl(var(--primary) / 0.75);
+  box-shadow: 0 0 0 3px hsl(var(--primary) / 0.12);
+}
+.admin-root button {
+  transition: background-color 160ms ease, border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+}
+.admin-root button:active {
+  transform: translateY(1px);
+}
+.admin-root button:focus-visible,
+.admin-root a:focus-visible,
+.admin-root input:focus-visible,
+.admin-root select:focus-visible,
+.admin-root textarea:focus-visible {
+  outline: 2px solid hsl(var(--primary) / 0.85);
+  outline-offset: 2px;
+}
+
+/* TV output: cleaner contrast and consistent panel depth at viewing distance. */
+.dot-tv-shell {
+  background-color: hsl(var(--background));
+  text-rendering: optimizeLegibility;
+}
+.dot-tv-shell .comic-panel,
+.dot-tv-shell .comic-panel-sm {
+  border-color: hsl(var(--primary) / 0.22);
+  box-shadow: 0 18px 42px -30px hsl(var(--shadow-color) / 0.95), inset 0 1px 0 hsl(var(--hairline) / 0.06);
+}
+.dot-tv-shell .comic-text-stroke {
+  text-shadow: 0 2px 3px hsl(var(--shadow-color) / 0.85), 0 0 26px hsl(var(--primary) / 0.16);
+}
+
+/* Touch devices: clearer hit areas without changing the controls or their actions. */
+@media (hover: none) and (pointer: coarse) {
+  .admin-root nav[aria-label="Πλοήγηση διαχείρισης"] button {
+    min-height: 2.75rem;
+  }
+  .admin-root button,
+  .admin-root a,
+  .dot-tv-shell button {
+    -webkit-tap-highlight-color: hsl(var(--primary) / 0.16);
+  }
+}
+
+@media (min-width: 1024px) {
+  .admin-root > div {
+    max-width: 88rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .admin-root .comic-panel {
+    border-radius: 0.9rem;
+  }
+  .admin-root nav[aria-label="Πλοήγηση διαχείρισης"] {
+    max-height: 58dvh;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .admin-root button {
+    transition: none;
+  }
+}
