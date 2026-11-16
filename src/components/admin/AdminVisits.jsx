@@ -32,7 +32,7 @@ export default function AdminVisits() {
     <div className="space-y-3">
       <ComicPanel className="bg-card flex items-center justify-between gap-2 flex-wrap">
         <div>
-          <div className="font-heading text-xl text-primary">📈 ΕΠΙΣΚΕΨΕΙΣ ΣΤΟ /site</div>
+          <div className="font-heading text-xl text-primary">📈 ΕΠΙΣΚΕΨΕΙΣ ΣΤΗΝ ΙΣΤΟΣΕΛΙΔΑ</div>
           <div className="text-xs text-foreground/70">Μετράει 1 επίσκεψη ανά άτομο ανά 30 λεπτά. Δεν μετράει bots ούτε εσένα όταν είσαι συνδεδεμένη/ος.</div>
         </div>
         <ComicButton variant="dark" size="sm" onClick={load}>🔄 Ανανέωση</ComicButton>
