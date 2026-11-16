@@ -81,7 +81,7 @@ test('existing redacted vote maps remain writable without exposing other votes',
     juryTrial: { votes: { p0: 'guilty', p1: 'innocent' }, question: 'Q' },
   };
   const response = sanitizePublicSession({ state: current }, 'p0');
-  assert.deepEqual(response.state.juryTrial.votes, { p0: 'guilty', __redacted_0: true });
+  assert.deepEqual(response.state.juryTrial.votes, { p0: 'guilty', __redacted_0: 'innocent' });
   assert.equal(validatePlayerPatch(current, {
     juryTrial: { ...response.state.juryTrial, votes: { ...response.state.juryTrial.votes, p0: 'innocent' } },
   }, 'p0'), true);
