@@ -94,7 +94,7 @@ export const BEACH_PHASES = [
 
 // Replace legacy physical-contact / restraint / alcohol instructions with safe digital challenges.
 // Stable IDs and category keys are preserved for existing game-state compatibility.
-const UNSAFE_BEACH_COPY = /hogtie|blindfold|restraint|δεσίμ|δεμέν|δέσιμο|ακινητοπ|zip.?ties|duct tape|παγάκι|παγάκια|γαργαλ|tickle|σφηνάκ|\\bshot\\b|αλκοόλ|alcohol|χωρίς χέρια|μάτια κλειστά|περιορισμός κίνησης|σπρώξ|κράτα ομήρους|μην την αφήσεις/i;
+const UNSAFE_BEACH_COPY = /hogtie|blindfold|restraint|δεσίμ|δεμέν|δέσιμο|ακινητοπ|zip.?ties|duct tape|παγάκι|παγάκια|γαργαλ|tickle|σφηνάκ|\bshot\b|αλκοόλ|alcohol|χωρίς χέρια|μάτια κλειστά|περιορισμός κίνησης|σπρώξ|κράτα ομήρους|μην την αφήσεις/i;
 const SAFE_BEACH_CHALLENGE = 'Προαιρετικό ψηφιακό challenge χωρίς σωματική επαφή ή αλκοόλ. Λύσε ένα σύντομο quiz ή επίλεξε PASS / STOP.';
 function sanitizeBeachItems(value, id = '') {
   if (Array.isArray(value)) {
