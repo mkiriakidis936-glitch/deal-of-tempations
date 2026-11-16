@@ -227,7 +227,7 @@ export function useModeCtx(state, updateState) {
       setMg({ stop: true, stopAt, timer: timerPause(cur.timer) });
       updateState({ gamePausedAt: state.gamePausedAt || stopAt });
     }
-  }, [setMg, centralStopped]);
+  }, [setMg, centralStopped, updateState, state.gamePausedMs, state.gamePausedAt]);
 
   const nameOf = useCallback((id) => players.find((p) => p.id === id)?.name || '—', [players]);
 
