@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 
 process.env.DATABASE_URL ||= 'postgres://test:test@127.0.0.1:5432/deal_of_temptation_test';
+process.env.JWT_SECRET ||= 'test-only-secret-for-isolated-session-tests';
 const { validatePlayerPatch, sanitizePublicSession } = await import('../server/entities.js');
 const { NEW_MODES } = await import('../src/data/modes/modeRegistry.js');
 
