@@ -128,6 +128,7 @@ export default function ModeMobile({ state, me, updateState, onChangePlayer, ses
         {pushStatus && <div className="text-center text-xs opacity-80">{pushStatus}</div>}
       </div>
 
+      {state.safetyProfile?.safeWord && <div className="fixed bottom-[76px] left-3 right-3 z-40 mx-auto max-w-md rounded-lg border border-red-400/60 bg-black/90 px-3 py-2 text-center text-xs text-white">ΛΕΞΗ ΑΣΦΑΛΕΙΑΣ: <b className="text-red-300">{state.safetyProfile.safeWord}</b></div>}
       <button onClick={panic} className="fixed bottom-3 left-3 right-3 z-40 py-4 rounded-xl font-heading text-xl bg-destructive text-destructive-foreground" style={{ maxWidth: 448, margin: '0 auto' }}>
         ⏹ ΣΤΟΠ — δεν είμαι καλά / λύστε με
       </button>

@@ -21,6 +21,8 @@ export default function SetupScreen({ onStart }) {
   const [duration, setDuration] = useState('afternoon');
   const [mode, setMode] = useState('classic');
   const [intensity, setIntensity] = useState('standard');
+  const [safeWord, setSafeWord] = useState('');
+  const [safeWordConfirmed, setSafeWordConfirmed] = useState(false);
   const [players, setPlayers] = useState([
     { name: '', footwearLevel: 2, toenailPerk: 'red' },
     { name: '', footwearLevel: 2, toenailPerk: 'pink' },
@@ -194,7 +196,8 @@ export default function SetupScreen({ onStart }) {
     if (valid.length < minPlayers) return;
     const selectedScenario = customScenarios.find((scenario) => scenario.id === selectedScenarioId && scenario.modeId === mode);
     const selectedIntensity = mode === 'classic' ? intensity : 'standard';
-    const state = { ...createInitialState(mode, selectedIntensity, valid), testMode,
+    if (!safeWord.trim() || !safeWordConfirmed) return;
+    const state = { ...createInitialState(mode, selectedIntensity, valid), safetyProfile: { safeWord: safeWord.trim(), confirmedAt: Date.now() }, testMode,
       ...(selectedScenario ? { customScenario: { id: selectedScenario.id, name: selectedScenario.name, description: selectedScenario.description, collections: selectedScenario.collections || [] } } : {})
     };
     if (mode === 'beach_bar' && valid.some((p) => pajamaApproved.some((i) => (i.name || '').trim() === p.name.trim() && i.alcohol === 'free'))) {
@@ -219,7 +222,7 @@ export default function SetupScreen({ onStart }) {
     }
   }
 
-  const canStart = players.filter((p) => p.name.trim()).length >= minPlayers;
+  const canStart = players.filter((p) => p.name.trim()).length >= minPlayers && safeWord.trim().length >= 2 && safeWordConfirmed;
 
   return (
     <div className="min-h-screen comic-dots p-4 pb-24">
@@ -252,6 +255,23 @@ export default function SetupScreen({ onStart }) {
               </button>
             ))}
           </div>
+        </ComicPanel>
+
+        <ComicPanel className="bg-card space-y-3">
+          <h2 className="font-heading text-2xl text-primary">VIBE &amp; SAFETY · ΚΟΙΝΗ ΛΕΞΗ ΑΣΦΑΛΕΙΑΣ</h2>
+          <p className="text-sm text-foreground/70">Ορίστε μία λέξη που σημαίνει άμεση παύση για όλη την παρέα. Το κουμπί ΣΤΟΠ παραμένει διαθέσιμο σε όλες τις οθόνες.</p>
+          <input
+            type="text"
+            value={safeWord}
+            onChange={(event) => { setSafeWord(event.target.value); setSafeWordConfirmed(false); }}
+            maxLength={32}
+            placeholder="Πληκτρολόγησε την κοινή λέξη ασφαλείας"
+            className="w-full rounded-lg border-2 border-border bg-background px-3 py-3 text-foreground font-bold"
+          />
+          <label className="flex items-start gap-2 text-sm text-foreground/80">
+            <input type="checkbox" checked={safeWordConfirmed} onChange={(event) => setSafeWordConfirmed(event.target.checked)} className="mt-1" />
+            <span>Η παρέα συμφώνησε στη λέξη ασφαλείας και γνωρίζει ότι οποιαδήποτε παίκτρια μπορεί να σταματήσει το παιχνίδι οποιαδήποτε στιγμή.</span>
+          </label>
         </ComicPanel>
 
         <ComicPanel>

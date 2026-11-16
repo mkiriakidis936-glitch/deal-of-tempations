@@ -96,12 +96,18 @@ export default function StageZero({ state, updateState }) {
         </ComicPanel>
 
         <SessionQRCode sessionCode={state.sessionCode} size={180} />
+        {state.safetyProfile?.safeWord && (
+          <div className="rounded-lg border border-destructive/50 bg-destructive/10 px-4 py-3 text-center">
+            <div className="text-xs font-bold tracking-wider text-destructive">ΚΟΙΝΗ ΛΕΞΗ ΑΣΦΑΛΕΙΑΣ</div>
+            <div className="font-heading text-2xl text-foreground">{state.safetyProfile.safeWord}</div>
+          </div>
+        )}
 
         {step === 'stop' && (
           <ComicPanel className="bg-card text-center py-10 comic-pop">
             <div className="text-6xl mb-3">⏹</div>
             <div className="font-heading text-3xl mb-2 text-primary">ΔΟΚΙΜΗ ΣΤΟΠ</div>
-            <p className="text-sm mb-5 max-w-md mx-auto text-foreground/70 font-body">Το κόκκινο κουμπί ΣΤΟΠ πάνω δεξιά παγώνει ΟΛΑ τα χρονόμετρα. Πάτησέ το τώρα για δοκιμή — θα ξαναρχίσει σε 3″.</p>
+            <p className="text-sm mb-5 max-w-md mx-auto text-foreground/70 font-body">Το κόκκινο κουμπί ΣΤΟΠ παγώνει τη ροή. Η κοινή λέξη ασφαλείας είναι «{state.safetyProfile?.safeWord || '—'}». Πάτησέ το τώρα για δοκιμή — θα ξαναρχίσει σε 3″.</p>
             <ComicButton variant="red" size="lg" onClick={handleStopTest} disabled={stopTested}>
               ⏹ ΔΟΚΙΜΑΣΤΙΚΟ ΣΤΟΠ
             </ComicButton>
