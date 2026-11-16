@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client'
 import '@/index.css'
 import '@/responsive.css'
 import '@/cinematic-tv.css'
+import '@/visual-overhaul.css'
 import '@/lib/push' // πιάνει νωρίς το «Εγκατάσταση εφαρμογής» του browser
 import { loadMedia } from '@/lib/media'
 
