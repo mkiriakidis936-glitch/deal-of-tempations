@@ -116,7 +116,7 @@ export default function PajamaWheel({ player, players = [], index, total, onScor
             )}
             {result.id === 'tickle' && (
               <>
-                <p className="text-sm text-pink-100/80">Δέσε τα χέρια της με κορδέλα πιτζάμας. Αντέχει 15″ χωρίς να γελάσει;</p>
+                <p className="text-sm text-pink-100/80">Ολοκλήρωσε ένα προαιρετικό quiz 15″. Μπορείς να επιλέξεις PASS ή STOP.</p>
                 <PajamaTimer seconds={result.timer} />
                 {!resolved && (
                   <div className="grid grid-cols-2 gap-2">
