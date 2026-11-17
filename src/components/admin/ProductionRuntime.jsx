@@ -79,7 +79,7 @@ export default function ProductionRuntime({selected,record,draft,onChange,onSave
  };
  const editPhase=(id,patch)=>update({overnightPhases:phases.map((phase,index)=>(phase.id||String(index))===id?{...phase,...patch}:phase)});
  const addPhase=()=>update({overnightPhases:[...phases,{id:makeId(),title:'Νέα φάση',time:'12:00',notes:''}]});
- const removePhase=(id)=>update({overnightPhases:phases.filter((phase,index)=>(phase.id||String(index))!==id)});
+ const removePhase=(id)=>{const next=phases.filter((phase,index)=>(phase.id||String(index))!==id);update({overnightPhases:next,overnightPhaseIndex:Math.max(0,Math.min(Number(draft.overnightPhaseIndex)||0,next.length-1))})};
  const advancePhase=async()=>{
    const next=Math.min((Number(draft.overnightPhaseIndex)||0)+1,phases.length-1);
    const phase=phases[next];
