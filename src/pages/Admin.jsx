@@ -50,13 +50,13 @@ const NAV_GROUPS = [
     tabs: [
       { id: 'modes', label: '🎮 Λειτουργίες παιχνιδιού' },
       { id: 'live', label: '⏯️ Ζωντανός έλεγχος' },
+      { id: 'casting', label: '🎬 Επιλογή Επεισοδίου' },
     ],
   },
   {
     id: 'players',
     label: '03 · ΠΑΙΚΤΕΣ',
     tabs: [
-      { id: 'casting', label: '🎬 Επιλογή Επεισοδίου' },
       { id: 'players', label: '👥 Παίκτες & Ρόλοι' },
       { id: 'achievements', label: '🏅 Επιτεύγματα' },
     ],
