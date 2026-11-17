@@ -652,6 +652,15 @@ export function entityRoutes() {
   };
   const guard = (op) => (req, res, next) => (needsAdmin(req.entity, op) ? requireAdmin(req, res, next) : next());
 
+  r.get('/event-info/:sessionCode', async (req, res, next) => {
+    try {
+      const sessionCode = String(req.params.sessionCode || '').trim().toUpperCase();
+      const { rows } = await query("SELECT data FROM records WHERE entity = 'GameSession' AND data->>'sessionCode' = $1 LIMIT 1", [sessionCode]);
+      if (!rows[0]) return res.status(404).json({ error: 'Το Event δεν βρέθηκε.' });
+      return res.json({ scheduledAt: rows[0].data?.event?.scheduledAt || '' });
+    } catch (error) { return next(error); }
+  });
+
   // Public RSVP count exposes only an aggregate, never attendee names or records.
   r.get('/pajama-rsvp/count', async (req, res, next) => {
     try {
@@ -960,6 +969,18 @@ export function entityRoutes() {
         const { rows: sessions } = await query("SELECT id FROM records WHERE entity = 'GameSession' AND data->>'sessionCode' = $1 LIMIT 1", [sessionCode]);
         if (!sessions[0]) return res.status(400).json({ error: 'Το Event της πρόσκλησης δεν βρέθηκε.' });
       }
+      const { rows: settings } = await query("SELECT data FROM records WHERE entity = 'AppSetting' AND data->>'key' = 'admin_form_questions' LIMIT 1");
+      const questions = Array.isArray(settings[0]?.data?.value?.forms?.invitation) ? settings[0].data.value.forms.invitation : [];
+      const customAnswers = body.customAnswers || {};
+      const ids = new Set(questions.map((question) => String(question.id || '')).filter(Boolean));
+      const customValid = isObject(customAnswers) &&
+        Object.entries(customAnswers).every(([id, value]) => ids.has(id) && typeof value === 'string' && value.length <= 2000) &&
+        questions.every((question) => {
+          const value = customAnswers[question.id] || '';
+          return (!question.required || String(value).trim().length > 0) &&
+            (!value || question.type !== 'select' || (question.options || []).includes(value));
+        });
+      if (!customValid) return res.status(400).json({ error: 'Έλεγξε τις υποχρεωτικές πρόσθετες ερωτήσεις.' });
       const client = await pool.connect();
       let playerRecord;
       let rsvpRecord;
