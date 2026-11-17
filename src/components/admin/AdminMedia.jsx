@@ -44,6 +44,7 @@ export default function AdminMedia() {
   const [librarySearch, setLibrarySearch] = useState('');
   const [surfaceFilter, setSurfaceFilter] = useState('all');
   const [fileLoadStatus, setFileLoadStatus] = useState({});
+  const [libraryStatusFilter, setLibraryStatusFilter] = useState('all');
   const LIBRARY_CATEGORIES = [
     { id: 'heist', label: 'Ληστεία' },
     { id: 'pajama', label: 'Πιτζάμα' },
@@ -180,17 +181,11 @@ export default function AdminMedia() {
     const q = used ? `Το «${f.name}» χρησιμοποιείται κάπου. Θα αφαιρεθεί από εκεί (θα επανέλθει το αρχικό) και θα διαγραφεί οριστικά. Συνέχεια;` : `Διαγραφή του «${f.name}» οριστικά;`;
     if (!window.confirm(q)) return;
     run(f.name, async () => {
-      if (used) {
-        const next = removeUrl(ov, f.url) || {};
-        if (next.libraryCategories) {
-          const categories = { ...next.libraryCategories };
-          delete categories[f.url];
-          next.libraryCategories = categories;
-        }
-        if (next.librarySurfaces) { const surfaces = { ...next.librarySurfaces }; delete surfaces[f.url]; next.librarySurfaces = surfaces; }
-        if (next.libraryFocalPoints) { const focal = { ...next.libraryFocalPoints }; delete focal[f.url]; next.libraryFocalPoints = focal; }
-        await save(next);
+      const next = used ? (removeUrl(ov, f.url) || {}) : { ...ov };
+      for (const key of ['libraryCategories', 'librarySurfaces', 'libraryFocalPoints']) {
+        if (next[key]) { const values = { ...next[key] }; delete values[f.url]; next[key] = values; }
       }
+      if (used || ['libraryCategories', 'librarySurfaces', 'libraryFocalPoints'].some((key) => ov[key]?.[f.url] !== undefined)) await save(next);
       await deleteMedia(f.name);
       await refreshLibrary();
     }, 'Διαγράφηκε ✓');
@@ -201,6 +196,8 @@ export default function AdminMedia() {
     const label = kind === 'image' ? 'ΟΛΕΣ ΤΙΣ ΦΩΤΟΓΡΑΦΙΕΣ' : kind === 'video' ? 'ΟΛΑ ΤΑ ΒΙΝΤΕΟ' : 'ΟΛΑ ΤΑ ΠΟΛΥΜΕΣΑ';
     if (!window.confirm(`ΠΡΟΣΟΧΗ: Θα διαγραφούν οριστικά ${label} από τη βιβλιοθήκη του project και θα αφαιρεθούν από όλα τα σημεία εμφάνισης. Συνέχεια;`)) return;
     run(`clear-${kind}`, async () => {
+      const deletedUrls = new Set(library.filter((file) => kind === 'all' || file.kind === kind).map((file) => file.url));
+      const pruneFileMap = (map = {}) => Object.fromEntries(Object.entries(map).filter(([url]) => !deletedUrls.has(url)));
       const nextModeMedia = Object.fromEntries(Object.entries(ov.modeMedia || {}).map(([modeId, media]) => [modeId, {
         ...media,
         ...(kind === 'image' || kind === 'all' ? {
@@ -233,7 +230,9 @@ export default function AdminMedia() {
         } : {}),
         ...(kind === 'all' ? { clearAllPhotos: true, clearAllVideos: true, clearAllMedia: true, emptySlots: PHOTO_SPOT_IDS } : {}),
         ...(kind === 'video' ? { clearAllVideos: true } : {}),
-        libraryCategories: {},
+        libraryCategories: pruneFileMap(ov.libraryCategories),
+        librarySurfaces: pruneFileMap(ov.librarySurfaces),
+        libraryFocalPoints: pruneFileMap(ov.libraryFocalPoints),
       };
       await save(next);
       await deleteAllMedia(kind);
@@ -241,6 +240,27 @@ export default function AdminMedia() {
     }, `${label}: ολοκληρώθηκε ✓`);
   };
 
+  const missingMediaPoints = () => {
+    const missing = [];
+    const clearedImages = !!(ov.clearAllPhotos || ov.clearAllMedia);
+    for (const slot of PHOTO_SPOTS) {
+      const src = ov[slot.id] || (ov.emptySlots?.includes(slot.id) || clearedImages ? '' : DEFAULTS[slot.id]);
+      if (!src) missing.push({ surface: slot.surfaces?.[0] || 'site', label: slot.label, where: slot.where });
+    }
+    for (const slot of VIDEO_SLOTS) if (!ov[slot.id]) missing.push({ surface: 'tv', label: slot.label, where: slot.where });
+    for (const slot of IMAGE_SLOTS) if (!ov[slot.id] && (clearedImages || !DEFAULTS[slot.id])) missing.push({ surface: slot.surfaces?.[0] || 'site', label: slot.label, where: slot.where });
+    for (const slot of MODE_COVER_SLOTS.filter((item) => item.modeId !== 'pedi_extended' && !NEW_MODES.some((mode) => mode.id === item.modeId))) {
+      const src = ov[slot.id] || (ov.emptyModeCovers?.includes(slot.id) || clearedImages ? '' : DEFAULTS[slot.id]);
+      if (!src) missing.push({ surface: 'tablet', label: slot.label, where: 'Εξώφυλλο επιλογής Mode στο Tablet / Forms' });
+    }
+    for (const mode of NEW_MODES) {
+      const saved = ov.modeMedia?.[mode.id] || {};
+      const cover = saved.cover || ov[`modeCover_${mode.id}`] || (clearedImages ? '' : DEFAULTS[`modeCover_${mode.id}`]);
+      if (!cover) missing.push({ surface: 'tablet', label: `${mode.name} — Cover`, where: 'Εξώφυλλο επιλογής Mode στο Tablet / Forms' });
+    }
+    for (const gallery of GALLERIES) if (!listOf(gallery.id).length) missing.push({ surface: gallery.surfaces?.[0] || 'site', label: gallery.label, where: gallery.where });
+    return missing;
+  };
   const Progress = ({ id }) => busy === id ? (
     <div className="h-2 rounded bg-black/40 overflow-hidden mt-2">
       <div className="h-full bg-primary transition-all" style={{ width: `${Math.max(5, progress * 100)}%` }} />
