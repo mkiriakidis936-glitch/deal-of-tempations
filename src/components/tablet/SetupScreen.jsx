@@ -61,8 +61,8 @@ export default function SetupScreen({ onStart }) {
         base44.entities.AppSetting.filter({ key: 'show_casting_plan' }, { limit: 1 }),
       ]);
       const scopeToEvent = (items) => (items || []).filter((item) => eventCode ? item.sessionCode === eventCode : !item.sessionCode);
-      const allClassic = scopeToEvent(classicRes.items);
-      const classic = allClassic.filter((item) => !item.vipGameMode || item.vipGameMode === 'classic');
+      const allClassic = scopeToEvent(classicRes.items).filter((item) => item.approved === true);
+      const classic = allClassic.filter((item) => item.formType === 'invitation' || item.vipGameMode === 'classic' || (!item.formType && !item.vipGameMode));
       const approved = scopeToEvent(pajamaRes.items).filter((i) => i.approved === true && i.name);
       const legacyPajama = approved.filter((i) => (i.formType || 'pajama') !== 'modes');
       setHeistIntakes(scopeToEvent(heistRes.items));
