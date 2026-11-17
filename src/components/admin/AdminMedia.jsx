@@ -157,7 +157,12 @@ export default function AdminMedia() {
     for (const slot of IMAGE_SLOTS) if (containsUrl(ov[slot.id], url)) (slot.surfaces || []).forEach((s) => found.add(s));
     for (const slot of MODE_COVER_SLOTS) if (containsUrl(ov[slot.id], url)) (slot.surfaces || ['tablet', 'forms']).forEach((s) => found.add(s));
     for (const gallery of GALLERIES) if (containsUrl(ov[gallery.id], url)) (gallery.surfaces || ['site']).forEach((s) => found.add(s));
-    if (containsUrl(ov.modeMedia, url)) ['site', 'forms', 'tablet'].forEach((s) => found.add(s));
+    for (const media of Object.values(ov.modeMedia || {})) {
+      if (containsUrl(media.hero, url)) ['site', 'tablet'].forEach((s) => found.add(s));
+      if (containsUrl(media.cover, url)) ['tablet', 'forms'].forEach((s) => found.add(s));
+      if (containsUrl(media.sections, url)) found.add('tablet');
+      if (containsUrl(media.gallery, url) || containsUrl(media.trailer, url)) found.add('site');
+    }
     return [...found];
   };
   const setLibrarySurface = (url, surface) => run(`surface-${url}`, () => {
@@ -506,8 +511,8 @@ export default function AdminMedia() {
                     <button disabled={!!busy} onClick={() => addLibraryImageToGallery(f.url, 'pajamaPhotos')} className="text-[10px] py-1 rounded bg-black/50 disabled:opacity-30">+ Pajama</button>
                   </div>
                   <select defaultValue="" disabled={!!busy} onChange={(e) => { if (e.target.value) assignLibraryImageToSlot(f.url, e.target.value); e.target.value = ''; }} className="w-full rounded bg-black/50 border border-border/50 p-1 text-[10px]">
-                    <option value="">Ανάθεση σε σημείο Site…</option>
-                    {IMAGE_SLOTS.map((slot) => <option key={slot.id} value={slot.id}>{slot.label}</option>)}
+                    <option value="">Ανάθεση σε σημείο εφαρμογής…</option>
+                    {IMAGE_SLOTS.map((slot) => <option key={slot.id} value={slot.id}>{slot.label} — {(slot.surfaces || []).map((id) => SURFACES.find((surface) => surface.id === id)?.label || id).join(' / ')}</option>)}
                   </select>
                 </>}
               </div>}
