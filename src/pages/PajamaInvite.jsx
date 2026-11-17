@@ -19,7 +19,7 @@ function useCountdown(target) {
   useEffect(() => {
     const t = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(t);
-  }, [eventCode]);
+  }, []);
   if (!target) return null;
   const diff = Math.max(0, new Date(target).getTime() - now);
   return {
@@ -53,7 +53,7 @@ export default function PajamaInvite() {
       }
     }
     load();
-  }, []);
+  }, [eventCode]);
 
   return (
     <div className="min-h-screen bg-background text-foreground relative overflow-hidden flex flex-col items-center justify-center px-6 py-16">
