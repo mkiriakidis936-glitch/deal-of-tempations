@@ -447,6 +447,24 @@ export default function AdminMedia() {
 
       {surfaceFilter !== 'preview' && (
       <ComicPanel className="bg-card space-y-3">
+        <div className="font-heading text-lg">📋 ΑΝΑΦΟΡΑ ΚΕΝΩΝ ΣΗΜΕΙΩΝ</div>
+        <p className="text-xs text-foreground/60">Εμφανίζονται μόνο τα σημεία όπου δεν υπάρχει διαθέσιμο αρχείο. Δεν χαρακτηρίζονται ως υποχρεωτικά.</p>
+        {missingMediaPoints().filter((item) => surfaceFilter === 'all' || item.surface === surfaceFilter).length === 0
+          ? <div className="rounded-lg border border-emerald-500/30 bg-emerald-500/5 p-3 text-sm">Δεν εντοπίστηκαν κενά σημεία στην επιλεγμένη κατηγορία.</div>
+          : <div className="grid sm:grid-cols-2 gap-2">
+              {missingMediaPoints().filter((item) => surfaceFilter === 'all' || item.surface === surfaceFilter).map((item, index) => (
+                <button key={item.surface + item.label + index} type="button" onClick={() => setSurfaceFilter(item.surface)} className="rounded-lg border border-border/60 bg-secondary/30 p-3 text-left">
+                  <div className="text-[10px] font-black text-primary">{SURFACES.find((surface) => surface.id === item.surface)?.label || item.surface}</div>
+                  <div className="mt-1 text-sm font-bold">{item.label}</div>
+                  <div className="mt-1 text-[11px] text-foreground/55">{item.where}</div>
+                </button>
+              ))}
+            </div>}
+      </ComicPanel>
+      )}
+
+      {surfaceFilter !== 'preview' && (
+      <ComicPanel className="bg-card space-y-3">
         <div className="flex items-center justify-between gap-2 flex-wrap"><div className="font-heading text-lg">🗂️ ΒΙΒΛΙΟΘΗΚΗ ΑΡΧΕΙΩΝ ({library.length})</div><ComicButton size="sm" disabled={!!busy} onClick={() => pick('library', 'library', libraryOne, undefined, surfaceFilter)}>＋ ΠΡΟΣΘΗΚΗ ΑΡΧΕΙΟΥ</ComicButton></div>
         <input type="search" value={librarySearch} onChange={(e) => setLibrarySearch(e.target.value)} placeholder="Αναζήτηση αρχείων…" className="w-full rounded-lg border-2 border-border bg-background px-3 py-2 text-sm" />
         <p className="text-[11px] text-foreground/60">Οργάνωσε φωτογραφίες, γραφικά, βίντεο και ήχους σε Heist, Pajama ή Εταιρική ταυτότητα. Η διαγραφή αφαιρεί το αρχείο οριστικά.</p>
@@ -455,12 +473,19 @@ export default function AdminMedia() {
             <ComicButton key={c.id} size="sm" variant={libraryFilter === c.id ? 'default' : 'dark'} disabled={!!busy} onClick={() => setLibraryFilter(c.id)}>{c.label}</ComicButton>
           ))}
         </div>
+        <div className="flex flex-wrap gap-2">
+          {[
+            { id: 'all', label: 'Όλα τα αρχεία' },
+            { id: 'unused', label: 'Δεν χρησιμοποιούνται' },
+            { id: 'broken', label: 'Σφάλμα φόρτωσης' },
+          ].map((item) => <ComicButton key={item.id} size="sm" variant={libraryStatusFilter === item.id ? 'default' : 'dark'} disabled={!!busy} onClick={() => setLibraryStatusFilter(item.id)}>{item.label}</ComicButton>)}
+        </div>
         {!library.length && <div className="text-xs text-foreground/60">Δεν έχεις ανεβάσει ακόμα αρχεία.</div>}
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2">
-          {library.filter((f) => (libraryFilter === 'all' || categoryOf(f.url) === libraryFilter) && (surfaceFilter === 'all' || getFileSurfaces(f.url).includes(surfaceFilter)) && f.name.toLowerCase().includes(librarySearch.toLowerCase())).map((f) => (
+          {library.filter((f) => (libraryFilter === 'all' || categoryOf(f.url) === libraryFilter) && (surfaceFilter === 'all' || getFileSurfaces(f.url).includes(surfaceFilter)) && (libraryStatusFilter === 'all' || (libraryStatusFilter === 'unused' && !isUsed(f.url)) || (libraryStatusFilter === 'broken' && fileLoadStatus[f.url] === 'error')) && f.name.toLowerCase().includes(librarySearch.toLowerCase())).map((f) => (
             <div key={f.name} className="border-2 border-border/40 rounded overflow-hidden bg-secondary/40">
               <Thumb video={f.kind === 'video'} audio={f.kind === 'audio'} src={f.url} objectPosition={ov.libraryFocalPoints?.[f.url] || '50% 50%'} onLoad={() => setFileLoadStatus((v) => ({ ...v, [f.url]: 'ok' }))} onError={() => setFileLoadStatus((v) => ({ ...v, [f.url]: 'error' }))} className="w-full aspect-square" />
-              <div className="p-1 text-[10px] leading-tight break-all">{f.name.replace(/^[a-z0-9]+-[a-f0-9]{6}-/, '')}<br />{mb(f.size)}<br />{fileLoadStatus[f.url] === 'error' ? '⚠ Σφάλμα φόρτωσης' : isUsed(f.url) ? `Σε χρήση · ${getFileSurfaces(f.url).map((id) => SURFACES.find((s) => s.id === id)?.label || id).join(', ') || 'Εντοπισμένη αντιστοίχιση'}` : 'Δεν χρησιμοποιείται'}</div>
+              <div className="p-1 text-[10px] leading-tight break-all">{f.name.replace(/^[a-z0-9]+-[a-f0-9]{6}-/, '')}<br />{mb(f.size)}<br />Κατάσταση: {fileLoadStatus[f.url] === 'error' ? '⚠ Σφάλμα φόρτωσης' : fileLoadStatus[f.url] === 'ok' ? (isUsed(f.url) ? `Σε χρήση · ${getFileSurfaces(f.url).map((id) => SURFACES.find((s) => s.id === id)?.label || id).join(', ') || 'Εντοπισμένη αντιστοίχιση'}` : 'Δεν χρησιμοποιείται') : 'Έλεγχος φόρτωσης…'}</div>
               {<div className="p-1 space-y-1">
                 <div className="text-[10px] text-foreground/60">Κατηγορία εφαρμογής</div>
                 <select value={ov.librarySurfaces?.[f.url] || 'auto'} disabled={!!busy} onChange={(e) => setLibrarySurface(f.url, e.target.value)} className="w-full rounded bg-black/50 border border-border/50 p-1 text-[10px]">
