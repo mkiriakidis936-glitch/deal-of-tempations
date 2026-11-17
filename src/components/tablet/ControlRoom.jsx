@@ -15,7 +15,6 @@ const UNIVERSAL_ACTIONS = [
 
 const ACTIONS = [
   { key: 'intro', label: 'Κινηματογραφικό Opening' },
-  { key: 'showdirector', label: 'Σκηνές / Show Director' },
   { key: 'finalepres', label: 'Παρουσίαση Finale' },
   { key: 'eventqueue', label: 'Ουρά συμβάντων' },
   { key: 'synctimer', label: 'Χρονόμετρο' },
