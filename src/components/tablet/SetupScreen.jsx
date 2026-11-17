@@ -147,7 +147,7 @@ export default function SetupScreen({ onStart }) {
     const selectedModeMax = selectedModeMeta ? selectedModeMeta.max : (m.id === 'marathon' || m.id === 'arrest_heist' ? 10 : 6);
     if (m.id === 'marathon' && players.length < 8) {
       setPlayers(Array.from({ length: 8 }, (_, i) => ({ name: '', footwearLevel: 2, toenailPerk: TOENAIL_PERKS[i % 5].id })));
-    } else if (m.id === 'arrest_heist' && players.length < 4) {
+    } else if (m.id === 'arrest_heist') {
       const names = [...new Set(heistIntakes.flatMap((item) => [item.leaderName, item.opponentName]).map((name) => (name || '').trim()).filter(Boolean))].slice(0, 10);
       const seeded = names.map((name, i) => ({ name, footwearLevel: 2, toenailPerk: TOENAIL_PERKS[i % TOENAIL_PERKS.length].id }));
       setPlayers([...seeded, ...Array.from({ length: Math.max(0, 4 - seeded.length) }, (_, i) => ({ name: '', footwearLevel: 2, toenailPerk: TOENAIL_PERKS[(seeded.length + i) % TOENAIL_PERKS.length].id }))]);
@@ -417,9 +417,7 @@ export default function SetupScreen({ onStart }) {
                   placeholder={`Όνομα ${idx + 1}`}
                   className="flex-1 min-w-0 px-3 py-1.5 border-2 border-border rounded-lg font-bold bg-background text-foreground focus:outline-none focus:ring-2 ring-primary font-body"
                 />
-                {newMode && mode === 'marathon_4h' ? (
-                  <div className="w-full rounded-lg bg-primary/10 px-2 py-1 text-xs text-foreground/80">{p.pajamaStyle ? `Πιτζάμα: ${p.pajamaStyle} · ` : ''}{p.slipperType ? `Παντόφλες: ${p.slipperType} · ` : ''}{p.hasFlipFlops === false ? 'Χρειάζεται σαγιονάρες' : 'Έχει σαγιονάρες'}</div>
-                ) : newMode ? null : mode === 'pajama' ? (
+                {newMode ? null : mode === 'pajama' ? (
                   <>
                     <input
                       type="text"
