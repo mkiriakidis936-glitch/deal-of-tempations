@@ -33,7 +33,7 @@ app.get('/api/production/privacy', async (req, res) => {
   const sessionCode = String(req.query.event || '').trim().toUpperCase();
   if (!sessionCode || sessionCode.length > 40) return res.status(400).json({ error: 'Μη έγκυρος κωδικός διοργάνωσης.' });
   try {
-    const { rows } = await query(
+    const { rows } = await pool.query(
       "SELECT data FROM records WHERE entity = 'ShowProduction' AND data->>'sessionCode' = $1 ORDER BY updated_date DESC LIMIT 1",
       [sessionCode]
     );
