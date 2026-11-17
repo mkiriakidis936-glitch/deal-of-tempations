@@ -6,8 +6,8 @@ import { HEIST_PHOTOS, PAJAMA_PHOTOS, MODE_MEDIA } from '@/data/brandArt';
 const MODE_IDS = { extended: 'pedi_extended', lockdown: 'lockdown', beachbar: 'beach_bar', marathon4h: 'marathon_4h' };
 const TABS = [
   { id: 'all', label: 'Όλες', photos: [...HEIST_PHOTOS, ...PAJAMA_PHOTOS] },
-  { id: 'heist', label: 'Heist', photos: HEIST_PHOTOS },
-  { id: 'pajama', label: 'Pajama', photos: PAJAMA_PHOTOS },
+  { id: 'heist', label: 'Heist Night', photos: HEIST_PHOTOS },
+  { id: 'pajama', label: 'Pajama Pedi-Glam', photos: PAJAMA_PHOTOS },
 ];
 
 export default function SiteGallery({ initialTab = 'all', eventId }) {
@@ -21,7 +21,7 @@ export default function SiteGallery({ initialTab = 'all', eventId }) {
     <section id="photos" className="px-4 py-20 sm:py-24">
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-8 sm:mb-10">
-          <div className="text-[10px] sm:text-xs tracking-[0.42em] text-tarot-gold/65 uppercase mb-3">Photo & Video Galleries</div>
+          <div className="text-[10px] sm:text-xs tracking-[0.42em] text-tarot-gold/65 uppercase mb-3">Φωτογραφίες & Βίντεο</div>
           <h2 className="font-display text-3xl sm:text-4xl text-tarot-gold tracking-[0.08em]">Η ΑΤΜΟΣΦΑΙΡΑ</h2>
         </div>
         {!modeId && <div className="flex justify-center gap-2 mb-8 flex-wrap">
