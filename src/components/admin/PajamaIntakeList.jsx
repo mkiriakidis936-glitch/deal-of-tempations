@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { base44 } from '@/api/base44Client';
+import { base44, request } from '@/api/base44Client';
 import ComicPanel from '@/components/comic/ComicPanel';
 import ComicButton from '@/components/comic/ComicButton';
 import { NEW_MODES } from '@/data/modes/modeRegistry';
@@ -25,16 +25,14 @@ export default function PajamaIntakeList() {
   async function toggleApprove(item) {
     const next = !item.approved;
     try {
-      await base44.entities.PajamaIntake.update(item.id, {
-        approved: next,
-        approvedDate: next ? new Date().toISOString() : null,
-      });
-      setItems((prev) => prev.map((i) => (i.id === item.id ? { ...i, approved: next } : i)));
       if (next) {
-        const names = items
-          .map((i) => (i.id === item.id ? { ...i, approved: true } : i))
-          .filter((i) => i.approved && i.name)
-          .map((i) => i.name);
+        await request('POST', '/api/entities/intake-approvals/PajamaIntake/' + item.id, {});
+      } else {
+        await base44.entities.PajamaIntake.update(item.id, { approved: false, approvalStatus: 'pending', approvedDate: null });
+      }
+      setItems((prev) => prev.map((i) => (i.id === item.id ? { ...i, approved: next, approvalStatus: next ? 'approved' : 'pending' } : i)));
+      if (next) {
+        const names = items.map((i) => (i.id === item.id ? { ...i, approved: true } : i)).filter((i) => i.approved && i.name).map((i) => i.name);
         await broadcastReveal(names);
       }
     } catch (e) { console.error('Approve error', e); }
@@ -121,6 +119,7 @@ export default function PajamaIntakeList() {
               )}
               {i.pajamaStyle && <div className="text-xs">🛏️ {i.pajamaStyle}</div>}
               {i.boundaries && <div className="text-xs bg-secondary p-1.5 rounded border border-border/20">🚧 {i.boundaries}</div>}
+              <details className="text-xs border border-border/40 rounded-lg p-2"><summary className="cursor-pointer font-bold">ΟΛΕΣ ΟΙ ΑΠΑΝΤΗΣΕΙΣ ΤΗΣ ΦΟΡΜΑΣ</summary><div className="mt-2 space-y-1">{Object.entries(i).filter(([key]) => !['id', 'created_date', 'updated_date'].includes(key)).map(([key, value]) => <div key={key} className="break-words"><strong>{key}:</strong> {typeof value === 'object' && value !== null ? JSON.stringify(value) : String(value ?? '—')}</div>)}</div></details>
             </div>
             <div className="flex flex-col gap-1 items-stretch">
               <ComicButton variant={i.approved ? 'dark' : 'green'} size="sm" onClick={() => toggleApprove(i)}>
