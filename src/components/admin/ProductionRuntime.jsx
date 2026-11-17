@@ -13,7 +13,7 @@ const defaultPhases=[
  {id:'overnight-finale',title:'Finale',time:'11:00',notes:'Ολοκλήρωση εμπειρίας.'},
 ];
 
-export default function ProductionRuntime({selected,record,draft,onChange,onSaved,consents=[]}){
+export default function ProductionRuntime({selected,record,draft,onChange,onSaved,consents=[],participants=[]}){
  const [busy,setBusy]=useState(false),[message,setMessage]=useState(''),[uploading,setUploading]=useState(false);
  const phases=Array.isArray(draft.overnightPhases)&&draft.overnightPhases.length?draft.overnightPhases:defaultPhases;
  const stageIndex=Math.max(0,Math.min(Number(draft.currentStageIndex)||0,(draft.rundown||[]).length-1));
@@ -24,7 +24,11 @@ export default function ProductionRuntime({selected,record,draft,onChange,onSave
    for(const item of sorted) latest.set(String(item.participantName||'').trim().toLocaleLowerCase('el-GR'),item);
    return [...latest.values()].filter(item=>item.participantName);
  },[consents]);
- const publicMediaAllowed=latestConsents.length>0&&latestConsents.every(item=>item.publicUseConsent===true&&!item.withdrawn);
+ const consentMap=new Map(latestConsents.map(item=>[String(item.participantName||'').trim().toLocaleLowerCase('el-GR'),item]));
+ const requiredNames=participants.map(item=>String(item.name||item.displayName||'').trim().toLocaleLowerCase('el-GR')).filter(Boolean);
+ const allParticipantsConsented=requiredNames.length>0&&requiredNames.every(name=>consentMap.has(name)&&!consentMap.get(name).withdrawn);
+ const privateMediaAllowed=allParticipantsConsented&&requiredNames.every(name=>consentMap.get(name).recordingConsent===true&&consentMap.get(name).privateUseConsent===true);
+ const publicMediaAllowed=allParticipantsConsented&&requiredNames.every(name=>consentMap.get(name).recordingConsent===true&&consentMap.get(name).publicUseConsent===true);
  const log=Array.isArray(draft.productionLog)?draft.productionLog:[];
  const update=(patch)=>onChange?.(patch);
  const persist=async(patch,success)=>{
@@ -80,6 +84,7 @@ export default function ProductionRuntime({selected,record,draft,onChange,onSave
  };
  const uploadMedia=async(files)=>{
    if(!files?.length)return;
+   if(!privateMediaAllowed){setMessage('Η μεταφόρτωση είναι κλειδωμένη μέχρι όλοι οι συμμετέχοντες να δώσουν ξεχωριστή συγκατάθεση καταγραφής και ιδιωτικής χρήσης.');return;}
    setUploading(true);setMessage('');
    try{
      const added=[];
@@ -161,12 +166,13 @@ export default function ProductionRuntime({selected,record,draft,onChange,onSave
 
   <ComicPanel className="bg-card space-y-3">
    <div><h3 className="font-heading text-lg">SOCIAL MEDIA RECAP</h3><p className="text-xs text-foreground/60">Αρχεία, σημειώσεις και κείμενο recap για την επιλεγμένη διοργάνωση.</p></div>
-   <label className={label}>Προσθήκη φωτογραφιών / βίντεο / ήχου<input className={field} type="file" multiple accept="image/*,video/*,audio/*" onChange={e=>uploadMedia(e.target.files)}/></label>
+   <label className={label}>Προσθήκη φωτογραφιών / βίντεο / ήχου<input className={field} type="file" multiple accept="image/*,video/*,audio/*" disabled={!privateMediaAllowed||uploading} onChange={e=>uploadMedia(e.target.files)}/></label>
+   <p className="text-xs text-foreground/60">{privateMediaAllowed?'Η ιδιωτική καταγραφή επιτρέπεται για όλους τους δηλωμένους συμμετέχοντες.':'Η μεταφόρτωση παραμένει κλειδωμένη μέχρι να καταχωριστούν οι απαιτούμενες ατομικές συγκαταθέσεις.'}</p>
    {uploading&&<p className="text-xs">Μεταφόρτωση αρχείων…</p>}
    <div className="space-y-2">{(draft.recapMedia||[]).map((url,index)=><div key={url+index} className="flex items-center justify-between gap-2 rounded-lg border border-border p-2"><button className="min-w-0 truncate text-left text-xs underline" onClick={()=>openMedia(url)}>{String(url).startsWith('private:')?String(url).slice(8):url.split('/').pop()}</button><button className="text-xs text-red-400" onClick={()=>removeMedia(url)}>ΑΦΑΙΡΕΣΗ</button></div>)}</div>
    <label className={label}>Recap<textarea className={field} rows="3" value={draft.recapNotes||''} onChange={e=>update({recapNotes:e.target.value})}/></label>
    <label className={label}>Social teaser<textarea className={field} rows="2" value={draft.socialTeaser||''} onChange={e=>update({socialTeaser:e.target.value})}/></label>
-   <div className="rounded-lg border border-border p-3 space-y-1"><b className="text-xs">ΔΗΜΟΣΙΑ ΧΡΗΣΗ ΥΛΙΚΟΥ</b><p className="text-xs">{publicMediaAllowed?'Υπάρχει ρητή δημόσια συγκατάθεση από όλους τους συμμετέχοντες με καταχωρισμένη δήλωση.':'Η δημόσια χρήση είναι κλειδωμένη: απαιτείται ενεργή, ρητή συγκατάθεση δημόσιας χρήσης από κάθε συμμετέχοντα.'}</p><span className="text-[10px] text-foreground/50">{latestConsents.length} ατομικές δηλώσεις σε ισχύ</span></div>
+   <div className="rounded-lg border border-border p-3 space-y-1"><b className="text-xs">ΔΗΜΟΣΙΑ ΧΡΗΣΗ ΥΛΙΚΟΥ</b><p className="text-xs">{publicMediaAllowed?'Υπάρχει ρητή δημόσια συγκατάθεση καταγραφής και δημοσίευσης από όλους τους συμμετέχοντες.':'Η δημόσια χρήση είναι κλειδωμένη: απαιτείται ενεργή, ρητή συγκατάθεση καταγραφής και δημόσιας χρήσης από κάθε συμμετέχοντα.'}</p><span className="text-[10px] text-foreground/50">{latestConsents.length} ατομικές δηλώσεις · {requiredNames.length} συμμετέχοντες</span></div>
    <ComicButton size="sm" variant="dark" onClick={copyRecap}>ΑΝΤΙΓΡΑΦΗ ΚΕΙΜΕΝΟΥ RECAP</ComicButton>
   </ComicPanel>
 
