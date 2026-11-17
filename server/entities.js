@@ -1238,6 +1238,21 @@ export function entityRoutes() {
       if (body.adultConfirmed !== true || body.safeWordConfirmed !== true) {
         return res.status(400).json({ error: 'Απαιτείται επιβεβαίωση 18+ και αποδοχή του STOP.' });
       }
+      if (req.entity === 'BacheloretteIntake') {
+        const sessionCode = String(body.sessionCode || '').trim().toUpperCase();
+        if (typeof body.leaderName !== 'string' || !body.leaderName.trim() ||
+            !['house', 'oneday'].includes(body.accommodation) || !/^[A-Z0-9]{4}$/.test(sessionCode)) {
+          return res.status(400).json({ error: 'Συμπλήρωσε σωστά τα υποχρεωτικά στοιχεία της φόρμας.' });
+        }
+      } else if (typeof body.name !== 'string' || !body.name.trim()) {
+        return res.status(400).json({ error: 'Το όνομα είναι υποχρεωτικό.' });
+      }
+      if (req.entity === 'PajamaIntake' && body.formType === 'modes') {
+        const modes = body.preferredModes;
+        if (!Array.isArray(modes) || !modes.length || modes.some((mode) => !['lockdown', 'beach_bar'].includes(mode))) {
+          return res.status(400).json({ error: 'Επίλεξε τουλάχιστον ένα διαθέσιμο Mode.' });
+        }
+      }
       const formType = req.entity === 'BacheloretteIntake' ? 'heist' : (body.formType === 'modes' ? 'modes' : 'pajama');
       const { rows: settings } = await query("SELECT data FROM records WHERE entity = 'AppSetting' AND data->>'key' = 'admin_form_questions' LIMIT 1");
       const questions = settings[0]?.data?.value?.forms?.[formType] || [];
