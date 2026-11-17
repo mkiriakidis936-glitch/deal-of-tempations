@@ -129,22 +129,44 @@ export default function ProductionRuntime({selected,record,draft,onChange,onSave
      anchor.href=objectUrl;anchor.download=name;document.body.appendChild(anchor);anchor.click();anchor.remove();URL.revokeObjectURL(objectUrl);
    }catch(error){setMessage(error.message||'Το αρχείο δεν άνοιξε.');}
  };
+ const publishMedia=async(url)=>{
+   if(!publicMediaAllowed){setMessage('Η δημόσια δημοσίευση είναι κλειδωμένη μέχρι όλοι οι συμμετέχοντες του υλικού να έχουν ενεργή συγκατάθεση δημόσιας χρήσης.');return;}
+   const name=String(url).startsWith('private:')?String(url).slice(8):'';
+   const item=(draft.recapMediaItems||[]).find(entry=>entry.name===name);
+   if(!item){setMessage('Το αρχείο δεν έχει συσχετισμένους συμμετέχοντες και δεν μπορεί να δημοσιευτεί.');return;}
+   try{
+     const response=await fetch('/api/media/publish-private',{method:'POST',headers:{Authorization:`Bearer ${getToken()}`,'Content-Type':'application/json'},body:JSON.stringify({name,sessionCode:selected.sessionCode,participants:item.participants||[]})});
+     const data=await response.json().catch(()=>({}));
+     if(!response.ok)throw new Error(data.error||'Η δημοσίευση απορρίφθηκε.');
+     const publishedItem={name:data.name,url:data.url,sourceName:name,participants:[...(item.participants||[])],publishedAt:new Date().toISOString()};
+     const items=[...(draft.recapPublishedMediaItems||[]),publishedItem];
+     const urls=[...(draft.recapPublishedMedia||[]),data.url];
+     await persist({recapPublishedMediaItems:items,recapPublishedMedia:urls},'Το αρχείο δημοσιεύτηκε. Ο σύνδεσμος είναι διαθέσιμος για χρήση στα social media.');
+   }catch(error){setMessage(error.message||'Η δημοσίευση απέτυχε.');}
+ };
  const applyWithdrawal=async(consent)=>{
    const participantName=String(consent.participantName||'').trim();
    const key=participantName.toLocaleLowerCase('el-GR');
    const affected=(draft.recapMediaItems||[]).filter(item=>(item.participants||[]).some(name=>String(name).trim().toLocaleLowerCase('el-GR')===key));
-   const deleted=[];
+   const deleted=[];const deletedPublished=[];
+   const published=(draft.recapPublishedMediaItems||[]).filter(item=>(item.participants||[]).some(name=>String(name).trim().toLocaleLowerCase('el-GR')===key));
    for(const item of affected){
      try{
        const response=await fetch(`/api/media/private/${encodeURIComponent(item.name)}`,{method:'DELETE',headers:{Authorization:`Bearer ${getToken()}`}});
        if(response.ok)deleted.push(item.name);
      }catch{}
    }
+   for(const item of published){
+     try{const response=await fetch(`/api/media/${encodeURIComponent(item.name)}`,{method:'DELETE',headers:{Authorization:`Bearer ${getToken()}`}});if(response.ok)deletedPublished.push(item.name)}catch{}
+   }
    const deletedRefs=deleted.map(name=>`private:${name}`);
+   const deletedPublishedItems=published.filter(item=>deletedPublished.includes(item.name));
    const nextMedia=(draft.recapMedia||[]).filter(url=>!deletedRefs.includes(url));
    const nextItems=(draft.recapMediaItems||[]).filter(item=>!deleted.includes(item.name));
-   const nextActions=[...(draft.withdrawalActions||[]),{participantName,appliedAt:new Date().toISOString(),deletedFiles:deleted.length}];
-   const saved=await persist(withLog('consent-withdrawal-applied',`Εφαρμογή ανάκλησης για ${participantName}: αφαιρέθηκαν ${deleted.length} ιδιωτικά αρχεία.`,{recapMedia:nextMedia,recapMediaItems:nextItems,withdrawalActions:nextActions}),`Η ανάκληση εφαρμόστηκε. Αφαιρέθηκαν ${deleted.length} συσχετισμένα αρχεία.`);
+   const nextPublishedItems=(draft.recapPublishedMediaItems||[]).filter(item=>!deletedPublished.includes(item.name));
+   const nextPublished=(draft.recapPublishedMedia||[]).filter(url=>!deletedPublishedItems.some(item=>item.url===url));
+   const nextActions=[...(draft.withdrawalActions||[]),{participantName,appliedAt:new Date().toISOString(),deletedFiles:deleted.length,deletedPublicFiles:deletedPublished.length}];
+   const saved=await persist(withLog('consent-withdrawal-applied',`Εφαρμογή ανάκλησης για ${participantName}: αφαιρέθηκαν ${deleted.length} ιδιωτικά και ${deletedPublished.length} δημόσια αρχεία από την εφαρμογή.`,{recapMedia:nextMedia,recapMediaItems:nextItems,recapPublishedMedia:nextPublished,recapPublishedMediaItems:nextPublishedItems,withdrawalActions:nextActions}),`Η ανάκληση εφαρμόστηκε. Αφαιρέθηκαν ${deleted.length} ιδιωτικά και ${deletedPublished.length} δημόσια αρχεία από την εφαρμογή.`);
    if(!saved&&deleted.length)setMessage('Τα αρχεία διαγράφηκαν, αλλά η ενημέρωση του αρχείου παραγωγής απέτυχε. Ανανέωσε τη σελίδα πριν συνεχίσεις.');
  };
  const copyRecap=async()=>{
@@ -194,8 +216,9 @@ export default function ProductionRuntime({selected,record,draft,onChange,onSave
    <p className="text-xs text-foreground/60">{privateMediaAllowed?'Η ιδιωτική καταγραφή επιτρέπεται για όλους τους δηλωμένους συμμετέχοντες.':'Η μεταφόρτωση παραμένει κλειδωμένη μέχρι να καταχωριστούν οι απαιτούμενες ατομικές συγκαταθέσεις.'}</p>
    {uploading&&<p className="text-xs">Μεταφόρτωση αρχείων…</p>}
    <div className="rounded-lg border border-border p-3 space-y-2"><b className="text-xs">ΠΟΙΟΙ ΕΜΦΑΝΙΖΟΝΤΑΙ ΣΤΟ ΥΛΙΚΟ</b>{participants.map((person,index)=>{const name=String(person.name||person.displayName||'').trim();return name?<label key={person.id||name+index} className="flex items-center gap-2 text-xs"><input type="checkbox" checked={mediaParticipantNames.includes(name)} onChange={e=>setMediaParticipantNames(current=>e.target.checked?[...current,name]:current.filter(item=>item!==name))}/>{name}</label>:null})}</div>
-   <div className="space-y-2">{(draft.recapMedia||[]).map((url,index)=><div key={url+index} className="flex items-center justify-between gap-2 rounded-lg border border-border p-2"><button className="min-w-0 truncate text-left text-xs underline" onClick={()=>openMedia(url)}>{String(url).startsWith('private:')?String(url).slice(8):url.split('/').pop()}</button><button className="text-xs text-red-400" onClick={()=>removeMedia(url)}>ΑΦΑΙΡΕΣΗ</button></div>)}</div>
-   {(latestConsents.filter(item=>item.withdrawn)).length>0&&<div className="rounded-lg border border-amber-500/40 p-3 space-y-2"><b className="text-xs">ΑΝΑΚΛΗΣΕΙΣ ΣΥΓΚΑΤΑΘΕΣΗΣ</b>{latestConsents.filter(item=>item.withdrawn).map(item=><div key={item.id} className="flex flex-wrap items-center justify-between gap-2 text-xs"><span>{item.participantName} · αίτημα ανάκλησης</span><ComicButton size="sm" variant="dark" onClick={()=>applyWithdrawal(item)}>ΕΦΑΡΜΟΓΗ ΑΝΑΚΛΗΣΗΣ</ComicButton></div>)}<p className="text-[10px] text-foreground/50">Η εφαρμογή αφαιρεί τα ιδιωτικά αρχεία που έχουν συσχετιστεί με το συγκεκριμένο άτομο.</p></div>}
+   <div className="space-y-2">{(draft.recapMedia||[]).map((url,index)=><div key={url+index} className="flex items-center justify-between gap-2 rounded-lg border border-border p-2"><button className="min-w-0 truncate text-left text-xs underline" onClick={()=>openMedia(url)}>{String(url).startsWith('private:')?String(url).slice(8):url.split('/').pop()}</button>{String(url).startsWith('private:')&&<ComicButton size="sm" variant="dark" onClick={()=>publishMedia(url)} disabled={!publicMediaAllowed||(draft.recapPublishedMediaItems||[]).some(item=>item.sourceName===String(url).slice(8))}>ΔΗΜΟΣΙΕΥΣΗ</ComicButton>}<button className="text-xs text-red-400" onClick={()=>removeMedia(url)}>ΑΦΑΙΡΕΣΗ</button></div>)}</div>
+   {(latestConsents.filter(item=>item.withdrawn)).length>0&&<div className="rounded-lg border border-amber-500/40 p-3 space-y-2"><b className="text-xs">ΑΝΑΚΛΗΣΕΙΣ ΣΥΓΚΑΤΑΘΕΣΗΣ</b>{latestConsents.filter(item=>item.withdrawn).map(item=><div key={item.id} className="flex flex-wrap items-center justify-between gap-2 text-xs"><span>{item.participantName} · αίτημα ανάκλησης</span><ComicButton size="sm" variant="dark" onClick={()=>applyWithdrawal(item)}>ΕΦΑΡΜΟΓΗ ΑΝΑΚΛΗΣΗΣ</ComicButton></div>)}<p className="text-[10px] text-foreground/50">Η εφαρμογή αφαιρεί τα ιδιωτικά και δημόσια αρχεία της εφαρμογής που έχουν συσχετιστεί με το συγκεκριμένο άτομο. Αντίγραφα που έχουν ήδη αναρτηθεί σε τρίτες πλατφόρμες χρειάζονται ξεχωριστή αφαίρεση.</p></div>}
+   {(draft.recapPublishedMedia||[]).length>0&&<div className="rounded-lg border border-primary/30 p-3 space-y-2"><b className="text-xs">ΔΗΜΟΣΙΕΥΜΕΝΑ ΑΡΧΕΙΑ</b>{(draft.recapPublishedMedia||[]).map(url=><a key={url} className="block break-all text-xs underline" href={url} target="_blank" rel="noreferrer">{url}</a>)}</div>}
    <label className={label}>Recap<textarea className={field} rows="3" value={draft.recapNotes||''} onChange={e=>update({recapNotes:e.target.value})}/></label>
    <label className={label}>Social teaser<textarea className={field} rows="2" value={draft.socialTeaser||''} onChange={e=>update({socialTeaser:e.target.value})}/></label>
    <div className="rounded-lg border border-border p-3 space-y-1"><b className="text-xs">ΔΗΜΟΣΙΑ ΧΡΗΣΗ ΥΛΙΚΟΥ</b><p className="text-xs">{publicMediaAllowed?'Υπάρχει ρητή δημόσια συγκατάθεση καταγραφής και δημοσίευσης από όλους τους συμμετέχοντες.':'Η δημόσια χρήση είναι κλειδωμένη: απαιτείται ενεργή, ρητή συγκατάθεση καταγραφής και δημόσιας χρήσης από κάθε συμμετέχοντα.'}</p><span className="text-[10px] text-foreground/50">{latestConsents.length} ατομικές δηλώσεις · {requiredNames.length} συμμετέχοντες</span></div>
