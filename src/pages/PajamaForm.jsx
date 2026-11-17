@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { ART } from '@/data/brandArt';
 import CustomFormQuestions from '@/components/forms/CustomFormQuestions';
@@ -9,6 +10,8 @@ const NAIL_COLORS = ['Red', 'Pink', 'White', 'Black', 'Nude', 'French', 'Blue', 
 const FIELD = 'w-full px-3 py-2 rounded-lg bg-input border border-primary/40 text-foreground focus:outline-none focus:ring-2 focus:ring-ring';
 
 export default function PajamaForm() {
+  const [params] = useSearchParams();
+  const sessionCode = params.get('event') || params.get('sessionCode') || params.get('code') || '';
   const [form, setForm] = useState({
     name: '',
     pajamaStyle: '',
@@ -19,6 +22,7 @@ export default function PajamaForm() {
     ticklish: 3,
     boundaries: '',
     safeWordConfirmed: false,
+    adultConfirmed: false,
     customAnswers: {},
   });
   const [saving, setSaving] = useState(false);
@@ -33,16 +37,18 @@ export default function PajamaForm() {
   }
 
   async function handleSubmit() {
-    if (!form.name.trim() || !form.safeWordConfirmed || !customQuestionsValid) return;
+    if (!form.name.trim() || !form.adultConfirmed || !form.safeWordConfirmed || !customQuestionsValid) return;
     setSaving(true);
     setError('');
     try {
       await base44.entities.PajamaIntake.create({
         ...form,
         name: form.name.trim(),
+        ...(sessionCode ? { sessionCode: sessionCode.trim().toUpperCase() } : {}),
         footSensitivity: Number(form.footSensitivity),
         ticklish: Number(form.ticklish),
         approved: false,
+        adultConfirmed: true,
         customAnswers: form.customAnswers,
       });
       setSaved(true);
@@ -142,6 +148,10 @@ export default function PajamaForm() {
           </div>
           <CustomFormQuestions formType="pajama" value={form.customAnswers} onChange={(value) => set('customAnswers', value)} onValidityChange={setCustomQuestionsValid} className="space-y-3" />
           <label className="flex items-start gap-2 text-sm text-foreground/90">
+            <input type="checkbox" checked={form.adultConfirmed} onChange={(e) => set('adultConfirmed', e.target.checked)} className="mt-1 accent-primary" />
+            <span>Επιβεβαιώνω ότι είμαι 18 ετών ή μεγαλύτερη. *</span>
+          </label>
+          <label className="flex items-start gap-2 text-sm text-foreground/90">
             <input type="checkbox" checked={form.safeWordConfirmed} onChange={(e) => set('safeWordConfirmed', e.target.checked)} className="mt-1 accent-primary" />
             <span>Διάβασα τα όρια και συμφωνώ με το STOP / safe word. *</span>
           </label>
@@ -150,7 +160,7 @@ export default function PajamaForm() {
         {error && <div role="alert" className="rounded-lg border border-red-400/60 bg-red-950/60 p-3 text-sm text-red-100">{error}</div>}
         <button
           onClick={handleSubmit}
-          disabled={saving || !form.name.trim() || !form.safeWordConfirmed || !customQuestionsValid}
+          disabled={saving || !form.name.trim() || !form.adultConfirmed || !form.safeWordConfirmed || !customQuestionsValid}
           className="w-full py-3 rounded-xl font-heading text-xl bg-primary text-primary-foreground hover:bg-primary/90  disabled:opacity-40"
         >
           {saving ? 'ΑΠΟΣΤΟΛΗ...' : 'ΑΠΟΣΤΟΛΗ'}
