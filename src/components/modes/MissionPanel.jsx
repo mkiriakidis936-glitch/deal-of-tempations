@@ -27,9 +27,17 @@ export default function MissionPanel({ ctx, pool, onSuccess, onFail, title = '�
     const cur = ctx.mg.missions || {};
     const free = players.filter((player) => canReceiveMissions(player) && (!cur[player.id] || cur[player.id].status !== 'active'));
     const eligible = players.filter(canReceiveMissions);
-    const p = target === 'random' ? pick(free.length ? free : eligible) : players.find((player) => player.id === target);
+    if (target === 'random' && free.length === 0) {
+      setMessage('Όλες οι διαθέσιμες παίκτριες έχουν ήδη ενεργή αποστολή.');
+      return;
+    }
+    const p = target === 'random' ? pick(free) : players.find((player) => player.id === target);
     if (!p || !canReceiveMissions(p)) {
       setMessage('Η παίκτρια δεν έχει επιλέξει συμμετοχή σε μυστικές αποστολές.');
+      return;
+    }
+    if (cur[p.id]?.status === 'active') {
+      setMessage('Η παίκτρια έχει ήδη ενεργή αποστολή. Περίμενε να ολοκληρωθεί ή να λήξει.');
       return;
     }
     const answers = profileFor(p);
@@ -66,13 +74,32 @@ export default function MissionPanel({ ctx, pool, onSuccess, onFail, title = '�
   }, [auto, everyMin, stopped]);
 
   function finish(pid, ok) {
+    if (stopped) return;
     const m = missions[pid];
-    if (!m) return;
+    if (!m || m.status !== 'active') return;
     setMg({ missions: { ...missions, [pid]: { ...m, status: ok ? 'done' : 'failed' } } });
     const name = players.find((p) => p.id === pid)?.name;
     log(`${ok ? '✅' : '❌'} ${name}: «${m.title}»`);
     if (ok) onSuccess?.(m, pid); else onFail?.(m, pid);
   }
+
+  useEffect(() => {
+    if (stopped) return undefined;
+    const interval = setInterval(() => {
+      const current = ctx.mg.missions || {};
+      const now = Date.now();
+      let changed = false;
+      const next = { ...current };
+      Object.entries(current).forEach(([playerId, mission]) => {
+        if (mission?.status === 'active' && Number(mission.expiresAt) > 0 && mission.expiresAt <= now) {
+          next[playerId] = { ...mission, status: 'expired', expiredAt: now };
+          changed = true;
+        }
+      });
+      if (changed) setMg({ missions: next });
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [stopped, ctx.mg.missions, setMg]);
 
   const active = Object.values(missions).filter((m) => m.status === 'active');
 
@@ -81,7 +108,7 @@ export default function MissionPanel({ ctx, pool, onSuccess, onFail, title = '�
       <div className="flex flex-wrap items-center gap-2">
         <select value={target} onChange={(e) => setTarget(e.target.value)} className="px-2 py-2 rounded bg-background border border-border text-sm">
           <option value="random">🎲 Τυχαία παίκτρια</option>
-          {players.map((p) => <option key={p.id} value={p.id} disabled={!canReceiveMissions(p)}>{p.name}{canReceiveMissions(p) ? '' : ' · χωρίς αποστολές'}</option>)}
+          {players.map((p) => <option key={p.id} value={p.id} disabled={!canReceiveMissions(p) || missions[p.id]?.status === 'active'}>{p.name}{!canReceiveMissions(p) ? ' · χωρίς αποστολές' : missions[p.id]?.status === 'active' ? ' · ενεργή αποστολή' : ''}</option>)}
         </select>
         <Btn color="bg-fuchsia-700" onClick={send} disabled={stopped}>📲 Στείλε αποστολή</Btn>
         <label className="flex items-center gap-1 text-xs">
@@ -108,8 +135,8 @@ export default function MissionPanel({ ctx, pool, onSuccess, onFail, title = '�
             </div>
             <div className="text-xs opacity-80">{m.text}</div>
             <div className="flex gap-2">
-              <Btn color="bg-emerald-700" className="!py-1.5" onClick={() => finish(m.playerId, true)}>✅ Πέτυχε</Btn>
-              <Btn color="bg-red-800" className="!py-1.5" onClick={() => finish(m.playerId, false)}>❌ Απέτυχε</Btn>
+              <Btn color="bg-emerald-700" className="!py-1.5" onClick={() => finish(m.playerId, true)} disabled={stopped}>✅ Πέτυχε</Btn>
+              <Btn color="bg-red-800" className="!py-1.5" onClick={() => finish(m.playerId, false)} disabled={stopped}>❌ Απέτυχε</Btn>
             </div>
           </div>
         );
