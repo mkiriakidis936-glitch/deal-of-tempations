@@ -354,9 +354,13 @@ export default function AdminMedia() {
           })}
         </div>
       </ComicPanel>
+      </ComicPanel>
+      )}
+
+      {showSurface('site', 'forms', 'tablet') && (
       <ComicPanel className="bg-card space-y-3">
-        <div className="font-heading text-lg">🎮 ΚΕΝΤΡΟ ΠΟΛΥΜΕΣΩΝ MODES</div>
-        <p className="text-xs text-foreground/60">Ανεξάρτητη φωτογραφική ταυτότητα για τα τέσσερα νέα Modes.</p>
+        <div className="font-heading text-lg">🎮 ΠΟΛΥΜΕΣΑ ΑΝΑ MODE</div>
+        <p className="text-xs text-foreground/60">Ανεξάρτητο υλικό για τα PAJAMA LOCKDOWN 18+ και BEACH BAR HOME LOCKDOWN. Τα Cover χρησιμοποιούνται στην επιλογή Mode, ενώ Gallery και Trailer συνδέονται με την προβολή του Mode στο Site.</p>
         <ModeMediaManager
           value={ov.modeMedia || {}}
           disabled={!!busy}
@@ -364,10 +368,14 @@ export default function AdminMedia() {
         />
       </ComicPanel>
 
+      </ComicPanel>
+      )}
+
+      {showSurface('site', 'forms', 'tablet', 'mobile') && (
       <ComicPanel className="bg-card space-y-3">
         <div className="font-heading text-lg">🖼️ ΕΙΚΟΝΕΣ ΑΝΑ ΣΗΜΕΙΟ</div>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-          {IMAGE_SLOTS.map((s) => (
+          {IMAGE_SLOTS.filter((s) => showSurface(...(s.surfaces || []))).map((s) => (
             <div key={s.id} className="border-2 border-border/40 rounded-lg p-2 bg-secondary/40">
               <Thumb src={ov[s.id] || DEFAULTS[s.id]} className="w-full aspect-square rounded" />
               <div className="font-bold text-sm mt-2">{s.label}</div>
