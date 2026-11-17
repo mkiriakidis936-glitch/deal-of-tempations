@@ -88,7 +88,7 @@ export default function Intake() {
         <ComicPanel className="text-center py-5 bg-primary overflow-hidden">
           <img src={ART.photoHeistRoom} alt="Arrest & Heist" className="w-full h-44 sm:h-56 object-cover rounded-xl mb-4" />
           <h1 className="font-heading text-3xl comic-text-stroke">ΕΡΩΤΗΜΑΤΟΛΟΓΙΟ</h1>
-          <p className="text-sm">Φόρμα προετοιμασίας — Arrest &amp; Heist Mode</p>
+          <p className="text-sm">Φόρμα προετοιμασίας — Arrest &amp; Heist</p>
           <div className="mt-4 flex justify-between text-xs font-bold"><span>ΠΡΟΟΔΟΣ ΦΟΡΜΑΣ</span><span>{progress}%</span></div>
           <div className="mt-2 h-2 rounded-full bg-black/20 overflow-hidden"><div className="h-full rounded-full bg-white transition-all" style={{ width: `${progress}%` }} /></div>
         </ComicPanel>
@@ -121,27 +121,27 @@ export default function Intake() {
               </div>
             </div>
             <div>
-              <label className="font-bold text-sm">Personal Secrets (3-4 πραγματικά 18+ μυστικά για δυναμικές ερωτήσεις)</label>
+              <label className="font-bold text-sm">Προσωπικά μυστικά (3-4 πραγματικά 18+ μυστικά για δυναμικές ερωτήσεις)</label>
               <textarea value={form.secrets} onChange={(e) => setForm({ ...form, secrets: e.target.value })} rows={4} className="w-full px-3 py-2 border-2 border-border rounded-lg bg-secondary mt-1" placeholder="π.χ. Έχει φιλήσει τον αδερφό του συντρόφου της..." />
             </div>
             <div>
-              <label className="font-bold text-sm">Music Preferences (αγαπημένα tracks για καραόκε)</label>
-              <input type="text" value={form.musicPreferences} onChange={(e) => setForm({ ...form, musicPreferences: e.target.value })} className="w-full px-3 py-2 border-2 border-border rounded-lg bg-secondary mt-1" placeholder="π.χ. Beyoncé, Greek pop, 2000s hits" />
+              <label className="font-bold text-sm">Μουσικές προτιμήσεις (αγαπημένα τραγούδια για καραόκε)</label>
+              <input type="text" value={form.musicPreferences} onChange={(e) => setForm({ ...form, musicPreferences: e.target.value })} className="w-full px-3 py-2 border-2 border-border rounded-lg bg-secondary mt-1" placeholder="π.χ. Beyoncé, ελληνική ποπ, επιτυχίες των 00s" />
             </div>
             <div>
-              <label className="font-bold text-sm">👗 Dress Code — Τι σκέφτεστε να φορέσετε; (προαιρετικό)</label>
-              <input type="text" value={form.dressCode} onChange={(e) => setForm({ ...form, dressCode: e.target.value })} className="w-full px-3 py-2 border-2 border-border rounded-lg bg-secondary mt-1" placeholder="π.χ. μαύρο φόρεμα, themed, casual" />
+              <label className="font-bold text-sm">👗 Ενδυματολογικός κώδικας — Τι σκέφτεστε να φορέσετε; (προαιρετικό)</label>
+              <input type="text" value={form.dressCode} onChange={(e) => setForm({ ...form, dressCode: e.target.value })} className="w-full px-3 py-2 border-2 border-border rounded-lg bg-secondary mt-1" placeholder="π.χ. μαύρο φόρεμα, θεματικό, καθημερινό" />
             </div>
             <div>
-              <label className="font-bold text-sm">🍹 Αγαπημένο Ποτό (προαιρετικό — για drinking challenges)</label>
+              <label className="font-bold text-sm">🍹 Αγαπημένο Ποτό (προαιρετικό — για δοκιμασίες ποτού)</label>
               <input type="text" value={form.favoriteDrink} onChange={(e) => setForm({ ...form, favoriteDrink: e.target.value })} className="w-full px-3 py-2 border-2 border-border rounded-lg bg-secondary mt-1" placeholder="π.χ. μοχίτο, tequila, κόκκινο κρασί" />
             </div>
             <div>
-              <label className="font-bold text-sm">🚫 Όρια / Hard Limits (προαιρετικό — τι δεν θέλεις καθόλου)</label>
+              <label className="font-bold text-sm">🚫 Όρια / Απαράβατα όρια (προαιρετικό — τι δεν θέλεις καθόλου)</label>
               <textarea value={form.boundaries} onChange={(e) => setForm({ ...form, boundaries: e.target.value })} rows={2} className="w-full px-3 py-2 border-2 border-border rounded-lg bg-secondary mt-1" placeholder="π.χ. όχι φωτογραφίες, όχι αλκοόλ σε συγκεκριμένα παιχνίδια..." />
             </div>
             <div>
-              <label className="font-bold text-sm">✨ Fun Fact (προαιρετικό — κάτι ενδιαφέρον/αστείο για σένα)</label>
+              <label className="font-bold text-sm">✨ Ενδιαφέρον στοιχείο (προαιρετικό — κάτι ενδιαφέρον/αστείο για σένα)</label>
               <input type="text" value={form.funFact} onChange={(e) => setForm({ ...form, funFact: e.target.value })} className="w-full px-3 py-2 border-2 border-border rounded-lg bg-secondary mt-1" placeholder="π.χ. έχω πάει σε 12 χώρες, μιλάω 3 γλώσσες..." />
             </div>
             <div>
@@ -162,7 +162,7 @@ export default function Intake() {
               </label>
               <label className="flex items-center gap-2 cursor-pointer">
                 <input type="checkbox" checked={form.safeWordConfirmed} onChange={(e) => setForm({ ...form, safeWordConfirmed: e.target.checked })} className="w-5 h-5" />
-                <span className="text-sm font-bold">Επιβεβαιώνω ότι γνωρίζω το Safe Word: "MAYDAY"</span>
+                <span className="text-sm font-bold">Επιβεβαιώνω ότι γνωρίζω το Λέξη ασφαλείας: "MAYDAY"</span>
               </label>
             </div>
           </div>
