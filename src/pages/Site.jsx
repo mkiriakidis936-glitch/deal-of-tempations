@@ -103,8 +103,8 @@ export default function Site() {
         </div>
       )}
       <footer className="border-t border-tarot-gold/15 px-4 py-8 text-center">
-        <a href="/site" onClick={(e) => { e.preventDefault(); setEvent('home'); }} className="font-display text-[11px] tracking-[0.3em] text-tarot-gold/65">DEAL OF TEMPTATION</a>
-        <div className="mt-2 text-[9px] tracking-[0.3em] text-foreground/35 uppercase">18+ · Ιδιωτικές εμπειρίες παιχνιδιού</div>
+        <a href="/site" onClick={(e) => { e.preventDefault(); setEvent('home'); }} className="font-display text-[11px] tracking-[0.3em] text-tarot-gold/65">DEAL OF TEMPTATIONS</a>
+        <div className="mt-2 text-[9px] tracking-[0.3em] text-foreground/35 uppercase">THE PRIVATE REALITY GAME NIGHT · 18+</div>
       </footer>
     </div>
   );
