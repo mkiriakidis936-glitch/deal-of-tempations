@@ -287,7 +287,7 @@ export default function AdminMedia() {
         <div className="font-heading text-lg">🖼️ ΦΩΤΟΓΡΑΦΙΑ Ή ΒΙΝΤΕΟ ΑΝΑ ΣΗΜΕΙΟ</div>
         <p className="text-xs text-foreground/60">Και τα έξι σημεία είναι προαιρετικά. Σε κάθε σημείο ανεβάζεις εσύ φωτογραφία ή βίντεο, το αλλάζεις ή το διαγράφεις. Δεν απαιτείται να υπάρχει αρχείο σε κανένα σημείο.</p>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {PHOTO_SPOTS.map((s) => {
+          {PHOTO_SPOTS.filter((s) => showSurface(...(s.surfaces || []))).map((s) => {
             const src = ov[s.id] || (ov.emptySlots?.includes(s.id) || ov.clearAllPhotos || ov.clearAllMedia ? '' : DEFAULTS[s.id]);
             return (
               <div key={s.id} className="border-2 border-border/40 rounded-lg p-2 bg-secondary/40">
@@ -305,7 +305,9 @@ export default function AdminMedia() {
           })}
         </div>
       </ComicPanel>
+      )}
 
+      {showSurface('tv') && (
       <ComicPanel className="bg-card space-y-3">
         <div className="font-heading text-lg">🎬 ΒΙΝΤΕΟ ΕΝΑΡΞΗΣ TV</div>
         <p className="text-xs text-foreground/60">Ανέβασε ξεχωριστά τα δύο βίντεο. Το WELCOME παίζει όταν η TV συνδέεται στη συνεδρία. Το COUNTDOWN παίζει όταν ξεκινά το παιχνίδι από το Tablet.</p>
@@ -328,11 +330,15 @@ export default function AdminMedia() {
         </div>
       </ComicPanel>
 
+      </ComicPanel>
+      )}
+
+      {showSurface('tablet', 'forms') && (
       <ComicPanel className="bg-card space-y-3">
         <div className="font-heading text-lg">🎮 ΕΞΩΦΥΛΛΟ ΦΩΤΟΓΡΑΦΙΑΣ ΑΝΑ MODE</div>
-        <p className="text-xs text-foreground/60">Οι φωτογραφίες εμφανίζονται στις κάρτες επιλογής Mode στην οθόνη έναρξης του Tablet. Κάθε Mode έχει ξεχωριστή εικόνα.</p>
+        <p className="text-xs text-foreground/60">Οι φωτογραφίες εμφανίζονται στην επιλογή Mode του Tablet και στη φόρμα επιλογής Mode. Τα PAJAMA LOCKDOWN 18+ και BEACH BAR HOME LOCKDOWN διαχειρίζονται στην ενότητα πολυμέσων των νέων Modes.</p>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {MODE_COVER_SLOTS.filter((s) => !NEW_MODES.some((mode) => mode.id === s.modeId)).map((s) => {
+          {MODE_COVER_SLOTS.filter((s) => s.modeId !== 'pedi_extended' && !NEW_MODES.some((mode) => mode.id === s.modeId) && showSurface(...(s.surfaces || ['tablet', 'forms']))).map((s) => {
             const src = ov[s.id] || (ov.emptyModeCovers?.includes(s.id) || ov.clearAllPhotos || ov.clearAllMedia ? '' : DEFAULTS[s.id]);
             return (
               <div key={s.id} className="border-2 border-border/40 rounded-lg p-2 bg-secondary/40">
