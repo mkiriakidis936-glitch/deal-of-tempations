@@ -1,22 +1,19 @@
 import React, { useEffect, useState } from 'react';
-import { base44 } from '@/api/base44Client';
+import { base44, request } from '@/api/base44Client';
 
 export default function PajamaRSVP() {
-  const [list, setList] = useState([]);
+  const [count, setCount] = useState(0);
   const [name, setName] = useState('');
   const [saving, setSaving] = useState(false);
   const [done, setDone] = useState(false);
-  const sessionCode = new URLSearchParams(window.location.search).get('event') || new URLSearchParams(window.location.search).get('sessionCode') || '';
+  const sessionCode = new URLSearchParams(window.location.search).get('event') || new URLSearchParams(window.location.search).get('sessionCode') || new URLSearchParams(window.location.search).get('code') || '';
 
   async function load() {
     try {
-      const { items } = await base44.entities.InvitationRSVP.filter(
-        { confirmed: true, event: 'pajama', ...(sessionCode ? { sessionCode } : {}) },
-        { sort: '-created_date', limit: 100 }
-      );
-      setList(items || []);
+      const result = await request('GET', `/api/entities/pajama-rsvp/count${sessionCode ? `?sessionCode=${encodeURIComponent(sessionCode)}` : ''}`);
+      setCount(Number(result.count) || 0);
     } catch (e) {
-      console.error('pajama rsvp load error', e);
+      console.error('pajama rsvp count load error', e);
     }
   }
 
@@ -40,21 +37,11 @@ export default function PajamaRSVP() {
   return (
     <div className="w-full max-w-md mx-auto space-y-4 text-center">
       <div className="flex items-center justify-center gap-3">
-        <div className="font-display text-4xl text-tarot-gold">{list.length}</div>
+        <div className="font-display text-4xl text-tarot-gold">{count}</div>
         <div className="text-left text-[11px] tracking-[0.3em] text-tarot-gold/70 uppercase leading-tight">
-          {list.length === 1 ? 'Θέση κρατημένη' : 'Θέσεις κρατημένες'}
+          {count === 1 ? 'Θέση κρατημένη' : 'Θέσεις κρατημένες'}
         </div>
       </div>
-
-      {list.length > 0 && (
-        <div className="flex flex-wrap justify-center gap-2">
-          {list.map((r) => (
-            <span key={r.id} className="px-3 py-1 rounded-full border border-tarot-gold/30 text-xs tracking-[0.1em] text-foreground/70">
-              {r.name}
-            </span>
-          ))}
-        </div>
-      )}
 
       {done ? (
         <div className="text-sm text-tarot-gold">✓ Η θέση σου κρατήθηκε. Τα υπόλοιπα δεν τα ξέρεις ακόμη.</div>

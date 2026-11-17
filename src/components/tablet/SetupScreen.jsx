@@ -14,6 +14,7 @@ const NAIL_COLORS = ['Red', 'Pink', 'White', 'Black', 'Nude', 'French', 'Blue', 
 
 
 export default function SetupScreen({ onStart }) {
+  const eventCode = (new URLSearchParams(window.location.search).get('event') || new URLSearchParams(window.location.search).get('sessionCode') || new URLSearchParams(window.location.search).get('code') || '').trim().toUpperCase();
   const [mode, setMode] = useState('classic');
   const [intensity, setIntensity] = useState('standard');
   const [safeWord, setSafeWord] = useState('');
@@ -23,6 +24,7 @@ export default function SetupScreen({ onStart }) {
     { name: '', footwearLevel: 2, toenailPerk: 'pink' },
   ]);
   const [intakes, setIntakes] = useState([]);
+  const [heistIntakes, setHeistIntakes] = useState([]);
   const [pajamaApproved, setPajamaApproved] = useState([]);
   const [intakesLoaded, setIntakesLoaded] = useState(false);
   const [testMode, setTestMode] = useState(false);
@@ -52,14 +54,18 @@ export default function SetupScreen({ onStart }) {
 
   const loadIntakes = async () => {
     try {
-      const [classicRes, pajamaRes, castingRes] = await Promise.all([
-        base44.entities.PlayerIntake.filter({}, { sort: '-created_date', limit: 500 }),
-        base44.entities.PajamaIntake.filter({}, { sort: '-created_date', limit: 500 }),
+      const [classicRes, pajamaRes, heistRes, castingRes] = await Promise.all([
+        base44.entities.PlayerIntake.filter(eventCode ? { sessionCode: eventCode } : {}, { sort: '-created_date', limit: 500 }),
+        base44.entities.PajamaIntake.filter(eventCode ? { sessionCode: eventCode } : {}, { sort: '-created_date', limit: 500 }),
+        base44.entities.BacheloretteIntake.filter(eventCode ? { sessionCode: eventCode } : {}, { sort: '-created_date', limit: 500 }),
         base44.entities.AppSetting.filter({ key: 'show_casting_plan' }, { limit: 1 }),
       ]);
-      const allClassic = classicRes.items || [];
+      const scopeToEvent = (items) => (items || []).filter((item) => eventCode ? item.sessionCode === eventCode : !item.sessionCode);
+      const allClassic = scopeToEvent(classicRes.items);
       const classic = allClassic.filter((item) => !item.vipGameMode || item.vipGameMode === 'classic');
-      const approved = (pajamaRes.items || []).filter((i) => i.approved === true && i.name);
+      const approved = scopeToEvent(pajamaRes.items).filter((i) => i.approved === true && i.name);
+      const legacyPajama = approved.filter((i) => (i.formType || 'pajama') !== 'modes');
+      setHeistIntakes(scopeToEvent(heistRes.items));
       setIntakes(allClassic);
       setPajamaApproved(approved);
 
@@ -69,13 +75,13 @@ export default function SetupScreen({ onStart }) {
       });
 
       const pjByName = {};
-      approved.forEach((i) => {
+      legacyPajama.forEach((i) => {
         const n = i.name.trim();
         pjByName[n] = { slipperType: i.slipperType || '', nailColor: i.nailColor || '', bringsOwnSlippers: i.bringsOwnSlippers, hasFlipFlops: i.hasFlipFlops, pajamaStyle: i.pajamaStyle || '' };
       });
 
       const names = [];
-      approved.forEach((i) => {
+      legacyPajama.forEach((i) => {
         const n = i.name.trim();
         if (!names.includes(n)) names.push(n);
       });
@@ -142,8 +148,10 @@ export default function SetupScreen({ onStart }) {
     const selectedModeMax = selectedModeMeta ? selectedModeMeta.max : (m.id === 'marathon' || m.id === 'arrest_heist' ? 10 : 6);
     if (m.id === 'marathon' && players.length < 8) {
       setPlayers(Array.from({ length: 8 }, (_, i) => ({ name: '', footwearLevel: 2, toenailPerk: TOENAIL_PERKS[i % 5].id })));
-    } else if (m.id === 'arrest_heist' && players.length < 4) {
-      setPlayers(Array.from({ length: 4 }, (_, i) => ({ name: '', footwearLevel: 2, toenailPerk: TOENAIL_PERKS[i % 5].id })));
+    } else if (m.id === 'arrest_heist') {
+      const names = [...new Set(heistIntakes.flatMap((item) => [item.leaderName, item.opponentName]).map((name) => (name || '').trim()).filter(Boolean))].slice(0, 10);
+      const seeded = names.map((name, i) => ({ name, footwearLevel: 2, toenailPerk: TOENAIL_PERKS[i % TOENAIL_PERKS.length].id }));
+      setPlayers([...seeded, ...Array.from({ length: Math.max(0, 4 - seeded.length) }, (_, i) => ({ name: '', footwearLevel: 2, toenailPerk: TOENAIL_PERKS[(seeded.length + i) % TOENAIL_PERKS.length].id }))]);
     } else if (m.id === 'classic' && players.length > 6) {
       setPlayers(players.slice(0, 6));
     } else if (isNewMode(m.id)) {
@@ -410,9 +418,7 @@ export default function SetupScreen({ onStart }) {
                   placeholder={`Όνομα ${idx + 1}`}
                   className="flex-1 min-w-0 px-3 py-1.5 border-2 border-border rounded-lg font-bold bg-background text-foreground focus:outline-none focus:ring-2 ring-primary font-body"
                 />
-                {newMode && mode === 'marathon_4h' ? (
-                  <div className="w-full rounded-lg bg-primary/10 px-2 py-1 text-xs text-foreground/80">{p.pajamaStyle ? `Πιτζάμα: ${p.pajamaStyle} · ` : ''}{p.slipperType ? `Παντόφλες: ${p.slipperType} · ` : ''}{p.hasFlipFlops === false ? 'Χρειάζεται σαγιονάρες' : 'Έχει σαγιονάρες'}</div>
-                ) : newMode ? null : mode === 'pajama' ? (
+                {newMode ? null : mode === 'pajama' ? (
                   <>
                     <input
                       type="text"

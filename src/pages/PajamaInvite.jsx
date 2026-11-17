@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { base44 } from '@/api/base44Client';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { base44, request } from '@/api/base44Client';
 import PajamaRSVP from '@/components/pajama/PajamaRSVP';
 import { Image } from '@/components/ui/image';
 import { ART, PHOTO, FILM, PAJAMA_PHOTOS } from '@/data/brandArt';
@@ -33,20 +33,27 @@ function useCountdown(target) {
 
 export default function PajamaInvite() {
   const navigate = useNavigate();
+  const [params] = useSearchParams();
+  const eventCode = params.get('event') || params.get('sessionCode') || params.get('code') || '';
   const [eventDate, setEventDate] = useState('');
   const countdown = useCountdown(eventDate);
 
   useEffect(() => {
     async function load() {
       try {
+        if (eventCode) {
+          const event = await request('GET', `/api/entities/event-info/${encodeURIComponent(eventCode)}`);
+          setEventDate(event.scheduledAt || '');
+          return;
+        }
         const { items } = await base44.entities.AppSetting.filter({ key: 'event_date' }, { limit: 1 });
         if (items?.[0]?.value) setEventDate(items[0].value);
       } catch (e) {
-        /* silent */
+        setEventDate('');
       }
     }
     load();
-  }, []);
+  }, [eventCode]);
 
   return (
     <div className="min-h-screen bg-background text-foreground relative overflow-hidden flex flex-col items-center justify-center px-6 py-16">
@@ -114,7 +121,7 @@ export default function PajamaInvite() {
         )}
 
         <div className="space-y-3">
-          <button className="cinv-btn w-full" onClick={() => navigate('/pajama-form')}>
+          <button className="cinv-btn w-full" onClick={() => navigate(`/pajama-form${eventCode ? `?event=${encodeURIComponent(eventCode)}` : ''}`)}>
             ΚΛΕΙΣΕ ΘΕΣΗ
           </button>
           <p className="text-xs text-foreground/40 tracking-[0.2em] uppercase">

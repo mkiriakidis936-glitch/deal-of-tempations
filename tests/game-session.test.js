@@ -12,11 +12,11 @@ const players = [
   { id: 'p1', name: 'Player 1', vipProfile: { boundaries: ['own-only'] } },
 ];
 
-test('approved digital modes exclude Pedi-Glam Extended and use five-hour duration', () => {
-  assert.deepEqual(NEW_MODES.map((mode) => mode.id), ['lockdown', 'beach_bar', 'marathon_4h']);
+test('approved digital modes exclude retired Pajama Marathon and Pedi-Glam Extended', () => {
+  assert.deepEqual(NEW_MODES.map((mode) => mode.id), ['lockdown', 'beach_bar']);
   assert.equal(NEW_MODES.some((mode) => mode.id === 'pedi_extended'), false);
+  assert.equal(NEW_MODES.some((mode) => mode.id === 'marathon_4h'), false);
   assert.ok(NEW_MODES.every((mode) => mode.minutes === 300));
-  assert.deepEqual(NEW_MODES.find((mode) => mode.id === 'marathon_4h').acts, ['board', 'midnight', 'lockdown', 'morning']);
 });
 
 test('player session response never exposes another player VIP profile', () => {
