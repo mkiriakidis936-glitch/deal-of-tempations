@@ -17,6 +17,7 @@ export default function AdminEpisodeArchive() {
   const [loading, setLoading] = useState(true);
   const [expanded, setExpanded] = useState(null);
   const [message, setMessage] = useState('');
+  const [deleting, setDeleting] = useState(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -36,6 +37,20 @@ export default function AdminEpisodeArchive() {
   }, []);
 
   useEffect(() => { load(); }, [load]);
+
+  async function deleteArchive(archive) {
+    const label = MODE_NAMES[archive.mode] || archive.mode || 'Game Show';
+    if (!window.confirm(`Να διαγραφεί οριστικά το αρχειοθετημένο επεισόδιο «${label}» (${archive.sessionCode || archive.id});`)) return;
+    setDeleting(archive.id);
+    try {
+      await base44.entities.SessionArchive.delete(archive.id);
+      setArchives((items) => items.filter((item) => item.id !== archive.id));
+      if (expanded === archive.id) setExpanded(null);
+      setMessage('Το επεισόδιο διαγράφηκε από το αρχείο.');
+    } catch (error) {
+      setMessage(error.message || 'Δεν ήταν δυνατή η διαγραφή του επεισοδίου.');
+    } finally { setDeleting(null); }
+  }
 
   if (loading) {
     return <ComicPanel className="bg-card text-center py-8"><div className="font-heading text-xl comic-pulse">ΦΟΡΤΩΣΗ ΑΡΧΕΙΟΥ ΕΠΕΙΣΟΔΙΩΝ…</div></ComicPanel>;
@@ -79,11 +94,14 @@ export default function AdminEpisodeArchive() {
               <span className="shrink-0 text-xs font-bold">{open ? '▲ ΚΛΕΙΣΙΜΟ' : '▼ ΛΕΠΤΟΜΕΡΕΙΕΣ'}</span>
             </button>
 
-            <div className="flex flex-wrap gap-2 text-xs">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="flex flex-wrap gap-2 text-xs">
               <span className="rounded bg-background/60 px-2 py-1">👥 {players.length} παίκτριες</span>
               <span className="rounded bg-background/60 px-2 py-1">🎬 {scenes.length} σκηνές</span>
               <span className="rounded bg-background/60 px-2 py-1">✨ {highlights.length} highlights</span>
               <span className="rounded bg-background/60 px-2 py-1">📜 {eventHistory.length} συμβάντα</span>
+              </div>
+              <ComicButton size="sm" variant="red" disabled={deleting === archive.id} onClick={() => deleteArchive(archive)}>{deleting === archive.id ? 'ΔΙΑΓΡΑΦΗ…' : '🗑 ΔΙΑΓΡΑΦΗ ΕΠΕΙΣΟΔΙΟΥ'}</ComicButton>
             </div>
 
             {open && (
