@@ -9,13 +9,13 @@ export default function SiteVideo({ c, eventId }) {
   const trailer = modeId ? MODE_MEDIA[modeId]?.trailer : '';
   const isModeDetail = !!modeId;
   const kicker = c?.videoKicker || 'Το τρέιλερ';
-  const title = c?.videoTitle || 'VIDEO & TRAILER';
+  const title = c?.videoTitle || 'ΒΙΝΤΕΟ & ΤΡΕΙΛΕΡ';
   if (isModeDetail && !trailer) return null;
   return (
     <section className="px-4 py-20 sm:py-24">
       <div className="max-w-5xl mx-auto">
         <div className="mb-8 text-center">
-          <div className="text-[10px] sm:text-xs tracking-[0.42em] text-tarot-gold/65 uppercase mb-3">Video & Trailer</div>
+          <div className="text-[10px] sm:text-xs tracking-[0.42em] text-tarot-gold/65 uppercase mb-3">Βίντεο & Τρέιλερ</div>
           <h2 className="font-display text-3xl sm:text-4xl text-tarot-gold tracking-[0.08em]">{title}</h2>
         </div>
         {trailer ? (
