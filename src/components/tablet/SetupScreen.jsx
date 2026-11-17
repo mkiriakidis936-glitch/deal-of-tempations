@@ -334,7 +334,7 @@ export default function SetupScreen({ onStart }) {
 
         {newMode && (() => {
           const media = MODE_MEDIA[mode] || {};
-          const hasMedia = media.hero || media.trailer || media.gallery?.length || media.sections?.some((item) => item.image) || media.cards?.some((item) => item.image);
+          const hasMedia = media.hero || media.trailer || media.gallery?.length || media.sections?.some((item) => item.image);
           return hasMedia ? (
             <ComicPanel className="bg-card space-y-3">
               {media.hero && <img src={media.hero} alt={newMode.name} className="w-full max-h-[360px] aspect-[16/7] object-cover rounded-xl" />}
@@ -351,19 +351,7 @@ export default function SetupScreen({ onStart }) {
                   </div>
                 </div>
               )}
-              {media.cards?.some((item) => item.image) && (
-                <div className="space-y-2">
-                  <div className="font-heading text-lg text-primary">ΚΑΡΤΕΣ MODE</div>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                    {media.cards.filter((item) => item.image).map((item) => (
-                      <div key={item.id} className="rounded-lg overflow-hidden bg-secondary">
-                        <img src={item.image} alt={item.label || ''} className="w-full aspect-[4/5] object-cover" />
-                        <div className="p-2 text-xs font-bold">{item.label}</div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
+
               {media.gallery?.length > 0 && (
                 <div className="space-y-2">
                   <div className="font-heading text-lg text-primary">GALLERY</div>
