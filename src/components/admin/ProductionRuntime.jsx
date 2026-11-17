@@ -1,4 +1,4 @@
-import React,{useMemo,useState} from 'react';
+import React,{useEffect,useMemo,useState} from 'react';
 import {base44,getToken} from '@/api/base44Client';
 import ComicPanel from '@/components/comic/ComicPanel';
 import ComicButton from '@/components/comic/ComicButton';
@@ -14,7 +14,8 @@ const defaultPhases=[
 ];
 
 export default function ProductionRuntime({selected,record,draft,onChange,onSaved,consents=[],participants=[]}){
- const [busy,setBusy]=useState(false),[message,setMessage]=useState(''),[uploading,setUploading]=useState(false);
+ const [busy,setBusy]=useState(false),[message,setMessage]=useState(''),[uploading,setUploading]=useState(false),[mediaParticipantNames,setMediaParticipantNames]=useState([]);
+ useEffect(()=>{setMediaParticipantNames(participants.map(item=>String(item.name||item.displayName||'').trim()).filter(Boolean))},[selected?.sessionCode]);
  const phases=Array.isArray(draft.overnightPhases)&&draft.overnightPhases.length?draft.overnightPhases:defaultPhases;
  const stageIndex=Math.max(0,Math.min(Number(draft.currentStageIndex)||0,(draft.rundown||[]).length-1));
  const activeStage=(draft.rundown||[])[stageIndex];
@@ -88,18 +89,20 @@ export default function ProductionRuntime({selected,record,draft,onChange,onSave
  const uploadMedia=async(files)=>{
    if(!files?.length)return;
    if(!privateMediaAllowed){setMessage('Η μεταφόρτωση είναι κλειδωμένη μέχρι όλοι οι συμμετέχοντες να δώσουν ξεχωριστή συγκατάθεση καταγραφής και ιδιωτικής χρήσης.');return;}
+   if(!mediaParticipantNames.length){setMessage('Επίλεξε ποιοι συμμετέχοντες εμφανίζονται στο υλικό.');return;}
    setUploading(true);setMessage('');
    try{
-     const added=[];
+     const added=[];const addedItems=[];
      for(const file of Array.from(files)){
        const response=await fetch(`/api/media/private-upload?name=${encodeURIComponent(file.name)}`,{method:'POST',headers:{Authorization:`Bearer ${getToken()}`},body:file});
        const data=await response.json().catch(()=>({}));
        if(!response.ok)throw new Error(data.error||`Αποτυχία μεταφόρτωσης: ${file.name}`);
-       added.push(`private:${data.name}`);
+       added.push(`private:${data.name}`);addedItems.push({name:data.name,participants:[...mediaParticipantNames],uploadedAt:new Date().toISOString(),kind:data.kind});
      }
-     update({recapMedia:[...(draft.recapMedia||[]),...added]});
-     const saved=await persist({recapMedia:[...(draft.recapMedia||[]),...added]},'Το υλικό προστέθηκε στο ιδιωτικό recap.');
-     if(!saved)update({recapMedia:[...(draft.recapMedia||[]),...added]});
+     const nextMedia=[...(draft.recapMedia||[]),...added],nextItems=[...(draft.recapMediaItems||[]),...addedItems];
+     update({recapMedia:nextMedia,recapMediaItems:nextItems});
+     const saved=await persist({recapMedia:nextMedia,recapMediaItems:nextItems},'Το υλικό προστέθηκε στο ιδιωτικό recap.');
+     if(!saved)update({recapMedia:nextMedia,recapMediaItems:nextItems});
    }catch(error){setMessage(error.message||'Η μεταφόρτωση απέτυχε.');}
    finally{setUploading(false);}
  };
@@ -125,6 +128,24 @@ export default function ProductionRuntime({selected,record,draft,onChange,onSave
      const blob=await response.blob(),objectUrl=URL.createObjectURL(blob),anchor=document.createElement('a');
      anchor.href=objectUrl;anchor.download=name;document.body.appendChild(anchor);anchor.click();anchor.remove();URL.revokeObjectURL(objectUrl);
    }catch(error){setMessage(error.message||'Το αρχείο δεν άνοιξε.');}
+ };
+ const applyWithdrawal=async(consent)=>{
+   const participantName=String(consent.participantName||'').trim();
+   const key=participantName.toLocaleLowerCase('el-GR');
+   const affected=(draft.recapMediaItems||[]).filter(item=>(item.participants||[]).some(name=>String(name).trim().toLocaleLowerCase('el-GR')===key));
+   const deleted=[];
+   for(const item of affected){
+     try{
+       const response=await fetch(`/api/media/private/${encodeURIComponent(item.name)}`,{method:'DELETE',headers:{Authorization:`Bearer ${getToken()}`}});
+       if(response.ok)deleted.push(item.name);
+     }catch{}
+   }
+   const deletedRefs=deleted.map(name=>`private:${name}`);
+   const nextMedia=(draft.recapMedia||[]).filter(url=>!deletedRefs.includes(url));
+   const nextItems=(draft.recapMediaItems||[]).filter(item=>!deleted.includes(item.name));
+   const nextActions=[...(draft.withdrawalActions||[]),{participantName,appliedAt:new Date().toISOString(),deletedFiles:deleted.length}];
+   const saved=await persist(withLog('consent-withdrawal-applied',`Εφαρμογή ανάκλησης για ${participantName}: αφαιρέθηκαν ${deleted.length} ιδιωτικά αρχεία.`,{recapMedia:nextMedia,recapMediaItems:nextItems,withdrawalActions:nextActions}),`Η ανάκληση εφαρμόστηκε. Αφαιρέθηκαν ${deleted.length} συσχετισμένα αρχεία.`);
+   if(!saved&&deleted.length)setMessage('Τα αρχεία διαγράφηκαν, αλλά η ενημέρωση του αρχείου παραγωγής απέτυχε. Ανανέωσε τη σελίδα πριν συνεχίσεις.');
  };
  const copyRecap=async()=>{
    const text=[draft.title||'DEAL OF TEMPTATIONS',draft.winnerName? `Νικητής: ${draft.winnerName}`:'',draft.recapNotes||'',draft.socialTeaser||''].filter(Boolean).join('\n\n');
@@ -172,7 +193,9 @@ export default function ProductionRuntime({selected,record,draft,onChange,onSave
    <label className={label}>Προσθήκη φωτογραφιών / βίντεο / ήχου<input className={field} type="file" multiple accept="image/*,video/*,audio/*" disabled={!privateMediaAllowed||uploading} onChange={e=>uploadMedia(e.target.files)}/></label>
    <p className="text-xs text-foreground/60">{privateMediaAllowed?'Η ιδιωτική καταγραφή επιτρέπεται για όλους τους δηλωμένους συμμετέχοντες.':'Η μεταφόρτωση παραμένει κλειδωμένη μέχρι να καταχωριστούν οι απαιτούμενες ατομικές συγκαταθέσεις.'}</p>
    {uploading&&<p className="text-xs">Μεταφόρτωση αρχείων…</p>}
+   <div className="rounded-lg border border-border p-3 space-y-2"><b className="text-xs">ΠΟΙΟΙ ΕΜΦΑΝΙΖΟΝΤΑΙ ΣΤΟ ΥΛΙΚΟ</b>{participants.map((person,index)=>{const name=String(person.name||person.displayName||'').trim();return name?<label key={person.id||name+index} className="flex items-center gap-2 text-xs"><input type="checkbox" checked={mediaParticipantNames.includes(name)} onChange={e=>setMediaParticipantNames(current=>e.target.checked?[...current,name]:current.filter(item=>item!==name))}/>{name}</label>:null})}</div>
    <div className="space-y-2">{(draft.recapMedia||[]).map((url,index)=><div key={url+index} className="flex items-center justify-between gap-2 rounded-lg border border-border p-2"><button className="min-w-0 truncate text-left text-xs underline" onClick={()=>openMedia(url)}>{String(url).startsWith('private:')?String(url).slice(8):url.split('/').pop()}</button><button className="text-xs text-red-400" onClick={()=>removeMedia(url)}>ΑΦΑΙΡΕΣΗ</button></div>)}</div>
+   {(latestConsents.filter(item=>item.withdrawn)).length>0&&<div className="rounded-lg border border-amber-500/40 p-3 space-y-2"><b className="text-xs">ΑΝΑΚΛΗΣΕΙΣ ΣΥΓΚΑΤΑΘΕΣΗΣ</b>{latestConsents.filter(item=>item.withdrawn).map(item=><div key={item.id} className="flex flex-wrap items-center justify-between gap-2 text-xs"><span>{item.participantName} · αίτημα ανάκλησης</span><ComicButton size="sm" variant="dark" onClick={()=>applyWithdrawal(item)}>ΕΦΑΡΜΟΓΗ ΑΝΑΚΛΗΣΗΣ</ComicButton></div>)}<p className="text-[10px] text-foreground/50">Η εφαρμογή αφαιρεί τα ιδιωτικά αρχεία που έχουν συσχετιστεί με το συγκεκριμένο άτομο.</p></div>}
    <label className={label}>Recap<textarea className={field} rows="3" value={draft.recapNotes||''} onChange={e=>update({recapNotes:e.target.value})}/></label>
    <label className={label}>Social teaser<textarea className={field} rows="2" value={draft.socialTeaser||''} onChange={e=>update({socialTeaser:e.target.value})}/></label>
    <div className="rounded-lg border border-border p-3 space-y-1"><b className="text-xs">ΔΗΜΟΣΙΑ ΧΡΗΣΗ ΥΛΙΚΟΥ</b><p className="text-xs">{publicMediaAllowed?'Υπάρχει ρητή δημόσια συγκατάθεση καταγραφής και δημοσίευσης από όλους τους συμμετέχοντες.':'Η δημόσια χρήση είναι κλειδωμένη: απαιτείται ενεργή, ρητή συγκατάθεση καταγραφής και δημόσιας χρήσης από κάθε συμμετέχοντα.'}</p><span className="text-[10px] text-foreground/50">{latestConsents.length} ατομικές δηλώσεις · {requiredNames.length} συμμετέχοντες</span></div>
