@@ -903,31 +903,8 @@ export function entityRoutes() {
           [crypto.randomUUID(), JSON.stringify(data)],
         );
         if (inserted.rows.length) {
-          const intake = {
-            name: body.name.trim(),
-            ...(data.sessionCode ? { sessionCode: data.sessionCode } : {}),
-            vipGameMode: gameMode,
-            vipInvitationId: invitations[0].id,
-            vipSubmissionId: submissionId,
-            vipProfile: {
-              displayName: data.displayName,
-              avatar: body.avatar,
-              answers: { ...answers, customAnswers, customAnswerLabels },
-              answerLabels,
-            },
-            shoeSize: answers.shoeSize || '',
-            nailColor: answers.nailColor || '',
-            slipperType: answers.slipperType || '',
-            pajamaStyle: answers.pajamaType || '',
-            preferredModes: [gameMode],
-            approved: true,
-            formType: 'vip',
-          };
-          const intakeInsert = await client.query(
-            "INSERT INTO records (id, entity, data, created_by) VALUES ($1, 'PlayerIntake', $2, NULL) RETURNING *",
-            [crypto.randomUUID(), JSON.stringify({ ...intake, name: data.displayName || body.name.trim(), legalName: body.name.trim() })],
-          );
-          playerIntakeRecord = toRecord(intakeInsert.rows[0]);
+          // The VIP submission stays pending until an administrator approves it.
+          // PlayerIntake is created by the shared approval endpoint.
         }
         await client.query('COMMIT');
       } catch (error) {
@@ -1294,6 +1271,97 @@ export function entityRoutes() {
     } catch (e) { await client.query('ROLLBACK'); throw e; } finally { client.release(); }
     created.forEach((rec) => broadcast(req.entity, { type: 'create', id: rec.id, data: rec }));
     res.json(created);
+  });
+
+  // Approve a submitted form and create/update its unified PlayerIntake profile.
+  r.post('/intake-approvals/:entity/:id', requireAdmin, async (req, res, next) => {
+    const entity = String(req.params.entity || '');
+    if (!['PlayerIntake', 'PajamaIntake', 'VIPInvitationSubmission'].includes(entity)) {
+      return res.status(400).json({ error: 'Μη υποστηριζόμενη φόρμα.' });
+    }
+    const client = await pool.connect();
+    let sourceRecord;
+    let profileRecord;
+    try {
+      await client.query('BEGIN');
+      const { rows } = await client.query('SELECT * FROM records WHERE id = $1 AND entity = $2 FOR UPDATE', [req.params.id, entity]);
+      if (!rows[0]) { await client.query('ROLLBACK'); return res.status(404).json({ error: 'Η αίτηση δεν βρέθηκε.' }); }
+      sourceRecord = toRecord(rows[0]);
+      let profile = sourceRecord;
+      if (entity === 'PajamaIntake') {
+        profile = {
+          ...sourceRecord,
+          sourceEntity: entity,
+          sourceIntakeId: sourceRecord.id,
+          formType: sourceRecord.formType === 'modes' ? 'modes' : 'pajama',
+          preferredModes: sourceRecord.preferredModes || [],
+          approved: true,
+          approvalStatus: 'approved',
+        };
+        await client.query("UPDATE records SET data = data || $1::jsonb, updated_date = now() WHERE id = $2 AND entity = $3",
+          [JSON.stringify({ approved: true, approvalStatus: 'approved', approvedDate: new Date().toISOString() }), sourceRecord.id, entity]);
+      } else if (entity === 'VIPInvitationSubmission') {
+        const { rows: invitations } = await client.query("SELECT data FROM records WHERE id = $1 AND entity = 'VIPInvitation' LIMIT 1", [sourceRecord.invitationId]);
+        if (!invitations[0]) { await client.query('ROLLBACK'); return res.status(400).json({ error: 'Η VIP πρόσκληση δεν βρέθηκε.' }); }
+        const answers = sourceRecord.answers || {};
+        profile = {
+          name: String(answers.displayName || sourceRecord.name || '').trim(),
+          legalName: sourceRecord.name,
+          sessionCode: sourceRecord.sessionCode || invitations[0].data.sessionCode || '',
+          vipGameMode: sourceRecord.gameMode || invitations[0].data.gameMode || 'classic',
+          vipInvitationId: sourceRecord.invitationId,
+          vipSubmissionId: sourceRecord.submissionId,
+          vipProfile: { displayName: answers.displayName || '', avatar: sourceRecord.avatar || '', answers: { ...answers, customAnswers: sourceRecord.customAnswers || {} }, answerLabels: sourceRecord.answerLabels || {} },
+          shoeSize: answers.shoeSize || '',
+          nailColor: answers.nailColor || '',
+          slipperType: answers.slipperType || '',
+          pajamaStyle: answers.pajamaType || '',
+          preferredModes: [sourceRecord.gameMode || invitations[0].data.gameMode || 'classic'],
+          approved: true,
+          approvalStatus: 'approved',
+          formType: 'vip',
+          sourceEntity: entity,
+          sourceIntakeId: sourceRecord.id,
+        };
+        await client.query("UPDATE records SET data = data || $1::jsonb, updated_date = now() WHERE id = $2 AND entity = $3",
+          [JSON.stringify({ approved: true, approvalStatus: 'approved', approvedDate: new Date().toISOString() }), sourceRecord.id, entity]);
+      } else {
+        profile = { ...sourceRecord, approved: true, approvalStatus: 'approved', approvedDate: new Date().toISOString() };
+        await client.query("UPDATE records SET data = data || $1::jsonb, updated_date = now() WHERE id = $2 AND entity = $3",
+          [JSON.stringify({ approved: true, approvalStatus: 'approved', approvedDate: profile.approvedDate }), sourceRecord.id, entity]);
+      }
+      const profileKey = entity === 'PlayerIntake'
+        ? sourceRecord.id
+        : entity === 'VIPInvitationSubmission'
+          ? sourceRecord.submissionId
+          : sourceRecord.id;
+      const { rows: existing } = await client.query(
+        "SELECT * FROM records WHERE entity = 'PlayerIntake' AND data->>'sourceIntakeId' = $1 LIMIT 1",
+        [String(profileKey)]
+      );
+      if (entity === 'PlayerIntake') {
+        const { rows: updated } = await client.query(
+          "UPDATE records SET data = data || $1::jsonb, updated_date = now() WHERE id = $2 AND entity = 'PlayerIntake' RETURNING *",
+          [JSON.stringify({ approved: true, approvalStatus: 'approved', approvedDate: profile.approvedDate || new Date().toISOString() }), sourceRecord.id]
+        );
+        profileRecord = toRecord(updated[0]);
+      } else if (existing[0]) {
+        profileRecord = toRecord(existing[0]);
+      } else {
+        const { rows: created } = await client.query(
+          "INSERT INTO records (id, entity, data, created_by) VALUES ($1, 'PlayerIntake', $2, NULL) RETURNING *",
+          [crypto.randomUUID(), JSON.stringify({ ...profile, sourceIntakeId: String(profileKey) })]
+        );
+        profileRecord = toRecord(created[0]);
+      }
+      await client.query('COMMIT');
+    } catch (error) {
+      await client.query('ROLLBACK').catch(() => {});
+      return next(error);
+    } finally { client.release(); }
+    if (entity !== 'PlayerIntake') broadcast(entity, { type: 'update', id: sourceRecord.id, data: { ...sourceRecord, approved: true, approvalStatus: 'approved' } });
+    broadcast('PlayerIntake', { type: entity === 'PlayerIntake' ? 'update' : 'create', id: profileRecord.id, data: profileRecord });
+    return res.json({ source: sourceRecord, profile: profileRecord });
   });
 
   r.patch('/:entity/:id', guard('update'), async (req, res) => {
