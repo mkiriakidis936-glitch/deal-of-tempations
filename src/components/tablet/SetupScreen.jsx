@@ -14,6 +14,7 @@ const NAIL_COLORS = ['Red', 'Pink', 'White', 'Black', 'Nude', 'French', 'Blue', 
 
 
 export default function SetupScreen({ onStart }) {
+  const eventCode = (new URLSearchParams(window.location.search).get('event') || new URLSearchParams(window.location.search).get('sessionCode') || new URLSearchParams(window.location.search).get('code') || '').trim().toUpperCase();
   const [mode, setMode] = useState('classic');
   const [intensity, setIntensity] = useState('standard');
   const [safeWord, setSafeWord] = useState('');
@@ -23,6 +24,7 @@ export default function SetupScreen({ onStart }) {
     { name: '', footwearLevel: 2, toenailPerk: 'pink' },
   ]);
   const [intakes, setIntakes] = useState([]);
+  const [heistIntakes, setHeistIntakes] = useState([]);
   const [pajamaApproved, setPajamaApproved] = useState([]);
   const [intakesLoaded, setIntakesLoaded] = useState(false);
   const [testMode, setTestMode] = useState(false);
@@ -52,14 +54,17 @@ export default function SetupScreen({ onStart }) {
 
   const loadIntakes = async () => {
     try {
-      const [classicRes, pajamaRes, castingRes] = await Promise.all([
-        base44.entities.PlayerIntake.filter({}, { sort: '-created_date', limit: 500 }),
-        base44.entities.PajamaIntake.filter({}, { sort: '-created_date', limit: 500 }),
+      const [classicRes, pajamaRes, heistRes, castingRes] = await Promise.all([
+        base44.entities.PlayerIntake.filter(eventCode ? { sessionCode: eventCode } : {}, { sort: '-created_date', limit: 500 }),
+        base44.entities.PajamaIntake.filter(eventCode ? { sessionCode: eventCode } : {}, { sort: '-created_date', limit: 500 }),
+        base44.entities.BacheloretteIntake.filter(eventCode ? { sessionCode: eventCode } : {}, { sort: '-created_date', limit: 500 }),
         base44.entities.AppSetting.filter({ key: 'show_casting_plan' }, { limit: 1 }),
       ]);
-      const allClassic = classicRes.items || [];
+      const scopeToEvent = (items) => (items || []).filter((item) => eventCode ? item.sessionCode === eventCode : !item.sessionCode);
+      const allClassic = scopeToEvent(classicRes.items);
       const classic = allClassic.filter((item) => !item.vipGameMode || item.vipGameMode === 'classic');
-      const approved = (pajamaRes.items || []).filter((i) => i.approved === true && i.name);
+      const approved = scopeToEvent(pajamaRes.items).filter((i) => i.approved === true && i.name);
+      setHeistIntakes(scopeToEvent(heistRes.items));
       setIntakes(allClassic);
       setPajamaApproved(approved);
 
@@ -143,7 +148,9 @@ export default function SetupScreen({ onStart }) {
     if (m.id === 'marathon' && players.length < 8) {
       setPlayers(Array.from({ length: 8 }, (_, i) => ({ name: '', footwearLevel: 2, toenailPerk: TOENAIL_PERKS[i % 5].id })));
     } else if (m.id === 'arrest_heist' && players.length < 4) {
-      setPlayers(Array.from({ length: 4 }, (_, i) => ({ name: '', footwearLevel: 2, toenailPerk: TOENAIL_PERKS[i % 5].id })));
+      const names = [...new Set(heistIntakes.flatMap((item) => [item.leaderName, item.opponentName]).map((name) => (name || '').trim()).filter(Boolean))].slice(0, 10);
+      const seeded = names.map((name, i) => ({ name, footwearLevel: 2, toenailPerk: TOENAIL_PERKS[i % TOENAIL_PERKS.length].id }));
+      setPlayers([...seeded, ...Array.from({ length: Math.max(0, 4 - seeded.length) }, (_, i) => ({ name: '', footwearLevel: 2, toenailPerk: TOENAIL_PERKS[(seeded.length + i) % TOENAIL_PERKS.length].id }))]);
     } else if (m.id === 'classic' && players.length > 6) {
       setPlayers(players.slice(0, 6));
     } else if (isNewMode(m.id)) {
