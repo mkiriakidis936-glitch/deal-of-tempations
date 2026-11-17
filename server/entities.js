@@ -1287,6 +1287,24 @@ export function entityRoutes() {
       const { rows } = await client.query('SELECT * FROM records WHERE id = $1 AND entity = $2 FOR UPDATE', [req.params.id, entity]);
       if (!rows[0]) { await client.query('ROLLBACK'); return res.status(404).json({ error: 'Η αίτηση δεν βρέθηκε.' }); }
       sourceRecord = toRecord(rows[0]);
+      if (req.body?.approved === false) {
+        await client.query("UPDATE records SET data = data || $1::jsonb, updated_date = now() WHERE id = $2 AND entity = $3",
+          [JSON.stringify({ approved: false, approvalStatus: 'pending', approvedDate: null }), sourceRecord.id, entity]);
+        if (entity === 'PlayerIntake') {
+          profileRecord = { ...sourceRecord, approved: false, approvalStatus: 'pending', approvedDate: null };
+        } else {
+          const sourceKey = entity === 'VIPInvitationSubmission' ? sourceRecord.submissionId : sourceRecord.id;
+          const { rows: profiles } = await client.query(
+            "UPDATE records SET data = data || $1::jsonb, updated_date = now() WHERE entity = 'PlayerIntake' AND data->>'sourceIntakeId' = $2 RETURNING *",
+            [JSON.stringify({ approved: false, approvalStatus: 'pending', approvedDate: null }), String(sourceKey)]
+          );
+          profileRecord = profiles[0] ? toRecord(profiles[0]) : null;
+        }
+        await client.query('COMMIT');
+        if (entity !== 'PlayerIntake') broadcast(entity, { type: 'update', id: sourceRecord.id, data: { ...sourceRecord, approved: false, approvalStatus: 'pending' } });
+        if (profileRecord) broadcast('PlayerIntake', { type: 'update', id: profileRecord.id, data: profileRecord });
+        return res.json({ source: { ...sourceRecord, approved: false }, profile: profileRecord });
+      }
       let profile = sourceRecord;
       if (entity === 'PajamaIntake') {
         profile = {
