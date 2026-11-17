@@ -9,14 +9,46 @@ const PREVIEWS = [
   { id: 'mobile', label: 'MOBILE (/play)', path: '/play' },
 ];
 
+const SITE_PAGES = [
+  { path: '/site', label: 'Αρχική' },
+  { path: '/site?event=heist', label: 'Heist' },
+  { path: '/site?event=pajama', label: 'Pajama' },
+  { path: '/site?event=lockdown', label: 'Pajama Lockdown 18+' },
+  { path: '/site?event=beachbar', label: 'Beach Bar Home Lockdown' },
+  { path: '/promo', label: 'Promo' },
+];
+
+const FORM_PAGES = [
+  { path: '/invitation', label: 'Πρόσκληση' },
+  { path: '/pajama-form', label: 'Pajama' },
+  { path: '/modes-form', label: 'Modes' },
+  { path: '/intake', label: 'Intake' },
+  { path: '/forms', label: 'Δημόσιες φόρμες' },
+  { path: '/pajama-invite', label: 'Pajama invite' },
+  { path: '/vip-access', label: 'VIP Access' },
+];
+
 export default function AdminMediaPreview() {
   const [active, setActive] = useState('site');
+  const [sitePath, setSitePath] = useState('/site');
   const [formPath, setFormPath] = useState('/invitation');
   const selected = PREVIEWS.find((item) => item.id === active) || PREVIEWS[0];
-  const path = active === 'forms' ? formPath : selected.path;
-  const title = active === 'forms'
-    ? ({ '/invitation': 'Ψηφιακή πρόσκληση', '/pajama-form': 'Pajama φόρμα', '/modes-form': 'Φόρμα επιλογής Mode', '/forms': 'Δημόσιες φόρμες' }[formPath] || 'Φόρμες')
-    : selected.label;
+  const path = active === 'site' ? sitePath : active === 'forms' ? formPath : selected.path;
+  const title = active === 'site'
+    ? (SITE_PAGES.find((item) => item.path === sitePath)?.label || 'Site')
+    : active === 'forms'
+      ? (FORM_PAGES.find((item) => item.path === formPath)?.label || 'Forms')
+      : selected.label;
+
+  const pageButtons = (items, current, onSelect) => (
+    <div className="flex flex-wrap gap-2">
+      {items.map((item) => (
+        <button key={item.path} type="button" onClick={() => onSelect(item.path)} className={current === item.path ? 'rounded-md bg-primary px-3 py-1.5 text-xs font-bold text-primary-foreground' : 'rounded-md bg-secondary px-3 py-1.5 text-xs'}>
+          {item.label}
+        </button>
+      ))}
+    </div>
+  );
 
   return (
     <ComicPanel className="bg-card space-y-3">
@@ -26,25 +58,13 @@ export default function AdminMediaPreview() {
       </div>
       <div className="flex flex-wrap gap-2">
         {PREVIEWS.map((item) => (
-          <button key={item.id} type="button" onClick={() => setActive(item.id)} className={`rounded-lg border px-3 py-2 text-xs font-bold ${active === item.id ? 'border-primary bg-primary/15 text-primary' : 'border-border bg-secondary/40'}`}>
+          <button key={item.id} type="button" onClick={() => setActive(item.id)} className={active === item.id ? 'rounded-lg border border-primary bg-primary/15 px-3 py-2 text-xs font-bold' : 'rounded-lg border border-border bg-secondary/40 px-3 py-2 text-xs font-bold'}>
             {item.label}
           </button>
         ))}
       </div>
-      {active === 'forms' && (
-        <div className="flex flex-wrap gap-2">
-          {[
-            { path: '/invitation', label: 'Πρόσκληση' },
-            { path: '/pajama-form', label: 'Pajama' },
-            { path: '/modes-form', label: 'Modes' },
-            { path: '/forms', label: 'Δημόσιες φόρμες' },
-          ].map((item) => (
-            <button key={item.path} type="button" onClick={() => setFormPath(item.path)} className={`rounded-md px-3 py-1.5 text-xs ${formPath === item.path ? 'bg-primary text-primary-foreground' : 'bg-secondary'}`}>
-              {item.label}
-            </button>
-          ))}
-        </div>
-      )}
+      {active === 'site' && pageButtons(SITE_PAGES, sitePath, setSitePath)}
+      {active === 'forms' && pageButtons(FORM_PAGES, formPath, setFormPath)}
       <div className="flex items-center justify-between gap-2 flex-wrap">
         <div className="text-sm font-bold">{title}</div>
         <a href={path} target="_blank" rel="noreferrer" className="text-xs font-bold text-primary underline">Άνοιγμα σε νέα καρτέλα</a>
