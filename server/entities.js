@@ -891,6 +891,10 @@ export function entityRoutes() {
         answerLabels,
         adultConfirmed: true,
         confirmed: true,
+        approved: false,
+        approvalStatus: 'pending',
+        approvedDate: null,
+        customAnswerLabels,
         submittedAt: new Date().toISOString(),
       };
       const client = await pool.connect();
@@ -967,7 +971,14 @@ export function entityRoutes() {
         await client.query('BEGIN');
         let inserted = await client.query(
           "INSERT INTO records (id, entity, data, created_by) VALUES ($1, 'PlayerIntake', $2, NULL) ON CONFLICT ((data->>'submissionId')) WHERE entity = 'PlayerIntake' AND data ? 'submissionId' DO NOTHING RETURNING *",
-          [crypto.randomUUID(), JSON.stringify(stripBuiltins({ ...body, submissionId }))],
+          [crypto.randomUUID(), JSON.stringify(stripBuiltins({
+            ...body,
+            submissionId,
+            formType: 'invitation',
+            approved: false,
+            approvalStatus: 'pending',
+            approvedDate: null,
+          }))],
         );
         playerCreated = inserted.rows.length > 0;
         if (playerCreated) playerRecord = toRecord(inserted.rows[0]);
@@ -1282,7 +1293,9 @@ export function entityRoutes() {
     const client = await pool.connect();
     let sourceRecord;
     let profileRecord;
+    let profileAction = 'create';
     let rsvpRecord = null;
+    const approvedDate = new Date().toISOString();
     try {
       await client.query('BEGIN');
       const { rows } = await client.query('SELECT * FROM records WHERE id = $1 AND entity = $2 FOR UPDATE', [req.params.id, entity]);
@@ -1321,9 +1334,10 @@ export function entityRoutes() {
           preferredModes: sourceRecord.preferredModes || [],
           approved: true,
           approvalStatus: 'approved',
+          approvedDate,
         };
         await client.query("UPDATE records SET data = data || $1::jsonb, updated_date = now() WHERE id = $2 AND entity = $3",
-          [JSON.stringify({ approved: true, approvalStatus: 'approved', approvedDate: new Date().toISOString() }), sourceRecord.id, entity]);
+          [JSON.stringify({ approved: true, approvalStatus: 'approved', approvedDate }), sourceRecord.id, entity]);
       } else if (entity === 'VIPInvitationSubmission') {
         const { rows: invitations } = await client.query("SELECT data FROM records WHERE id = $1 AND entity = 'VIPInvitation' LIMIT 1", [sourceRecord.invitationId]);
         if (!invitations[0]) { await client.query('ROLLBACK'); return res.status(400).json({ error: 'Η VIP πρόσκληση δεν βρέθηκε.' }); }
@@ -1335,7 +1349,7 @@ export function entityRoutes() {
           vipGameMode: sourceRecord.gameMode || invitations[0].data.gameMode || 'classic',
           vipInvitationId: sourceRecord.invitationId,
           vipSubmissionId: sourceRecord.submissionId,
-          vipProfile: { displayName: answers.displayName || '', avatar: sourceRecord.avatar || '', answers: { ...answers, customAnswers: sourceRecord.customAnswers || {} }, answerLabels: sourceRecord.answerLabels || {} },
+          vipProfile: { displayName: answers.displayName || '', avatar: sourceRecord.avatar || '', answers: { ...answers, customAnswers: sourceRecord.customAnswers || {}, customAnswerLabels: sourceRecord.customAnswerLabels || {} }, answerLabels: sourceRecord.answerLabels || {} },
           shoeSize: answers.shoeSize || '',
           nailColor: answers.nailColor || '',
           slipperType: answers.slipperType || '',
@@ -1343,16 +1357,17 @@ export function entityRoutes() {
           preferredModes: [sourceRecord.gameMode || invitations[0].data.gameMode || 'classic'],
           approved: true,
           approvalStatus: 'approved',
+          approvedDate,
           formType: 'vip',
           sourceEntity: entity,
           sourceIntakeId: sourceRecord.id,
         };
         await client.query("UPDATE records SET data = data || $1::jsonb, updated_date = now() WHERE id = $2 AND entity = $3",
-          [JSON.stringify({ approved: true, approvalStatus: 'approved', approvedDate: new Date().toISOString() }), sourceRecord.id, entity]);
+          [JSON.stringify({ approved: true, approvalStatus: 'approved', approvedDate }), sourceRecord.id, entity]);
       } else {
-        profile = { ...sourceRecord, approved: true, approvalStatus: 'approved', approvedDate: new Date().toISOString() };
+        profile = { ...sourceRecord, approved: true, approvalStatus: 'approved', approvedDate };
         await client.query("UPDATE records SET data = data || $1::jsonb, updated_date = now() WHERE id = $2 AND entity = $3",
-          [JSON.stringify({ approved: true, approvalStatus: 'approved', approvedDate: profile.approvedDate }), sourceRecord.id, entity]);
+          [JSON.stringify({ approved: true, approvalStatus: 'approved', approvedDate }), sourceRecord.id, entity]);
       }
       const profileKey = entity === 'PlayerIntake'
         ? sourceRecord.id
@@ -1374,7 +1389,12 @@ export function entityRoutes() {
           if (rsvps[0]) rsvpRecord = toRecord(rsvps[0]);
         }
       } else if (existing[0]) {
-        profileRecord = toRecord(existing[0]);
+        const { rows: updated } = await client.query(
+          "UPDATE records SET data = data || $1::jsonb, updated_date = now() WHERE id = $2 AND entity = 'PlayerIntake' RETURNING *",
+          [JSON.stringify({ ...profile, sourceIntakeId: String(profileKey) }), existing[0].id]
+        );
+        profileRecord = toRecord(updated[0]);
+        profileAction = 'update';
       } else {
         const { rows: created } = await client.query(
           "INSERT INTO records (id, entity, data, created_by) VALUES ($1, 'PlayerIntake', $2, NULL) RETURNING *",
@@ -1388,7 +1408,7 @@ export function entityRoutes() {
       return next(error);
     } finally { client.release(); }
     if (entity !== 'PlayerIntake') broadcast(entity, { type: 'update', id: sourceRecord.id, data: { ...sourceRecord, approved: true, approvalStatus: 'approved' } });
-    broadcast('PlayerIntake', { type: entity === 'PlayerIntake' ? 'update' : 'create', id: profileRecord.id, data: profileRecord });
+    broadcast('PlayerIntake', { type: entity === 'PlayerIntake' ? 'update' : profileAction, id: profileRecord.id, data: profileRecord });
     if (rsvpRecord) broadcast('InvitationRSVP', { type: 'update', id: rsvpRecord.id, data: rsvpRecord });
     return res.json({ source: sourceRecord, profile: profileRecord });
   });
