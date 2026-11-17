@@ -90,7 +90,7 @@ export default function ModeMediaManager({ value = {}, onSave, disabled = false 
       <div className="rounded-2xl border border-primary/30 bg-gradient-to-br from-[#17131d] to-[#292039] p-4 sm:p-5 text-white">
         <div className="text-[10px] font-black tracking-[.2em] text-primary">MODE MEDIA CENTER</div>
         <div className="mt-1 font-heading text-2xl">Φωτογραφική ταυτότητα ανά Mode</div>
-        <p className="mt-1 text-xs text-white/65">Κάθε Mode έχει ανεξάρτητο Hero, Cover, ενότητες, Gallery, κάρτες και προαιρετικό trailer.</p>
+        <p className="mt-1 text-xs text-white/65">Κάθε νέο Mode έχει ξεχωριστό Cover, Hero, ενότητες, Gallery και προαιρετικό trailer. Η διαχείριση καρτών παραμένει εκτός αυτής της βιβλιοθήκης.</p>
         <div className="mt-4 grid grid-cols-2 xl:grid-cols-4 gap-2">
           {NEW_MODES.map((item) => (
             <button key={item.id} type="button" disabled={disabled || busy} onClick={() => setSelected(item.id)} className={`rounded-xl border p-3 text-left transition ${selected === item.id ? 'border-primary bg-primary/20' : 'border-white/15 bg-white/5 hover:bg-white/10'}`}>
@@ -109,7 +109,7 @@ export default function ModeMediaManager({ value = {}, onSave, disabled = false 
 
         <div className="grid sm:grid-cols-2 gap-3">
           {[
-            { id: 'hero', label: 'Κεντρική εικόνα / Hero', note: 'Κεντρική εικόνα παρουσίασης του Mode.' },
+            { id: 'hero', label: 'Κεντρική εικόνα / Hero', note: 'Κεντρική εικόνα παρουσίασης του Mode. Η θέση εμφάνισης εξαρτάται από τη σελίδα Mode.' },
             { id: 'cover', label: 'Cover image', note: 'Εικόνα στην κάρτα επιλογής Mode.' },
           ].map((slot) => (
             <div key={slot.id} className="rounded-xl border border-border/60 bg-secondary/30 p-3">
@@ -140,24 +140,6 @@ export default function ModeMediaManager({ value = {}, onSave, disabled = false 
             </div>
           ))}
           {!data.sections?.length && <div className="text-xs text-foreground/45">Δεν έχουν προστεθεί ενότητες.</div>}
-        </div>
-
-        <div className="rounded-xl border border-border/60 p-3 space-y-3">
-          <div className="flex items-center justify-between gap-2">
-            <div><div className="font-bold text-sm">Φωτογραφίες για τις κάρτες του Mode</div><div className="text-[11px] text-foreground/55">Ξεχωριστή εικόνα και τίτλος για κάθε κάρτα.</div></div>
-            <button type="button" disabled={disabled || busy} onClick={() => addItem('cards')} className="rounded-lg border border-border px-3 py-2 text-xs font-bold">+ Κάρτα</button>
-          </div>
-          {(data.cards || []).map((item) => (
-            <div key={item.id} className="grid sm:grid-cols-[1fr_160px_auto] gap-2 items-center rounded-lg bg-secondary/40 p-2">
-              <input defaultValue={item.label || ''} disabled={disabled || busy} onBlur={(e) => { if (e.target.value !== (item.label || '')) updateLabel('cards', item.id, e.target.value); }} className="min-w-0 rounded-lg border border-border bg-background px-3 py-2 text-sm" aria-label="Τίτλος κάρτας" />
-              <Thumb src={item.image} className="aspect-video w-full" />
-              <div className="flex gap-1">
-                <button type="button" disabled={disabled || busy} onClick={() => { target.current = { field: `card:${item.id}` }; imageInput.current?.click(); }} className="rounded-lg bg-primary px-2 py-2 text-xs text-white">Εικόνα</button>
-                <button type="button" disabled={disabled || busy} onClick={() => removeItem('cards', item.id)} className="rounded-lg border border-border px-2 py-2 text-xs">✕</button>
-              </div>
-            </div>
-          ))}
-          {!data.cards?.length && <div className="text-xs text-foreground/45">Δεν έχουν προστεθεί κάρτες.</div>}
         </div>
 
         <div className="rounded-xl border border-border/60 p-3 space-y-3">
