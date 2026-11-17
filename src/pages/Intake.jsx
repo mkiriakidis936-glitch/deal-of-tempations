@@ -8,7 +8,7 @@ import CustomFormQuestions from '@/components/forms/CustomFormQuestions';
 
 export default function Intake() {
   const [form, setForm] = useState({
-    sessionCode: (new URLSearchParams(window.location.search).get('code') || '').toUpperCase(),
+    sessionCode: (new URLSearchParams(window.location.search).get('event') || new URLSearchParams(window.location.search).get('sessionCode') || new URLSearchParams(window.location.search).get('code') || '').toUpperCase(),
     leaderName: '',
     opponentName: '',
     accommodation: '',
@@ -20,6 +20,7 @@ export default function Intake() {
     funFact: '',
     intensity: 'medium',
     safeWordConfirmed: false,
+    adultConfirmed: false,
     customAnswers: {},
   });
   const [saved, setSaved] = useState(false);
@@ -53,7 +54,7 @@ export default function Intake() {
   }
 
   async function handleSubmit() {
-    if (!form.leaderName.trim() || !form.accommodation || !form.safeWordConfirmed || form.sessionCode.trim().length !== 4 || !customQuestionsValid) return;
+    if (!form.leaderName.trim() || !form.accommodation || !form.adultConfirmed || !form.safeWordConfirmed || form.sessionCode.trim().length !== 4 || !customQuestionsValid) return;
     setSaving(true);
     setError('');
     try {
@@ -66,7 +67,7 @@ export default function Intake() {
     setSaving(false);
   }
 
-  const progress = Math.round(([form.sessionCode.trim().length === 4, !!form.leaderName.trim(), !!form.accommodation, form.safeWordConfirmed].filter(Boolean).length / 4) * 100);
+  const progress = Math.round(([form.sessionCode.trim().length === 4, !!form.leaderName.trim(), !!form.accommodation, form.adultConfirmed, form.safeWordConfirmed].filter(Boolean).length / 5) * 100);
 
   if (saved) {
     return (
@@ -154,7 +155,11 @@ export default function Intake() {
               </div>
             </div>
             <CustomFormQuestions formType="heist" value={form.customAnswers} onChange={(value) => setForm({ ...form, customAnswers: value })} onValidityChange={setCustomQuestionsValid} className="space-y-3" />
-            <div className="comic-panel-sm p-3 bg-destructive/20">
+            <div className="comic-panel-sm p-3 bg-destructive/20 space-y-3">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" checked={form.adultConfirmed} onChange={(e) => setForm({ ...form, adultConfirmed: e.target.checked })} className="w-5 h-5" />
+                <span className="text-sm font-bold">Επιβεβαιώνω ότι είμαι 18 ετών ή μεγαλύτερη.</span>
+              </label>
               <label className="flex items-center gap-2 cursor-pointer">
                 <input type="checkbox" checked={form.safeWordConfirmed} onChange={(e) => setForm({ ...form, safeWordConfirmed: e.target.checked })} className="w-5 h-5" />
                 <span className="text-sm font-bold">Επιβεβαιώνω ότι γνωρίζω το Safe Word: "MAYDAY"</span>
@@ -165,7 +170,7 @@ export default function Intake() {
 
         {error && <div role="alert" className="mb-3 rounded-lg border border-red-400/60 bg-red-950/60 p-3 text-center text-sm text-red-100">{error}</div>}
         <div className="text-center">
-          <ComicButton variant="magenta" size="lg" onClick={handleSubmit} disabled={!form.leaderName.trim() || !form.accommodation || !form.safeWordConfirmed || form.sessionCode.trim().length !== 4 || !customQuestionsValid || saving}>
+          <ComicButton variant="magenta" size="lg" onClick={handleSubmit} disabled={!form.leaderName.trim() || !form.accommodation || !form.adultConfirmed || !form.safeWordConfirmed || form.sessionCode.trim().length !== 4 || !customQuestionsValid || saving}>
             {saving ? 'ΑΠΟΘΗΚΕΥΣΗ...' : '✅ ΥΠΟΒΟΛΗ'}
           </ComicButton>
         </div>
