@@ -64,6 +64,7 @@ export default function SetupScreen({ onStart }) {
       const allClassic = scopeToEvent(classicRes.items);
       const classic = allClassic.filter((item) => !item.vipGameMode || item.vipGameMode === 'classic');
       const approved = scopeToEvent(pajamaRes.items).filter((i) => i.approved === true && i.name);
+      const legacyPajama = approved.filter((i) => (i.formType || 'pajama') !== 'modes');
       setHeistIntakes(scopeToEvent(heistRes.items));
       setIntakes(allClassic);
       setPajamaApproved(approved);
@@ -74,13 +75,13 @@ export default function SetupScreen({ onStart }) {
       });
 
       const pjByName = {};
-      approved.forEach((i) => {
+      legacyPajama.forEach((i) => {
         const n = i.name.trim();
         pjByName[n] = { slipperType: i.slipperType || '', nailColor: i.nailColor || '', bringsOwnSlippers: i.bringsOwnSlippers, hasFlipFlops: i.hasFlipFlops, pajamaStyle: i.pajamaStyle || '' };
       });
 
       const names = [];
-      approved.forEach((i) => {
+      legacyPajama.forEach((i) => {
         const n = i.name.trim();
         if (!names.includes(n)) names.push(n);
       });
