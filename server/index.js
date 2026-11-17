@@ -46,6 +46,7 @@ if (fs.existsSync(dist)) {
   const SITE_DESC = 'Το παιχνίδι ρίσκου και επιβράβευσης για παρέες. Λήστεψε το χρηματοκιβώτιο, παίξε και κέρδισε. 18+';
   const PAGES = {
     '/site': { title: 'Deal of Temptation — Το παιχνίδι', desc: SITE_DESC, index: true },
+    '/portal': { title: 'Deal of Temptation — Πληροφορίες Event', desc: 'Ημερομηνία, τοποθεσία και πρακτικές πληροφορίες της εκδήλωσης.' },
     '/promo': { title: 'Deal of Temptation — Trailer', desc: SITE_DESC, index: true },
     '/invitation': { title: 'Deal of Temptation — Πρόσκληση Heist Night', desc: 'Έχεις προσκληθεί σε μια νύχτα Heist. Συμπλήρωσε το ερωτηματολόγιο για να κλείσεις τη θέση σου.' },
     '/pajama-invite': { title: 'Deal of Temptation — Πρόσκληση Pajama Pedi-Glam', desc: 'Έχεις προσκληθεί σε Pajama Pedi-Glam. Κλείσε τη θέση σου.' },
