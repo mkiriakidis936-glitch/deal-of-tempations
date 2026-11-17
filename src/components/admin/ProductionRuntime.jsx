@@ -15,7 +15,7 @@ const defaultPhases=[
 
 export default function ProductionRuntime({selected,record,draft,onChange,onSaved,consents=[],participants=[]}){
  const [busy,setBusy]=useState(false),[message,setMessage]=useState(''),[uploading,setUploading]=useState(false),[mediaParticipantNames,setMediaParticipantNames]=useState([]);
- useEffect(()=>{setMediaParticipantNames(participants.map(item=>String(item.name||item.displayName||'').trim()).filter(Boolean))},[selected?.sessionCode]);
+ useEffect(()=>{setMediaParticipantNames(participants.map(item=>String(item.name||item.displayName||'').trim()).filter(Boolean))},[selected?.sessionCode,participants.length]);
  const phases=Array.isArray(draft.overnightPhases)&&draft.overnightPhases.length?draft.overnightPhases:defaultPhases;
  const stageIndex=Math.max(0,Math.min(Number(draft.currentStageIndex)||0,(draft.rundown||[]).length-1));
  const activeStage=(draft.rundown||[])[stageIndex];
@@ -195,10 +195,11 @@ export default function ProductionRuntime({selected,record,draft,onChange,onSave
  return <div className="space-y-4">
   <ComicPanel className="bg-card space-y-3">
    <div className="flex flex-wrap items-center justify-between gap-2"><div><h3 className="font-heading text-xl text-primary">LIVE SHOW DIRECTOR</h3><p className="text-xs text-foreground/60">Η ροή παραγωγής λειτουργεί παράλληλα με το υπάρχον Game Control.</p></div><span className="rounded-full bg-secondary px-3 py-1 text-xs">{draft.status||'planning'}</span></div>
-   <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-    <ComicButton size="sm" onClick={()=>setStatus('live')} disabled={busy||draft.status==='live'}>ΕΝΑΡΞΗ SHOW</ComicButton>
-    <ComicButton size="sm" variant="dark" onClick={()=>setStatus('paused')} disabled={busy||draft.status==='paused'}>PAUSE / BREAK</ComicButton>
-    <ComicButton size="sm" onClick={()=>setStatus('ready')} disabled={busy}>RESUME / READY</ComicButton>
+   <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+    <ComicButton size="sm" variant="dark" onClick={()=>setStatus('ready')} disabled={busy||draft.status==='ready'}>ΕΤΟΙΜΑΣΙΑ</ComicButton>
+    <ComicButton size="sm" onClick={()=>setStatus('live')} disabled={busy||draft.status==='live'||draft.status==='completed'}>ΕΝΑΡΞΗ SHOW</ComicButton>
+    <ComicButton size="sm" variant="dark" onClick={()=>setStatus('paused')} disabled={busy||draft.status==='paused'||draft.status==='completed'}>PAUSE / BREAK</ComicButton>
+    <ComicButton size="sm" onClick={()=>setStatus('live')} disabled={busy||draft.status!=='paused'}>RESUME SHOW</ComicButton>
     <ComicButton size="sm" variant="dark" onClick={()=>setStatus('completed')} disabled={busy||draft.status==='completed'}>ΟΛΟΚΛΗΡΩΣΗ</ComicButton>
    </div>
    <div className="rounded-xl border border-border p-3 space-y-2">
