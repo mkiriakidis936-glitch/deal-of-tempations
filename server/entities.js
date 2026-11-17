@@ -980,7 +980,7 @@ export function entityRoutes() {
         }
         inserted = await client.query(
           "INSERT INTO records (id, entity, data, created_by) VALUES ($1, 'InvitationRSVP', $2, NULL) ON CONFLICT ((data->>'submissionId')) WHERE entity = 'InvitationRSVP' AND data ? 'submissionId' DO NOTHING RETURNING *",
-          [crypto.randomUUID(), JSON.stringify({ name: body.name.trim(), confirmed: true, submissionId, ...(sessionCode ? { sessionCode } : {}) })],
+          [crypto.randomUUID(), JSON.stringify({ name: body.name.trim(), confirmed: false, submissionId, ...(sessionCode ? { sessionCode } : {}) })],
         );
         rsvpCreated = inserted.rows.length > 0;
         if (rsvpCreated) rsvpRecord = toRecord(inserted.rows[0]);
@@ -1282,6 +1282,7 @@ export function entityRoutes() {
     const client = await pool.connect();
     let sourceRecord;
     let profileRecord;
+    let rsvpRecord = null;
     try {
       await client.query('BEGIN');
       const { rows } = await client.query('SELECT * FROM records WHERE id = $1 AND entity = $2 FOR UPDATE', [req.params.id, entity]);
@@ -1292,6 +1293,10 @@ export function entityRoutes() {
           [JSON.stringify({ approved: false, approvalStatus: 'pending', approvedDate: null }), sourceRecord.id, entity]);
         if (entity === 'PlayerIntake') {
           profileRecord = { ...sourceRecord, approved: false, approvalStatus: 'pending', approvedDate: null };
+          if (sourceRecord.submissionId) {
+            const { rows: rsvps } = await client.query("UPDATE records SET data = data || $1::jsonb, updated_date = now() WHERE entity = 'InvitationRSVP' AND data->>'submissionId' = $2 RETURNING *", [JSON.stringify({ confirmed: false }), sourceRecord.submissionId]);
+            if (rsvps[0]) rsvpRecord = toRecord(rsvps[0]);
+          }
         } else {
           const sourceKey = entity === 'VIPInvitationSubmission' ? sourceRecord.submissionId : sourceRecord.id;
           const { rows: profiles } = await client.query(
@@ -1303,6 +1308,7 @@ export function entityRoutes() {
         await client.query('COMMIT');
         if (entity !== 'PlayerIntake') broadcast(entity, { type: 'update', id: sourceRecord.id, data: { ...sourceRecord, approved: false, approvalStatus: 'pending' } });
         if (profileRecord) broadcast('PlayerIntake', { type: 'update', id: profileRecord.id, data: profileRecord });
+        if (rsvpRecord) broadcast('InvitationRSVP', { type: 'update', id: rsvpRecord.id, data: rsvpRecord });
         return res.json({ source: { ...sourceRecord, approved: false }, profile: profileRecord });
       }
       let profile = sourceRecord;
@@ -1363,6 +1369,10 @@ export function entityRoutes() {
           [JSON.stringify({ approved: true, approvalStatus: 'approved', approvedDate: profile.approvedDate || new Date().toISOString() }), sourceRecord.id]
         );
         profileRecord = toRecord(updated[0]);
+        if (sourceRecord.submissionId) {
+          const { rows: rsvps } = await client.query("UPDATE records SET data = data || $1::jsonb, updated_date = now() WHERE entity = 'InvitationRSVP' AND data->>'submissionId' = $2 RETURNING *", [JSON.stringify({ confirmed: true }), sourceRecord.submissionId]);
+          if (rsvps[0]) rsvpRecord = toRecord(rsvps[0]);
+        }
       } else if (existing[0]) {
         profileRecord = toRecord(existing[0]);
       } else {
@@ -1379,6 +1389,7 @@ export function entityRoutes() {
     } finally { client.release(); }
     if (entity !== 'PlayerIntake') broadcast(entity, { type: 'update', id: sourceRecord.id, data: { ...sourceRecord, approved: true, approvalStatus: 'approved' } });
     broadcast('PlayerIntake', { type: entity === 'PlayerIntake' ? 'update' : 'create', id: profileRecord.id, data: profileRecord });
+    if (rsvpRecord) broadcast('InvitationRSVP', { type: 'update', id: rsvpRecord.id, data: rsvpRecord });
     return res.json({ source: sourceRecord, profile: profileRecord });
   });
 
