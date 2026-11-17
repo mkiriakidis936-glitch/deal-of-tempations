@@ -22,9 +22,7 @@ const AdminShowCasting = lazy(() => import('@/components/admin/AdminShowCasting'
 const AdminLinks = lazy(() => import('@/components/admin/AdminLinks'));
 const AdminRSVP = lazy(() => import('@/components/admin/AdminRSVP'));
 const AdminEventInfo = lazy(() => import('@/components/admin/AdminEventInfo'));
-const AdminGrandJury = lazy(() => import('@/components/admin/AdminGrandJury'));
 const AdminMeta = lazy(() => import('@/components/admin/AdminMeta'));
-const AdminLeaderboard = lazy(() => import('@/components/admin/AdminLeaderboard'));
 const AdminMedia = lazy(() => import('@/components/admin/AdminMedia'));
 const AdminSite = lazy(() => import('@/components/admin/AdminSite'));
 const AdminCustomScenarios = lazy(() => import('@/components/admin/AdminCustomScenarios'));
@@ -61,8 +59,6 @@ const NAV_GROUPS = [
       { id: 'casting', label: '🎬 Επιλογή Επεισοδίου' },
       { id: 'players', label: '👥 Παίκτες & Ρόλοι' },
       { id: 'achievements', label: '🏅 Επιτεύγματα' },
-      { id: 'leaderboard', label: '🏆 Κατάταξη' },
-      { id: 'grandjury', label: '⚖️ Grand Jury' },
     ],
   },
   {
@@ -305,8 +301,6 @@ export default function Admin() {
         );
       case 'links':
         return <AdminLinks sessions={sessions} selectedSession={activeSession} />;
-      case 'leaderboard':
-        return <AdminLeaderboard />;
       case 'visits':
         return <AdminVisits />;
       case 'intakes':
@@ -315,8 +309,6 @@ export default function Admin() {
         return <AdminRSVP />;
       case 'eventinfo':
         return <AdminEventInfo />;
-      case 'grandjury':
-        return <AdminGrandJury />;
       default:
         return <AdminOverview sessions={sessions} loading={loading} onNavigate={setTab} />;
     }
