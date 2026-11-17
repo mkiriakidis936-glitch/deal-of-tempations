@@ -106,7 +106,7 @@ export function validatePlayerPatch(current, patch, playerId) {
     'mobileVotes', 'electricChairVotes', 'juryTrial', 'grandJury', 'privateMessages',
     'sealedVotes', 'miniGameVolunteers', 'miniGameVotes', 'miniGameRatings',
     'snitchVotes', 'history', 'timeCapsule', 'lastWish', 'midnightPact',
-    'pajama', 'mg', 'players', 'extra4', 'absoluteInterrogation', 'bailoutAuction',
+    'pajama', 'mg', 'players', 'absoluteInterrogation', 'bailoutAuction',
   ]);
   if (Object.keys(patch).some((key) => !allowed.has(key))) return false;
   const player = (current.players || []).find((item) => item.id === playerId);
@@ -232,21 +232,6 @@ export function validatePlayerPatch(current, patch, playerId) {
       );
     });
     if (!otherEntriesUnchanged || (before.length > 0 && after.length === 0) || (own && (typeof own.text !== 'string' || own.text.length > 1000))) return false;
-  }
-
-  if ('extra4' in patch) {
-    const oldActivity = current.extra4?.activity?.active || {};
-    const nextExtra4 = patch.extra4;
-    const nextActivity = nextExtra4?.activity?.active;
-    if (!isObject(nextExtra4) || Object.keys(nextExtra4).some((key) => key !== 'activity') ||
-        !isObject(nextExtra4.activity) || Object.keys(nextExtra4.activity).some((key) => key !== 'active') ||
-        !isObject(nextActivity) || Object.keys(nextActivity).some((key) => key !== 'responses') ||
-        !isObject(nextActivity.responses) ||
-        !onlyOwnMapEntryChanged(oldActivity.responses || {}, nextActivity.responses, playerId) ||
-        oldActivity.status !== 'active' || oldActivity.actionId !== 'extra4reaction' ||
-        !(oldActivity.participantIds || []).includes(playerId) ||
-        oldActivity.responses?.[playerId] != null || nextActivity.responses[playerId] !== true ||
-        !Number.isFinite(oldActivity.responseStartAt) || Date.now() < oldActivity.responseStartAt) return false;
   }
 
   if ('absoluteInterrogation' in patch) {
@@ -411,12 +396,6 @@ export function sanitizePublicSession(record, playerId = null) {
       ...state.bailoutAuction,
       bids: ownMap(state.bailoutAuction.bids),
     };
-  }
-  if (state.extra4?.liveFeed && isObject(state.extra4.liveFeed)) {
-    const liveFeed = { ...state.extra4.liveFeed };
-    delete liveFeed.sourceToken;
-    delete liveFeed.tvToken;
-    state.extra4 = { ...state.extra4, liveFeed };
   }
 
   return { ...record, state };
@@ -649,164 +628,6 @@ export function entityRoutes() {
     } catch (error) { return next(error); }
   });
 
-
-  const tokenMatches = (provided, expected) => {
-    const a = Buffer.from(String(provided || ''));
-    const b = Buffer.from(String(expected || ''));
-    return !!a.length && a.length === b.length && crypto.timingSafeEqual(a, b);
-  };
-  const publicFeed = (feed = {}) => ({
-    status: feed.status || 'off',
-    requestedAt: feed.requestedAt || null,
-    cameraEnabled: !!feed.cameraEnabled,
-    microphoneEnabled: !!feed.microphoneEnabled,
-    tvPip: !!feed.tvPip,
-    tvAudio: !!feed.tvAudio,
-    offer: feed.offer || null,
-    answer: feed.answer || null,
-    restartRequest: feed.restartRequest || 0,
-    updatedAt: feed.updatedAt || null,
-  });
-
-  r.get('/live-feed/:sessionCode/state', async (req, res) => {
-    try {
-      const sessionCode = String(req.params.sessionCode || '').trim().toUpperCase();
-      const token = String(req.query.token || '');
-      const { rows } = await query("SELECT data FROM records WHERE entity = 'GameSession' AND data->>'sessionCode' = $1 LIMIT 1", [sessionCode]);
-      if (!rows[0]) return res.status(404).json({ error: 'Session not found' });
-      const feed = rows[0].data?.state?.extra4?.liveFeed || {};
-      if (!tokenMatches(token, feed.sourceToken) && !tokenMatches(token, feed.tvToken)) {
-        return res.status(403).json({ error: 'Invalid live feed token' });
-      }
-      return res.json({ liveFeed: publicFeed(feed) });
-    } catch (error) {
-      console.error('[extra4-live-feed] state read failed:', error);
-      return res.status(500).json({ error: 'Live feed state unavailable' });
-    }
-  });
-
-  r.post('/live-feed/:sessionCode/signal', async (req, res) => {
-    const client = await pool.connect();
-    try {
-      const sessionCode = String(req.params.sessionCode || '').trim().toUpperCase();
-      const { token, role, offer, answer, microphoneEnabled, requestRestart, connected } = req.body || {};
-      if (!['source', 'tv'].includes(role)) return res.status(400).json({ error: 'Invalid live feed role' });
-      await client.query('BEGIN');
-      const { rows } = await client.query(
-        "SELECT * FROM records WHERE entity = 'GameSession' AND data->>'sessionCode' = $1 LIMIT 1 FOR UPDATE",
-        [sessionCode],
-      );
-      if (!rows[0]) { await client.query('ROLLBACK'); return res.status(404).json({ error: 'Session not found' }); }
-      const record = toRecord(rows[0]);
-      const extra4 = record.state?.extra4 || {};
-      const currentFeed = extra4.liveFeed || {};
-      const expectedToken = role === 'source' ? currentFeed.sourceToken : currentFeed.tvToken;
-      if (!tokenMatches(token, expectedToken)) {
-        await client.query('ROLLBACK');
-        return res.status(403).json({ error: 'Invalid live feed token' });
-      }
-      if (currentFeed.status === 'off' || !currentFeed.requestedAt) {
-        await client.query('ROLLBACK');
-        return res.status(409).json({ error: 'Live feed is not requested' });
-      }
-
-      let nextFeed = { ...currentFeed, updatedAt: Date.now() };
-      if (role === 'source' && offer !== undefined) {
-        if (!offer || offer.type !== 'offer' || typeof offer.sdp !== 'string' || offer.sdp.length > 100000) {
-          await client.query('ROLLBACK');
-          return res.status(400).json({ error: 'Invalid WebRTC offer' });
-        }
-        nextFeed = {
-          ...nextFeed,
-          offer,
-          answer: null,
-          status: 'connecting',
-          cameraEnabled: true,
-          microphoneEnabled: microphoneEnabled === true && currentFeed.tvAudio === true,
-          sourceConsentAt: Date.now(),
-        };
-      } else if (role === 'tv' && answer !== undefined) {
-        if (!answer || answer.type !== 'answer' || typeof answer.sdp !== 'string' || answer.sdp.length > 100000 || !currentFeed.offer) {
-          await client.query('ROLLBACK');
-          return res.status(400).json({ error: 'Invalid WebRTC answer' });
-        }
-        nextFeed = { ...nextFeed, answer, status: 'connecting' };
-      } else if (role === 'tv' && requestRestart === true) {
-        nextFeed = { ...nextFeed, answer: null, restartRequest: (Number(currentFeed.restartRequest) || 0) + 1, status: 'reconnecting' };
-      } else if (role === 'source' && connected === true) {
-        nextFeed = { ...nextFeed, status: 'connected', cameraEnabled: true };
-      } else if (role === 'source' && connected === false) {
-        nextFeed = { ...nextFeed, status: 'reconnecting', cameraEnabled: false, microphoneEnabled: false, answer: null };
-      } else {
-        await client.query('ROLLBACK');
-        return res.status(400).json({ error: 'Unsupported live feed signal' });
-      }
-
-      const nextState = { ...(record.state || {}), extra4: { ...extra4, liveFeed: nextFeed } };
-      const { rows: updated } = await client.query(
-        "UPDATE records SET data = jsonb_set(data, '{state}', $1::jsonb, true), updated_date = now() WHERE id = $2 AND entity = 'GameSession' RETURNING *",
-        [JSON.stringify(nextState), record.id],
-      );
-      await client.query('COMMIT');
-      const saved = toRecord(updated[0]);
-      broadcast('GameSession', { type: 'update', id: saved.id, data: saved });
-      return res.json({ success: true, liveFeed: publicFeed(nextFeed) });
-    } catch (error) {
-      await client.query('ROLLBACK').catch(() => {});
-      console.error('[extra4-live-feed] signal update failed:', error);
-      return res.status(500).json({ error: 'Live feed signal failed' });
-    } finally {
-      client.release();
-    }
-  });
-
-  r.post('/live-feed/:sessionCode/stop', async (req, res) => {
-    const client = await pool.connect();
-    try {
-      const sessionCode = String(req.params.sessionCode || '').trim().toUpperCase();
-      const token = String(req.body?.token || '');
-      await client.query('BEGIN');
-      const { rows } = await client.query(
-        "SELECT * FROM records WHERE entity = 'GameSession' AND data->>'sessionCode' = $1 LIMIT 1 FOR UPDATE",
-        [sessionCode],
-      );
-      if (!rows[0]) { await client.query('ROLLBACK'); return res.status(404).json({ error: 'Session not found' }); }
-      const record = toRecord(rows[0]);
-      const extra4 = record.state?.extra4 || {};
-      const feed = extra4.liveFeed || {};
-      if (!tokenMatches(token, feed.sourceToken) && !tokenMatches(token, feed.tvToken)) {
-        await client.query('ROLLBACK');
-        return res.status(403).json({ error: 'Invalid live feed token' });
-      }
-      const nextFeed = {
-        ...feed,
-        status: 'off',
-        requestedAt: null,
-        cameraEnabled: false,
-        microphoneEnabled: false,
-        sourceToken: null,
-        tvToken: null,
-        offer: null,
-        answer: null,
-        updatedAt: Date.now(),
-      };
-      const nextState = { ...(record.state || {}), extra4: { ...extra4, liveFeed: nextFeed } };
-      const { rows: updated } = await client.query(
-        "UPDATE records SET data = jsonb_set(data, '{state}', $1::jsonb, true), updated_date = now() WHERE id = $2 AND entity = 'GameSession' RETURNING *",
-        [JSON.stringify(nextState), record.id],
-      );
-      await client.query('COMMIT');
-      const saved = toRecord(updated[0]);
-      broadcast('GameSession', { type: 'update', id: saved.id, data: saved });
-      return res.json({ success: true });
-    } catch (error) {
-      await client.query('ROLLBACK').catch(() => {});
-      console.error('[extra4-live-feed] stop failed:', error);
-      return res.status(500).json({ error: 'Live feed stop failed' });
-    } finally {
-      client.release();
-    }
-  });
 
   r.param('entity', (req, res, next, name) => {
     if (!ENTITIES.includes(name)) return res.status(404).json({ error: `Unknown entity ${name}` });
@@ -1450,16 +1271,6 @@ export function entityRoutes() {
           return res.status(403).json({ error: 'Player update is not permitted' });
         }
         const safePlayerPatch = { ...statePatch };
-        if (safePlayerPatch.extra4?.activity?.responses?.[playerId] === true) {
-          const currentResponses = current.state?.extra4?.activity?.active?.responses || {};
-          safePlayerPatch.extra4 = {
-            activity: {
-              active: {
-                responses: { ...currentResponses, [playerId]: { tappedAt: Date.now() } },
-              },
-            },
-          };
-        }
         if (isObject(safePlayerPatch.pajama)) {
           safePlayerPatch.pajama = { ...safePlayerPatch.pajama };
           delete safePlayerPatch.pajama.saboteurId;

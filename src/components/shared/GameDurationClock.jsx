@@ -24,7 +24,7 @@ export default function GameDurationClock({ state, compact = false }) {
       <div className="text-[9px] sm:text-[10px] font-bold tracking-widest text-primary/80">ΣΥΝΟΛΙΚΟΣ ΧΡΟΝΟΣ</div>
       <div className={`font-mono font-black tabular-nums ${compact ? 'text-lg sm:text-xl' : 'text-2xl'} ${expired ? 'text-red-500 animate-pulse' : remaining <= 300 ? 'text-amber-400' : 'text-white'}`}>{label}</div>
       {expired && <div className="text-[9px] font-bold text-red-400">Ο ΧΡΟΝΟΣ ΕΛΗΞΕ</div>}
-      {(state.stopActive || state.mg?.stop || state.extra4?.control?.status === 'paused') && !expired && <div className="text-[9px] font-bold text-amber-300">ΠΑΥΣΗ</div>}
+      {(state.stopActive || state.mg?.stop) && !expired && <div className="text-[9px] font-bold text-amber-300">ΠΑΥΣΗ</div>}
     </div>
   );
 }

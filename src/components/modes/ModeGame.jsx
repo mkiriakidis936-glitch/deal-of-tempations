@@ -36,7 +36,7 @@ export default function ModeGame({ state, updateState, onEnd, onQR, playerProfil
   useEffect(() => {
     if (!state.gameStartedAt || mg.finishedAll || mg.gameTimeExpired) return undefined;
     const expireIfNeeded = () => {
-      if (mg.stop || state.stopActive || state.extra4?.control?.status === 'paused') return;
+      if (mg.stop || state.stopActive) return;
       const pausedMs = Math.max(0, Number(state.gamePausedMs || 0));
       const pausedNow = state.gamePausedAt ? Date.now() - state.gamePausedAt : 0;
       const elapsed = Date.now() - state.gameStartedAt - pausedMs - pausedNow;
@@ -47,7 +47,7 @@ export default function ModeGame({ state, updateState, onEnd, onQR, playerProfil
     expireIfNeeded();
     const id = setInterval(expireIfNeeded, 500);
     return () => clearInterval(id);
-  }, [state.gameStartedAt, state.gamePausedMs, state.gamePausedAt, state.stopActive, state.extra4?.control?.status, mg.stop, mg.finishedAll, mg.gameTimeExpired, configuredDurationMinutes, setMg]);
+  }, [state.gameStartedAt, state.gamePausedMs, state.gamePausedAt, state.stopActive, mg.stop, mg.finishedAll, mg.gameTimeExpired, configuredDurationMinutes, setMg]);
   const acts = meta.acts;
   const actIndex = Math.min(mg.actIndex || 0, acts.length - 1);
   const act = acts[actIndex];

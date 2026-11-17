@@ -11,7 +11,6 @@ import GlobalDesignProvider from '@/components/GlobalDesignProvider';
 // Add page imports here
 const Tablet = lazy(() => import('@/pages/Tablet'));
 const TVScreen = lazy(() => import('@/pages/TV'));
-const Isolation = lazy(() => import('@/pages/Isolation'));
 const Play = lazy(() => import('@/pages/Play'));
 const Intake = lazy(() => import('@/pages/Intake'));
 const Admin = lazy(() => import('@/pages/Admin'));
@@ -60,7 +59,6 @@ const AuthenticatedApp = () => {
       {/* Add your page Route elements here */}
       <Route path="/" element={<RequireAdmin><Tablet /></RequireAdmin>} />
       <Route path="/tv" element={<TVScreen />} />
-      <Route path="/isolation" element={<Isolation />} />
       <Route path="/play" element={<Play />} />
       <Route path="/intake" element={<Intake />} />
       <Route path="/admin" element={<RequireAdmin><Admin /></RequireAdmin>} />
