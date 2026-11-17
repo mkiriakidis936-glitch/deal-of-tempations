@@ -382,7 +382,7 @@ export default function AdminMedia() {
       {showSurface('site', 'forms', 'tablet') && (
       <ComicPanel className="bg-card space-y-3">
         <div className="font-heading text-lg">🎮 ΠΟΛΥΜΕΣΑ ΑΝΑ MODE</div>
-        <p className="text-xs text-foreground/60">Ανεξάρτητο υλικό για τα PAJAMA LOCKDOWN 18+ και BEACH BAR HOME LOCKDOWN. Τα Cover χρησιμοποιούνται στην επιλογή Mode, ενώ Gallery και Trailer συνδέονται με την προβολή του Mode στο Site.</p>
+        <p className="text-xs text-foreground/60">Ανεξάρτητο υλικό για τα PAJAMA LOCKDOWN 18+ και BEACH BAR HOME LOCKDOWN. Cover: επιλογή Mode. Hero και ενότητες: Tablet Setup. Gallery και Trailer: Tablet Setup και σελίδα Mode στο Site.</p>
         <ModeMediaManager
           value={ov.modeMedia || {}}
           disabled={!!busy}
