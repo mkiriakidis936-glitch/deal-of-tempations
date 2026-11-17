@@ -99,33 +99,41 @@ export default function ProductionRuntime({selected,record,draft,onChange,onSave
    if(!privateMediaAllowed){setMessage('Η μεταφόρτωση είναι κλειδωμένη μέχρι όλοι οι συμμετέχοντες να δώσουν ξεχωριστή συγκατάθεση καταγραφής και ιδιωτικής χρήσης.');return;}
    if(!mediaParticipantNames.length){setMessage('Επίλεξε ποιοι συμμετέχοντες εμφανίζονται στο υλικό.');return;}
    setUploading(true);setMessage('');
+   const previousMedia=draft.recapMedia||[],previousItems=draft.recapMediaItems||[];
+   const uploadedNames=[];
    try{
      const added=[];const addedItems=[];
      for(const file of Array.from(files)){
        const response=await fetch(`/api/media/private-upload?name=${encodeURIComponent(file.name)}`,{method:'POST',headers:{Authorization:`Bearer ${getToken()}`},body:file});
        const data=await response.json().catch(()=>({}));
        if(!response.ok)throw new Error(data.error||`Αποτυχία μεταφόρτωσης: ${file.name}`);
-       added.push(`private:${data.name}`);addedItems.push({name:data.name,participants:[...mediaParticipantNames],uploadedAt:new Date().toISOString(),kind:data.kind});
+       uploadedNames.push(data.name);added.push(`private:${data.name}`);addedItems.push({name:data.name,participants:[...mediaParticipantNames],uploadedAt:new Date().toISOString(),kind:data.kind});
      }
-     const nextMedia=[...(draft.recapMedia||[]),...added],nextItems=[...(draft.recapMediaItems||[]),...addedItems];
-     update({recapMedia:nextMedia,recapMediaItems:nextItems});
+     const nextMedia=[...previousMedia,...added],nextItems=[...previousItems,...addedItems];
      const saved=await persist({recapMedia:nextMedia,recapMediaItems:nextItems},'Το υλικό προστέθηκε στο ιδιωτικό recap.');
-     if(!saved)update({recapMedia:nextMedia,recapMediaItems:nextItems});
-   }catch(error){setMessage(error.message||'Η μεταφόρτωση απέτυχε.');}
+     if(!saved){
+       await Promise.all(uploadedNames.map(name=>fetch(`/api/media/private/${encodeURIComponent(name)}`,{method:'DELETE',headers:{Authorization:`Bearer ${getToken()}`}}).catch(()=>{})));
+       update({recapMedia:previousMedia,recapMediaItems:previousItems});
+     }
+   }catch(error){
+     await Promise.all(uploadedNames.map(name=>fetch(`/api/media/private/${encodeURIComponent(name)}`,{method:'DELETE',headers:{Authorization:`Bearer ${getToken()}`}}).catch(()=>{})));
+     setMessage(error.message||'Η μεταφόρτωση απέτυχε.');
+   }
    finally{setUploading(false);}
  };
  const removeMedia=async(url)=>{
+   const name=String(url).startsWith('private:')?String(url).slice(8):'';
+   const nextMedia=(draft.recapMedia||[]).filter(item=>item!==url);
+   const nextItems=(draft.recapMediaItems||[]).filter(item=>item.name!==name);
+   const linkedPublished=(draft.recapPublishedMediaItems||[]).filter(item=>item.sourceName===name);
+   const nextPublishedItems=(draft.recapPublishedMediaItems||[]).filter(item=>item.sourceName!==name);
+   const nextPublished=(draft.recapPublishedMedia||[]).filter(item=>!linkedPublished.some(published=>published.url===item));
+   const saved=await persist({recapMedia:nextMedia,recapMediaItems:nextItems,recapPublishedMediaItems:nextPublishedItems,recapPublishedMedia:nextPublished},'Το αρχείο αφαιρέθηκε από το recap.');
+   if(!saved)return;
    try{
-     if(String(url).startsWith('private:')){
-       const name=String(url).slice(8);
-       const response=await fetch(`/api/media/private/${encodeURIComponent(name)}`,{method:'DELETE',headers:{Authorization:`Bearer ${getToken()}`}});
-       const data=await response.json().catch(()=>({}));
-       if(!response.ok)throw new Error(data.error||'Δεν ήταν δυνατή η διαγραφή του αρχείου.');
-     }
-     const next=(draft.recapMedia||[]).filter(item=>item!==url);
-     update({recapMedia:next});
-     await persist({recapMedia:next},'Το αρχείο αφαιρέθηκε από το recap.');
-   }catch(error){setMessage(error.message||'Η αφαίρεση απέτυχε.');}
+     if(name)await fetch(`/api/media/private/${encodeURIComponent(name)}`,{method:'DELETE',headers:{Authorization:`Bearer ${getToken()}`}});
+     for(const item of linkedPublished)await fetch(`/api/media/${encodeURIComponent(item.name)}`,{method:'DELETE',headers:{Authorization:`Bearer ${getToken()}`}});
+   }catch{setMessage('Το αρχείο αφαιρέθηκε από το recap, αλλά κάποιο αντίγραφο δεν διαγράφηκε από την αποθήκευση.');}
  };
  const openMedia=async(url)=>{
    try{
@@ -134,7 +142,7 @@ export default function ProductionRuntime({selected,record,draft,onChange,onSave
      const response=await fetch(`/api/media/private/${encodeURIComponent(name)}`,{headers:{Authorization:`Bearer ${getToken()}`}});
      if(!response.ok)throw new Error('Δεν ήταν δυνατή η ανάκτηση του ιδιωτικού αρχείου.');
      const blob=await response.blob(),objectUrl=URL.createObjectURL(blob),anchor=document.createElement('a');
-     anchor.href=objectUrl;anchor.download=name;document.body.appendChild(anchor);anchor.click();anchor.remove();URL.revokeObjectURL(objectUrl);
+     anchor.href=objectUrl;anchor.download=name;document.body.appendChild(anchor);anchor.click();anchor.remove();setTimeout(()=>URL.revokeObjectURL(objectUrl),1500);
    }catch(error){setMessage(error.message||'Το αρχείο δεν άνοιξε.');}
  };
  const publishMedia=async(url)=>{
@@ -149,7 +157,8 @@ export default function ProductionRuntime({selected,record,draft,onChange,onSave
      const publishedItem={name:data.name,url:data.url,sourceName:name,participants:[...(item.participants||[])],publishedAt:new Date().toISOString()};
      const items=[...(draft.recapPublishedMediaItems||[]),publishedItem];
      const urls=[...(draft.recapPublishedMedia||[]),data.url];
-     await persist({recapPublishedMediaItems:items,recapPublishedMedia:urls},'Το αρχείο δημοσιεύτηκε. Ο σύνδεσμος είναι διαθέσιμος για χρήση στα social media.');
+     const saved=await persist({recapPublishedMediaItems:items,recapPublishedMedia:urls},'Το αρχείο δημοσιεύτηκε. Ο σύνδεσμος είναι διαθέσιμος για χρήση στα social media.');
+     if(!saved)await fetch(`/api/media/${encodeURIComponent(data.name)}`,{method:'DELETE',headers:{Authorization:`Bearer ${getToken()}`}});
    }catch(error){setMessage(error.message||'Η δημοσίευση απέτυχε.');}
  };
  const applyWithdrawal=async(consent)=>{
