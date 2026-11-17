@@ -52,6 +52,14 @@ export default function AdminIntakes() {
     }
   }
 
+  async function handleApprove(item) {
+    try {
+      await request('POST', '/api/entities/intake-approvals/PlayerIntake/' + item.id, {});
+      setIntakes((prev) => prev.map((entry) => entry.id === item.id ? { ...entry, approved: true, approvalStatus: 'approved' } : entry));
+      setMsg({ ok: true, text: 'Το προφίλ της ' + item.name + ' εγκρίθηκε και είναι διαθέσιμο στο Setup.' });
+    } catch (e) { setMsg({ ok: false, text: e.message || 'Η έγκριση απέτυχε.' }); }
+  }
+
   async function handleDelete(id) {
     if (!window.confirm('Να διαγραφεί η αίτηση και οι συνδεδεμένες επιβεβαιώσεις συμμετοχής;')) return;
     try {
@@ -161,6 +169,11 @@ export default function AdminIntakes() {
                     {i.musicPreferences && <div className="text-xs">🎵 {i.musicPreferences}</div>}
                     {i.allergies && <div className="text-xs bg-destructive/30 p-1.5 rounded border border-border/20">⚠️ {i.allergies}</div>}
                     {i.dressCode && <div className="text-xs bg-tarot-sienna/30 p-1.5 rounded border border-border/20">👗 {i.dressCode}</div>}
+                    <details className="text-xs border border-border/40 rounded-lg p-2">
+                      <summary className="cursor-pointer font-bold">ΟΛΕΣ ΟΙ ΑΠΑΝΤΗΣΕΙΣ ΤΗΣ ΦΟΡΜΑΣ</summary>
+                      <div className="mt-2 space-y-1">{Object.entries(i).filter(([key]) => !['id', 'created_date', 'updated_date'].includes(key)).map(([key, value]) => <div key={key} className="break-words"><strong>{key}:</strong> {typeof value === 'object' && value !== null ? JSON.stringify(value) : String(value ?? '—')}</div>)}</div>
+                    </details>
+                    <div className="flex items-center gap-2 flex-wrap"><span className="text-xs font-bold">{i.approved ? '✅ ΕΓΚΕΚΡΙΜΕΝΗ' : '⏳ ΣΕ ΑΝΑΜΟΝΗ ΕΓΚΡΙΣΗΣ'}</span>{!i.approved && <ComicButton variant="green" size="sm" onClick={() => handleApprove(i)}>✅ ΕΓΚΡΙΣΗ & ΔΗΜΙΟΥΡΓΙΑ ΠΡΟΦΙΛ</ComicButton>}</div>
                   </div>
                   <ComicButton variant="red" size="sm" onClick={() => handleDelete(i.id)}>🗑️</ComicButton>
                 </div>

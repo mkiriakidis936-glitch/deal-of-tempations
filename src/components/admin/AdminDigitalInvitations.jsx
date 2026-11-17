@@ -118,6 +118,17 @@ export default function AdminDigitalInvitations() {
     finally { setVipBusy(false); }
   }
 
+  async function approveVipSubmission(invitation, response) {
+    setVipBusy(true);
+    setVipMessage('');
+    try {
+      await request('POST', '/api/entities/intake-approvals/VIPInvitationSubmission/' + response.id, {});
+      setVipSubmissions((current) => ({ ...current, [invitation.id]: (current[invitation.id] || []).map((item) => item.id === response.id ? { ...item, approved: true, approvalStatus: 'approved' } : item) }));
+      setVipMessage('Η συμμετοχή εγκρίθηκε και δημιουργήθηκε προφίλ παίκτριας για το Setup.');
+    } catch (e) { setVipMessage(e.message || 'Η έγκριση απέτυχε.'); }
+    finally { setVipBusy(false); }
+  }
+
   async function loadVipSubmissions(invitation) {
     setVipBusy(true);
     try {
@@ -181,8 +192,8 @@ export default function AdminDigitalInvitations() {
                 {Object.entries(response.answerLabels || response.answers || {}).map(([label, answer]) => <div key={label}><span className="text-[#c9a94e]">{label}:</span> {String(answer)}</div>)}
               </div>
               <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
-                <div className="text-[10px] text-foreground/40">{new Date(response.created_date).toLocaleString('el-GR')}</div>
-                <ComicButton size="sm" variant="red" disabled={vipBusy} onClick={() => deleteVipSubmission(invitation, response)}>ΔΙΑΓΡΑΦΗ ΑΠΑΝΤΗΣΗΣ</ComicButton>
+                <div className="text-[10px] text-foreground/40">{new Date(response.created_date).toLocaleString('el-GR')} · {response.approved ? '✅ ΕΓΚΕΚΡΙΜΕΝΗ' : '⏳ ΣΕ ΑΝΑΜΟΝΗ'}</div>
+                <div className="flex flex-wrap gap-2">{!response.approved && <ComicButton size="sm" variant="green" disabled={vipBusy} onClick={() => approveVipSubmission(invitation, response)}>ΕΓΚΡΙΣΗ & ΔΗΜΙΟΥΡΓΙΑ ΠΡΟΦΙΛ</ComicButton>}<ComicButton size="sm" variant="red" disabled={vipBusy} onClick={() => deleteVipSubmission(invitation, response)}>ΔΙΑΓΡΑΦΗ ΑΠΑΝΤΗΣΗΣ</ComicButton></div>
               </div>
             </div>
           ))}
