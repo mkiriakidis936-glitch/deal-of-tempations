@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { base44 } from '@/api/base44Client';
+import { base44, request } from '@/api/base44Client';
 import PajamaRSVP from '@/components/pajama/PajamaRSVP';
 import { Image } from '@/components/ui/image';
 import { ART, PHOTO, FILM, PAJAMA_PHOTOS } from '@/data/brandArt';
@@ -19,7 +19,7 @@ function useCountdown(target) {
   useEffect(() => {
     const t = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(t);
-  }, []);
+  }, [eventCode]);
   if (!target) return null;
   const diff = Math.max(0, new Date(target).getTime() - now);
   return {
@@ -41,10 +41,15 @@ export default function PajamaInvite() {
   useEffect(() => {
     async function load() {
       try {
+        if (eventCode) {
+          const event = await request('GET', `/api/entities/event-info/${encodeURIComponent(eventCode)}`);
+          setEventDate(event.scheduledAt || '');
+          return;
+        }
         const { items } = await base44.entities.AppSetting.filter({ key: 'event_date' }, { limit: 1 });
         if (items?.[0]?.value) setEventDate(items[0].value);
       } catch (e) {
-        /* silent */
+        setEventDate('');
       }
     }
     load();
