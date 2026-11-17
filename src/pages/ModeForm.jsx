@@ -115,13 +115,13 @@ export default function ModeForm() {
         <div className="text-center pt-4 rounded-2xl border border-primary/30 bg-black/30 p-5 shadow-2xl">
           <div className="text-5xl">🎮🩴💅🍹</div>
           <h1 className="font-heading text-2xl sm:text-3xl text-foreground drop-shadow-[0_0_18px_rgba(255,105,180,0.85)] mt-2">Deal of Temptation · 18+</h1>
-          <p className="text-sm text-muted-foreground mt-2">Φόρμα συμμετοχής — επίλεξε τα Modes και συμπλήρωσε τα στοιχεία σου.</p>
+          <p className="text-sm text-muted-foreground mt-2">Φόρμα συμμετοχής — επίλεξε τις λειτουργίες και συμπλήρωσε τα στοιχεία σου.</p>
           <div className="mt-5 flex items-center justify-between text-xs text-foreground/80"><span>ΒΗΜΑ {step + 1} ΑΠΟ 2</span><span>{progress}%</span></div>
           <div className="mt-2 h-2 rounded-full bg-surface-3 overflow-hidden"><div className="h-full rounded-full bg-primary transition-all" style={{ width: `${progress}%` }} /></div>
         </div>
 
         {step === 0 && <div className="rounded-xl border border-primary/40 bg-surface-2 p-3 space-y-2">
-          <div className="text-sm text-foreground/80">Ποιο mode θέλεις; * <span className="opacity-60">(μπορείς πολλά)</span></div>
+          <div className="text-sm text-foreground/80">Ποια λειτουργία θέλεις; * <span className="opacity-60">(μπορείς να επιλέξεις περισσότερες από μία)</span></div>
           <div className="grid gap-2">
             {NEW_MODES.map((m) => {
               const on = form.modes.includes(m.id);
