@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import PajamaRSVP from '@/components/pajama/PajamaRSVP';
 import { Image } from '@/components/ui/image';
@@ -33,6 +33,8 @@ function useCountdown(target) {
 
 export default function PajamaInvite() {
   const navigate = useNavigate();
+  const [params] = useSearchParams();
+  const eventCode = params.get('event') || params.get('sessionCode') || params.get('code') || '';
   const [eventDate, setEventDate] = useState('');
   const countdown = useCountdown(eventDate);
 
@@ -114,7 +116,7 @@ export default function PajamaInvite() {
         )}
 
         <div className="space-y-3">
-          <button className="cinv-btn w-full" onClick={() => navigate('/pajama-form')}>
+          <button className="cinv-btn w-full" onClick={() => navigate(`/pajama-form${eventCode ? `?event=${encodeURIComponent(eventCode)}` : ''}`)}>
             ΚΛΕΙΣΕ ΘΕΣΗ
           </button>
           <p className="text-xs text-foreground/40 tracking-[0.2em] uppercase">
