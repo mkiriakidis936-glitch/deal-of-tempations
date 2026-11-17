@@ -4,7 +4,6 @@ import { isNewMode } from '@/data/modes/modeRegistry';
 import React, { useMemo, useState } from 'react';
 import { useGameSession } from '@/hooks/useGameSession';
 import { getActiveSessionCode, subscribeActiveSession } from '@/lib/activeSession';
-import LiveOverlay from '@/components/tv/LiveOverlay';
 import WantedStrobePanic from '@/components/shared/WantedStrobePanic';
 import SessionJoin from '@/components/shared/SessionJoin';
 import TVBoardPanel from '@/components/tv/TVBoardPanel';
@@ -30,8 +29,6 @@ import SyncTimerDisplay from '@/components/shared/SyncTimerDisplay';
 import { PHOTO, FILM } from '@/data/brandArt';
 import MediaSpot from '@/components/shared/MediaSpot';
 import NightTV from '@/components/night/NightTV';
-import Extra4TVOverlay from '@/components/tv/Extra4TVOverlay';
-import Extra4LiveFeedTV from '@/components/tv/Extra4LiveFeedTV';
 import { useAudioSync } from '@/hooks/useAudioSync';
 import { calculateMostWanted, getWantedLevel, getTotalLoot } from '@/lib/gameLogic';
 
@@ -149,7 +146,6 @@ export default function TVScreen() {
   const { session, state, loading, joinByCode } = useGameSession({ autoLoad: false });
   const [fullscreen, setFullscreen] = useState(Boolean(document.fullscreenElement));
   const [networkOnline, setNetworkOnline] = useState(typeof navigator === 'undefined' ? true : navigator.onLine);
-  const feedToken = new URLSearchParams(window.location.search).get('feedToken') || '';
 
   // Sync με Admin & links: κωδικός στο URL ή η ενεργή συνεδρία του Admin ανοίγει πάντα εδώ.
   React.useEffect(() => {
@@ -225,10 +221,8 @@ export default function TVScreen() {
       <div className="fixed inset-0 -z-10 pointer-events-none opacity-20">
         <MediaSpot src={PHOTO.tv || FILM.tv} slot="tv" className="w-full h-full object-cover" />
       </div>
-      {state.stopActive && state.extra4?.control?.status !== 'emergency' && <div className="fixed inset-0 z-[100] bg-destructive/90 flex items-center justify-center text-center pointer-events-auto"><div className="font-heading text-7xl text-white">⏸ ΣΤΟΠ</div></div>}
+      {state.stopActive && <div className="fixed inset-0 z-[100] bg-destructive/90 flex items-center justify-center text-center pointer-events-auto"><div className="font-heading text-7xl text-white">⏸ ΣΤΟΠ</div></div>}
       <TVExperienceLayer sessionCode={session.sessionCode} mode={state.mode} playerCount={state.players?.length || 0} stage={state.stage} online={networkOnline} fullscreen={fullscreen} onToggleFullscreen={toggleFullscreen} event={currentEvent} />
-      <Extra4TVOverlay state={state} />
-      <Extra4LiveFeedTV sessionCode={session.sessionCode} token={feedToken} feed={state.extra4?.liveFeed || {}} />
       {(state.absoluteInterrogation?.active || state.interrogationVerdict || state.bailoutAuction?.active || state.blackBribe || state.sacrificeWheel || state.bailoutOutcome) && (
         <div className="fixed bottom-4 left-4 z-50 max-w-sm w-[min(92vw,24rem)] comic-panel bg-background/95 border-2 border-primary p-3 space-y-2">
           {state.absoluteInterrogation?.active && <div><b className="text-primary">⚖️ ABSOLUTE INTERROGATION · {state.absoluteInterrogation.step + 1}/3</b><div className="text-sm">{state.absoluteInterrogation.questions?.[state.absoluteInterrogation.step]}</div></div>}
@@ -239,7 +233,6 @@ export default function TVScreen() {
           {state.bailoutOutcome && <div className="text-xs">🔓 BAILOUT: {state.bailoutOutcome.released ? 'Άμεση απελευθέρωση' : 'Επιπλέον 15′ · Sensory Lock'}</div>}
         </div>
       )}
-      <LiveOverlay />
       <PajamaRevealOverlay />
       <TutorialTV tutorial={state.tutorialDemo} />
       <GameDurationClock state={state} compact />
