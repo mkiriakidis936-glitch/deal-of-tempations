@@ -32,7 +32,6 @@ const AdminFormsBuilder = lazy(() => import('@/components/admin/AdminFormsBuilde
 const AdminNotifications = lazy(() => import('@/components/admin/AdminNotifications'));
 const AdminVisits = lazy(() => import('@/components/admin/AdminVisits'));
 const AdminDigitalInvitations = lazy(() => import('@/components/admin/AdminDigitalInvitations'));
-const AdminExtra4 = lazy(() => import('@/components/admin/AdminExtra4'));
 const AdminSecretVault = lazy(() => import('@/components/admin/AdminSecretVault'));
 import { setActiveSessionCode } from '@/lib/activeSession';
 
@@ -52,7 +51,6 @@ const NAV_GROUPS = [
     label: '02 · ΠΑΙΧΝΙΔΙ & ΖΩΝΤΑΝΟΣ ΕΛΕΓΧΟΣ',
     tabs: [
       { id: 'modes', label: '🎮 Λειτουργίες παιχνιδιού' },
-      { id: 'extra4', label: '✦ EXTRA 4.0' },
       { id: 'live', label: '⏯️ Ζωντανός έλεγχος' },
     ],
   },
@@ -295,8 +293,6 @@ export default function Admin() {
         );
       case 'casting':
         return <AdminShowCasting />;
-      case 'extra4':
-        return <AdminExtra4 sessions={sessions} selectedSession={activeSession} onSelect={selectSession} onNavigate={setTab} onUpdate={handleUpdateSession} />;
       case 'players':
       case 'live':
         return (
