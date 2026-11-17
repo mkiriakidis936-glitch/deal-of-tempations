@@ -6,6 +6,7 @@ import { Transform } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
 import express from 'express';
 import { requireAdmin } from './auth.js';
+import { query } from './db.js';
 
 // Railway: prefer the mounted Volume path so uploads survive deployments.
 const volumeRoot = process.env.RAILWAY_VOLUME_MOUNT_PATH;
@@ -165,6 +166,38 @@ export function mediaRoutes() {
       if (error.message === 'EMPTY') return res.status(400).json({ error: 'Κενό αρχείο.' });
       return res.status(400).json({ error: 'Η ιδιωτική μεταφόρτωση απέτυχε.' });
     }
+  });
+
+  // Publish a private recap asset only after the latest consent from every depicted participant allows public use.
+  r.post('/publish-private', requireAdmin, async (req, res) => {
+    const name = String(req.body?.name || '');
+    const sessionCode = String(req.body?.sessionCode || '').trim().toUpperCase();
+    const participants = Array.isArray(req.body?.participants) ? [...new Set(req.body.participants.map(value => String(value || '').trim()).filter(Boolean))] : [];
+    if (!/^[A-Za-z0-9._-]+$/.test(name) || name.startsWith('.') || !name.startsWith('private-') || !kindOf(name)) {
+      return res.status(400).json({ error: 'Μη έγκυρο ιδιωτικό αρχείο.' });
+    }
+    if (!sessionCode || !participants.length) return res.status(400).json({ error: 'Λείπουν τα στοιχεία διοργάνωσης ή συμμετεχόντων.' });
+    const privateFile = path.join(PRIVATE_UPLOAD_DIR, name);
+    if (!fs.existsSync(privateFile)) return res.status(404).json({ error: 'Το ιδιωτικό αρχείο δεν βρέθηκε.' });
+    const { rows } = await query(
+      "SELECT data FROM records WHERE entity = 'ProductionConsent' AND data->>'sessionCode' = $1 ORDER BY created_date DESC",
+      [sessionCode]
+    );
+    const latest = new Map();
+    for (const row of rows) {
+      const consent = row.data || {};
+      const key = String(consent.participantName || '').trim().toLocaleLowerCase('el-GR');
+      if (key && !latest.has(key)) latest.set(key, consent);
+    }
+    const missing = participants.filter(participant => {
+      const consent = latest.get(participant.toLocaleLowerCase('el-GR'));
+      return !consent || consent.withdrawn === true || consent.adultConfirmed !== true || consent.recordingConsent !== true || consent.publicUseConsent !== true;
+    });
+    if (missing.length) return res.status(403).json({ error: 'Η δημόσια δημοσίευση δεν επιτρέπεται: λείπει ενεργή συγκατάθεση καταγραφής και δημόσιας χρήσης για όλους τους συμμετέχοντες.' });
+    const ext = path.extname(name).toLowerCase();
+    const publicName = `published-${Date.now().toString(36)}-${crypto.randomBytes(6).toString('hex')}${ext}`;
+    await fsp.copyFile(privateFile, path.join(UPLOAD_DIR, publicName));
+    return res.json({ name: publicName, url: `/media/${publicName}`, kind: kindOf(publicName), public: true });
   });
 
   r.get('/private/:name', requireAdmin, async (req, res) => {
