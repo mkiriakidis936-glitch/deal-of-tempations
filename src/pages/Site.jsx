@@ -14,6 +14,7 @@ import SiteFaq from '@/components/site/SiteFaq';
 import SiteRegistration from '@/components/site/SiteRegistration';
 import SiteContact from '@/components/site/SiteContact';
 import { HomeProgram, HomeFaq } from '@/components/site/SiteHomeProgram';
+import SiteProduction from '@/components/site/SiteProduction';
 import { getSiteContent, SITE_EVENTS } from '@/data/siteContent';
 import { ART, PHOTO, MODE_COVERS, MODE_MEDIA } from '@/data/brandArt';
 import { trackVisit } from '@/lib/track';
@@ -78,6 +79,7 @@ export default function Site() {
         <>
           <SiteHero c={homeContent} ev="home" eventDate="" heroSrc={PHOTO.siteHero} onCta={register} />
           <SiteAbout />
+          <SiteProduction />
           <SiteModes onSelect={setEvent} />
           <SiteVideo c={{ videoTitle: 'ΒΙΝΤΕΟ & ΤΡΕΙΛΕΡ' }} />
           <SiteGallery initialTab="all" />
