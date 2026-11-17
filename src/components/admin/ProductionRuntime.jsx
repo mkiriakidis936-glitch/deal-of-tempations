@@ -47,7 +47,7 @@ export default function ProductionRuntime({selected,record,draft,onChange,onSave
    const next={...draft,...patch,sessionCode:selected.sessionCode,sessionId:selected.id,mode:selected.mode||'',eventTitle:selected.event?.title||selected.mode||'DEAL OF TEMPTATIONS'};
    try{
      const saved=record?.id?await base44.entities.ShowProduction.update(record.id,{...patch,sessionCode:selected.sessionCode,sessionId:selected.id,mode:selected.mode||'',eventTitle:selected.event?.title||selected.mode||'DEAL OF TEMPTATIONS'}):await base44.entities.ShowProduction.create(next);
-     onSaved?.(saved);setMessage(success||'Η παραγωγή αποθηκεύτηκε.');return saved;
+     onSaved?.(saved,patch);setMessage(success||'Η παραγωγή αποθηκεύτηκε.');return saved;
    }catch(error){setMessage(error.message||'Η αποθήκευση απέτυχε.');return null;}
    finally{setBusy(false);}
  };
