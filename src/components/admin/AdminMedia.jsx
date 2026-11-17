@@ -185,7 +185,12 @@ export default function AdminMedia() {
   const setLibraryCategory = (url, category) => run(`category-${url}`, () => save({ ...ov, libraryCategories: { ...(ov.libraryCategories || {}), [url]: category } }), 'Η κατηγορία αποθηκεύτηκε ✓');
   const setLibraryFocalPoint = (url, focalPoint) => run(`focal-${url}`, () => save({ ...ov, libraryFocalPoints: { ...(ov.libraryFocalPoints || {}), [url]: focalPoint } }), 'Το σημείο εστίασης αποθηκεύτηκε ✓');
   const assignLibraryImageToSlot = (url, slotId) => run(`slot-${url}`, async () => {
-    await save({ ...ov, [slotId]: url, libraryCategories: { ...(ov.libraryCategories || {}), [url]: 'branding' } });
+    const category = ['poster', 'heistNight', 'group', 'scene'].includes(slotId)
+      ? 'heist'
+      : ['party1', 'slipper', 'party2', 'vault'].includes(slotId)
+        ? 'pajama'
+        : 'branding';
+    await save({ ...ov, [slotId]: url, libraryCategories: { ...(ov.libraryCategories || {}), [url]: category } });
   }, 'Η εικόνα ανατέθηκε στο σημείο ✓');
   const addLibraryImageToGallery = (url, galleryId) => run(`assign-${url}`, async () => {
     const current = [...(ov[galleryId] || DEFAULTS[galleryId] || [])];
