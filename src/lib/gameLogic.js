@@ -5,7 +5,7 @@ import {
   HARDCORE_TRUTHS, ULTIMATE_TRUTHS,
 } from '@/data/gameContent';
 import { isNewMode } from '@/data/modes/modeRegistry';
-import { initialMg } from '@/lib/modeKit';
+import { initialMg, shuffle } from '@/lib/modeKit';
 
 export function rollDice() {
   return Math.floor(Math.random() * 6) + 1;
@@ -79,7 +79,7 @@ export function calculateMostWanted(players) {
 
 export function assignHiddenRoles(players) {
   const roles = [...HIDDEN_ROLES];
-  const shuffled = [...players].sort(() => Math.random() - 0.5);
+  const shuffled = shuffle(players);
   const assigned = shuffled.map((p, i) => ({
     ...p,
     role: roles[i % roles.length].id,
@@ -139,7 +139,7 @@ export function createInitialState(mode, intensity, players) {
   if (mode === 'classic') {
     assignedPlayers = assignHiddenRoles(assignedPlayers);
   } else if (mode === 'marathon') {
-    const shuffled = [...assignedPlayers].sort(() => Math.random() - 0.5);
+    const shuffled = shuffle(assignedPlayers);
     const half = Math.ceil(shuffled.length / 2);
     assignedPlayers = shuffled.map((p, i) => ({
       ...p,
