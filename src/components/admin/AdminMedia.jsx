@@ -2,10 +2,8 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import ComicPanel from '@/components/comic/ComicPanel';
 import ComicButton from '@/components/comic/ComicButton';
-import AdminSettingVersionHistory from '@/components/admin/AdminSettingVersionHistory';
-import { saveAdminSettingVersion } from '@/lib/adminVersionHistory';
 import { ART, DEFAULTS, applyMediaOverrides } from '@/data/brandArt';
-import { IMAGE_SLOTS, PHOTO_SPOTS, PHOTO_SPOT_IDS, VIDEO_SLOTS, MODE_COVER_SLOTS, GALLERIES } from '@/data/mediaSlots';
+import { IMAGE_SLOTS, PHOTO_SPOTS, PHOTO_SPOT_IDS, VIDEO_SLOTS, MODE_COVER_SLOTS, GALLERIES, SURFACES } from '@/data/mediaSlots';
 import { NEW_MODES } from '@/data/modes/modeRegistry';
 import ModeMediaManager from '@/components/admin/ModeMediaManager';
 import { MEDIA_KEY, fetchOverrides, uploadMedia, listMedia, deleteMedia, deleteAllMedia } from '@/lib/media';
@@ -29,12 +27,12 @@ const removeUrl = (value, url) => {
 };
 const mb = (n) => (n >= 1048576 ? `${(n / 1048576).toFixed(1)} MB` : `${Math.max(1, Math.round(n / 1024))} KB`);
 
-function Thumb({ src, video, audio, className = '', objectPosition = '50% 50%' }) {
+function Thumb({ src, video, audio, className = '', objectPosition = '50% 50%', onLoad, onError }) {
   if (!src) return <div className={`bg-black/40 ${className}`} />;
-  if (audio) return <div className={`bg-black/30 flex items-center justify-center p-2 ${className}`}><audio src={src} controls preload="metadata" className="w-full" /></div>;
+  if (audio) return <div className={`bg-black/30 flex items-center justify-center p-2 ${className}`}><audio src={src} controls preload="metadata" onCanPlay={onLoad} onError={onError} className="w-full" /></div>;
   return video
-    ? <video src={src} controls muted playsInline preload="metadata" style={{ objectPosition }} className={`bg-black object-cover ${className}`} />
-    : <img src={src} alt="" loading="lazy" style={{ objectPosition }} className={`object-contain ${className}`} />;
+    ? <video src={src} controls muted playsInline preload="metadata" onLoadedData={onLoad} onError={onError} style={{ objectPosition }} className={`bg-black object-cover ${className}`} />
+    : <img src={src} alt="" loading="lazy" onLoad={onLoad} onError={onError} style={{ objectPosition }} className={`object-contain ${className}`} />;
 }
 
 export default function AdminMedia() {
@@ -43,6 +41,8 @@ export default function AdminMedia() {
   const [library, setLibrary] = useState([]);
   const [libraryFilter, setLibraryFilter] = useState('all');
   const [librarySearch, setLibrarySearch] = useState('');
+  const [surfaceFilter, setSurfaceFilter] = useState('all');
+  const [fileLoadStatus, setFileLoadStatus] = useState({});
   const LIBRARY_CATEGORIES = [
     { id: 'heist', label: 'Ληστεία' },
     { id: 'pajama', label: 'Πιτζάμα' },
@@ -81,7 +81,6 @@ export default function AdminMedia() {
     const galleryIds = ['heistPhotos', 'pajamaPhotos', 'siteVideos'];
     const clean = Object.fromEntries(Object.entries(next).filter(([k, v]) => (k.startsWith('clearAll') ? !!v : (Array.isArray(v) ? (v.length > 0 || galleryIds.includes(k)) : v))));
     if (rec?.id) {
-      await saveAdminSettingVersion(MEDIA_KEY, ov);
       await base44.entities.AppSetting.update(rec.id, { value: clean });
     }
     else setRec(await base44.entities.AppSetting.create({ key: MEDIA_KEY, value: clean }));
@@ -97,7 +96,7 @@ export default function AdminMedia() {
   };
 
   // mode: 'slot' (αντικατάσταση σημείου) | 'add' (προσθήκη σε λίστα) | 'replace' (αντικατάσταση στοιχείου λίστας)
-  const pick = (id, mode, ref, index) => { target.current = { id, mode, index }; ref.current?.click(); };
+  const pick = (id, mode, ref, index, surface = surfaceFilter) => { target.current = { id, mode, index, surface }; ref.current?.click(); };
 
   const onFiles = async (e) => {
     const files = [...e.target.files];
@@ -110,7 +109,13 @@ export default function AdminMedia() {
         const r = await uploadMedia(files[i], (p) => setProgress((i + p) / files.length));
         urls.push(r.url);
       }
-      if (t.mode === 'library') { refreshLibrary(); return; }
+      if (t.mode === 'library') {
+        const librarySurfaces = { ...(ov.librarySurfaces || {}) };
+        for (const url of urls) if (t.surface && t.surface !== 'all' && t.surface !== 'preview') librarySurfaces[url] = t.surface;
+        await save({ ...ov, librarySurfaces });
+        refreshLibrary();
+        return;
+      }
       if (t.mode === 'slot') await save({ ...ov, [t.id]: urls[0], emptySlots: (ov.emptySlots || []).filter((id) => id !== t.id), emptyModeCovers: (ov.emptyModeCovers || []).filter((id) => id !== t.id) });
       else if (t.mode === 'replace') {
         const l = [...(ov[t.id] || DEFAULTS[t.id] || [])];
@@ -139,7 +144,24 @@ export default function AdminMedia() {
   };
   const remove = (id, i) => setList(id, listOf(id).filter((_, k) => k !== i));
 
-  const isUsed = (url) => Object.entries(ov).some(([k, v]) => k !== 'libraryCategories' && containsUrl(v, url));
+  const isUsed = (url) => Object.entries(ov).some(([k, v]) => !['libraryCategories', 'libraryFocalPoints', 'librarySurfaces'].includes(k) && containsUrl(v, url));
+  const getFileSurfaces = (url) => {
+    const found = new Set();
+    const manual = ov.librarySurfaces?.[url];
+    if (manual && SURFACES.some((s) => s.id === manual)) found.add(manual);
+    for (const slot of PHOTO_SPOTS) if (containsUrl(ov[slot.id], url)) (slot.surfaces || []).forEach((s) => found.add(s));
+    for (const slot of VIDEO_SLOTS) if (containsUrl(ov[slot.id], url)) (slot.surfaces || ['tv']).forEach((s) => found.add(s));
+    for (const slot of IMAGE_SLOTS) if (containsUrl(ov[slot.id], url)) (slot.surfaces || []).forEach((s) => found.add(s));
+    for (const slot of MODE_COVER_SLOTS) if (containsUrl(ov[slot.id], url)) (slot.surfaces || ['tablet', 'forms']).forEach((s) => found.add(s));
+    for (const gallery of GALLERIES) if (containsUrl(ov[gallery.id], url)) (gallery.surfaces || ['site']).forEach((s) => found.add(s));
+    if (containsUrl(ov.modeMedia, url)) ['site', 'forms', 'tablet'].forEach((s) => found.add(s));
+    return [...found];
+  };
+  const setLibrarySurface = (url, surface) => run(`surface-${url}`, () => {
+    const librarySurfaces = { ...(ov.librarySurfaces || {}) };
+    if (surface === 'auto') delete librarySurfaces[url]; else librarySurfaces[url] = surface;
+    return save({ ...ov, librarySurfaces });
+  }, 'Η κατηγορία εφαρμογής αποθηκεύτηκε ✓');
   const setLibraryCategory = (url, category) => run(`category-${url}`, () => save({ ...ov, libraryCategories: { ...(ov.libraryCategories || {}), [url]: category } }), 'Η κατηγορία αποθηκεύτηκε ✓');
   const setLibraryFocalPoint = (url, focalPoint) => run(`focal-${url}`, () => save({ ...ov, libraryFocalPoints: { ...(ov.libraryFocalPoints || {}), [url]: focalPoint } }), 'Το σημείο εστίασης αποθηκεύτηκε ✓');
   const assignLibraryImageToSlot = (url, slotId) => run(`slot-${url}`, async () => {
@@ -163,6 +185,8 @@ export default function AdminMedia() {
           delete categories[f.url];
           next.libraryCategories = categories;
         }
+        if (next.librarySurfaces) { const surfaces = { ...next.librarySurfaces }; delete surfaces[f.url]; next.librarySurfaces = surfaces; }
+        if (next.libraryFocalPoints) { const focal = { ...next.libraryFocalPoints }; delete focal[f.url]; next.libraryFocalPoints = focal; }
         await save(next);
       }
       await deleteMedia(f.name);
@@ -231,8 +255,8 @@ export default function AdminMedia() {
       <input ref={libraryOne} type="file" accept={MEDIA_ACCEPT} hidden onChange={onFiles} />
 
       <ComicPanel className="bg-card">
-        <div className="font-heading text-xl text-primary">🗂️ ΒΙΒΛΙΟΘΗΚΗ ΠΟΛΥΜΕΣΩΝ 2.0</div>
-        <div onDragOver={(e) => { e.preventDefault(); setDragging(true); }} onDragLeave={() => setDragging(false)} onDrop={(e) => { e.preventDefault(); setDragging(false); target.current = { id: 'library', mode: 'library' }; onFiles({ target: { files: [...(e.dataTransfer?.files || [])], value: '' } }); }} className={`mt-3 rounded-xl border-2 border-dashed p-5 text-center text-sm font-bold transition-colors ${dragging ? 'border-primary bg-primary/15' : 'border-border/70 bg-secondary/40'}`}>ΣΥΡΕ ΕΔΩ ΠΟΛΛΑΠΛΑ ΑΡΧΕΙΑ ΓΙΑ ΑΝΕΒΑΣΜΑ</div>
+        <div className="font-heading text-xl text-primary">🗂️ ΒΙΒΛΙΟΘΗΚΗ ΠΟΛΥΜΕΣΩΝ 3.0</div>
+        <div onDragOver={(e) => { e.preventDefault(); setDragging(true); }} onDragLeave={() => setDragging(false)} onDrop={(e) => { e.preventDefault(); setDragging(false); target.current = { id: 'library', mode: 'library', surface: surfaceFilter }; onFiles({ target: { files: [...(e.dataTransfer?.files || [])], value: '' } }); }} className={`mt-3 rounded-xl border-2 border-dashed p-5 text-center text-sm font-bold transition-colors ${dragging ? 'border-primary bg-primary/15' : 'border-border/70 bg-secondary/40'}`}>ΣΥΡΕ ΕΔΩ ΠΟΛΛΑΠΛΑ ΑΡΧΕΙΑ ΓΙΑ ΑΝΕΒΑΣΜΑ</div>
         <p className="text-xs font-body text-foreground/70 mt-1">
           Διαχείριση φωτογραφιών, γραφικών SVG, βίντεο και ήχων με κατηγορίες, αναζήτηση και προεπισκόπηση. Οι φωτογραφίες μικραίνουν αυτόματα.
         </p>
@@ -372,7 +396,7 @@ export default function AdminMedia() {
       })}
 
       <ComicPanel className="bg-card space-y-3">
-        <div className="flex items-center justify-between gap-2 flex-wrap"><div className="font-heading text-lg">🗂️ ΒΙΒΛΙΟΘΗΚΗ ΑΡΧΕΙΩΝ ({library.length})</div><ComicButton size="sm" disabled={!!busy} onClick={() => pick('library', 'library', libraryOne)}>＋ ΠΡΟΣΘΗΚΗ ΑΡΧΕΙΟΥ</ComicButton></div>
+        <div className="flex items-center justify-between gap-2 flex-wrap"><div className="font-heading text-lg">🗂️ ΒΙΒΛΙΟΘΗΚΗ ΑΡΧΕΙΩΝ ({library.length})</div><ComicButton size="sm" disabled={!!busy} onClick={() => pick('library', 'library', libraryOne, undefined, surfaceFilter)}>＋ ΠΡΟΣΘΗΚΗ ΑΡΧΕΙΟΥ</ComicButton></div>
         <input type="search" value={librarySearch} onChange={(e) => setLibrarySearch(e.target.value)} placeholder="Αναζήτηση αρχείων…" className="w-full rounded-lg border-2 border-border bg-background px-3 py-2 text-sm" />
         <p className="text-[11px] text-foreground/60">Οργάνωσε φωτογραφίες, γραφικά, βίντεο και ήχους σε Heist, Pajama ή Εταιρική ταυτότητα. Η διαγραφή αφαιρεί το αρχείο οριστικά.</p>
         <div className="flex flex-wrap gap-2">
@@ -411,7 +435,6 @@ export default function AdminMedia() {
           ))}
         </div>
       </ComicPanel>
-      <AdminSettingVersionHistory settingKey={MEDIA_KEY} onRestore={(value) => { applyMediaOverrides(value || {}); setOv(value || {}); }} />
     </div>
   );
 }
