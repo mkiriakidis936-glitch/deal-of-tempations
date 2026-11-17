@@ -90,7 +90,7 @@ export default function ModeMediaManager({ value = {}, onSave, disabled = false 
       <div className="rounded-2xl border border-primary/30 bg-gradient-to-br from-[#17131d] to-[#292039] p-4 sm:p-5 text-white">
         <div className="text-[10px] font-black tracking-[.2em] text-primary">MODE MEDIA CENTER</div>
         <div className="mt-1 font-heading text-2xl">Φωτογραφική ταυτότητα ανά Mode</div>
-        <p className="mt-1 text-xs text-white/65">Κάθε νέο Mode έχει ξεχωριστό Cover, Hero, ενότητες, Gallery και προαιρετικό trailer. Η διαχείριση καρτών παραμένει εκτός αυτής της βιβλιοθήκης.</p>
+        <p className="mt-1 text-xs text-white/65">Κάθε Mode έχει συγκεκριμένο σημείο εμφάνισης: Cover στην επιλογή Mode, Hero και ενότητες στο Tablet Setup, Gallery και Trailer στη σελίδα του Mode στο Site. Η διαχείριση καρτών παιχνιδιού δεν ανήκει εδώ.</p>
         <div className="mt-4 grid grid-cols-2 xl:grid-cols-4 gap-2">
           {NEW_MODES.map((item) => (
             <button key={item.id} type="button" disabled={disabled || busy} onClick={() => setSelected(item.id)} className={`rounded-xl border p-3 text-left transition ${selected === item.id ? 'border-primary bg-primary/20' : 'border-white/15 bg-white/5 hover:bg-white/10'}`}>
@@ -110,7 +110,7 @@ export default function ModeMediaManager({ value = {}, onSave, disabled = false 
         <div className="grid sm:grid-cols-2 gap-3">
           {[
             { id: 'hero', label: 'Κεντρική εικόνα / Hero', note: 'Κεντρική εικόνα παρουσίασης του Mode. Η θέση εμφάνισης εξαρτάται από τη σελίδα Mode.' },
-            { id: 'cover', label: 'Cover image', note: 'Εικόνα στην κάρτα επιλογής Mode.' },
+            { id: 'cover', label: 'Cover image', note: 'Εικόνα επιλογής Mode στο Tablet και στη φόρμα /modes-form.' },
           ].map((slot) => (
             <div key={slot.id} className="rounded-xl border border-border/60 bg-secondary/30 p-3">
               <Thumb src={data[slot.id]} className="mb-3 aspect-video w-full" />
@@ -126,7 +126,7 @@ export default function ModeMediaManager({ value = {}, onSave, disabled = false 
 
         <div className="rounded-xl border border-border/60 p-3 space-y-3">
           <div className="flex items-center justify-between gap-2">
-            <div><div className="font-bold text-sm">Φωτογραφίες ανά ενότητα</div><div className="text-[11px] text-foreground/55">Πρόσθεσε ενότητες με δικό τους τίτλο και εικόνα.</div></div>
+            <div><div className="font-bold text-sm">Φωτογραφίες ανά ενότητα</div><div className="text-[11px] text-foreground/55">Οι ενότητες εμφανίζονται στο Tablet Setup, κάτω από την κεντρική εικόνα του Mode.</div></div>
             <button type="button" disabled={disabled || busy} onClick={() => addItem('sections')} className="rounded-lg border border-border px-3 py-2 text-xs font-bold">+ Ενότητα</button>
           </div>
           {(data.sections || []).map((item) => (
@@ -144,7 +144,7 @@ export default function ModeMediaManager({ value = {}, onSave, disabled = false 
 
         <div className="rounded-xl border border-border/60 p-3 space-y-3">
           <div className="flex items-center justify-between gap-2">
-            <div><div className="font-bold text-sm">Gallery ({(data.gallery || []).length})</div><div className="text-[11px] text-foreground/55">Πολλαπλές φωτογραφίες αποκλειστικά για αυτό το Mode.</div></div>
+            <div><div className="font-bold text-sm">Gallery ({(data.gallery || []).length})</div><div className="text-[11px] text-foreground/55">Πολλαπλές φωτογραφίες στη σελίδα /site?event=lockdown ή /site?event=beachbar.</div></div>
             <button type="button" disabled={disabled || busy} onClick={() => choose('gallery', true)} className="rounded-lg bg-primary px-3 py-2 text-xs font-bold text-white">+ Προσθήκη φωτογραφιών</button>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
@@ -159,7 +159,7 @@ export default function ModeMediaManager({ value = {}, onSave, disabled = false 
         </div>
 
         <div className="rounded-xl border border-border/60 bg-secondary/30 p-3">
-          <div className="font-bold text-sm">Video trailer (προαιρετικό)</div>
+          <div className="font-bold text-sm">Video trailer — Site mode page</div>
           <Thumb src={data.trailer} video className="mt-3 aspect-video w-full" />
           <div className="mt-2 flex flex-wrap gap-2">
             <button type="button" disabled={disabled || busy} onClick={() => choose('trailer')} className="rounded-lg bg-primary px-3 py-2 text-xs font-bold text-white">⬆ Ανέβασμα / Αλλαγή trailer</button>
