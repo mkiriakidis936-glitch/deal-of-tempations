@@ -19,6 +19,7 @@ export const ART = {
   photoPediGlam: `${BASE}1ef972214_4a4d9d959_Gemini_Generated_Image_ryxfyxryxfyxryxf.jpeg`,
   photoHeistRoom: `${BASE}b69ab6678_19b98c43c_Gemini_Generated_Image_hrqtvohrqtvohrqt.jpeg`,
   photoHeistNight: `${BASE}ce9621f6f_2fbd3f250_Gemini_Generated_Image_dhdjofdhdjofdhdj.jpeg`,
+  heistNight: `${BASE}ce9621f6f_2fbd3f250_Gemini_Generated_Image_dhdjofdhdjofdhdj.jpeg`,
   heist1: `${BASE}06eace33a_heist-h1.jpeg`,
   heist2: `${BASE}64110af4d_heist-h2.jpeg`,
   heist3: `${BASE}b55b10975_heist-h3.jpeg`,
