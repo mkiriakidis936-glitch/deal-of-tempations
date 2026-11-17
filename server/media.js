@@ -6,11 +6,14 @@ import { Transform } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
 import express from 'express';
 import { requireAdmin } from './auth.js';
+import { query } from './db.js';
 
 // Railway: prefer the mounted Volume path so uploads survive deployments.
 const volumeRoot = process.env.RAILWAY_VOLUME_MOUNT_PATH;
 const defaultUploadDir = volumeRoot ? path.join(volumeRoot, 'uploads') : path.join(import.meta.dirname, '..', 'uploads');
 export const UPLOAD_DIR = path.resolve(process.env.UPLOAD_DIR || defaultUploadDir);
+const PRIVATE_UPLOAD_DIR = path.join(UPLOAD_DIR, '.private');
+fs.mkdirSync(PRIVATE_UPLOAD_DIR, { recursive: true });
 const MAX_MB = Number(process.env.MAX_UPLOAD_MB) || 300;
 const MAX_BYTES = MAX_MB * 1024 * 1024;
 const KINDS = {
@@ -30,7 +33,10 @@ export const mediaStatic = [
     dotfiles: 'ignore',
     maxAge: '30d',
     immutable: true,
-    setHeaders: (res) => res.setHeader('X-Content-Type-Options', 'nosniff'),
+    setHeaders: (res, file) => {
+      res.setHeader('X-Content-Type-Options', 'nosniff');
+      if (path.basename(file).startsWith('published-')) res.setHeader('Cache-Control', 'no-store, max-age=0');
+    },
   }),
   (_req, res) => res.status(404).end(),
 ];
@@ -138,6 +144,80 @@ export function mediaRoutes() {
     if (!/^[A-Za-z0-9._-]+$/.test(n) || n.startsWith('.') || !kindOf(n)) return res.status(400).json({ error: 'Μη έγκυρο όνομα' });
     await fsp.rm(path.join(UPLOAD_DIR, n), { force: true });
     res.json({ success: true });
+  });
+
+
+  // Private production media: never exposed by the public /media static route.
+  r.post('/private-upload', requireAdmin, async (req, res) => {
+    const original = path.basename(String(req.query.name || ''));
+    const ext = path.extname(original).toLowerCase();
+    const kind = KINDS[ext];
+    if (!kind) return res.status(415).json({ error: 'Μη υποστηριζόμενος τύπος αρχείου.' });
+    if (Number(req.headers['content-length'] || 0) > MAX_BYTES) return res.status(413).json({ error: `Το αρχείο ξεπερνά τα ${MAX_MB}MB.` });
+    const name = `private-${Date.now().toString(36)}-${crypto.randomBytes(6).toString('hex')}${ext}`;
+    const tmp = path.join(PRIVATE_UPLOAD_DIR, `.${name}.part`);
+    let size = 0;
+    const counter = new Transform({ transform(chunk, _enc, cb) { size += chunk.length; size > MAX_BYTES ? cb(new Error('TOO_BIG')) : cb(null, chunk); } });
+    try {
+      await pipeline(req, counter, fs.createWriteStream(tmp));
+      if (!size) throw new Error('EMPTY');
+      await fsp.rename(tmp, path.join(PRIVATE_UPLOAD_DIR, name));
+      return res.json({ name, size, kind, private: true });
+    } catch (error) {
+      await fsp.rm(tmp, { force: true });
+      if (error.message === 'TOO_BIG') return res.status(413).json({ error: `Το αρχείο ξεπερνά τα ${MAX_MB}MB.` });
+      if (error.message === 'EMPTY') return res.status(400).json({ error: 'Κενό αρχείο.' });
+      return res.status(400).json({ error: 'Η ιδιωτική μεταφόρτωση απέτυχε.' });
+    }
+  });
+
+  // Publish a private recap asset only after the latest consent from every depicted participant allows public use.
+  r.post('/publish-private', requireAdmin, async (req, res) => {
+    const name = String(req.body?.name || '');
+    const sessionCode = String(req.body?.sessionCode || '').trim().toUpperCase();
+    const participants = Array.isArray(req.body?.participants) ? [...new Set(req.body.participants.map(value => String(value || '').trim()).filter(Boolean))] : [];
+    if (!/^[A-Za-z0-9._-]+$/.test(name) || name.startsWith('.') || !name.startsWith('private-') || !kindOf(name)) {
+      return res.status(400).json({ error: 'Μη έγκυρο ιδιωτικό αρχείο.' });
+    }
+    if (!sessionCode || !participants.length) return res.status(400).json({ error: 'Λείπουν τα στοιχεία διοργάνωσης ή συμμετεχόντων.' });
+    const privateFile = path.join(PRIVATE_UPLOAD_DIR, name);
+    if (!fs.existsSync(privateFile)) return res.status(404).json({ error: 'Το ιδιωτικό αρχείο δεν βρέθηκε.' });
+    const { rows } = await query(
+      "SELECT data FROM records WHERE entity = 'ProductionConsent' AND data->>'sessionCode' = $1 ORDER BY created_date DESC",
+      [sessionCode]
+    );
+    const latest = new Map();
+    for (const row of rows) {
+      const consent = row.data || {};
+      const key = String(consent.participantName || '').trim().toLocaleLowerCase('el-GR');
+      if (key && !latest.has(key)) latest.set(key, consent);
+    }
+    const missing = participants.filter(participant => {
+      const consent = latest.get(participant.toLocaleLowerCase('el-GR'));
+      return !consent || consent.withdrawn === true || consent.adultConfirmed !== true || consent.recordingConsent !== true || consent.publicUseConsent !== true;
+    });
+    if (missing.length) return res.status(403).json({ error: 'Η δημόσια δημοσίευση δεν επιτρέπεται: λείπει ενεργή συγκατάθεση καταγραφής και δημόσιας χρήσης για όλους τους συμμετέχοντες.' });
+    const ext = path.extname(name).toLowerCase();
+    const publicName = `published-${Date.now().toString(36)}-${crypto.randomBytes(6).toString('hex')}${ext}`;
+    await fsp.copyFile(privateFile, path.join(UPLOAD_DIR, publicName));
+    return res.json({ name: publicName, url: `/media/${publicName}`, kind: kindOf(publicName), public: true });
+  });
+
+  r.get('/private/:name', requireAdmin, async (req, res) => {
+    const name = req.params.name;
+    if (!/^[A-Za-z0-9._-]+$/.test(name) || name.startsWith('.')) return res.status(400).json({ error: 'Μη έγκυρο όνομα αρχείου.' });
+    const file = path.join(PRIVATE_UPLOAD_DIR, name);
+    if (!fs.existsSync(file) || !kindOf(name)) return res.status(404).json({ error: 'Το αρχείο δεν βρέθηκε.' });
+    res.setHeader('Cache-Control', 'private, no-store');
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    return res.sendFile(file);
+  });
+
+  r.delete('/private/:name', requireAdmin, async (req, res) => {
+    const name = req.params.name;
+    if (!/^[A-Za-z0-9._-]+$/.test(name) || name.startsWith('.') || !kindOf(name)) return res.status(400).json({ error: 'Μη έγκυρο όνομα αρχείου.' });
+    await fsp.rm(path.join(PRIVATE_UPLOAD_DIR, name), { force: true });
+    return res.json({ success: true });
   });
 
   return r;

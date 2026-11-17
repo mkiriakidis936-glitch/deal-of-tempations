@@ -29,6 +29,26 @@ app.use(express.json({ limit: '2mb' }));
 app.use(attachUser);
 
 app.get('/api/health', (_req, res) => res.json({ ok: true }));
+app.get('/api/production/privacy', async (req, res) => {
+  const sessionCode = String(req.query.event || '').trim().toUpperCase();
+  if (!sessionCode || sessionCode.length > 40) return res.status(400).json({ error: 'Μη έγκυρος κωδικός διοργάνωσης.' });
+  try {
+    const { rows } = await pool.query(
+      "SELECT data FROM records WHERE entity = 'ShowProduction' AND data->>'sessionCode' = $1 ORDER BY updated_date DESC LIMIT 1",
+      [sessionCode]
+    );
+    const data = rows[0]?.data || {};
+    return res.json({
+      title: String(data.title || ''),
+      controllerName: String(data.privacyControllerName || ''),
+      controllerContact: String(data.privacyControllerContact || ''),
+      retentionDays: Number(data.privacyRetentionDays) || 0,
+    });
+  } catch {
+    return res.status(500).json({ error: 'Δεν ήταν δυνατή η φόρτωση των πληροφοριών απορρήτου.' });
+  }
+});
+
 authRoutes(app);
 app.use('/api/entities', entityRoutes());
 app.use('/api/functions', functionRoutes());
@@ -43,18 +63,18 @@ const dist = path.resolve(import.meta.dirname, '..', 'dist');
 if (fs.existsSync(dist)) {
   // index.html is rendered per request so shared links (WhatsApp, Viber, Messenger) get a proper title, description and preview image.
   const indexTemplate = fs.readFileSync(path.join(dist, 'index.html'), 'utf8');
-  const SITE_DESC = 'Το παιχνίδι ρίσκου και επιβράβευσης για παρέες. Λήστεψε το χρηματοκιβώτιο, παίξε και κέρδισε. 18+';
+  const SITE_DESC = 'DEAL OF TEMPTATIONS — THE PRIVATE REALITY GAME NIGHT. Ιδιωτική βιωματική Reality Show εμπειρία με παιχνίδια, σκηνοθεσία, ήχο, εικόνα και προαιρετικό recap. 18+.';
   const PAGES = {
-    '/site': { title: 'Deal of Temptation — Το παιχνίδι', desc: SITE_DESC, index: true },
-    '/portal': { title: 'Deal of Temptation — Πληροφορίες Event', desc: 'Ημερομηνία, τοποθεσία και πρακτικές πληροφορίες της εκδήλωσης.' },
-    '/promo': { title: 'Deal of Temptation — Trailer', desc: SITE_DESC, index: true },
-    '/invitation': { title: 'Deal of Temptation — Πρόσκληση Heist Night', desc: 'Έχεις προσκληθεί σε μια νύχτα Heist. Συμπλήρωσε το ερωτηματολόγιο για να κλείσεις τη θέση σου.' },
-    '/pajama-invite': { title: 'Deal of Temptation — Πρόσκληση Pajama Pedi-Glam', desc: 'Έχεις προσκληθεί σε Pajama Pedi-Glam. Κλείσε τη θέση σου.' },
-    '/pajama-form': { title: 'Deal of Temptation — Φόρμα Pajama', desc: 'Συμπλήρωσε τη φόρμα σου για το Pajama Pedi-Glam.' },
-    '/modes-form': { title: 'Deal of Temptation — Φόρμα συμμετοχής', desc: 'Διάλεξε mode και συμπλήρωσε τη φόρμα συμμετοχής σου.' },
-    '/gift-unlock': { title: 'Deal of Temptation — Ξεκλείδωσε το δώρο σου', desc: 'Βάλε τον κωδικό σου και ξεκλείδωσε το δώρο.' },
-    '/vip-access': { title: 'Deal of Temptation — VIP Access / Digital Vault', desc: 'Ιδιωτική VIP πρόσβαση και ψηφιακό Vault.' },
-    '/forms': { title: 'Deal of Temptation — Δημόσιες φόρμες', desc: 'Αίτηση συμμετοχής, αίτημα εκδήλωσης και feedback.' },
+    '/site': { title: 'DEAL OF TEMPTATIONS — THE PRIVATE REALITY GAME NIGHT', desc: SITE_DESC, index: true },
+    '/portal': { title: 'DEAL OF TEMPTATIONS — Πληροφορίες Event', desc: 'Ημερομηνία, τοποθεσία και πρακτικές πληροφορίες της εκδήλωσης.' },
+    '/promo': { title: 'DEAL OF TEMPTATIONS — Trailer', desc: SITE_DESC, index: true },
+    '/invitation': { title: 'DEAL OF TEMPTATIONS — Πρόσκληση Heist Night', desc: 'Έχεις προσκληθεί σε μια νύχτα Heist. Συμπλήρωσε το ερωτηματολόγιο για να κλείσεις τη θέση σου.' },
+    '/pajama-invite': { title: 'DEAL OF TEMPTATIONS — Πρόσκληση Pajama Pedi-Glam', desc: 'Έχεις προσκληθεί σε Pajama Pedi-Glam. Κλείσε τη θέση σου.' },
+    '/pajama-form': { title: 'DEAL OF TEMPTATIONS — Φόρμα Pajama', desc: 'Συμπλήρωσε τη φόρμα σου για το Pajama Pedi-Glam.' },
+    '/modes-form': { title: 'DEAL OF TEMPTATIONS — Φόρμα συμμετοχής', desc: 'Διάλεξε mode και συμπλήρωσε τη φόρμα συμμετοχής σου.' },
+    '/gift-unlock': { title: 'DEAL OF TEMPTATIONS — Ξεκλείδωσε το δώρο σου', desc: 'Βάλε τον κωδικό σου και ξεκλείδωσε το δώρο.' },
+    '/vip-access': { title: 'DEAL OF TEMPTATIONS — VIP Access / Digital Vault', desc: 'Ιδιωτική VIP πρόσβαση και ψηφιακό Vault.' },
+    '/forms': { title: 'DEAL OF TEMPTATIONS — Δημόσιες φόρμες', desc: 'Αίτηση συμμετοχής, αίτημα εκδήλωσης και feedback.' },
   };
   const esc = (v) => String(v).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
   const renderIndex = (req) => {
@@ -63,7 +83,7 @@ if (fs.existsSync(dist)) {
     const meta = PAGES[route] || { title: 'Deal of Temptation', desc: SITE_DESC };
     const indexable = !!meta.index;
     return indexTemplate
-      .replace('<title>Deal of Temptation</title>', `<title>${esc(meta.title)}</title>`)
+       .replace('<title>DEAL OF TEMPTATIONS</title>', `<title>${esc(meta.title)}</title>`)
       .replaceAll('__TITLE__', esc(meta.title)).replaceAll('__DESC__', esc(meta.desc))
       .replaceAll('__ORIGIN__', origin).replaceAll('__URL__', esc(origin + route))
       .replaceAll('__ROBOTS__', indexable ? 'index,follow' : 'noindex,nofollow');
