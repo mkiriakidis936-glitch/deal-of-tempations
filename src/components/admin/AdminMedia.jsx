@@ -352,7 +352,6 @@ export default function AdminMedia() {
           })}
         </div>
       </ComicPanel>
-      </ComicPanel>
       )}
 
       {showSurface('site', 'forms', 'tablet') && (
