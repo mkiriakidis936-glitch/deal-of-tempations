@@ -5,7 +5,7 @@ import ComicButton from '@/components/comic/ComicButton';
 export default function TabletToolbar({
   onQR, onNewGame, onBomb, onFlashbang, bombDisabled, onTrial, onShoeRoulette,
   onSlotMachine, onKarmaSlots, onLastWish, onBlindOracle, onBarefootCrypt,
-  onMidnightPact, onGrandJury, onShowDirector, onPrivateMessage, onSealedVote,
+  onMidnightPact, onGrandJury, onPrivateMessage, onSealedVote,
   onEventQueue, onAudioControl, onFinalePresentation, onIntro, onSyncTimer, onTurnOrder,
   onLiarsPoker, onTrivia, onFinalDeal, onControlRoom, onMarket, onUndo, undoDisabled,
 }) {
@@ -31,7 +31,6 @@ export default function TabletToolbar({
       id: 'show',
       label: 'SHOW & TV',
       items: [
-        { label: '🎬 SHOW', variant: 'magenta', onClick: onShowDirector },
         { label: '🎬 INTRO', variant: 'magenta', onClick: onIntro },
         { label: '📢 ΟΥΡΑ', variant: 'cyan', onClick: onEventQueue },
         { label: '⚖️ GRAND JURY', variant: 'red', onClick: onGrandJury },
@@ -54,7 +53,7 @@ export default function TabletToolbar({
       ],
     },
   ]), [onTrial, onShoeRoulette, onSlotMachine, onKarmaSlots, onLiarsPoker, onTrivia, onFinalDeal,
-    onTurnOrder, onShowDirector, onIntro, onEventQueue,
+    onTurnOrder, onIntro, onEventQueue,
     onGrandJury, onFinalePresentation, onSyncTimer, onAudioControl, onBlindOracle, onBarefootCrypt,
     onMidnightPact, onLastWish, onPrivateMessage, onSealedVote, onMarket]);
 
