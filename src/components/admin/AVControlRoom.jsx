@@ -15,6 +15,7 @@ export default function AVControlRoom() {
   const [sessions, setSessions] = useState([]);
   const [sessionCode, setSessionCode] = useState('');
   const [filter, setFilter] = useState('all');
+  const [folderFilter, setFolderFilter] = useState('all');
   const [search, setSearch] = useState('');
   const [selected, setSelected] = useState('');
   const [settingsRecord, setSettingsRecord] = useState(null);
@@ -54,15 +55,24 @@ export default function AVControlRoom() {
   }, []);
 
   useEffect(() => { load(); }, [load]);
+  useEffect(() => {
+    if (!sessionCode) { setCueRecord(null); return undefined; }
+    let alive = true;
+    const refreshCue = () => base44.entities.ProductionCue.filter({ sessionCode }, { limit: 1 }).then(({ items = [] }) => { if (alive) setCueRecord(items[0] || null); }).catch(() => {});
+    refreshCue();
+    const off = base44.entities.ProductionCue.subscribe((event) => { if (event?.data?.sessionCode === sessionCode) refreshCue(); });
+    return () => { alive = false; off?.(); };
+  }, [sessionCode]);
 
   const currentSession = sessions.find((item) => item.sessionCode === sessionCode);
   const currentCue = queueIndex >= 0 ? queue[queueIndex] : null;
   const filteredFiles = useMemo(() => files.filter((file) => {
     const meta = metadata[file.url] || {};
     return (filter === 'all' || file.kind === filter)
+      && (folderFilter === 'all' || (meta.folder || 'Γενικά') === folderFilter)
       && (file.name || '').toLocaleLowerCase('el-GR').includes(search.toLocaleLowerCase('el-GR'))
       && (!meta.hidden);
-  }), [files, filter, search, metadata]);
+  }), [files, filter, folderFilter, search, metadata]);
   const selectedFile = files.find((file) => file.url === selected);
   const selectedMeta = metadata[selected] || {};
 
@@ -111,7 +121,7 @@ export default function AVControlRoom() {
     if (!sessionCode) { setMessage('Επίλεξε πρώτα Event.'); return; }
     if (!item) { setMessage('Δεν έχει επιλεγεί αρχείο για προβολή.'); return; }
     const assetMeta = metadata[item.url] || {};
-    if (assetMeta.permission === 'blocked') { setMessage('Το συγκεκριμένο αρχείο έχει αποκλειστεί από χρήση.'); return; }
+    if (assetMeta.permission && assetMeta.permission !== 'cleared') { setMessage('Η προβολή είναι κλειδωμένη μέχρι να καταχωριστεί η απαιτούμενη άδεια ή συγκατάθεση.'); return; }
     setBusy(true);
     try {
       const existing = cueRecord || (await base44.entities.ProductionCue.filter({ sessionCode }, { limit: 1 })).items?.[0] || null;
@@ -188,6 +198,7 @@ export default function AVControlRoom() {
         <div className="flex flex-wrap items-center justify-between gap-2"><h3 className="font-heading text-lg">MEDIA LIBRARY · {files.length} ΑΡΧΕΙΑ</h3><span className="text-[10px] text-foreground/50">Uploads από την υπάρχουσα Βιβλιοθήκη Πολυμέσων</span></div>
         <input className={field} type="search" placeholder="Αναζήτηση ονόματος αρχείου…" value={search} onChange={(e) => setSearch(e.target.value)} />
         <div className="flex flex-wrap gap-1">{kinds.map((kind) => <ComicButton key={kind.id} size="sm" variant={filter === kind.id ? 'default' : 'dark'} onClick={() => setFilter(kind.id)}>{kind.label}</ComicButton>)}</div>
+        <select className={field} value={folderFilter} onChange={(e) => setFolderFilter(e.target.value)}><option value="all">Όλοι οι φάκελοι</option>{folders.map((folder) => <option key={folder}>{folder}</option>)}</select>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-[560px] overflow-y-auto">
           {filteredFiles.map((file) => <button key={file.name} type="button" onClick={() => preview(file)} className={`rounded-lg border p-2 text-left ${selected === file.url ? 'border-primary bg-primary/10' : 'border-border bg-secondary/30'}`}>
             <div className="aspect-video rounded bg-black/50 overflow-hidden flex items-center justify-center">
@@ -220,7 +231,7 @@ export default function AVControlRoom() {
               </select>
             </label>
             <label className="block space-y-1 text-xs font-bold">ΣΗΜΕΙΩΣΕΙΣ / ΠΗΓΗ ΑΔΕΙΑΣ<textarea className={field} rows={2} value={selectedMeta.notes || ''} onChange={(e) => setMetadata((v) => ({ ...v, [selected]: { ...selectedMeta, notes: e.target.value } }))} onBlur={(e) => saveMetadata({ notes: e.target.value })} /></label>
-            <div className="flex flex-wrap gap-2"><ComicButton size="sm" onClick={() => addToQueue(selectedFile)}>＋ ΣΤΗΝ ΟΥΡΑ</ComicButton><ComicButton size="sm" onClick={() => publish({ ...selectedFile, label: selectedMeta.title || selectedFile.name }, queueIndex)} disabled={busy || selectedMeta.permission === 'blocked'}>▶ ΑΜΕΣΗ ΠΡΟΒΟΛΗ TV</ComicButton></div>
+            <div className="flex flex-wrap gap-2"><ComicButton size="sm" onClick={() => addToQueue(selectedFile)}>＋ ΣΤΗΝ ΟΥΡΑ</ComicButton><ComicButton size="sm" onClick={() => publish({ ...selectedFile, label: selectedMeta.title || selectedFile.name }, queueIndex)} disabled={busy || (selectedMeta.permission && selectedMeta.permission !== 'cleared')}>▶ ΑΜΕΣΗ ΠΡΟΒΟΛΗ TV</ComicButton></div>
           </> : <p className="text-xs text-foreground/50">Επίλεξε αρχείο από τη βιβλιοθήκη για προεπισκόπηση και διαχείριση.</p>}
         </ComicPanel>
 
