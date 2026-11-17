@@ -4,9 +4,9 @@ export default function SplashScreen({ onComplete }) {
   const [phase, setPhase] = useState(0);
 
   useEffect(() => {
-    const t1 = setTimeout(() => setPhase(1), 400);
-    const t2 = setTimeout(() => setPhase(2), 5200);
-    const t3 = setTimeout(() => onComplete(), 6000);
+    const t1 = setTimeout(() => setPhase(1), 200);
+    const t2 = setTimeout(() => setPhase(2), 1800);
+    const t3 = setTimeout(() => onComplete(), 2200);
     return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); };
   }, [onComplete]);
 
@@ -25,9 +25,6 @@ export default function SplashScreen({ onComplete }) {
         <div className="ds-rule mx-auto mt-8 w-40" />
         <div className={`ds-eyebrow mt-6 text-foreground/45 transition-opacity delay-500 duration-700 ${phase >= 1 ? 'opacity-100' : 'opacity-0'}`}>
           18+ · Ritual of Secrets
-        </div>
-        <div className="ds-label mt-10 text-foreground/20">
-          © 2026 — Base44 Interactive
         </div>
       </div>
     </div>

@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { base44 } from '@/api/base44Client';
 import { Image } from '@/components/ui/image';
 import { ART, PHOTO, FILM, HEIST_PHOTOS } from '@/data/brandArt';
 import MediaSpot from '@/components/shared/MediaSpot';
@@ -16,44 +15,11 @@ const TEASER_LINES = [
 const SEAL_URL = ART.emblem;
 const BG_URL = ART.invitationBg;
 
-function useCountdown(targetDate) {
-  const [remaining, setRemaining] = useState(null);
-  useEffect(() => {
-    if (!targetDate) return;
-    const tick = () => {
-      const diff = new Date(targetDate).getTime() - Date.now();
-      if (diff <= 0) { setRemaining(null); return; }
-      const d = Math.floor(diff / 86400000);
-      const h = Math.floor((diff % 86400000) / 3600000);
-      const m = Math.floor((diff % 3600000) / 60000);
-      const s = Math.floor((diff % 60000) / 1000);
-      setRemaining({ d, h, m, s });
-    };
-    tick();
-    const id = setInterval(tick, 1000);
-    return () => clearInterval(id);
-  }, [targetDate]);
-  return remaining;
-}
-
-const UNITS = [
-  { key: 'd', label: 'ΗΜΕΡΕΣ' },
-  { key: 'h', label: 'ΩΡΕΣ' },
-  { key: 'm', label: 'ΛΕΠΤΑ' },
-  { key: 's', label: 'ΔΕΥΤ' },
-];
-
 export default function InvitationTeaser({ onOpen }) {
-  const [eventDate, setEventDate] = useState(null);
   const [count, setCount] = useState(0);
-  const countdown = useCountdown(eventDate);
 
   useEffect(() => {
     async function load() {
-      try {
-        const { items } = await base44.entities.AppSetting.filter({ key: 'event_date' }, { limit: 1 });
-        if (items && items.length > 0 && items[0].value) setEventDate(items[0].value);
-      } catch (e) { /* no event date */ }
       try {
         const total = await base44.entities.PlayerIntake.count({});
         setCount(total || 0);
@@ -112,26 +78,6 @@ export default function InvitationTeaser({ onOpen }) {
             );
           })}
         </div>
-
-        {eventDate && countdown && (
-          <div className="w-full cinv-count">
-            <div className="cinv-cl">Η ΣΦΡΑΓΙΔΑ ΣΠΑΕΙ ΣΕ</div>
-            <div className="flex justify-center items-start gap-3 text-[#ffd700]" style={{ fontSize: '2.5rem', lineHeight: 1 }}>
-              {UNITS.map((u, idx) => (
-                <React.Fragment key={u.key}>
-                  {idx > 0 && <span className="text-[#8b0000]">:</span>}
-                  <div className="flex flex-col items-center gap-2">
-                    <span>{String(countdown[u.key]).padStart(2, '0')}</span>
-                    <small className="text-[11px] text-[#a8892a] tracking-[0.3em]">{u.label}</small>
-                  </div>
-                </React.Fragment>
-              ))}
-            </div>
-          </div>
-        )}
-        {eventDate && !countdown && (
-          <div className="font-bold text-[#c40000] text-xl">Η ΣΦΡΑΓΙΔΑ ΕΧΕΙ ΣΠΑΕΙ.</div>
-        )}
 
         <button type="button" className="w-full cinv-btn" style={{ animation: 'none' }} onClick={onOpen}>
           🔓 ΑΝΟΙΓΜΑ ΦΑΚΕΛΟΥ

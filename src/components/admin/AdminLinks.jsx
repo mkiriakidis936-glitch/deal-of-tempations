@@ -1,6 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
-import { base44 } from '@/api/base44Client';
 import ComicPanel from '@/components/comic/ComicPanel';
 import ComicButton from '@/components/comic/ComicButton';
 
@@ -13,16 +12,13 @@ const GAME_LINKS = [
 ];
 
 const GUEST_LINKS = [
-  { id: 'teaser', label: '🕯️ Πρόσκληση + Φόρμα', path: '/invitation', desc: 'Ένας σύνδεσμος: εισαγωγικό βίντεο με αντίστροφη μέτρηση, μετά η φόρμα συμμετοχής.' },
+  { id: 'teaser', label: '🕯️ Πρόσκληση + Φόρμα', path: '/invitation', desc: 'Η ψηφιακή πρόσκληση και η φόρμα συμμετοχής.' },
+  { id: 'portal', label: '📍 Πληροφορίες Event', path: '/portal', desc: 'Ξεχωριστή δημόσια σελίδα με ημερομηνία, τοποθεσία και οδηγίες εκδήλωσης.' },
   { id: 'pajama-invite', label: '🩴 Πρόσκληση Pajama', path: '/pajama-invite', desc: 'Το μυστηριώδες link που στέλνεις — οδηγεί στη φόρμα.' },
   { id: 'pajama', label: '🩴 Φόρμα Pajama', path: '/pajama-form', desc: 'Η φόρμα που συμπληρώνουν — μετά την εγκρίνεις στη Διαχείριση → Ερωτηματολόγια.' },
   { id: 'modes-form', label: '🎮 Φόρμα Νέων Modes', path: '/modes-form', desc: 'Η φόρμα όπου η καλεσμένη διαλέγει ένα ή περισσότερα modes (Pedi-Glam Extended, Lockdown, Beach Bar, 4H Marathon). Τις εγκρίνεις στο Διαχείριση → Ερωτηματολόγια.' },
   { id: 'public-forms', label: '📝 Δημόσιες Φόρμες', path: '/forms', desc: 'Join the Heist, Custom Event Request και Feedback / Hall of Shame.' },
   { id: 'vip-access', label: '🔐 VIP Access & Digital Vault', path: '/vip-access', desc: 'VIP Secret Pass, προσωπικό προφίλ, όρια και πρόσβαση στο ιδιωτικό Vault.' },
-];
-
-const OPTIONAL_LINKS = [
-  { id: 'intake', label: '📝 Ερωτηματολόγιο αρχηγού', path: '/intake', desc: 'Ερωτηματολόγιο διοργανώτριας.' },
 ];
 
 const ADMIN_LINK = { id: 'admin', label: '🔧 ΠΙΝΑΚΑΣ ΔΙΑΧΕΙΡΙΣΗΣ', path: '/admin', desc: 'Το πάνελ σου — δεν το στέλνεις ποτέ σε καλεσμένη.' };
@@ -73,67 +69,8 @@ function LinkRow({ def, sessionCode, locked }) {
   );
 }
 
-function EventDateSetter() {
-  const [value, setValue] = useState('');
-  const [saving, setSaving] = useState(false);
-  const [savedFlash, setSavedFlash] = useState(false);
-  const [loaded, setLoaded] = useState(false);
-
-  useEffect(() => {
-    async function load() {
-      try {
-        const { items } = await base44.entities.AppSetting.filter({ key: 'event_date' }, { limit: 1 });
-        if (items && items.length > 0 && items[0].value) setValue(items[0].value);
-      } catch (e) { /* ignore */ }
-      setLoaded(true);
-    }
-    load();
-  }, []);
-
-  async function save() {
-    setSaving(true);
-    try {
-      const { items } = await base44.entities.AppSetting.filter({ key: 'event_date' }, { limit: 1 });
-      if (items && items.length > 0) {
-        await base44.entities.AppSetting.update(items[0].id, { value });
-      } else {
-        await base44.entities.AppSetting.create({ key: 'event_date', value });
-      }
-      setSavedFlash(true);
-      setTimeout(() => setSavedFlash(false), 1800);
-    } catch (e) {
-      console.error('event_date save error', e);
-      alert('Σφάλμα αποθήκευσης.');
-    } finally {
-      setSaving(false);
-    }
-  }
-
-  return (
-    <ComicPanel className="bg-tarot-royal/20">
-      <div className="font-heading text-xl mb-1">🕯️ ΗΜΕΡΟΜΗΝΙΑ ΕΚΔΗΛΩΣΗΣ (ΑΝΤΙΣΤΡΟΦΗ ΜΕΤΡΗΣΗ ΠΡΟΣΚΛΗΣΗΣ)</div>
-      <div className="text-xs text-foreground/60 mb-3">
-        Επηρεάζει μόνο το countdown στην Πρόσκληση (/invitation). Κενό = χωρίς countdown.
-      </div>
-      <div className="flex flex-col sm:flex-row gap-2 items-stretch sm:items-center">
-        <input
-          type="datetime-local"
-          value={value}
-          onChange={(e) => setValue(e.target.value)}
-          disabled={!loaded}
-          className="flex-1 border-2 border-border rounded-lg px-3 py-2 bg-card font-bold text-sm"
-        />
-        <ComicButton variant={savedFlash ? 'green' : 'magenta'} size="sm" onClick={save} disabled={saving || !loaded}>
-          {saving ? 'ΑΠΟΘΗΚΕΥΣΗ...' : savedFlash ? '✅ ΟΚ' : 'ΑΠΟΘΗΚΕΥΣΗ'}
-        </ComicButton>
-      </div>
-    </ComicPanel>
-  );
-}
-
 export default function AdminLinks({ sessions = [], selectedSession }) {
   const sessionCode = selectedSession?.sessionCode || sessions?.[0]?.sessionCode || '';
-  const [showOptional, setShowOptional] = useState(false);
   const [copiedAll, setCopiedAll] = useState(false);
 
   async function copyAll() {
@@ -189,29 +126,6 @@ export default function AdminLinks({ sessions = [], selectedSession }) {
         ))}
       </div>
 
-      <ComicPanel className="bg-secondary">
-        <div className="flex items-center justify-between gap-3 flex-wrap">
-          <div>
-            <div className="font-heading text-lg">🗂️ ΠΡΟΑΙΡΕΤΙΚΟΙ ΣΥΝΔΕΣΜΟΙ ({OPTIONAL_LINKS.length})</div>
-            <div className="text-xs text-foreground/60">
-              Δεν χρειάζονται για να παίξει το παιχνίδι. Άνοιξέ τα μόνο αν τα θέλεις.
-            </div>
-          </div>
-          <ComicButton variant={showOptional ? 'dark' : 'white'} size="sm" onClick={() => setShowOptional(!showOptional)}>
-            {showOptional ? '▲ ΑΠΟΚΡΥΨΗ' : '▼ ΕΜΦΑΝΙΣΗ'}
-          </ComicButton>
-        </div>
-      </ComicPanel>
-
-      {showOptional && (
-        <div className="space-y-3">
-          {OPTIONAL_LINKS.map((def) => (
-            <LinkRow key={def.id} def={def} sessionCode={sessionCode} locked={false} />
-          ))}
-        </div>
-      )}
-
-      <EventDateSetter />
 
       <div className="space-y-3">
         <div className="border-b-2 border-border pb-1">

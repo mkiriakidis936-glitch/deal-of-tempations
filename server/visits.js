@@ -22,17 +22,18 @@ export function visitRoutes() {
     hits.set(ip, h + 1);
     if (h > 60 || BOT.test(ua) || !ua) return res.status(204).end();
     if (typeof visitor !== 'string' || !/^[A-Za-z0-9-]{8,64}$/.test(visitor)) return res.status(400).json({ error: 'bad visitor' });
-    if (typeof path !== 'string' || !TRACKED.has(path)) return res.status(204).end();
+    const normalizedPath = typeof path === 'string' && path.split('?')[0].split('#')[0] === '/site' ? '/site' : '';
+    if (!normalizedPath || !TRACKED.has(normalizedPath)) return res.status(204).end();
 
     // ίδιος επισκέπτης στην ίδια σελίδα μέσα σε 30 λεπτά = 1 επίσκεψη
     const dup = await query(
       "SELECT 1 FROM page_views WHERE visitor = $1 AND path = $2 AND created_date > now() - interval '30 minutes' LIMIT 1",
-      [visitor, path],
+      [visitor, normalizedPath],
     );
     if (!dup.rowCount) {
       let host = '';
       try { host = new URL(String(ref || '')).hostname.replace(/^www\./, ''); } catch { /* χωρίς referrer */ }
-      await query('INSERT INTO page_views (visitor, path, ref) VALUES ($1,$2,$3)', [visitor, path, host.slice(0, 100) || null]);
+      await query('INSERT INTO page_views (visitor, path, ref) VALUES ($1,$2,$3)', [visitor, normalizedPath, host.slice(0, 100) || null]);
     }
     res.status(204).end();
   });
