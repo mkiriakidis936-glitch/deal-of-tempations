@@ -3,7 +3,7 @@ import {base44} from '@/api/base44Client';
 export default function RealityShowOverlay({sessionCode}){
  const [cue,setCue]=useState(null),[outputs,setOutputs]=useState([]),[outputId,setOutputId]=useState('');
  const mediaRef=useRef(null);
- useEffect(()=>{let alive=true;const load=async()=>{try{const devices=await navigator.mediaDevices?.enumerateDevices?.();if(alive)setOutputs((devices||[]).filter(device=>device.kind==='audiooutput'))}catch{}};load();navigator.mediaDevices?.addEventListener?.('devicechange',load);return()=>{alive=false;navigator.mediaDevices?.removeEventListener?.('devicechange',load)}},[]);
+ useEffect(()=>{let alive=true;const load=async()=>{try{const supported=typeof HTMLMediaElement!=='undefined'&&typeof HTMLMediaElement.prototype.setSinkId==='function';if(!supported){if(alive)setOutputs([]);return}const devices=await navigator.mediaDevices?.enumerateDevices?.();if(alive)setOutputs((devices||[]).filter(device=>device.kind==='audiooutput'))}catch{}};load();navigator.mediaDevices?.addEventListener?.('devicechange',load);return()=>{alive=false;navigator.mediaDevices?.removeEventListener?.('devicechange',load)}},[]);
  useEffect(()=>{const media=mediaRef.current;if(!media||!outputId||typeof media.setSinkId!=='function')return;media.setSinkId(outputId).catch(()=>{});},[outputId,cue?.activatedAt]);
  useEffect(()=>{if(!sessionCode)return;let live=true;const load=()=>base44.entities.ProductionCue.filter({sessionCode},{limit:1}).then(({items=[]})=>{if(live)setCue(items[0]||null)}).catch(()=>{});load();const off=base44.entities.ProductionCue.subscribe(e=>{if(e?.data?.sessionCode===sessionCode)load()});return()=>{live=false;off?.()}},[sessionCode]);
  if(!cue?.active)return null;
