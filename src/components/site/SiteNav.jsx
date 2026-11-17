@@ -3,23 +3,23 @@ import { cn } from '@/lib/utils';
 import { SITE_EVENTS, getSiteContent } from '@/data/siteContent';
 
 const HOME_LINKS = [
-  { href: '#about', label: 'About' },
-  { href: '#modes', label: 'Game Modes' },
-  { href: '#photos', label: 'Gallery' },
-  { href: '#program', label: 'Program' },
-  { href: '#faq', label: 'FAQ' },
-  { href: '#registration', label: 'Registration' },
-  { href: '#contact', label: 'Contact' },
+  { href: '#about', label: 'Η ΕΜΠΕΙΡΙΑ' },
+  { href: '#modes', label: 'ΨΗΦΙΑΚΑ MODES' },
+  { href: '#photos', label: 'ΦΩΤΟΓΡΑΦΙΕΣ' },
+  { href: '#program', label: 'ΠΡΟΓΡΑΜΜΑ' },
+  { href: '#faq', label: 'ΑΠΟΡΙΕΣ' },
+  { href: '#registration', label: 'ΣΥΜΜΕΤΟΧΗ' },
+  { href: '#contact', label: 'ΕΠΙΚΟΙΝΩΝΙΑ' },
 ];
 const DETAIL_LINKS = [
-  { href: '#scenario', label: 'Experience' },
-  { href: '#modes', label: 'Game Modes' },
-  { href: '#photos', label: 'Gallery' },
-  { href: '#program', label: 'Program' },
-  { href: '#info', label: 'Info' },
-  { href: '#faq', label: 'FAQ' },
-  { href: '#registration', label: 'Registration' },
-  { href: '#contact', label: 'Contact' },
+  { href: '#scenario', label: 'Η ΕΜΠΕΙΡΙΑ' },
+  { href: '#modes', label: 'ΨΗΦΙΑΚΑ MODES' },
+  { href: '#photos', label: 'ΦΩΤΟΓΡΑΦΙΕΣ' },
+  { href: '#program', label: 'ΠΡΟΓΡΑΜΜΑ' },
+  { href: '#info', label: 'ΠΛΗΡΟΦΟΡΙΕΣ' },
+  { href: '#faq', label: 'ΑΠΟΡΙΕΣ' },
+  { href: '#registration', label: 'ΣΥΜΜΕΤΟΧΗ' },
+  { href: '#contact', label: 'ΕΠΙΚΟΙΝΩΝΙΑ' },
 ];
 
 export default function SiteNav({ ev, onEvent, isHome = false, onRegister }) {
@@ -57,7 +57,7 @@ export default function SiteNav({ ev, onEvent, isHome = false, onRegister }) {
         </nav>
       )}
       <div className="max-w-7xl mx-auto px-4 pb-2 flex gap-2 overflow-x-auto whitespace-nowrap">
-        <button type="button" onClick={() => onEvent('home')} className={cn('min-h-[36px] shrink-0 rounded-full border px-3 text-[9px] uppercase tracking-[0.14em] transition-colors', isHome ? 'border-tarot-gold text-tarot-gold bg-tarot-gold/10' : 'border-foreground/20 text-foreground/50')}>Home</button>
+        <button type="button" onClick={() => onEvent('home')} className={cn('min-h-[36px] shrink-0 rounded-full border px-3 text-[9px] uppercase tracking-[0.14em] transition-colors', isHome ? 'border-tarot-gold text-tarot-gold bg-tarot-gold/10' : 'border-foreground/20 text-foreground/50')}>ΑΡΧΙΚΗ</button>
         {SITE_EVENTS.map((event) => (
           <button type="button" key={event.id} onClick={() => onEvent(event.id)} className={cn(
             'min-h-[36px] shrink-0 rounded-full border px-3 text-[9px] uppercase tracking-[0.14em] transition-colors',
