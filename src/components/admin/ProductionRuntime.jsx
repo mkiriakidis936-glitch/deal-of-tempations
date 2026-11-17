@@ -84,10 +84,10 @@ export default function ProductionRuntime({selected,record,draft,onChange,onSave
    try{
      const added=[];
      for(const file of Array.from(files)){
-       const response=await fetch(`/api/media/upload?name=${encodeURIComponent(file.name)}`,{method:'POST',headers:{Authorization:`Bearer ${getToken()}`},body:file});
+       const response=await fetch(`/api/media/private-upload?name=${encodeURIComponent(file.name)}`,{method:'POST',headers:{Authorization:`Bearer ${getToken()}`},body:file});
        const data=await response.json().catch(()=>({}));
        if(!response.ok)throw new Error(data.error||`Αποτυχία μεταφόρτωσης: ${file.name}`);
-       added.push(data.url);
+       added.push(`private:${data.name}`);
      }
      update({recapMedia:[...(draft.recapMedia||[]),...added]});
      const saved=await persist({recapMedia:[...(draft.recapMedia||[]),...added]},'Το υλικό προστέθηκε στο ιδιωτικό recap.');
@@ -96,9 +96,27 @@ export default function ProductionRuntime({selected,record,draft,onChange,onSave
    finally{setUploading(false);}
  };
  const removeMedia=async(url)=>{
-   const next=(draft.recapMedia||[]).filter(item=>item!==url);
-   update({recapMedia:next});
-   await persist({recapMedia:next},'Το αρχείο αφαιρέθηκε από το recap.');
+   try{
+     if(String(url).startsWith('private:')){
+       const name=String(url).slice(8);
+       const response=await fetch(`/api/media/private/${encodeURIComponent(name)}`,{method:'DELETE',headers:{Authorization:`Bearer ${getToken()}`}});
+       const data=await response.json().catch(()=>({}));
+       if(!response.ok)throw new Error(data.error||'Δεν ήταν δυνατή η διαγραφή του αρχείου.');
+     }
+     const next=(draft.recapMedia||[]).filter(item=>item!==url);
+     update({recapMedia:next});
+     await persist({recapMedia:next},'Το αρχείο αφαιρέθηκε από το recap.');
+   }catch(error){setMessage(error.message||'Η αφαίρεση απέτυχε.');}
+ };
+ const openMedia=async(url)=>{
+   try{
+     if(!String(url).startsWith('private:')){window.open(url,'_blank','noopener,noreferrer');return;}
+     const name=String(url).slice(8);
+     const response=await fetch(`/api/media/private/${encodeURIComponent(name)}`,{headers:{Authorization:`Bearer ${getToken()}`}});
+     if(!response.ok)throw new Error('Δεν ήταν δυνατή η ανάκτηση του ιδιωτικού αρχείου.');
+     const blob=await response.blob(),objectUrl=URL.createObjectURL(blob),anchor=document.createElement('a');
+     anchor.href=objectUrl;anchor.download=name;document.body.appendChild(anchor);anchor.click();anchor.remove();URL.revokeObjectURL(objectUrl);
+   }catch(error){setMessage(error.message||'Το αρχείο δεν άνοιξε.');}
  };
  const copyRecap=async()=>{
    const text=[draft.title||'DEAL OF TEMPTATIONS',draft.winnerName? `Νικητής: ${draft.winnerName}`:'',draft.recapNotes||'',draft.socialTeaser||''].filter(Boolean).join('\n\n');
@@ -145,7 +163,7 @@ export default function ProductionRuntime({selected,record,draft,onChange,onSave
    <div><h3 className="font-heading text-lg">SOCIAL MEDIA RECAP</h3><p className="text-xs text-foreground/60">Αρχεία, σημειώσεις και κείμενο recap για την επιλεγμένη διοργάνωση.</p></div>
    <label className={label}>Προσθήκη φωτογραφιών / βίντεο / ήχου<input className={field} type="file" multiple accept="image/*,video/*,audio/*" onChange={e=>uploadMedia(e.target.files)}/></label>
    {uploading&&<p className="text-xs">Μεταφόρτωση αρχείων…</p>}
-   <div className="space-y-2">{(draft.recapMedia||[]).map((url,index)=><div key={url+index} className="flex items-center justify-between gap-2 rounded-lg border border-border p-2"><a className="min-w-0 truncate text-xs underline" href={url} target="_blank" rel="noreferrer">{url.split('/').pop()}</a><button className="text-xs text-red-400" onClick={()=>removeMedia(url)}>ΑΦΑΙΡΕΣΗ</button></div>)}</div>
+   <div className="space-y-2">{(draft.recapMedia||[]).map((url,index)=><div key={url+index} className="flex items-center justify-between gap-2 rounded-lg border border-border p-2"><button className="min-w-0 truncate text-left text-xs underline" onClick={()=>openMedia(url)}>{String(url).startsWith('private:')?String(url).slice(8):url.split('/').pop()}</button><button className="text-xs text-red-400" onClick={()=>removeMedia(url)}>ΑΦΑΙΡΕΣΗ</button></div>)}</div>
    <label className={label}>Recap<textarea className={field} rows="3" value={draft.recapNotes||''} onChange={e=>update({recapNotes:e.target.value})}/></label>
    <label className={label}>Social teaser<textarea className={field} rows="2" value={draft.socialTeaser||''} onChange={e=>update({socialTeaser:e.target.value})}/></label>
    <div className="rounded-lg border border-border p-3 space-y-1"><b className="text-xs">ΔΗΜΟΣΙΑ ΧΡΗΣΗ ΥΛΙΚΟΥ</b><p className="text-xs">{publicMediaAllowed?'Υπάρχει ρητή δημόσια συγκατάθεση από όλους τους συμμετέχοντες με καταχωρισμένη δήλωση.':'Η δημόσια χρήση είναι κλειδωμένη: απαιτείται ενεργή, ρητή συγκατάθεση δημόσιας χρήσης από κάθε συμμετέχοντα.'}</p><span className="text-[10px] text-foreground/50">{latestConsents.length} ατομικές δηλώσεις σε ισχύ</span></div>
