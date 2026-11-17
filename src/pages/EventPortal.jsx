@@ -38,7 +38,7 @@ export default function EventPortal() {
     <main className="min-h-screen bg-[#090909] text-[#f1e6c8] px-4 py-10">
       <div className="mx-auto max-w-2xl space-y-6">
         <header className="text-center space-y-3">
-          <div className="text-xs tracking-[0.35em] text-[#c7a76b]">PRIVATE EVENT INFORMATION</div>
+          <div className="text-xs tracking-[0.35em] text-[#c7a76b]">ΠΛΗΡΟΦΟΡΙΕΣ ΙΔΙΩΤΙΚΗΣ ΕΚΔΗΛΩΣΗΣ</div>
           <h1 className="font-display text-3xl sm:text-5xl tracking-widest text-[#d7b777]">DEAL OF TEMPTATION</h1>
           <p className="text-sm text-white/65">Πληροφορίες εκδήλωσης</p>
         </header>
@@ -60,7 +60,7 @@ export default function EventPortal() {
             ))}
           </section>
         )}
-        <footer className="pt-4 text-center text-[10px] tracking-[0.3em] text-white/35">18+ · PRIVATE GAME EXPERIENCES</footer>
+        <footer className="pt-4 text-center text-[10px] tracking-[0.3em] text-white/35">18+ · ΙΔΙΩΤΙΚΕΣ ΕΜΠΕΙΡΙΕΣ ΠΑΙΧΝΙΔΙΟΥ</footer>
       </div>
     </main>
   );
