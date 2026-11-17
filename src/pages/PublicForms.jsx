@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { request } from '@/api/base44Client';
 
 const TYPES = [
-  { id: 'join-heist', title: 'ΣΥΜΜΕΤΟΧΗ ΣΤΟ HEIST', intro: 'Αίτηση συμμετοχής σε επεισόδιο DEAL OF TEMPTATION.' },
+  { id: 'join-heist', title: 'ΣΥΜΜΕΤΟΧΗ ΣΤΟ HEIST', intro: 'Αίτηση συμμετοχής σε επεισόδιο DEAL OF TEMPTATIONS.' },
   { id: 'event-request', title: 'ΑΙΤΗΜΑ ΙΔΙΩΤΙΚΗΣ ΕΚΔΗΛΩΣΗΣ', intro: 'Ζήτησε μια προσαρμοσμένη εμπειρία ή ιδιωτικό event.' },
   { id: 'feedback', title: 'ΣΧΟΛΙΑ / ΠΡΟΤΑΣΕΙΣ', intro: 'Στείλε σχόλια, ιδέες ή προτάσεις για νέες 18+ κάρτες.' },
 ];
@@ -33,7 +33,7 @@ export default function PublicForms() {
   return <main style={{minHeight:'100dvh',background:'#080808',color:'#f5ebd1',padding:'28px 14px',fontFamily:'Arial,sans-serif'}}>
     <div style={{maxWidth:650,margin:'0 auto'}}>
       <header style={{textAlign:'center',padding:24,border:'1px solid #b99a45',borderRadius:16,background:'linear-gradient(140deg,#201a0d,#090909)'}}>
-        <div style={{letterSpacing:5,color:'#c9a94e',fontSize:12}}>DEAL OF TEMPTATION</div><h1 style={{fontFamily:'Georgia,serif',fontSize:28,margin:'12px 0'}}>ΔΗΜΟΣΙΕΣ ΦΟΡΜΕΣ</h1>
+        <div style={{letterSpacing:5,color:'#c9a94e',fontSize:12}}>DEAL OF TEMPTATIONS</div><h1 style={{fontFamily:'Georgia,serif',fontSize:28,margin:'12px 0'}}>ΔΗΜΟΣΙΕΣ ΦΟΡΜΕΣ</h1>
         <p style={{color:'#b6aa8b',fontSize:13}}>Επίλεξε τη φόρμα που θέλεις να συμπληρώσεις.</p>
       </header>
       <nav style={{display:'grid',gridTemplateColumns:'repeat(3,minmax(0,1fr))',gap:7,margin:'18px 0'}}>
