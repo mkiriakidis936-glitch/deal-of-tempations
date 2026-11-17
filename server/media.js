@@ -33,7 +33,10 @@ export const mediaStatic = [
     dotfiles: 'ignore',
     maxAge: '30d',
     immutable: true,
-    setHeaders: (res) => res.setHeader('X-Content-Type-Options', 'nosniff'),
+    setHeaders: (res, file) => {
+      res.setHeader('X-Content-Type-Options', 'nosniff');
+      if (path.basename(file).startsWith('published-')) res.setHeader('Cache-Control', 'no-store, max-age=0');
+    },
   }),
   (_req, res) => res.status(404).end(),
 ];
