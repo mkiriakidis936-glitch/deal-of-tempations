@@ -390,7 +390,12 @@ export default function AdminMedia() {
         </div>
       </ComicPanel>
 
-      {GALLERIES.map((g) => {
+      </ComicPanel>
+      )}
+
+      {showSurface('site', 'forms') && (
+      <>
+      {GALLERIES.filter((g) => showSurface(...(g.surfaces || ['site']))).map((g) => {
         const video = g.kind === 'video';
         const list = listOf(g.id);
         return (
@@ -424,6 +429,10 @@ export default function AdminMedia() {
         );
       })}
 
+      </>
+      )}
+
+      {surfaceFilter !== 'preview' && (
       <ComicPanel className="bg-card space-y-3">
         <div className="flex items-center justify-between gap-2 flex-wrap"><div className="font-heading text-lg">🗂️ ΒΙΒΛΙΟΘΗΚΗ ΑΡΧΕΙΩΝ ({library.length})</div><ComicButton size="sm" disabled={!!busy} onClick={() => pick('library', 'library', libraryOne, undefined, surfaceFilter)}>＋ ΠΡΟΣΘΗΚΗ ΑΡΧΕΙΟΥ</ComicButton></div>
         <input type="search" value={librarySearch} onChange={(e) => setLibrarySearch(e.target.value)} placeholder="Αναζήτηση αρχείων…" className="w-full rounded-lg border-2 border-border bg-background px-3 py-2 text-sm" />
@@ -464,6 +473,7 @@ export default function AdminMedia() {
           ))}
         </div>
       </ComicPanel>
+      )}
     </div>
   );
 }
