@@ -9,7 +9,7 @@ const FIELDS = [
     label: 'Ημερομηνία & Ώρα',
     type: 'datetime-local',
     icon: '📅',
-    hint: 'Χρησιμοποιείται και για την αντίστροφη μέτρηση στην πρόσκληση.',
+    hint: 'Εμφανίζεται στη δημόσια σελίδα πληροφοριών Event (/portal).',
   },
   {
     key: 'event_location',
@@ -105,7 +105,7 @@ export default function AdminEventInfo() {
     <ComicPanel className="bg-card space-y-4">
       <div className="font-heading text-xl text-primary">📅 ΠΡΑΚΤΙΚΕΣ ΠΛΗΡΟΦΟΡΙΕΣ ΕΚΔΗΛΩΣΗΣ</div>
       <div className="text-sm text-foreground/70 font-body">
-        Καταχώρησε τις πληροφορίες που θέλεις να βλέπουν οι προσκεκλημένες στο δημόσιο site
+        Καταχώρησε τις πληροφορίες που θέλεις να βλέπουν οι προσκεκλημένες στο ξεχωριστή δημόσια σελίδα
         (<span className="text-primary">/portal</span>). Όσα πεδία αφήσεις κενά δεν θα εμφανίζονται.
       </div>
       {FIELDS.map((field) => (
