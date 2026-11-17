@@ -9,7 +9,7 @@ export const ENTITIES = [
   'Achievement', 'AppSetting', 'BacheloretteIntake', 'BlackmailVault', 'Chronicle', 'GameContent',
   'GameSession', 'GameSessionSnapshot', 'Haunting', 'InvitationRSVP', 'Memorial', 'PajamaContent', 'PajamaIntake',
   'PlayerIntake', 'PlayerProfile', 'SessionArchive', 'VIPInvitation', 'VIPInvitationSubmission',
-  'PublicFormSubmission', 'VIPAccessProfile', 'VIPAccessSession', 'VIPVaultCertificate',
+  'PublicFormSubmission', 'VIPAccessProfile', 'VIPAccessSession', 'VIPVaultCertificate', 'ShowProduction',
 ];
 
 // Who may do what. Default for every operation is "public" (the phones/TV
@@ -28,6 +28,8 @@ const rules = {
   VIPAccessProfile: { read: ADMIN, update: ADMIN, delete: ADMIN },
   VIPAccessSession: { read: ADMIN, update: ADMIN, delete: ADMIN },
   VIPVaultCertificate: { read: ADMIN, create: ADMIN, update: ADMIN, delete: ADMIN },
+  // Reality-show production plans are private and editable only by administrators.
+  ShowProduction: { read: ADMIN, create: ADMIN, update: ADMIN, delete: ADMIN },
   Achievement:        { create: ADMIN, update: ADMIN, delete: ADMIN },
   // configuration / content: everybody reads, only admins change
   AppSetting:     { create: ADMIN, update: ADMIN, delete: ADMIN },
