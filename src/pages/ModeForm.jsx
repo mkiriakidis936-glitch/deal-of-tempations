@@ -17,6 +17,7 @@ const LEVELS = [
 export default function ModeForm() {
   const [params] = useSearchParams();
   const first = params.get('mode');
+  const sessionCode = params.get('event') || params.get('sessionCode') || params.get('code') || '';
   const [form, setForm] = useState({
     name: '',
     modes: NEW_MODES.some((m) => m.id === first) ? [first] : [],
@@ -44,7 +45,7 @@ export default function ModeForm() {
   const set = (k, v) => setForm((f) => ({ ...f, [k]: v }));
   const toggleMode = (id) => set('modes', form.modes.includes(id) ? form.modes.filter((m) => m !== id) : [...form.modes, id]);
   const has = (...ids) => form.modes.some((m) => ids.includes(m));
-  const pajamaish = has('lockdown', 'marathon_4h');
+  const pajamaish = has('lockdown');
   const beachish = has('beach_bar');
   const canSend = form.name.trim() && form.modes.length > 0 && form.adult && form.safeWordConfirmed && customQuestionsValid && !saving;
 
@@ -55,6 +56,7 @@ export default function ModeForm() {
     try {
       await base44.entities.PajamaIntake.create({
         formType: 'modes',
+        ...(sessionCode ? { sessionCode: sessionCode.trim().toUpperCase() } : {}),
         name: form.name.trim(),
         preferredModes: form.modes,
         adultConfirmed: true,
