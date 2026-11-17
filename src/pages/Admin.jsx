@@ -31,6 +31,7 @@ const AdminNotifications = lazy(() => import('@/components/admin/AdminNotificati
 const AdminVisits = lazy(() => import('@/components/admin/AdminVisits'));
 const AdminDigitalInvitations = lazy(() => import('@/components/admin/AdminDigitalInvitations'));
 const AdminSecretVault = lazy(() => import('@/components/admin/AdminSecretVault'));
+const AdminProduction = lazy(() => import('@/components/admin/AdminProduction'));
 import { setActiveSessionCode } from '@/lib/activeSession';
 
 const NAV_GROUPS = [
@@ -51,6 +52,13 @@ const NAV_GROUPS = [
       { id: 'modes', label: '🎮 Λειτουργίες παιχνιδιού' },
       { id: 'live', label: '⏯️ Ζωντανός έλεγχος' },
       { id: 'casting', label: '🎬 Επιλογή Επεισοδίου' },
+    ],
+  },
+  {
+    id: 'production',
+    label: '03 · REALITY SHOW PRODUCTION',
+    tabs: [
+      { id: 'production', label: '🎥 Production Room' },
     ],
   },
   {
@@ -237,6 +245,8 @@ export default function Admin() {
         return <AdminEventCenter sessions={sessions} selectedSession={activeSession} onDeleteSession={handleDeleteSession} onRefreshSessions={loadSessions} />;
       case 'modes':
         return <AdminContentHub />;
+      case 'production':
+        return <AdminProduction sessions={sessions} selectedSession={activeSession} onSelect={selectSession} />;
       case 'editor':
         return <AdminContent />;
       case 'achievements':
