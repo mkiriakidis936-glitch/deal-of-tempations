@@ -2,7 +2,14 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { stopAllSounds } from '@/data/soundLibrary';
 
 export const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
-export const shuffle = (arr) => [...arr].sort(() => Math.random() - 0.5);
+export function shuffle(arr) {
+  const result = [...(arr || [])];
+  for (let i = result.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [result[i], result[j]] = [result[j], result[i]];
+  }
+  return result;
+}
 export const uid = () => Math.random().toString(36).slice(2, 8);
 
 let gameStopActive = false;
@@ -199,32 +206,57 @@ export function useModeCtx(state, updateState) {
   }, [setMg]);
 
   const centralStopped = !!state.stopActive;
-  const toggleStop = useCallback(() => {
-    if (centralStopped) return;
-    const cur = mgRef.current;
-    if (cur.stop) {
-      const pausedFor = Math.max(0, Date.now() - (cur.stopAt || Date.now()));
-      const missions = { ...(cur.missions || {}) };
+  const stopped = !!mg.stop || centralStopped;
+  const pauseRef = useRef({ active: false, at: null });
+
+  // Ένα ενιαίο pause lifecycle: το χρονόμετρο και οι προθεσμίες αποστολών
+  // παγώνουν μία φορά, ανεξάρτητα από το αν το STOP ήρθε από Tablet ή Mobile.
+  useEffect(() => {
+    if (stopped && !pauseRef.current.active) {
+      const at = Date.now();
+      pauseRef.current = { active: true, at };
+      const current = mgRef.current;
+      if (current.timer?.endsAt) setMg({ timer: timerPause(current.timer), pauseAt: at });
+      return;
+    }
+
+    if (!stopped && pauseRef.current.active) {
+      const pausedFor = Math.max(0, Date.now() - (pauseRef.current.at || Date.now()));
+      const current = mgRef.current;
+      const missions = { ...(current.missions || {}) };
       Object.keys(missions).forEach((id) => {
         if (missions[id]?.status === 'active' && missions[id].expiresAt) {
           missions[id] = { ...missions[id], expiresAt: missions[id].expiresAt + pausedFor };
         }
       });
       const next = {
-        ...cur,
-        stop: false,
-        stopBy: null,
-        timer: timerResume(cur.timer),
+        ...current,
+        timer: timerResume(current.timer),
         missions,
-        ...(cur.startedAt ? { startedAt: cur.startedAt + pausedFor } : {}),
-        ...(cur.actStartedAt ? { actStartedAt: cur.actStartedAt + pausedFor } : {}),
-        ...(cur.morningTimer ? { morningTimer: cur.morningTimer + pausedFor } : {}),
+        pauseAt: null,
+        ...(current.startedAt ? { startedAt: current.startedAt + pausedFor } : {}),
+        ...(current.actStartedAt ? { actStartedAt: current.actStartedAt + pausedFor } : {}),
+        ...(current.morningTimer ? { morningTimer: current.morningTimer + pausedFor } : {}),
       };
       mgRef.current = next;
-      updateState({ mg: next, gamePausedMs: (state.gamePausedMs || 0) + (state.gamePausedAt ? Date.now() - state.gamePausedAt : pausedFor), gamePausedAt: null });
+      updateState({ mg: next });
+      pauseRef.current = { active: false, at: null };
+    }
+  }, [stopped, setMg, updateState]);
+
+  const toggleStop = useCallback(() => {
+    if (centralStopped) return;
+    const cur = mgRef.current;
+    if (cur.stop) {
+      const pausedFor = Math.max(0, Date.now() - (cur.stopAt || Date.now()));
+      setMg({ stop: false, stopBy: null });
+      updateState({
+        gamePausedMs: (state.gamePausedMs || 0) + (state.gamePausedAt ? Date.now() - state.gamePausedAt : pausedFor),
+        gamePausedAt: null,
+      });
     } else {
       const stopAt = Date.now();
-      setMg({ stop: true, stopAt, timer: timerPause(cur.timer) });
+      setMg({ stop: true, stopAt });
       updateState({ gamePausedAt: state.gamePausedAt || stopAt });
     }
   }, [setMg, centralStopped, updateState, state.gamePausedMs, state.gamePausedAt]);
