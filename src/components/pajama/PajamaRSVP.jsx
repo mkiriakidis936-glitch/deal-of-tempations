@@ -6,7 +6,7 @@ export default function PajamaRSVP() {
   const [name, setName] = useState('');
   const [saving, setSaving] = useState(false);
   const [done, setDone] = useState(false);
-  const sessionCode = new URLSearchParams(window.location.search).get('event') || new URLSearchParams(window.location.search).get('sessionCode') || '';
+  const sessionCode = new URLSearchParams(window.location.search).get('event') || new URLSearchParams(window.location.search).get('sessionCode') || new URLSearchParams(window.location.search).get('code') || '';
 
   async function load() {
     try {
