@@ -10,6 +10,7 @@ export const SURFACES = [
 export const IMAGE_SLOTS = [
   { id: 'emblem', label: 'Έμβλημα', where: 'Λογότυπο στο Site, στην πρόσκληση και στο διαβατήριο', surfaces: ['site', 'forms', 'mobile'] },
   { id: 'poster', label: 'Poster', where: 'Εξώφυλλο βίντεο στο Site και εικόνα στο Promo Heist', surfaces: ['site'] },
+  { id: 'heistNight', label: 'Heist Night — εικόνα', where: 'Κάρτα Heist Night και Hero του Heist Night στο Site', surfaces: ['site'] },
   { id: 'group', label: 'Παρέα', where: 'Promo Heist — «Το άγνωστο»', surfaces: ['site'] },
   { id: 'scene', label: 'Σκηνή', where: 'Promo Heist — «Την αποκάλυψη»', surfaces: ['site'] },
   { id: 'party1', label: 'Pajama — κεντρική', where: 'Promo Pajama — κύρια εικόνα', surfaces: ['site', 'forms'] },
