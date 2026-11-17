@@ -6,6 +6,7 @@ import { ART, DEFAULTS, applyMediaOverrides } from '@/data/brandArt';
 import { IMAGE_SLOTS, PHOTO_SPOTS, PHOTO_SPOT_IDS, VIDEO_SLOTS, MODE_COVER_SLOTS, GALLERIES, SURFACES } from '@/data/mediaSlots';
 import { NEW_MODES } from '@/data/modes/modeRegistry';
 import ModeMediaManager from '@/components/admin/ModeMediaManager';
+import AdminMediaPreview from '@/components/admin/AdminMediaPreview';
 import { MEDIA_KEY, fetchOverrides, uploadMedia, listMedia, deleteMedia, deleteAllMedia } from '@/lib/media';
 
 const IMG_ACCEPT = 'image/*,.jpg,.jpeg,.png,.webp,.gif,.avif,.heic,.svg';
@@ -50,6 +51,7 @@ export default function AdminMedia() {
     { id: 'uncategorized', label: 'Χωρίς κατηγορία' },
   ];
   const categoryOf = (url) => ov.libraryCategories?.[url] || 'uncategorized';
+  const showSurface = (...ids) => surfaceFilter === 'all' || ids.includes(surfaceFilter);
   const [busy, setBusy] = useState(null);
   const [progress, setProgress] = useState(0);
   const [dragging, setDragging] = useState(false);
@@ -268,6 +270,19 @@ export default function AdminMedia() {
         {msg && <div className={`mt-2 text-sm font-bold ${msg.ok ? 'text-green-400' : 'text-red-400'}`}>{msg.text}</div>}
       </ComicPanel>
 
+      <ComicPanel className="bg-card">
+        <div className="font-heading text-lg">ΠΡΟΟΡΙΣΜΟΣ ΠΟΛΥΜΕΣΩΝ</div>
+        <p className="mt-1 text-xs text-foreground/60">Επίλεξε πού ανήκει το υλικό. Οι καρτέλες φιλτράρουν τα σημεία και τη βιβλιοθήκη αρχείων. Νέα αρχεία ανεβαίνουν στην επιλεγμένη κατηγορία.</p>
+        <div className="mt-3 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
+          <button type="button" onClick={() => setSurfaceFilter("all")} className={surfaceFilter === "all" ? "rounded-xl border border-primary bg-primary/15 p-3 text-left" : "rounded-xl border border-border bg-secondary/40 p-3 text-left"}><div className="text-sm font-black">ΟΛΑ</div><div className="text-[10px] text-foreground/55">Όλα τα σημεία</div></button>
+          {SURFACES.map((surface) => <button key={surface.id} type="button" onClick={() => setSurfaceFilter(surface.id)} className={surfaceFilter === surface.id ? "rounded-xl border border-primary bg-primary/15 p-3 text-left" : "rounded-xl border border-border bg-secondary/40 p-3 text-left"}><div className="text-sm font-black">{surface.label}</div><div className="text-[10px] text-foreground/55">{surface.description}</div></button>)}
+          <button type="button" onClick={() => setSurfaceFilter("preview")} className={surfaceFilter === "preview" ? "rounded-xl border border-primary bg-primary/15 p-3 text-left" : "rounded-xl border border-border bg-secondary/40 p-3 text-left"}><div className="text-sm font-black">LIVE PREVIEW</div><div className="text-[10px] text-foreground/55">Πραγματικές σελίδες</div></button>
+        </div>
+      </ComicPanel>
+
+      {surfaceFilter === "preview" && <AdminMediaPreview />}
+
+      {showSurface("site", "forms", "tv") && (
       <ComicPanel className="bg-card space-y-3">
         <div className="font-heading text-lg">🖼️ ΦΩΤΟΓΡΑΦΙΑ Ή ΒΙΝΤΕΟ ΑΝΑ ΣΗΜΕΙΟ</div>
         <p className="text-xs text-foreground/60">Και τα έξι σημεία είναι προαιρετικά. Σε κάθε σημείο ανεβάζεις εσύ φωτογραφία ή βίντεο, το αλλάζεις ή το διαγράφεις. Δεν απαιτείται να υπάρχει αρχείο σε κανένα σημείο.</p>
