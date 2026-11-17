@@ -22,17 +22,7 @@ export const NEW_MODES = [
     actDurations: { beach: 150 },
     minutes: 300,
   },
-  {
-    id: 'marathon_4h',
-    name: 'PAJAMA MARATHON 5H',
-    icon: '🏆',
-    desc: 'Πεντάωρη εμπειρία τεσσάρων Acts: Pedi-Glam, Midnight ASMR, 60 λεπτά Pajama Lockdown και Morning Escape.',
-    min: 2,
-    max: 8,
-    acts: ['board', 'midnight', 'lockdown', 'morning'],
-    actDurations: { board: 90, midnight: 45, lockdown: 60, morning: 45 },
-    minutes: 300,
-  },
+
 ];
 
 export const isNewMode = (id) => NEW_MODES.some((m) => m.id === id);
@@ -41,7 +31,6 @@ export const modeMeta = (id) => NEW_MODES.find((m) => m.id === id);
 export const MODE_THEMES = {
   lockdown: { bg: '#0A0A0A', accent: '#FF003C', accent2: '#FF6B8A' },
   beach_bar: { bg: '#0D0D11', accent: '#00F2FE', accent2: '#FF3366' },
-  marathon_4h: { bg: '#0A0A0A', accent: '#FF2A85', accent2: '#FFD700' },
 };
 
 export const ACT_META = {
