@@ -191,6 +191,10 @@ export default function AdminDigitalInvitations() {
               <div className="mt-2 space-y-1 text-xs text-foreground/70">
                 {Object.entries(response.answerLabels || response.answers || {}).map(([label, answer]) => <div key={label}><span className="text-[#c9a94e]">{label}:</span> {String(answer)}</div>)}
               </div>
+              <details className="mt-2 rounded-lg border border-[#b99a45]/25 p-2 text-xs">
+                <summary className="cursor-pointer font-bold text-[#d8bd72]">ΟΛΑ ΤΑ ΑΠΟΘΗΚΕΥΜΕΝΑ ΠΕΔΙΑ ΚΑΙ ΑΠΑΝΤΗΣΕΙΣ</summary>
+                <pre className="mt-2 whitespace-pre-wrap break-words text-foreground/70">{JSON.stringify({ answers: response.answers || {}, customAnswers: response.customAnswers || {}, customAnswerLabels: response.customAnswerLabels || {} }, null, 2)}</pre>
+              </details>
               <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
                 <div className="text-[10px] text-foreground/40">{new Date(response.created_date).toLocaleString('el-GR')} · {response.approved ? '✅ ΕΓΚΕΚΡΙΜΕΝΗ' : '⏳ ΣΕ ΑΝΑΜΟΝΗ'}</div>
                 <div className="flex flex-wrap gap-2">{!response.approved && <ComicButton size="sm" variant="green" disabled={vipBusy} onClick={() => approveVipSubmission(invitation, response)}>ΕΓΚΡΙΣΗ & ΔΗΜΙΟΥΡΓΙΑ ΠΡΟΦΙΛ</ComicButton>}<ComicButton size="sm" variant="red" disabled={vipBusy} onClick={() => deleteVipSubmission(invitation, response)}>ΔΙΑΓΡΑΦΗ ΑΠΑΝΤΗΣΗΣ</ComicButton></div>
