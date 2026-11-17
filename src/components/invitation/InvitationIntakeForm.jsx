@@ -98,6 +98,7 @@ export default function InvitationIntakeForm({ onDone }) {
       await request('POST', '/api/entities/invitation-intake', {
         ...form,
         name: form.name.trim(),
+        adultConfirmed: form.safeWordConfirmed,
         customAnswers: form.customAnswers,
         submissionId: form.submissionId,
         sessionCode: new URLSearchParams(window.location.search).get('event') || new URLSearchParams(window.location.search).get('sessionCode') || '',
