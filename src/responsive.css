@@ -76,3 +76,46 @@ table { max-width: 100%; }
     transition-duration: 0.01ms !important;
   }
 }
+
+
+/* Δημόσιες σελίδες — προσαρμογή κινητού, tablet, υπολογιστή και τηλεόρασης */
+#top { min-height: min(92svh, 900px); }
+#top h1 { font-size: clamp(2.25rem, 7vw, 5.25rem); overflow-wrap: anywhere; }
+#top .cinv-count { max-width: 100%; }
+#top .cinv-count > div:last-child { flex-wrap: wrap; }
+#photos img, #photos video { display: block; }
+#registration > div, #contact > div { min-width: 0; }
+#registration button, #contact button { max-width: 100%; white-space: normal; }
+@media (max-width: 767px) {
+  #top { min-height: 78svh; padding-top: 5rem; padding-bottom: 4rem; }
+  #top h1 { letter-spacing: .055em; line-height: 1.08; }
+  #top .cinv-count { width: 100%; padding: 12px 8px; }
+  #top .cinv-count > div:last-child { gap: clamp(8px, 3vw, 16px); }
+  #top .cinv-count .font-display { font-size: clamp(1.35rem, 7vw, 2rem); }
+  #modes .grid { grid-template-columns: minmax(0, 1fr); }
+  #photos .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  #registration > div { grid-template-columns: minmax(0, 1fr); text-align: center; }
+  #registration button, #contact button { width: 100%; }
+  #contact > div { padding: 2rem 1.1rem; border-radius: 1.25rem; }
+  main > div > nav { grid-template-columns: minmax(0, 1fr) !important; }
+  main > div > nav button { min-height: 44px; font-size: 12px !important; }
+  main form { padding: 14px !important; }
+  main form input, main form textarea, main form select { min-width: 0; max-width: 100%; }
+}
+@media (min-width: 768px) and (max-width: 1199px) {
+  #top { min-height: 82svh; }
+  #photos .grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+@media (min-width: 1200px) {
+  #top { min-height: min(92svh, 980px); }
+  #photos .grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+@media (min-width: 1500px) and (orientation: landscape) {
+  .dot-tv-shell { min-height: 100svh; }
+  .dot-tv-stage { max-width: 94vw; margin-inline: auto; }
+}
+@media (max-width: 760px) {
+  .dot-tv-shell { min-height: 100svh; min-height: 100dvh; overflow-x: clip; }
+  .dot-tv-shell .dot-tv-hud { max-width: calc(100vw - 20px); }
+  .dot-tv-shell img, .dot-tv-shell video { max-width: 100%; height: auto; }
+}
