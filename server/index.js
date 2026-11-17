@@ -29,6 +29,26 @@ app.use(express.json({ limit: '2mb' }));
 app.use(attachUser);
 
 app.get('/api/health', (_req, res) => res.json({ ok: true }));
+app.get('/api/production/privacy', async (req, res) => {
+  const sessionCode = String(req.query.event || '').trim().toUpperCase();
+  if (!sessionCode || sessionCode.length > 40) return res.status(400).json({ error: 'Μη έγκυρος κωδικός διοργάνωσης.' });
+  try {
+    const { rows } = await query(
+      "SELECT data FROM records WHERE entity = 'ShowProduction' AND data->>'sessionCode' = $1 ORDER BY updated_date DESC LIMIT 1",
+      [sessionCode]
+    );
+    const data = rows[0]?.data || {};
+    return res.json({
+      title: String(data.title || ''),
+      controllerName: String(data.privacyControllerName || ''),
+      controllerContact: String(data.privacyControllerContact || ''),
+      retentionDays: Number(data.privacyRetentionDays) || 0,
+    });
+  } catch {
+    return res.status(500).json({ error: 'Δεν ήταν δυνατή η φόρτωση των πληροφοριών απορρήτου.' });
+  }
+});
+
 authRoutes(app);
 app.use('/api/entities', entityRoutes());
 app.use('/api/functions', functionRoutes());
