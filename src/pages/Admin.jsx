@@ -334,7 +334,7 @@ export default function Admin() {
         <ComicPanel className="bg-secondary flex items-center justify-between gap-2">
           <div className="min-w-0">
             <div className="font-heading text-2xl sm:text-3xl comic-text-stroke text-primary">🔧 ΚΕΝΤΡΟ ΕΛΕΓΧΟΥ</div>
-            <div className="text-[11px] sm:text-xs font-bold text-foreground/70 font-body truncate">DEAL OF TEMPTATION — Κεντρική διαχείριση εφαρμογής</div>
+            <div className="text-[11px] sm:text-xs font-bold text-foreground/70 font-body truncate">DEAL OF TEMPTATIONS — THE PRIVATE REALITY GAME NIGHT</div>
           </div>
           <ComicButton variant="dark" size="sm" onClick={() => { setGlobalSearch(''); setSearchOpen(true); }}>⌕ <span className="hidden sm:inline">ΑΝΑΖΗΤΗΣΗ · ⌘K</span></ComicButton>
           <ComicButton variant="dark" size="sm" onClick={loadSessions} disabled={loading}>
