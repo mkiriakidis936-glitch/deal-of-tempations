@@ -14,8 +14,8 @@ export default function PajamaSetup({ players = [], sessionCode = '', onStart })
 
   const loadApproved = React.useCallback(async () => {
     try {
-      const { items } = await base44.entities.PajamaIntake.filter({}, { sort: '-created_date', limit: 100 });
-      const list = (items || []).filter((i) => i.approved === true && i.name);
+      const { items } = await base44.entities.PajamaIntake.filter(sessionCode ? { sessionCode } : {}, { sort: '-created_date', limit: 100 });
+      const list = (items || []).filter((i) => i.approved === true && i.name && (i.formType || 'pajama') !== 'modes' && (sessionCode ? i.sessionCode === sessionCode : !i.sessionCode));
       setApproved(list);
       setLoadError(false);
       setNames((prev) => {
