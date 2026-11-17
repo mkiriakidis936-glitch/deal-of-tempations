@@ -28,7 +28,7 @@ export default function PajamaIntakeList() {
       if (next) {
         await request('POST', '/api/entities/intake-approvals/PajamaIntake/' + item.id, {});
       } else {
-        await base44.entities.PajamaIntake.update(item.id, { approved: false, approvalStatus: 'pending', approvedDate: null });
+        await request('POST', '/api/entities/intake-approvals/PajamaIntake/' + item.id, { approved: false });
       }
       setItems((prev) => prev.map((i) => (i.id === item.id ? { ...i, approved: next, approvalStatus: next ? 'approved' : 'pending' } : i)));
       if (next) {
