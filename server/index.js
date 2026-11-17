@@ -43,9 +43,9 @@ const dist = path.resolve(import.meta.dirname, '..', 'dist');
 if (fs.existsSync(dist)) {
   // index.html is rendered per request so shared links (WhatsApp, Viber, Messenger) get a proper title, description and preview image.
   const indexTemplate = fs.readFileSync(path.join(dist, 'index.html'), 'utf8');
-  const SITE_DESC = 'Το παιχνίδι ρίσκου και επιβράβευσης για παρέες. Λήστεψε το χρηματοκιβώτιο, παίξε και κέρδισε. 18+';
+  const SITE_DESC = 'DEAL OF TEMPTATIONS — THE PRIVATE REALITY GAME NIGHT. Ιδιωτική βιωματική Reality Show εμπειρία με παιχνίδια, σκηνοθεσία, ήχο, εικόνα και προαιρετικό recap. 18+.';
   const PAGES = {
-    '/site': { title: 'Deal of Temptation — Το παιχνίδι', desc: SITE_DESC, index: true },
+    '/site': { title: 'DEAL OF TEMPTATIONS — THE PRIVATE REALITY GAME NIGHT', desc: SITE_DESC, index: true },
     '/portal': { title: 'Deal of Temptation — Πληροφορίες Event', desc: 'Ημερομηνία, τοποθεσία και πρακτικές πληροφορίες της εκδήλωσης.' },
     '/promo': { title: 'Deal of Temptation — Trailer', desc: SITE_DESC, index: true },
     '/invitation': { title: 'Deal of Temptation — Πρόσκληση Heist Night', desc: 'Έχεις προσκληθεί σε μια νύχτα Heist. Συμπλήρωσε το ερωτηματολόγιο για να κλείσεις τη θέση σου.' },
