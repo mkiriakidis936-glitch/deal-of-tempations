@@ -153,7 +153,7 @@ export default function PajamaForm() {
           </label>
           <label className="flex items-start gap-2 text-sm text-foreground/90">
             <input type="checkbox" checked={form.safeWordConfirmed} onChange={(e) => set('safeWordConfirmed', e.target.checked)} className="mt-1 accent-primary" />
-            <span>Διάβασα τα όρια και συμφωνώ με το STOP / safe word. *</span>
+            <span>Διάβασα τα όρια και συμφωνώ με το STOP / λέξη ασφαλείας. *</span>
           </label>
         </div>
 
