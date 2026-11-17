@@ -20,7 +20,7 @@ export default function ProductionRuntime({selected,record,draft,onChange,onSave
  const stageIndex=Math.max(0,Math.min(Number(draft.currentStageIndex)||0,(draft.rundown||[]).length-1));
  const activeStage=(draft.rundown||[])[stageIndex];
  const latestConsents=useMemo(()=>{
-   const sorted=[...consents].sort((a,b)=>new Date(a.submittedAt||a.created_date||0)-new Date(b.submittedAt||b.created_date||0));
+   const sorted=[...consents].sort((a,b)=>new Date(a.created_date||a.submittedAt||0)-new Date(b.created_date||b.submittedAt||0));
    const latest=new Map();
    for(const item of sorted) latest.set(String(item.participantName||'').trim().toLocaleLowerCase('el-GR'),item);
    return [...latest.values()].filter(item=>item.participantName);
