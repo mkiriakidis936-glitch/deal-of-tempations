@@ -83,7 +83,7 @@ if (fs.existsSync(dist)) {
     const meta = PAGES[route] || { title: 'Deal of Temptation', desc: SITE_DESC };
     const indexable = !!meta.index;
     return indexTemplate
-      .replace('<title>Deal of Temptation</title>', `<title>${esc(meta.title)}</title>`)
+       .replace('<title>DEAL OF TEMPTATIONS</title>', `<title>${esc(meta.title)}</title>`)
       .replaceAll('__TITLE__', esc(meta.title)).replaceAll('__DESC__', esc(meta.desc))
       .replaceAll('__ORIGIN__', origin).replaceAll('__URL__', esc(origin + route))
       .replaceAll('__ROBOTS__', indexable ? 'index,follow' : 'noindex,nofollow');
