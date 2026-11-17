@@ -7,6 +7,7 @@ import { IMAGE_SLOTS, PHOTO_SPOTS, PHOTO_SPOT_IDS, VIDEO_SLOTS, MODE_COVER_SLOTS
 import { NEW_MODES } from '@/data/modes/modeRegistry';
 import ModeMediaManager from '@/components/admin/ModeMediaManager';
 import AdminMediaPreview from '@/components/admin/AdminMediaPreview';
+import AVControlRoom from '@/components/admin/AVControlRoom';
 import { MEDIA_KEY, fetchOverrides, uploadMedia, listMedia, deleteMedia, deleteAllMedia } from '@/lib/media';
 
 const IMG_ACCEPT = 'image/*,.jpg,.jpeg,.png,.webp,.gif,.avif,.heic,.svg';
@@ -291,6 +292,7 @@ export default function AdminMedia() {
 
   return (
     <div className="space-y-3">
+      <AVControlRoom />
       <input ref={imgOne} type="file" accept={IMG_ACCEPT} hidden onChange={onFiles} />
       <input ref={imgMany} type="file" accept={IMG_ACCEPT} multiple hidden onChange={onFiles} />
       <input ref={vidOne} type="file" accept={VID_ACCEPT} hidden onChange={onFiles} />
