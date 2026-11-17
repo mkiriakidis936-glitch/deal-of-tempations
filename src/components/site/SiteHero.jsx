@@ -82,7 +82,7 @@ export default function SiteHero({ c, ev, eventDate, heroSrc, onCta }) {
             {c.cta.label}
           </button>
           <a href="#photos" className="comic-boom px-8 py-4 text-xs tracking-[0.3em] text-tarot-gold inline-flex items-center justify-center">
-            ΔΕΣ ΤΟ GALLERY
+            ΔΕΣ ΤΗ ΣΥΛΛΟΓΗ
           </a>
         </div>
       </div>
