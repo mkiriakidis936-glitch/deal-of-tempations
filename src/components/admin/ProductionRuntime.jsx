@@ -7,10 +7,10 @@ const field='w-full rounded-lg border border-border bg-background px-3 py-2 text
 const label='block space-y-1 text-xs font-bold text-foreground/75';
 const makeId=()=>globalThis.crypto?.randomUUID?.()||`evt-${Date.now()}-${Math.random().toString(36).slice(2)}`;
 const defaultPhases=[
- {id:'night-opening',title:'Βραδινή έναρξη',time:'20:00',notes:'Έναρξη και βασικό επεισόδιο.'},
- {id:'night-break',title:'Overnight Break',time:'00:00',notes:'Προγραμματισμένη παύση παραγωγής.'},
- {id:'morning-return',title:'Morning Return',time:'09:00',notes:'Επαναφορά και συνέχεια.'},
- {id:'overnight-finale',title:'Finale',time:'11:00',notes:'Ολοκλήρωση εμπειρίας.'},
+ {id:'night-opening',title:'Βραδινή έναρξη',time:'',notes:'Έναρξη και βασικό επεισόδιο.'},
+ {id:'night-break',title:'Overnight Break',time:'',notes:'Προγραμματισμένη παύση παραγωγής.'},
+ {id:'morning-return',title:'Morning Return',time:'',notes:'Επαναφορά και συνέχεια.'},
+ {id:'overnight-finale',title:'Finale',time:'',notes:'Ολοκλήρωση εμπειρίας.'},
 ];
 
 export default function ProductionRuntime({selected,record,draft,onChange,onSaved,consents=[],participants=[]}){
