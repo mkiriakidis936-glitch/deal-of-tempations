@@ -1,46 +1,54 @@
-// Τα «σημεία» της εφαρμογής όπου μπορείς να βάλεις δικές σου φωτογραφίες/βίντεο (Admin → Φωτογραφίες & Βίντεο).
+// Τα σημεία της εφαρμογής όπου αντιστοιχίζονται φωτογραφίες και βίντεο.
+export const SURFACES = [
+  { id: 'site', label: 'SITE', description: 'Ιστοσελίδα και δημόσια προωθητική προβολή' },
+  { id: 'forms', label: 'FORMS', description: 'Προσκλήσεις και φόρμες συμμετοχής' },
+  { id: 'tablet', label: 'TABLET', description: 'Κεντρική οθόνη και επιλογή Mode' },
+  { id: 'tv', label: 'TV', description: 'Οθόνη τηλεόρασης και βίντεο έναρξης' },
+  { id: 'mobile', label: 'MOBILE', description: 'Εμπειρία παικτών στο /play' },
+];
+
 export const IMAGE_SLOTS = [
-  { id: 'emblem', label: 'Έμβλημα', where: 'Λογότυπο στο Site, στην πρόσκληση και στο διαβατήριο' },
-  { id: 'poster', label: 'Poster', where: 'Εξώφυλλο βίντεο στο Site και εικόνα στο Promo Heist' },
-  { id: 'group', label: 'Παρέα', where: 'Promo Heist — «Το άγνωστο»' },
-  { id: 'scene', label: 'Σκηνή', where: 'Promo Heist — «Την αποκάλυψη»' },
-  { id: 'party1', label: 'Pajama — κεντρική', where: 'Promo Pajama — κύρια εικόνα' },
-  { id: 'slipper', label: 'Παντόφλα', where: 'Pajama πρόσκληση και Promo Pajama' },
-  { id: 'party2', label: 'Pajama — νύχτα', where: 'Promo Pajama — «Τη νύχτα»' },
-  { id: 'vault', label: 'Vault', where: 'Promo Pajama και φόντο στο Pajama invite' },
-  { id: 'banner', label: 'Banner Admin', where: 'Επάνω banner στο Dashboard του Admin' },
-  { id: 'logo', label: 'Λογότυπο φόρμας', where: 'Φόρμα ερωτηματολογίου πρόσκλησης' },
-  { id: 'invitationBg', label: 'Φόντο πρόσκλησης', where: 'Εικόνα πριν ξεκινήσει το βίντεο στο teaser πρόσκλησης' },
+  { id: 'emblem', label: 'Έμβλημα', where: 'Λογότυπο στο Site, στην πρόσκληση και στο διαβατήριο', surfaces: ['site', 'forms', 'mobile'] },
+  { id: 'poster', label: 'Poster', where: 'Εξώφυλλο βίντεο στο Site και εικόνα στο Promo Heist', surfaces: ['site'] },
+  { id: 'group', label: 'Παρέα', where: 'Promo Heist — «Το άγνωστο»', surfaces: ['site'] },
+  { id: 'scene', label: 'Σκηνή', where: 'Promo Heist — «Την αποκάλυψη»', surfaces: ['site'] },
+  { id: 'party1', label: 'Pajama — κεντρική', where: 'Promo Pajama — κύρια εικόνα', surfaces: ['site', 'forms'] },
+  { id: 'slipper', label: 'Παντόφλα', where: 'Pajama πρόσκληση και Promo Pajama', surfaces: ['site', 'forms'] },
+  { id: 'party2', label: 'Pajama — νύχτα', where: 'Promo Pajama — «Τη νύχτα»', surfaces: ['site'] },
+  { id: 'vault', label: 'Vault', where: 'Promo Pajama και φόντο στο Pajama invite', surfaces: ['site', 'forms'] },
+  { id: 'banner', label: 'Banner Admin', where: 'Επάνω banner στο Dashboard του Admin', surfaces: ['tablet'] },
+  { id: 'logo', label: 'Λογότυπο φόρμας', where: 'Φόρμα ερωτηματολογίου πρόσκλησης', surfaces: ['forms'] },
+  { id: 'invitationBg', label: 'Φόντο πρόσκλησης', where: 'Εικόνα πριν ξεκινήσει το βίντεο στο teaser πρόσκλησης', surfaces: ['forms'] },
 ];
 
 export const PHOTO_SPOTS = [
-  { id: 'siteHero', label: 'Site — φόντο', where: 'Αρχική σελίδα, φόντο hero' },
-  { id: 'siteTrailer', label: 'Site — τρέιλερ', where: 'Αρχική σελίδα, ενότητα τρέιλερ' },
-  { id: 'tv', label: 'TV', where: 'Οθόνη TV' },
-  { id: 'promo', label: 'Promo', where: 'Promo, hero' },
-  { id: 'invitation', label: 'Πρόσκληση', where: 'Teaser πρόσκλησης' },
-  { id: 'pajama', label: 'Pajama πρόσκληση', where: 'Φόντο στο Pajama invite' },
+  { id: 'siteHero', label: 'Site — φόντο', where: 'Αρχική σελίδα, φόντο hero', surfaces: ['site'] },
+  { id: 'siteTrailer', label: 'Site — τρέιλερ', where: 'Αρχική σελίδα, ενότητα τρέιλερ', surfaces: ['site'] },
+  { id: 'tv', label: 'TV', where: 'Οθόνη TV', surfaces: ['tv'] },
+  { id: 'promo', label: 'Promo', where: 'Promo, hero', surfaces: ['site'] },
+  { id: 'invitation', label: 'Πρόσκληση', where: 'Teaser πρόσκλησης', surfaces: ['forms'] },
+  { id: 'pajama', label: 'Pajama πρόσκληση', where: 'Φόντο στο Pajama invite', surfaces: ['forms'] },
 ];
 export const PHOTO_SPOT_IDS = PHOTO_SPOTS.map((v) => v.id);
 
 export const GALLERIES = [
-  { id: 'heistPhotos', label: 'Heist — γκαλερί', where: 'Site (Gallery) και teaser πρόσκλησης' },
-  { id: 'pajamaPhotos', label: 'Pajama — γκαλερί', where: 'Site (Gallery) και Pajama πρόσκληση' },
-  { id: 'siteVideos', kind: 'video', label: 'Site — επιπλέον βίντεο', where: 'Αρχική σελίδα, κάτω από το τρέιλερ (όσα θες)' },
+  { id: 'heistPhotos', label: 'Heist — γκαλερί', where: 'Site (Gallery) και teaser πρόσκλησης', surfaces: ['site', 'forms'] },
+  { id: 'pajamaPhotos', label: 'Pajama — γκαλερί', where: 'Site (Gallery) και Pajama πρόσκληση', surfaces: ['site', 'forms'] },
+  { id: 'siteVideos', kind: 'video', label: 'Site — επιπλέον βίντεο', where: 'Αρχική σελίδα, κάτω από το τρέιλερ (όσα θες)', surfaces: ['site'] },
 ];
 
 export const MODE_COVER_SLOTS = [
-  { id: 'modeCover_classic', modeId: 'classic', label: 'Κλασικό' },
-  { id: 'modeCover_marathon', modeId: 'marathon', label: 'Mega Marathon' },
-  { id: 'modeCover_arrest_heist', modeId: 'arrest_heist', label: 'Arrest & Heist' },
-  { id: 'modeCover_pajama', modeId: 'pajama', label: 'Pajama Mode' },
-  { id: 'modeCover_pedi_extended', modeId: 'pedi_extended', label: 'Pedi-Glam Extended' },
-  { id: 'modeCover_lockdown', modeId: 'lockdown', label: 'Pajama Lockdown' },
-  { id: 'modeCover_beach_bar', modeId: 'beach_bar', label: 'Beach Bar Lockdown' },
+  { id: 'modeCover_classic', modeId: 'classic', label: 'Κλασικό', surfaces: ['tablet', 'forms'] },
+  { id: 'modeCover_marathon', modeId: 'marathon', label: 'Mega Marathon', surfaces: ['tablet', 'forms'] },
+  { id: 'modeCover_arrest_heist', modeId: 'arrest_heist', label: 'Arrest & Heist', surfaces: ['tablet', 'forms'] },
+  { id: 'modeCover_pajama', modeId: 'pajama', label: 'Pajama Mode', surfaces: ['tablet', 'forms'] },
+  { id: 'modeCover_pedi_extended', modeId: 'pedi_extended', label: 'Pedi-Glam Extended', surfaces: ['tablet', 'forms'] },
+  { id: 'modeCover_lockdown', modeId: 'lockdown', label: 'PAJAMA LOCKDOWN 18+', surfaces: ['tablet', 'forms'] },
+  { id: 'modeCover_beach_bar', modeId: 'beach_bar', label: 'BEACH BAR HOME LOCKDOWN', surfaces: ['tablet', 'forms'] },
 ];
 
-// Ξεχωριστά σημεία για τα δύο βίντεο έναρξης στην οθόνη TV.
+// Τα δύο βίντεο έναρξης της τηλεόρασης.
 export const VIDEO_SLOTS = [
-  { id: 'welcomeVideo', label: 'WELCOME VIDEO', where: 'TV — όταν συνδέεται σε ενεργή συνεδρία' },
-  { id: 'countdownVideo', label: 'COUNTDOWN VIDEO', where: 'TV — αμέσως μετά την εντολή Έναρξη Παιχνιδιού' },
+  { id: 'welcomeVideo', label: 'WELCOME VIDEO', where: 'TV — όταν συνδέεται σε ενεργή συνεδρία', surfaces: ['tv'] },
+  { id: 'countdownVideo', label: 'COUNTDOWN VIDEO', where: 'TV — αμέσως μετά την εντολή Έναρξη Παιχνιδιού', surfaces: ['tv'] },
 ];
