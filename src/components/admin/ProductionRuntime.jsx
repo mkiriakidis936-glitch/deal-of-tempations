@@ -67,6 +67,9 @@ export default function ProductionRuntime({selected,record,draft,onChange,onSave
      catch(error){setMessage(error.message||'Το στάδιο αποθηκεύτηκε, αλλά δεν προβλήθηκε στην TV.');}
    }
  };
+ const editPhase=(id,patch)=>update({overnightPhases:phases.map((phase,index)=>(phase.id||String(index))===id?{...phase,...patch}:phase)});
+ const addPhase=()=>update({overnightPhases:[...phases,{id:makeId(),title:'Νέα φάση',time:'12:00',notes:''}]});
+ const removePhase=(id)=>update({overnightPhases:phases.filter((phase,index)=>(phase.id||String(index))!==id)});
  const advancePhase=async()=>{
    const next=Math.min((Number(draft.overnightPhaseIndex)||0)+1,phases.length-1);
    const phase=phases[next];
@@ -152,8 +155,8 @@ export default function ProductionRuntime({selected,record,draft,onChange,onSave
 
   {draft.overnight&&<ComicPanel className="bg-card space-y-3">
    <div><h3 className="font-heading text-lg">OVERNIGHT EXPERIENCE</h3><p className="text-xs text-foreground/60">Διακριτές φάσεις, προγραμματισμένες παύσεις και οργανωμένη επιστροφή.</p></div>
-   {phases.map((phase,index)=><div key={phase.id||index} className={`rounded-lg border p-3 space-y-1 ${index===(Number(draft.overnightPhaseIndex)||0)?'border-primary bg-primary/10':'border-border'}`}><div className="flex justify-between gap-2"><b className="text-sm">{phase.title}</b><span className="text-xs">{phase.time||'—'}</span></div><p className="text-xs text-foreground/55">{phase.notes||''}</p></div>)}
-   <div className="flex flex-wrap gap-2"><ComicButton size="sm" onClick={()=>advancePhase()} disabled={busy||(Number(draft.overnightPhaseIndex)||0)>=phases.length-1}>ΕΠΟΜΕΝΗ ΦΑΣΗ</ComicButton><ComicButton size="sm" variant="dark" onClick={()=>persist(withLog('overnight-reset','Επαναφορά φάσης Overnight',{overnightPhaseIndex:0}),'Η φάση Overnight επανήλθε στην αρχή.')}>ΕΠΑΝΑΦΟΡΑ</ComicButton></div>
+   {phases.map((phase,index)=><div key={phase.id||index} className={`rounded-lg border p-3 space-y-2 ${index===(Number(draft.overnightPhaseIndex)||0)?'border-primary bg-primary/10':'border-border'}`}><div className="grid grid-cols-[1fr_110px_auto] gap-2"><input className={field} value={phase.title||''} onChange={e=>editPhase(phase.id||String(index),{title:e.target.value})}/><input className={field} type="time" value={phase.time||''} onChange={e=>editPhase(phase.id||String(index),{time:e.target.value})}/><button className="text-xs text-red-400" onClick={()=>removePhase(phase.id||String(index))} disabled={phases.length<=1}>×</button></div><input className={field} value={phase.notes||''} placeholder="Οδηγίες φάσης" onChange={e=>editPhase(phase.id||String(index),{notes:e.target.value})}/></div>)}
+   <div className="flex flex-wrap gap-2"><ComicButton size="sm" onClick={()=>advancePhase()} disabled={busy||(Number(draft.overnightPhaseIndex)||0)>=phases.length-1}>ΕΠΟΜΕΝΗ ΦΑΣΗ</ComicButton><ComicButton size="sm" variant="dark" onClick={()=>persist(withLog('overnight-reset','Επαναφορά φάσης Overnight',{overnightPhaseIndex:0}),'Η φάση Overnight επανήλθε στην αρχή.')}>ΕΠΑΝΑΦΟΡΑ</ComicButton><ComicButton size="sm" variant="dark" onClick={addPhase}>+ ΦΑΣΗ</ComicButton></div>
    <p className="text-[10px] text-foreground/50">Οι ώρες είναι σημεία προγραμματισμού. Η αλλαγή φάσης γίνεται από τον υπεύθυνο παραγωγής.</p>
   </ComicPanel>}
 
