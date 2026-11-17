@@ -329,8 +329,6 @@ export default function AdminMedia() {
           })}
         </div>
       </ComicPanel>
-
-      </ComicPanel>
       )}
 
       {showSurface('tablet', 'forms') && (
@@ -367,8 +365,6 @@ export default function AdminMedia() {
           onSave={(modeMedia) => run('mode-media', () => save({ ...ov, modeMedia }), 'Το Πολυμέσα Mode αποθηκεύτηκε ✓')}
         />
       </ComicPanel>
-
-      </ComicPanel>
       )}
 
       {showSurface('site', 'forms', 'tablet', 'mobile') && (
@@ -388,8 +384,6 @@ export default function AdminMedia() {
             </div>
           ))}
         </div>
-      </ComicPanel>
-
       </ComicPanel>
       )}
 
