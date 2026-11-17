@@ -26,6 +26,7 @@ export default function AVControlRoom() {
   const [message, setMessage] = useState('');
   const [busy, setBusy] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
+  const [volume, setVolume] = useState(0.8);
   const audioRef = useRef(null);
   const videoRef = useRef(null);
 
@@ -158,6 +159,17 @@ export default function AVControlRoom() {
     } catch (error) { setMessage(error.message || 'Δεν ήταν δυνατή η διακοπή της εξόδου.'); }
   }
 
+  async function sendPlaybackCommand(playbackCommand, nextVolume = volume) {
+    if (!sessionCode) { setMessage('Επίλεξε πρώτα Event.'); return; }
+    try {
+      const existing = cueRecord || (await base44.entities.ProductionCue.filter({ sessionCode }, { limit: 1 })).items?.[0];
+      if (!existing?.id || !existing.active) { setMessage('Δεν υπάρχει ενεργό Media στην TV.'); return; }
+      const saved = await base44.entities.ProductionCue.update(existing.id, { playbackCommand, volume: nextVolume, commandAt: Date.now() });
+      setCueRecord(saved);
+      setMessage('Η εντολή χειρισμού στάλθηκε στην TV.');
+    } catch (error) { setMessage(error.message || 'Δεν στάλθηκε η εντολή χειρισμού.'); }
+  }
+
   async function playQueue(direction = 0) {
     if (!queue.length) return;
     const nextIndex = queueIndex < 0 ? 0 : Math.min(queue.length - 1, Math.max(0, queueIndex + direction));
@@ -239,7 +251,9 @@ export default function AVControlRoom() {
           <div className="flex items-center justify-between"><h3 className="font-heading text-lg">LIVE AV OUTPUT</h3><span className={`rounded-full px-2 py-1 text-[10px] ${cueRecord?.active ? 'bg-emerald-500/20 text-emerald-300' : 'bg-secondary text-foreground/60'}`}>{cueRecord?.active ? 'LIVE' : 'STANDBY'}</span></div>
           <p className="text-xs text-foreground/60">Η έξοδος στέλνει το επιλεγμένο media στην υπάρχουσα οθόνη /tv για το ενεργό Event.</p>
           <div className="grid grid-cols-3 gap-2"><ComicButton size="sm" disabled={busy || !queue.length} onClick={() => playQueue(0)}>▶ PLAY</ComicButton><ComicButton size="sm" variant="dark" disabled={busy || queueIndex <= 0} onClick={() => playQueue(-1)}>PREV</ComicButton><ComicButton size="sm" variant="dark" disabled={busy || queueIndex < 0 || queueIndex >= queue.length - 1} onClick={() => playQueue(1)}>NEXT</ComicButton></div>
-          <ComicButton size="sm" variant="dark" disabled={busy} onClick={stopOutput}>■ STOP TV OUTPUT</ComicButton>
+          <div className="grid grid-cols-3 gap-2"><ComicButton size="sm" variant="dark" disabled={busy || !cueRecord?.active} onClick={() => sendPlaybackCommand("play")}>▶ CONTINUE</ComicButton><ComicButton size="sm" variant="dark" disabled={busy || !cueRecord?.active} onClick={() => sendPlaybackCommand("pause")}>Ⅱ PAUSE</ComicButton><ComicButton size="sm" variant="dark" disabled={busy || !cueRecord?.active} onClick={() => sendPlaybackCommand("stop")}>■ STOP MEDIA</ComicButton></div>
+          <div className="flex items-center gap-3 text-xs"><span>VOLUME</span><input aria-label="Ένταση TV" className="flex-1" type="range" min="0" max="1" step="0.05" value={volume} onChange={(e) => setVolume(Number(e.target.value))} /><b>{Math.round(volume * 100)}%</b><ComicButton size="sm" variant="dark" disabled={busy || !cueRecord?.active} onClick={() => sendPlaybackCommand("volume", volume)}>SET</ComicButton><ComicButton size="sm" variant="dark" disabled={busy || !cueRecord?.active} onClick={() => sendPlaybackCommand("mute")}>MUTE</ComicButton><ComicButton size="sm" variant="dark" disabled={busy || !cueRecord?.active} onClick={() => sendPlaybackCommand("unmute")}>UNMUTE</ComicButton></div>
+          <ComicButton size="sm" variant="dark" disabled={busy} onClick={stopOutput}>■ STOP TV OVERLAY</ComicButton>
           <div className="text-xs text-foreground/60">Τρέχον στοιχείο: {currentCue?.label || '—'}</div>
           <div className="space-y-1 max-h-56 overflow-y-auto">{queue.map((item, index) => <div key={item.id} className={`flex items-center gap-1 rounded-lg border p-2 ${index === queueIndex ? 'border-primary bg-primary/10' : 'border-border'}`}><button className="min-w-0 flex-1 text-left text-xs truncate" onClick={() => publish(item, index)}>{index + 1}. {item.label}</button><button className="px-2 text-xs" disabled={index === 0} onClick={() => moveQueueItem(index, -1)}>↑</button><button className="px-2 text-xs" disabled={index === queue.length - 1} onClick={() => moveQueueItem(index, 1)}>↓</button><button className="px-2 text-xs text-red-400" onClick={() => removeQueueItem(item.id)}>×</button></div>)}</div>
           <div className="flex flex-wrap gap-2"><ComicButton size="sm" variant="dark" onClick={async () => { setQueue([]); setQueueIndex(-1); await persist(metadata, [], -1); }}>Καθαρισμός ουράς</ComicButton><a className="text-xs underline self-center" href="/tv" target="_blank" rel="noreferrer">Άνοιγμα TV Output ↗</a></div>
