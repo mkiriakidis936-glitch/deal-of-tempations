@@ -207,15 +207,15 @@ export function useModeCtx(state, updateState) {
 
   const centralStopped = !!state.stopActive;
   const stopped = !!mg.stop || centralStopped;
-  const pauseRef = useRef({ active: false, at: null });
+  const pauseRef = useRef({ active: false, at: null, timerWasRunning: false });
 
   // Ένα ενιαίο pause lifecycle: το χρονόμετρο και οι προθεσμίες αποστολών
   // παγώνουν μία φορά, ανεξάρτητα από το αν το STOP ήρθε από Tablet ή Mobile.
   useEffect(() => {
     if (stopped && !pauseRef.current.active) {
       const at = Date.now();
-      pauseRef.current = { active: true, at };
       const current = mgRef.current;
+      pauseRef.current = { active: true, at, timerWasRunning: !!current.timer?.endsAt };
       if (current.timer?.endsAt) setMg({ timer: timerPause(current.timer), pauseAt: at });
       return;
     }
@@ -231,7 +231,7 @@ export function useModeCtx(state, updateState) {
       });
       const next = {
         ...current,
-        timer: timerResume(current.timer),
+        timer: pauseRef.current.timerWasRunning ? timerResume(current.timer) : current.timer,
         missions,
         pauseAt: null,
         ...(current.startedAt ? { startedAt: current.startedAt + pausedFor } : {}),
@@ -240,7 +240,7 @@ export function useModeCtx(state, updateState) {
       };
       mgRef.current = next;
       updateState({ mg: next });
-      pauseRef.current = { active: false, at: null };
+      pauseRef.current = { active: false, at: null, timerWasRunning: false };
     }
   }, [stopped, setMg, updateState]);
 
