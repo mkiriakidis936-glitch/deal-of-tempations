@@ -27,9 +27,9 @@ const MODE_IDS = {
 };
 
 const homeContent = {
-  overline: 'ΙΔΙΩΤΙΚΕΣ ΕΜΠΕΙΡΙΕΣ ΠΑΙΧΝΙΔΙΟΥ · 18+',
-  titleLines: ['DEAL OF', 'TEMPTATION'],
-  tagline: 'Ανακάλυψε τα δύο αρχικά events και τα διαθέσιμα ψηφιακά Game Modes.',
+  overline: 'THE PRIVATE REALITY GAME NIGHT · 18+',
+  titleLines: ['DEAL OF', 'TEMPTATIONS'],
+  tagline: 'Μια ιδιωτική Reality Show εμπειρία με παιχνίδια, σκηνοθετημένη ροή και τηλεοπτική παραγωγή.',
   cta: { label: 'ΕΠΙΛΟΓΗ EXPERIENCE', path: '/site#modes' },
 };
 
