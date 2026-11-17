@@ -188,7 +188,7 @@ export default function ProductionRuntime({selected,record,draft,onChange,onSave
    if(!saved&&deleted.length)setMessage('Τα αρχεία διαγράφηκαν, αλλά η ενημέρωση του αρχείου παραγωγής απέτυχε. Ανανέωσε τη σελίδα πριν συνεχίσεις.');
  };
  const copyRecap=async()=>{
-   const text=[draft.title||'DEAL OF TEMPTATIONS',draft.winnerName? `Νικητής: ${draft.winnerName}`:'',draft.recapNotes||'',draft.socialTeaser||''].filter(Boolean).join('\n\n');
+   const text=[draft.title||'DEAL OF TEMPTATIONS',draft.winnerName? `Νικητής: ${draft.winnerName}`:'',draft.recapNotes||'',draft.socialTeaser||'',(draft.recapPublishedMedia||[]).join('\n')].filter(Boolean).join('\n\n');
    try{await navigator.clipboard.writeText(text);setMessage('Το κείμενο recap αντιγράφηκε.');}
    catch{setMessage('Δεν ήταν δυνατή η αντιγραφή από αυτή τη συσκευή.');}
  };
