@@ -121,7 +121,7 @@ export default function AVControlRoom() {
     if (!sessionCode) { setMessage('Επίλεξε πρώτα Event.'); return; }
     if (!item) { setMessage('Δεν έχει επιλεγεί αρχείο για προβολή.'); return; }
     const assetMeta = metadata[item.url] || {};
-    if (assetMeta.permission && assetMeta.permission !== 'cleared') { setMessage('Η προβολή είναι κλειδωμένη μέχρι να καταχωριστεί η απαιτούμενη άδεια ή συγκατάθεση.'); return; }
+    if (assetMeta.permission !== 'cleared') { setMessage('Η προβολή είναι κλειδωμένη μέχρι να καταχωριστεί η απαιτούμενη άδεια ή συγκατάθεση.'); return; }
     setBusy(true);
     try {
       const existing = cueRecord || (await base44.entities.ProductionCue.filter({ sessionCode }, { limit: 1 })).items?.[0] || null;
@@ -226,12 +226,12 @@ export default function AVControlRoom() {
               <label className="block space-y-1 text-xs font-bold">SCENE / EVENT<input className={field} value={selectedMeta.scene || ''} onChange={(e) => setMetadata((v) => ({ ...v, [selected]: { ...selectedMeta, scene: e.target.value } }))} onBlur={(e) => saveMetadata({ scene: e.target.value })} /></label>
             </div>
             <label className="block space-y-1 text-xs font-bold">ΔΙΚΑΙΩΜΑΤΑ / ΣΥΓΚΑΤΑΘΕΣΗ
-              <select className={field} value={selectedMeta.permission || 'cleared'} onChange={(e) => saveMetadata({ permission: e.target.value })}>
+              <select className={field} value={selectedMeta.permission || 'pending'} onChange={(e) => saveMetadata({ permission: e.target.value })}>
                 <option value="cleared">Επιτρέπεται η χρήση</option><option value="pending">Εκκρεμεί άδεια / συγκατάθεση</option><option value="blocked">Απαγορεύεται η χρήση</option>
               </select>
             </label>
             <label className="block space-y-1 text-xs font-bold">ΣΗΜΕΙΩΣΕΙΣ / ΠΗΓΗ ΑΔΕΙΑΣ<textarea className={field} rows={2} value={selectedMeta.notes || ''} onChange={(e) => setMetadata((v) => ({ ...v, [selected]: { ...selectedMeta, notes: e.target.value } }))} onBlur={(e) => saveMetadata({ notes: e.target.value })} /></label>
-            <div className="flex flex-wrap gap-2"><ComicButton size="sm" onClick={() => addToQueue(selectedFile)}>＋ ΣΤΗΝ ΟΥΡΑ</ComicButton><ComicButton size="sm" onClick={() => publish({ ...selectedFile, label: selectedMeta.title || selectedFile.name }, queueIndex)} disabled={busy || (selectedMeta.permission && selectedMeta.permission !== 'cleared')}>▶ ΑΜΕΣΗ ΠΡΟΒΟΛΗ TV</ComicButton></div>
+            <div className="flex flex-wrap gap-2"><ComicButton size="sm" onClick={() => addToQueue(selectedFile)}>＋ ΣΤΗΝ ΟΥΡΑ</ComicButton><ComicButton size="sm" onClick={() => publish({ ...selectedFile, label: selectedMeta.title || selectedFile.name }, queueIndex)} disabled={busy || selectedMeta.permission !== 'cleared'}>▶ ΑΜΕΣΗ ΠΡΟΒΟΛΗ TV</ComicButton></div>
           </> : <p className="text-xs text-foreground/50">Επίλεξε αρχείο από τη βιβλιοθήκη για προεπισκόπηση και διαχείριση.</p>}
         </ComicPanel>
 
