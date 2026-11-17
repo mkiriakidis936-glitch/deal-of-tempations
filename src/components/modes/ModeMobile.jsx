@@ -3,7 +3,7 @@ import { MODE_THEMES, modeMeta } from '@/data/modes/modeRegistry';
 import { EXTENDED_CHAOS_MARKET_CARDS, GATE_TOKENS } from '@/data/modes/extendedContent';
 import { EXIT_CODE } from '@/data/modes/lockdownContent';
 import { MORNING_CLUES } from '@/data/modes/extendedContent';
-import { fmt, sfx, timerLeft, timerPause, useTick, setGameStopActive } from '@/lib/modeKit';
+import { fmt, sfx, timerLeft, useTick, setGameStopActive } from '@/lib/modeKit';
 import { enablePlayerPush } from '@/lib/push';
 import GameDurationClock from '@/components/shared/GameDurationClock';
 
@@ -50,7 +50,7 @@ export default function ModeMobile({ state, me, updateState, onChangePlayer, ses
     if (mg.stop || state.stopActive) return;
     const stopAt = Date.now();
     updateState({
-      mg: { stop: true, stopAt, stopBy: me.id, timer: timerPause(mg.timer) },
+      mg: { stop: true, stopAt, stopBy: me.id },
       gamePausedAt: state.gamePausedAt || stopAt,
     });
   }
