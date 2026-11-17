@@ -11,7 +11,7 @@ export default function SiteFaq({ c }) {
   return (
     <section id="faq" className="max-w-3xl mx-auto px-4 py-16">
       <div className="text-center mb-10">
-        <div className="text-[11px] tracking-[0.45em] text-tarot-gold/60 uppercase mb-2">FAQ</div>
+        <div className="text-[11px] tracking-[0.45em] text-tarot-gold/60 uppercase mb-2">ΣΥΧΝΕΣ ΕΡΩΤΗΣΕΙΣ</div>
         <h2 className="font-display text-2xl sm:text-3xl text-tarot-gold tracking-[0.1em]">ΚΑΝΟΝΕΣ &amp; ΑΠΟΡΙΕΣ</h2>
       </div>
 
