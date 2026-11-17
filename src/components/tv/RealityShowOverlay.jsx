@@ -1,0 +1,8 @@
+import React,{useEffect,useState} from 'react';
+import {base44} from '@/api/base44Client';
+export default function RealityShowOverlay({sessionCode}){
+ const [cue,setCue]=useState(null);
+ useEffect(()=>{if(!sessionCode)return;let live=true;const load=()=>base44.entities.ProductionCue.filter({sessionCode},{limit:1}).then(({items=[]})=>{if(live)setCue(items[0]||null)}).catch(()=>{});load();const off=base44.entities.ProductionCue.subscribe(e=>{if(e?.data?.sessionCode===sessionCode)load()});return()=>{live=false;off?.()}},[sessionCode]);
+ if(!cue?.active)return null;
+ return <div className="fixed inset-0 z-[95] bg-black/95 flex items-center justify-center p-4"><button onClick={()=>setCue(null)} className="absolute top-5 right-5 z-[2] border border-white/40 rounded-full px-4 py-2 text-xs text-white">ΚΛΕΙΣΙΜΟ</button>{cue.kind==='video'&&cue.source?<video key={cue.activatedAt} src={cue.source} autoPlay controls playsInline className="max-h-full max-w-full"/>:null}{cue.kind==='audio'&&cue.source?<div className="max-w-xl w-full bg-neutral-950 border border-amber-300/40 rounded-2xl p-8 text-center text-white"><p className="text-xs tracking-widest text-amber-300">SOUND IDENTITY</p><h2 className="text-3xl my-5">{cue.label}</h2><audio key={cue.activatedAt} src={cue.source} autoPlay controls className="w-full"/></div>:null}{cue.kind==='image'&&cue.source?<img src={cue.source} alt={cue.label} className="max-h-full max-w-full object-contain"/>:null}{['scene','break'].includes(cue.kind)&&<div className="text-center"><p className="text-xs tracking-[.5em] text-amber-300">THE PRIVATE REALITY GAME NIGHT</p><h2 className="font-heading text-5xl sm:text-7xl text-white mt-6">{cue.label}</h2></div>}</div>
+}

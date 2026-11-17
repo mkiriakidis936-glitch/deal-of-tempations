@@ -9,7 +9,7 @@ export const ENTITIES = [
   'Achievement', 'AppSetting', 'BacheloretteIntake', 'BlackmailVault', 'Chronicle', 'GameContent',
   'GameSession', 'GameSessionSnapshot', 'Haunting', 'InvitationRSVP', 'Memorial', 'PajamaContent', 'PajamaIntake',
   'PlayerIntake', 'PlayerProfile', 'SessionArchive', 'VIPInvitation', 'VIPInvitationSubmission',
-  'PublicFormSubmission', 'VIPAccessProfile', 'VIPAccessSession', 'VIPVaultCertificate', 'ShowProduction',
+  'PublicFormSubmission', 'VIPAccessProfile', 'VIPAccessSession', 'VIPVaultCertificate', 'ShowProduction', 'ProductionConsent', 'ProductionCue',
 ];
 
 // Who may do what. Default for every operation is "public" (the phones/TV
@@ -30,6 +30,8 @@ const rules = {
   VIPVaultCertificate: { read: ADMIN, create: ADMIN, update: ADMIN, delete: ADMIN },
   // Reality-show production plans are private and editable only by administrators.
   ShowProduction: { read: ADMIN, create: ADMIN, update: ADMIN, delete: ADMIN },
+  ProductionConsent: { read: ADMIN, update: ADMIN, delete: ADMIN },
+  ProductionCue: { create: ADMIN, update: ADMIN, delete: ADMIN },
   Achievement:        { create: ADMIN, update: ADMIN, delete: ADMIN },
   // configuration / content: everybody reads, only admins change
   AppSetting:     { create: ADMIN, update: ADMIN, delete: ADMIN },
@@ -637,7 +639,7 @@ export function entityRoutes() {
     next();
   });
   // Public forms are open to everyone; cap how many submissions one IP can send so bots can't flood the DB.
-  const FORM_ENTITIES = new Set(['PlayerIntake', 'PajamaIntake', 'BacheloretteIntake', 'InvitationRSVP', 'VIPInvitationSubmission']);
+  const FORM_ENTITIES = new Set(['PlayerIntake', 'PajamaIntake', 'BacheloretteIntake', 'InvitationRSVP', 'VIPInvitationSubmission', 'ProductionConsent']);
   const formBuckets = new Map();
   const formLimit = (req, res, next) => {
     if (isAdmin(req) || !FORM_ENTITIES.has(req.entity)) return next();
@@ -1223,6 +1225,18 @@ export function entityRoutes() {
   });
 
   r.post('/:entity', guard('create'), formLimit, async (req, res) => {
+    if (req.entity === 'ProductionConsent' && !isAdmin(req)) {
+      const body = req.body || {};
+      const code = String(body.sessionCode || '').trim().toUpperCase();
+      const participant = typeof body.participantName === 'string' ? body.participantName.trim() : '';
+      if (!/^[A-Z0-9]{4}$/.test(code) || !participant || participant.length > 100 || body.adultConfirmed !== true ||
+          typeof body.recordingConsent !== 'boolean' || typeof body.privateUseConsent !== 'boolean' || typeof body.publicUseConsent !== 'boolean' ||
+          typeof body.withdrawn !== 'boolean') return res.status(400).json({ error: 'Συμπλήρωσε σωστά τη δήλωση συγκατάθεσης.' });
+      const { rows: eventRows } = await query("SELECT id FROM records WHERE entity = 'GameSession' AND data->>'sessionCode' = $1 LIMIT 1", [code]);
+      if (!eventRows[0]) return res.status(404).json({ error: 'Η διοργάνωση δεν βρέθηκε.' });
+      req.body = { sessionCode: code, participantName: participant, contact: typeof body.contact === 'string' ? body.contact.trim().slice(0,160) : '', recordingConsent: body.recordingConsent, privateUseConsent: body.privateUseConsent, publicUseConsent: body.publicUseConsent, withdrawn: body.withdrawn, adultConfirmed: true, consentVersion: '2026-11-17', submittedAt: new Date().toISOString() };
+    }
+    if (req.entity === 'ProductionCue' && !isAdmin(req)) return res.status(403).json({ error: 'Forbidden' });
     if (!isAdmin(req) && ['PajamaIntake', 'BacheloretteIntake'].includes(req.entity)) {
       const body = req.body || {};
       if (body.adultConfirmed !== true || body.safeWordConfirmed !== true) {

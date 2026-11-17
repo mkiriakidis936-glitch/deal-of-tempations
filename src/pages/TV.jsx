@@ -1,5 +1,6 @@
 import ModeTV from '@/components/modes/ModeTV';
 import TVExperienceLayer from '@/components/tv/TVExperienceLayer';
+import RealityShowOverlay from '@/components/tv/RealityShowOverlay';
 import { isNewMode } from '@/data/modes/modeRegistry';
 import React, { useMemo, useState } from 'react';
 import { useGameSession } from '@/hooks/useGameSession';
@@ -222,6 +223,7 @@ export default function TVScreen() {
         <MediaSpot src={PHOTO.tv || FILM.tv} slot="tv" className="w-full h-full object-cover" />
       </div>
       {state.stopActive && <div className="fixed inset-0 z-[100] bg-destructive/90 flex items-center justify-center text-center pointer-events-auto"><div className="font-heading text-7xl text-white">⏸ ΣΤΟΠ</div></div>}
+      <RealityShowOverlay sessionCode={session.sessionCode} />
       <TVExperienceLayer sessionCode={session.sessionCode} mode={state.mode} playerCount={state.players?.length || 0} stage={state.stage} online={networkOnline} fullscreen={fullscreen} onToggleFullscreen={toggleFullscreen} event={currentEvent} />
       {(state.absoluteInterrogation?.active || state.interrogationVerdict || state.bailoutAuction?.active || state.blackBribe || state.sacrificeWheel || state.bailoutOutcome) && (
         <div className="fixed bottom-4 left-4 z-50 max-w-sm w-[min(92vw,24rem)] comic-panel bg-background/95 border-2 border-primary p-3 space-y-2">

@@ -22,6 +22,7 @@ const PajamaForm = lazy(() => import('@/pages/PajamaForm'));
 const ModeForm = lazy(() => import('@/pages/ModeForm'));
 const PajamaInvite = lazy(() => import('@/pages/PajamaInvite'));
 const Site = lazy(() => import('@/pages/Site'));
+const ProductionConsent = lazy(() => import('@/pages/ProductionConsent'));
 const EventPortal = lazy(() => import('@/pages/EventPortal'));
 const Login = lazy(() => import('@/pages/Login'));
 const Register = lazy(() => import('@/pages/Register'));
@@ -78,6 +79,7 @@ const AuthenticatedApp = () => {
       <Route path="/gift-unlock" element={<GiftUnlock />} />
       <Route path="/pajama-invite" element={<PajamaInvite />} />
       <Route path="/site" element={<Site />} />
+      <Route path="/production-consent" element={<ProductionConsent />} />
       <Route path="/portal" element={<EventPortal />} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
