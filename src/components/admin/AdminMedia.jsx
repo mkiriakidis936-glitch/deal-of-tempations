@@ -2,12 +2,11 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import ComicPanel from '@/components/comic/ComicPanel';
 import ComicButton from '@/components/comic/ComicButton';
-import AdminSettingVersionHistory from '@/components/admin/AdminSettingVersionHistory';
-import { saveAdminSettingVersion } from '@/lib/adminVersionHistory';
 import { ART, DEFAULTS, applyMediaOverrides } from '@/data/brandArt';
-import { IMAGE_SLOTS, PHOTO_SPOTS, PHOTO_SPOT_IDS, VIDEO_SLOTS, MODE_COVER_SLOTS, GALLERIES } from '@/data/mediaSlots';
+import { IMAGE_SLOTS, PHOTO_SPOTS, PHOTO_SPOT_IDS, VIDEO_SLOTS, MODE_COVER_SLOTS, GALLERIES, SURFACES } from '@/data/mediaSlots';
 import { NEW_MODES } from '@/data/modes/modeRegistry';
 import ModeMediaManager from '@/components/admin/ModeMediaManager';
+import AdminMediaPreview from '@/components/admin/AdminMediaPreview';
 import { MEDIA_KEY, fetchOverrides, uploadMedia, listMedia, deleteMedia, deleteAllMedia } from '@/lib/media';
 
 const IMG_ACCEPT = 'image/*,.jpg,.jpeg,.png,.webp,.gif,.avif,.heic,.svg';
@@ -29,12 +28,12 @@ const removeUrl = (value, url) => {
 };
 const mb = (n) => (n >= 1048576 ? `${(n / 1048576).toFixed(1)} MB` : `${Math.max(1, Math.round(n / 1024))} KB`);
 
-function Thumb({ src, video, audio, className = '', objectPosition = '50% 50%' }) {
+function Thumb({ src, video, audio, className = '', objectPosition = '50% 50%', onLoad, onError }) {
   if (!src) return <div className={`bg-black/40 ${className}`} />;
-  if (audio) return <div className={`bg-black/30 flex items-center justify-center p-2 ${className}`}><audio src={src} controls preload="metadata" className="w-full" /></div>;
+  if (audio) return <div className={`bg-black/30 flex items-center justify-center p-2 ${className}`}><audio src={src} controls preload="metadata" onCanPlay={onLoad} onError={onError} className="w-full" /></div>;
   return video
-    ? <video src={src} controls muted playsInline preload="metadata" style={{ objectPosition }} className={`bg-black object-cover ${className}`} />
-    : <img src={src} alt="" loading="lazy" style={{ objectPosition }} className={`object-contain ${className}`} />;
+    ? <video src={src} controls muted playsInline preload="metadata" onLoadedData={onLoad} onError={onError} style={{ objectPosition }} className={`bg-black object-cover ${className}`} />
+    : <img src={src} alt="" loading="lazy" onLoad={onLoad} onError={onError} style={{ objectPosition }} className={`object-contain ${className}`} />;
 }
 
 export default function AdminMedia() {
@@ -43,6 +42,9 @@ export default function AdminMedia() {
   const [library, setLibrary] = useState([]);
   const [libraryFilter, setLibraryFilter] = useState('all');
   const [librarySearch, setLibrarySearch] = useState('');
+  const [surfaceFilter, setSurfaceFilter] = useState('all');
+  const [fileLoadStatus, setFileLoadStatus] = useState({});
+  const [libraryStatusFilter, setLibraryStatusFilter] = useState('all');
   const LIBRARY_CATEGORIES = [
     { id: 'heist', label: 'Ληστεία' },
     { id: 'pajama', label: 'Πιτζάμα' },
@@ -50,6 +52,7 @@ export default function AdminMedia() {
     { id: 'uncategorized', label: 'Χωρίς κατηγορία' },
   ];
   const categoryOf = (url) => ov.libraryCategories?.[url] || 'uncategorized';
+  const showSurface = (...ids) => surfaceFilter === 'all' || ids.includes(surfaceFilter);
   const [busy, setBusy] = useState(null);
   const [progress, setProgress] = useState(0);
   const [dragging, setDragging] = useState(false);
@@ -81,7 +84,6 @@ export default function AdminMedia() {
     const galleryIds = ['heistPhotos', 'pajamaPhotos', 'siteVideos'];
     const clean = Object.fromEntries(Object.entries(next).filter(([k, v]) => (k.startsWith('clearAll') ? !!v : (Array.isArray(v) ? (v.length > 0 || galleryIds.includes(k)) : v))));
     if (rec?.id) {
-      await saveAdminSettingVersion(MEDIA_KEY, ov);
       await base44.entities.AppSetting.update(rec.id, { value: clean });
     }
     else setRec(await base44.entities.AppSetting.create({ key: MEDIA_KEY, value: clean }));
@@ -97,7 +99,7 @@ export default function AdminMedia() {
   };
 
   // mode: 'slot' (αντικατάσταση σημείου) | 'add' (προσθήκη σε λίστα) | 'replace' (αντικατάσταση στοιχείου λίστας)
-  const pick = (id, mode, ref, index) => { target.current = { id, mode, index }; ref.current?.click(); };
+  const pick = (id, mode, ref, index, surface = surfaceFilter) => { target.current = { id, mode, index, surface }; ref.current?.click(); };
 
   const onFiles = async (e) => {
     const files = [...e.target.files];
@@ -110,7 +112,13 @@ export default function AdminMedia() {
         const r = await uploadMedia(files[i], (p) => setProgress((i + p) / files.length));
         urls.push(r.url);
       }
-      if (t.mode === 'library') { refreshLibrary(); return; }
+      if (t.mode === 'library') {
+        const librarySurfaces = { ...(ov.librarySurfaces || {}) };
+        for (const url of urls) if (t.surface && t.surface !== 'all' && t.surface !== 'preview') librarySurfaces[url] = t.surface;
+        await save({ ...ov, librarySurfaces });
+        refreshLibrary();
+        return;
+      }
       if (t.mode === 'slot') await save({ ...ov, [t.id]: urls[0], emptySlots: (ov.emptySlots || []).filter((id) => id !== t.id), emptyModeCovers: (ov.emptyModeCovers || []).filter((id) => id !== t.id) });
       else if (t.mode === 'replace') {
         const l = [...(ov[t.id] || DEFAULTS[t.id] || [])];
@@ -139,7 +147,29 @@ export default function AdminMedia() {
   };
   const remove = (id, i) => setList(id, listOf(id).filter((_, k) => k !== i));
 
-  const isUsed = (url) => Object.entries(ov).some(([k, v]) => k !== 'libraryCategories' && containsUrl(v, url));
+  const isUsed = (url) => Object.entries(ov).some(([k, v]) => !['libraryCategories', 'libraryFocalPoints', 'librarySurfaces'].includes(k) && containsUrl(v, url));
+  const getFileSurfaces = (url) => {
+    const found = new Set();
+    const manual = ov.librarySurfaces?.[url];
+    if (manual && SURFACES.some((s) => s.id === manual)) found.add(manual);
+    for (const slot of PHOTO_SPOTS) if (containsUrl(ov[slot.id], url)) (slot.surfaces || []).forEach((s) => found.add(s));
+    for (const slot of VIDEO_SLOTS) if (containsUrl(ov[slot.id], url)) (slot.surfaces || ['tv']).forEach((s) => found.add(s));
+    for (const slot of IMAGE_SLOTS) if (containsUrl(ov[slot.id], url)) (slot.surfaces || []).forEach((s) => found.add(s));
+    for (const slot of MODE_COVER_SLOTS) if (containsUrl(ov[slot.id], url)) (slot.surfaces || ['tablet', 'forms']).forEach((s) => found.add(s));
+    for (const gallery of GALLERIES) if (containsUrl(ov[gallery.id], url)) (gallery.surfaces || ['site']).forEach((s) => found.add(s));
+    for (const media of Object.values(ov.modeMedia || {})) {
+      if (containsUrl(media.hero, url)) ['site', 'tablet'].forEach((s) => found.add(s));
+      if (containsUrl(media.cover, url)) ['tablet', 'forms'].forEach((s) => found.add(s));
+      if (containsUrl(media.sections, url)) found.add('tablet');
+      if (containsUrl(media.gallery, url) || containsUrl(media.trailer, url)) found.add('site');
+    }
+    return [...found];
+  };
+  const setLibrarySurface = (url, surface) => run(`surface-${url}`, () => {
+    const librarySurfaces = { ...(ov.librarySurfaces || {}) };
+    if (surface === 'auto') delete librarySurfaces[url]; else librarySurfaces[url] = surface;
+    return save({ ...ov, librarySurfaces });
+  }, 'Η κατηγορία εφαρμογής αποθηκεύτηκε ✓');
   const setLibraryCategory = (url, category) => run(`category-${url}`, () => save({ ...ov, libraryCategories: { ...(ov.libraryCategories || {}), [url]: category } }), 'Η κατηγορία αποθηκεύτηκε ✓');
   const setLibraryFocalPoint = (url, focalPoint) => run(`focal-${url}`, () => save({ ...ov, libraryFocalPoints: { ...(ov.libraryFocalPoints || {}), [url]: focalPoint } }), 'Το σημείο εστίασης αποθηκεύτηκε ✓');
   const assignLibraryImageToSlot = (url, slotId) => run(`slot-${url}`, async () => {
@@ -156,15 +186,11 @@ export default function AdminMedia() {
     const q = used ? `Το «${f.name}» χρησιμοποιείται κάπου. Θα αφαιρεθεί από εκεί (θα επανέλθει το αρχικό) και θα διαγραφεί οριστικά. Συνέχεια;` : `Διαγραφή του «${f.name}» οριστικά;`;
     if (!window.confirm(q)) return;
     run(f.name, async () => {
-      if (used) {
-        const next = removeUrl(ov, f.url) || {};
-        if (next.libraryCategories) {
-          const categories = { ...next.libraryCategories };
-          delete categories[f.url];
-          next.libraryCategories = categories;
-        }
-        await save(next);
+      const next = used ? (removeUrl(ov, f.url) || {}) : { ...ov };
+      for (const key of ['libraryCategories', 'librarySurfaces', 'libraryFocalPoints']) {
+        if (next[key]) { const values = { ...next[key] }; delete values[f.url]; next[key] = values; }
       }
+      if (used || ['libraryCategories', 'librarySurfaces', 'libraryFocalPoints'].some((key) => ov[key]?.[f.url] !== undefined)) await save(next);
       await deleteMedia(f.name);
       await refreshLibrary();
     }, 'Διαγράφηκε ✓');
@@ -175,6 +201,8 @@ export default function AdminMedia() {
     const label = kind === 'image' ? 'ΟΛΕΣ ΤΙΣ ΦΩΤΟΓΡΑΦΙΕΣ' : kind === 'video' ? 'ΟΛΑ ΤΑ ΒΙΝΤΕΟ' : 'ΟΛΑ ΤΑ ΠΟΛΥΜΕΣΑ';
     if (!window.confirm(`ΠΡΟΣΟΧΗ: Θα διαγραφούν οριστικά ${label} από τη βιβλιοθήκη του project και θα αφαιρεθούν από όλα τα σημεία εμφάνισης. Συνέχεια;`)) return;
     run(`clear-${kind}`, async () => {
+      const deletedUrls = new Set(library.filter((file) => kind === 'all' || file.kind === kind).map((file) => file.url));
+      const pruneFileMap = (map = {}) => Object.fromEntries(Object.entries(map).filter(([url]) => !deletedUrls.has(url)));
       const nextModeMedia = Object.fromEntries(Object.entries(ov.modeMedia || {}).map(([modeId, media]) => [modeId, {
         ...media,
         ...(kind === 'image' || kind === 'all' ? {
@@ -207,7 +235,9 @@ export default function AdminMedia() {
         } : {}),
         ...(kind === 'all' ? { clearAllPhotos: true, clearAllVideos: true, clearAllMedia: true, emptySlots: PHOTO_SPOT_IDS } : {}),
         ...(kind === 'video' ? { clearAllVideos: true } : {}),
-        libraryCategories: {},
+        libraryCategories: pruneFileMap(ov.libraryCategories),
+        librarySurfaces: pruneFileMap(ov.librarySurfaces),
+        libraryFocalPoints: pruneFileMap(ov.libraryFocalPoints),
       };
       await save(next);
       await deleteAllMedia(kind);
@@ -215,6 +245,27 @@ export default function AdminMedia() {
     }, `${label}: ολοκληρώθηκε ✓`);
   };
 
+  const missingMediaPoints = () => {
+    const missing = [];
+    const clearedImages = !!(ov.clearAllPhotos || ov.clearAllMedia);
+    for (const slot of PHOTO_SPOTS) {
+      const src = ov[slot.id] || (ov.emptySlots?.includes(slot.id) || clearedImages ? '' : DEFAULTS[slot.id]);
+      if (!src) missing.push({ surface: slot.surfaces?.[0] || 'site', label: slot.label, where: slot.where });
+    }
+    for (const slot of VIDEO_SLOTS) if (!ov[slot.id]) missing.push({ surface: 'tv', label: slot.label, where: slot.where });
+    for (const slot of IMAGE_SLOTS) if (!ov[slot.id] && (clearedImages || !DEFAULTS[slot.id])) missing.push({ surface: slot.surfaces?.[0] || 'site', label: slot.label, where: slot.where });
+    for (const slot of MODE_COVER_SLOTS.filter((item) => item.modeId !== 'pedi_extended' && !NEW_MODES.some((mode) => mode.id === item.modeId))) {
+      const src = ov[slot.id] || (ov.emptyModeCovers?.includes(slot.id) || clearedImages ? '' : DEFAULTS[slot.id]);
+      if (!src) missing.push({ surface: 'tablet', label: slot.label, where: 'Εξώφυλλο επιλογής Mode στο Tablet / Forms' });
+    }
+    for (const mode of NEW_MODES) {
+      const saved = ov.modeMedia?.[mode.id] || {};
+      const cover = saved.cover || ov[`modeCover_${mode.id}`] || (clearedImages ? '' : DEFAULTS[`modeCover_${mode.id}`]);
+      if (!cover) missing.push({ surface: 'tablet', label: `${mode.name} — Cover`, where: 'Εξώφυλλο επιλογής Mode στο Tablet / Forms' });
+    }
+    for (const gallery of GALLERIES) if (!listOf(gallery.id).length) missing.push({ surface: gallery.surfaces?.[0] || 'site', label: gallery.label, where: gallery.where });
+    return missing;
+  };
   const Progress = ({ id }) => busy === id ? (
     <div className="h-2 rounded bg-black/40 overflow-hidden mt-2">
       <div className="h-full bg-primary transition-all" style={{ width: `${Math.max(5, progress * 100)}%` }} />
@@ -231,8 +282,8 @@ export default function AdminMedia() {
       <input ref={libraryOne} type="file" accept={MEDIA_ACCEPT} hidden onChange={onFiles} />
 
       <ComicPanel className="bg-card">
-        <div className="font-heading text-xl text-primary">🗂️ ΒΙΒΛΙΟΘΗΚΗ ΠΟΛΥΜΕΣΩΝ 2.0</div>
-        <div onDragOver={(e) => { e.preventDefault(); setDragging(true); }} onDragLeave={() => setDragging(false)} onDrop={(e) => { e.preventDefault(); setDragging(false); target.current = { id: 'library', mode: 'library' }; onFiles({ target: { files: [...(e.dataTransfer?.files || [])], value: '' } }); }} className={`mt-3 rounded-xl border-2 border-dashed p-5 text-center text-sm font-bold transition-colors ${dragging ? 'border-primary bg-primary/15' : 'border-border/70 bg-secondary/40'}`}>ΣΥΡΕ ΕΔΩ ΠΟΛΛΑΠΛΑ ΑΡΧΕΙΑ ΓΙΑ ΑΝΕΒΑΣΜΑ</div>
+        <div className="font-heading text-xl text-primary">🗂️ ΒΙΒΛΙΟΘΗΚΗ ΠΟΛΥΜΕΣΩΝ 3.0</div>
+        <div onDragOver={(e) => { e.preventDefault(); setDragging(true); }} onDragLeave={() => setDragging(false)} onDrop={(e) => { e.preventDefault(); setDragging(false); target.current = { id: 'library', mode: 'library', surface: surfaceFilter }; onFiles({ target: { files: [...(e.dataTransfer?.files || [])], value: '' } }); }} className={`mt-3 rounded-xl border-2 border-dashed p-5 text-center text-sm font-bold transition-colors ${dragging ? 'border-primary bg-primary/15' : 'border-border/70 bg-secondary/40'}`}>ΣΥΡΕ ΕΔΩ ΠΟΛΛΑΠΛΑ ΑΡΧΕΙΑ ΓΙΑ ΑΝΕΒΑΣΜΑ</div>
         <p className="text-xs font-body text-foreground/70 mt-1">
           Διαχείριση φωτογραφιών, γραφικών SVG, βίντεο και ήχων με κατηγορίες, αναζήτηση και προεπισκόπηση. Οι φωτογραφίες μικραίνουν αυτόματα.
         </p>
@@ -244,11 +295,24 @@ export default function AdminMedia() {
         {msg && <div className={`mt-2 text-sm font-bold ${msg.ok ? 'text-green-400' : 'text-red-400'}`}>{msg.text}</div>}
       </ComicPanel>
 
+      <ComicPanel className="bg-card">
+        <div className="font-heading text-lg">ΠΡΟΟΡΙΣΜΟΣ ΠΟΛΥΜΕΣΩΝ</div>
+        <p className="mt-1 text-xs text-foreground/60">Επίλεξε πού ανήκει το υλικό. Οι καρτέλες φιλτράρουν τα σημεία και τη βιβλιοθήκη αρχείων. Νέα αρχεία ανεβαίνουν στην επιλεγμένη κατηγορία.</p>
+        <div className="mt-3 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
+          <button type="button" onClick={() => setSurfaceFilter("all")} className={surfaceFilter === "all" ? "rounded-xl border border-primary bg-primary/15 p-3 text-left" : "rounded-xl border border-border bg-secondary/40 p-3 text-left"}><div className="text-sm font-black">ΟΛΑ</div><div className="text-[10px] text-foreground/55">Όλα τα σημεία</div></button>
+          {SURFACES.map((surface) => <button key={surface.id} type="button" onClick={() => setSurfaceFilter(surface.id)} className={surfaceFilter === surface.id ? "rounded-xl border border-primary bg-primary/15 p-3 text-left" : "rounded-xl border border-border bg-secondary/40 p-3 text-left"}><div className="text-sm font-black">{surface.label}</div><div className="text-[10px] text-foreground/55">{surface.description}</div></button>)}
+          <button type="button" onClick={() => setSurfaceFilter("preview")} className={surfaceFilter === "preview" ? "rounded-xl border border-primary bg-primary/15 p-3 text-left" : "rounded-xl border border-border bg-secondary/40 p-3 text-left"}><div className="text-sm font-black">LIVE PREVIEW</div><div className="text-[10px] text-foreground/55">Πραγματικές σελίδες</div></button>
+        </div>
+      </ComicPanel>
+
+      {surfaceFilter === "preview" && <AdminMediaPreview />}
+
+      {showSurface("site", "forms", "tv") && (
       <ComicPanel className="bg-card space-y-3">
         <div className="font-heading text-lg">🖼️ ΦΩΤΟΓΡΑΦΙΑ Ή ΒΙΝΤΕΟ ΑΝΑ ΣΗΜΕΙΟ</div>
         <p className="text-xs text-foreground/60">Και τα έξι σημεία είναι προαιρετικά. Σε κάθε σημείο ανεβάζεις εσύ φωτογραφία ή βίντεο, το αλλάζεις ή το διαγράφεις. Δεν απαιτείται να υπάρχει αρχείο σε κανένα σημείο.</p>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {PHOTO_SPOTS.map((s) => {
+          {PHOTO_SPOTS.filter((s) => showSurface(...(s.surfaces || []))).map((s) => {
             const src = ov[s.id] || (ov.emptySlots?.includes(s.id) || ov.clearAllPhotos || ov.clearAllMedia ? '' : DEFAULTS[s.id]);
             return (
               <div key={s.id} className="border-2 border-border/40 rounded-lg p-2 bg-secondary/40">
@@ -266,7 +330,9 @@ export default function AdminMedia() {
           })}
         </div>
       </ComicPanel>
+      )}
 
+      {showSurface('tv') && (
       <ComicPanel className="bg-card space-y-3">
         <div className="font-heading text-lg">🎬 ΒΙΝΤΕΟ ΕΝΑΡΞΗΣ TV</div>
         <p className="text-xs text-foreground/60">Ανέβασε ξεχωριστά τα δύο βίντεο. Το WELCOME παίζει όταν η TV συνδέεται στη συνεδρία. Το COUNTDOWN παίζει όταν ξεκινά το παιχνίδι από το Tablet.</p>
@@ -288,12 +354,14 @@ export default function AdminMedia() {
           })}
         </div>
       </ComicPanel>
+      )}
 
+      {showSurface('tablet', 'forms') && (
       <ComicPanel className="bg-card space-y-3">
         <div className="font-heading text-lg">🎮 ΕΞΩΦΥΛΛΟ ΦΩΤΟΓΡΑΦΙΑΣ ΑΝΑ MODE</div>
-        <p className="text-xs text-foreground/60">Οι φωτογραφίες εμφανίζονται στις κάρτες επιλογής Mode στην οθόνη έναρξης του Tablet. Κάθε Mode έχει ξεχωριστή εικόνα.</p>
+        <p className="text-xs text-foreground/60">Οι φωτογραφίες εμφανίζονται στην επιλογή Mode του Tablet και στη φόρμα επιλογής Mode. Τα PAJAMA LOCKDOWN 18+ και BEACH BAR HOME LOCKDOWN διαχειρίζονται στην ενότητα πολυμέσων των νέων Modes.</p>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {MODE_COVER_SLOTS.filter((s) => !NEW_MODES.some((mode) => mode.id === s.modeId)).map((s) => {
+          {MODE_COVER_SLOTS.filter((s) => s.modeId !== 'pedi_extended' && !NEW_MODES.some((mode) => mode.id === s.modeId) && showSurface(...(s.surfaces || ['tablet', 'forms']))).map((s) => {
             const src = ov[s.id] || (ov.emptyModeCovers?.includes(s.id) || ov.clearAllPhotos || ov.clearAllMedia ? '' : DEFAULTS[s.id]);
             return (
               <div key={s.id} className="border-2 border-border/40 rounded-lg p-2 bg-secondary/40">
@@ -309,20 +377,25 @@ export default function AdminMedia() {
           })}
         </div>
       </ComicPanel>
+      )}
+
+      {showSurface('site', 'forms', 'tablet') && (
       <ComicPanel className="bg-card space-y-3">
-        <div className="font-heading text-lg">🎮 ΚΕΝΤΡΟ ΠΟΛΥΜΕΣΩΝ MODES</div>
-        <p className="text-xs text-foreground/60">Ανεξάρτητη φωτογραφική ταυτότητα για τα τέσσερα νέα Modes.</p>
+        <div className="font-heading text-lg">🎮 ΠΟΛΥΜΕΣΑ ΑΝΑ MODE</div>
+        <p className="text-xs text-foreground/60">Ανεξάρτητο υλικό για τα PAJAMA LOCKDOWN 18+ και BEACH BAR HOME LOCKDOWN. Cover: επιλογή Mode. Hero και ενότητες: Tablet Setup. Gallery και Trailer: Tablet Setup και σελίδα Mode στο Site.</p>
         <ModeMediaManager
           value={ov.modeMedia || {}}
           disabled={!!busy}
           onSave={(modeMedia) => run('mode-media', () => save({ ...ov, modeMedia }), 'Το Πολυμέσα Mode αποθηκεύτηκε ✓')}
         />
       </ComicPanel>
+      )}
 
+      {showSurface('site', 'forms', 'tablet', 'mobile') && (
       <ComicPanel className="bg-card space-y-3">
         <div className="font-heading text-lg">🖼️ ΕΙΚΟΝΕΣ ΑΝΑ ΣΗΜΕΙΟ</div>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-          {IMAGE_SLOTS.map((s) => (
+          {IMAGE_SLOTS.filter((s) => showSurface(...(s.surfaces || []))).map((s) => (
             <div key={s.id} className="border-2 border-border/40 rounded-lg p-2 bg-secondary/40">
               <Thumb src={ov[s.id] || DEFAULTS[s.id]} className="w-full aspect-square rounded" />
               <div className="font-bold text-sm mt-2">{s.label}</div>
@@ -336,8 +409,11 @@ export default function AdminMedia() {
           ))}
         </div>
       </ComicPanel>
+      )}
 
-      {GALLERIES.map((g) => {
+      {showSurface('site', 'forms') && (
+      <>
+      {GALLERIES.filter((g) => showSurface(...(g.surfaces || ['site']))).map((g) => {
         const video = g.kind === 'video';
         const list = listOf(g.id);
         return (
@@ -371,8 +447,30 @@ export default function AdminMedia() {
         );
       })}
 
+      </>
+      )}
+
+      {surfaceFilter !== 'preview' && (
       <ComicPanel className="bg-card space-y-3">
-        <div className="flex items-center justify-between gap-2 flex-wrap"><div className="font-heading text-lg">🗂️ ΒΙΒΛΙΟΘΗΚΗ ΑΡΧΕΙΩΝ ({library.length})</div><ComicButton size="sm" disabled={!!busy} onClick={() => pick('library', 'library', libraryOne)}>＋ ΠΡΟΣΘΗΚΗ ΑΡΧΕΙΟΥ</ComicButton></div>
+        <div className="font-heading text-lg">📋 ΑΝΑΦΟΡΑ ΚΕΝΩΝ ΣΗΜΕΙΩΝ</div>
+        <p className="text-xs text-foreground/60">Εμφανίζονται μόνο τα σημεία όπου δεν υπάρχει διαθέσιμο αρχείο. Δεν χαρακτηρίζονται ως υποχρεωτικά.</p>
+        {missingMediaPoints().filter((item) => surfaceFilter === 'all' || item.surface === surfaceFilter).length === 0
+          ? <div className="rounded-lg border border-emerald-500/30 bg-emerald-500/5 p-3 text-sm">Δεν εντοπίστηκαν κενά σημεία στην επιλεγμένη κατηγορία.</div>
+          : <div className="grid sm:grid-cols-2 gap-2">
+              {missingMediaPoints().filter((item) => surfaceFilter === 'all' || item.surface === surfaceFilter).map((item, index) => (
+                <button key={item.surface + item.label + index} type="button" onClick={() => setSurfaceFilter(item.surface)} className="rounded-lg border border-border/60 bg-secondary/30 p-3 text-left">
+                  <div className="text-[10px] font-black text-primary">{SURFACES.find((surface) => surface.id === item.surface)?.label || item.surface}</div>
+                  <div className="mt-1 text-sm font-bold">{item.label}</div>
+                  <div className="mt-1 text-[11px] text-foreground/55">{item.where}</div>
+                </button>
+              ))}
+            </div>}
+      </ComicPanel>
+      )}
+
+      {surfaceFilter !== 'preview' && (
+      <ComicPanel className="bg-card space-y-3">
+        <div className="flex items-center justify-between gap-2 flex-wrap"><div className="font-heading text-lg">🗂️ ΒΙΒΛΙΟΘΗΚΗ ΑΡΧΕΙΩΝ ({library.length})</div><ComicButton size="sm" disabled={!!busy} onClick={() => pick('library', 'library', libraryOne, undefined, surfaceFilter)}>＋ ΠΡΟΣΘΗΚΗ ΑΡΧΕΙΟΥ</ComicButton></div>
         <input type="search" value={librarySearch} onChange={(e) => setLibrarySearch(e.target.value)} placeholder="Αναζήτηση αρχείων…" className="w-full rounded-lg border-2 border-border bg-background px-3 py-2 text-sm" />
         <p className="text-[11px] text-foreground/60">Οργάνωσε φωτογραφίες, γραφικά, βίντεο και ήχους σε Heist, Pajama ή Εταιρική ταυτότητα. Η διαγραφή αφαιρεί το αρχείο οριστικά.</p>
         <div className="flex flex-wrap gap-2">
@@ -380,14 +478,26 @@ export default function AdminMedia() {
             <ComicButton key={c.id} size="sm" variant={libraryFilter === c.id ? 'default' : 'dark'} disabled={!!busy} onClick={() => setLibraryFilter(c.id)}>{c.label}</ComicButton>
           ))}
         </div>
+        <div className="flex flex-wrap gap-2">
+          {[
+            { id: 'all', label: 'Όλα τα αρχεία' },
+            { id: 'unused', label: 'Δεν χρησιμοποιούνται' },
+            { id: 'broken', label: 'Σφάλμα φόρτωσης' },
+          ].map((item) => <ComicButton key={item.id} size="sm" variant={libraryStatusFilter === item.id ? 'default' : 'dark'} disabled={!!busy} onClick={() => setLibraryStatusFilter(item.id)}>{item.label}</ComicButton>)}
+        </div>
         {!library.length && <div className="text-xs text-foreground/60">Δεν έχεις ανεβάσει ακόμα αρχεία.</div>}
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2">
-          {library.filter((f) => (libraryFilter === 'all' || categoryOf(f.url) === libraryFilter) && f.name.toLowerCase().includes(librarySearch.toLowerCase())).map((f) => (
+          {library.filter((f) => (libraryFilter === 'all' || categoryOf(f.url) === libraryFilter) && (surfaceFilter === 'all' || getFileSurfaces(f.url).includes(surfaceFilter)) && (libraryStatusFilter === 'all' || (libraryStatusFilter === 'unused' && !isUsed(f.url)) || (libraryStatusFilter === 'broken' && fileLoadStatus[f.url] === 'error')) && f.name.toLowerCase().includes(librarySearch.toLowerCase())).map((f) => (
             <div key={f.name} className="border-2 border-border/40 rounded overflow-hidden bg-secondary/40">
-              <Thumb video={f.kind === 'video'} audio={f.kind === 'audio'} src={f.url} objectPosition={ov.libraryFocalPoints?.[f.url] || '50% 50%'} className="w-full aspect-square" />
-              <div className="p-1 text-[10px] leading-tight break-all">{f.name.replace(/^[a-z0-9]+-[a-f0-9]{6}-/, '')}<br />{mb(f.size)}{isUsed(f.url) ? ' · σε χρήση' : ''}</div>
+              <Thumb video={f.kind === 'video'} audio={f.kind === 'audio'} src={f.url} objectPosition={ov.libraryFocalPoints?.[f.url] || '50% 50%'} onLoad={() => setFileLoadStatus((v) => ({ ...v, [f.url]: 'ok' }))} onError={() => setFileLoadStatus((v) => ({ ...v, [f.url]: 'error' }))} className="w-full aspect-square" />
+              <div className="p-1 text-[10px] leading-tight break-all">{f.name.replace(/^[a-z0-9]+-[a-f0-9]{6}-/, '')}<br />{mb(f.size)}<br />Κατάσταση: {fileLoadStatus[f.url] === 'error' ? '⚠ Σφάλμα φόρτωσης' : fileLoadStatus[f.url] === 'ok' ? (isUsed(f.url) ? `Σε χρήση · ${getFileSurfaces(f.url).map((id) => SURFACES.find((s) => s.id === id)?.label || id).join(', ') || 'Εντοπισμένη αντιστοίχιση'}` : 'Δεν χρησιμοποιείται') : 'Έλεγχος φόρτωσης…'}</div>
               {<div className="p-1 space-y-1">
-                <div className="text-[10px] text-foreground/60">Κατηγορία</div>
+                <div className="text-[10px] text-foreground/60">Κατηγορία εφαρμογής</div>
+                <select value={ov.librarySurfaces?.[f.url] || 'auto'} disabled={!!busy} onChange={(e) => setLibrarySurface(f.url, e.target.value)} className="w-full rounded bg-black/50 border border-border/50 p-1 text-[10px]">
+                  <option value="auto">Αυτόματη αντιστοίχιση</option>
+                  {SURFACES.map((surface) => <option key={surface.id} value={surface.id}>{surface.label}</option>)}
+                </select>
+                <div className="text-[10px] text-foreground/60">Ομάδα αρχείου</div>
                 <select value={categoryOf(f.url)} disabled={!!busy} onChange={(e) => setLibraryCategory(f.url, e.target.value)} className="w-full rounded bg-black/50 border border-border/50 p-1 text-xs">
                   {LIBRARY_CATEGORIES.map((c) => <option key={c.id} value={c.id}>{c.label}</option>)}
                 </select>
@@ -401,8 +511,8 @@ export default function AdminMedia() {
                     <button disabled={!!busy} onClick={() => addLibraryImageToGallery(f.url, 'pajamaPhotos')} className="text-[10px] py-1 rounded bg-black/50 disabled:opacity-30">+ Pajama</button>
                   </div>
                   <select defaultValue="" disabled={!!busy} onChange={(e) => { if (e.target.value) assignLibraryImageToSlot(f.url, e.target.value); e.target.value = ''; }} className="w-full rounded bg-black/50 border border-border/50 p-1 text-[10px]">
-                    <option value="">Ανάθεση σε σημείο Site…</option>
-                    {IMAGE_SLOTS.map((slot) => <option key={slot.id} value={slot.id}>{slot.label}</option>)}
+                    <option value="">Ανάθεση σε σημείο εφαρμογής…</option>
+                    {IMAGE_SLOTS.map((slot) => <option key={slot.id} value={slot.id}>{slot.label} — {(slot.surfaces || []).map((id) => SURFACES.find((surface) => surface.id === id)?.label || id).join(' / ')}</option>)}
                   </select>
                 </>}
               </div>}
@@ -411,7 +521,7 @@ export default function AdminMedia() {
           ))}
         </div>
       </ComicPanel>
-      <AdminSettingVersionHistory settingKey={MEDIA_KEY} onRestore={(value) => { applyMediaOverrides(value || {}); setOv(value || {}); }} />
+      )}
     </div>
   );
 }
