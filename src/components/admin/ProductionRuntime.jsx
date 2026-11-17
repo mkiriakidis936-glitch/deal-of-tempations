@@ -26,8 +26,9 @@ export default function ProductionRuntime({selected,record,draft,onChange,onSave
    return [...latest.values()].filter(item=>item.participantName);
  },[consents]);
  const consentMap=new Map(latestConsents.map(item=>[String(item.participantName||'').trim().toLocaleLowerCase('el-GR'),item]));
+ const hasUnidentifiedParticipant=participants.some(item=>!String(item.name||item.displayName||'').trim());
  const requiredNames=participants.map(item=>String(item.name||item.displayName||'').trim().toLocaleLowerCase('el-GR')).filter(Boolean);
- const allParticipantsConsented=requiredNames.length>0&&requiredNames.every(name=>consentMap.has(name)&&!consentMap.get(name).withdrawn);
+ const allParticipantsConsented=requiredNames.length>0&&!hasUnidentifiedParticipant&&requiredNames.every(name=>consentMap.has(name)&&!consentMap.get(name).withdrawn);
  const privateMediaAllowed=allParticipantsConsented&&requiredNames.every(name=>consentMap.get(name).recordingConsent===true&&consentMap.get(name).privateUseConsent===true);
  const publicMediaAllowed=allParticipantsConsented&&requiredNames.every(name=>consentMap.get(name).recordingConsent===true&&consentMap.get(name).publicUseConsent===true);
  const canPublishItem=(url)=>{
@@ -146,7 +147,7 @@ export default function ProductionRuntime({selected,record,draft,onChange,onSave
    }catch(error){setMessage(error.message||'Το αρχείο δεν άνοιξε.');}
  };
  const publishMedia=async(url)=>{
-   if(!publicMediaAllowed){setMessage('Η δημόσια δημοσίευση είναι κλειδωμένη μέχρι όλοι οι συμμετέχοντες του υλικού να έχουν ενεργή συγκατάθεση δημόσιας χρήσης.');return;}
+   if(!canPublishItem(url)){setMessage('Η δημόσια δημοσίευση είναι κλειδωμένη για αυτό το αρχείο μέχρι όλοι όσοι εμφανίζονται σε αυτό να έχουν ενεργή συγκατάθεση καταγραφής και δημόσιας χρήσης.');return;}
    const name=String(url).startsWith('private:')?String(url).slice(8):'';
    const item=(draft.recapMediaItems||[]).find(entry=>entry.name===name);
    if(!item){setMessage('Το αρχείο δεν έχει συσχετισμένους συμμετέχοντες και δεν μπορεί να δημοσιευτεί.');return;}
