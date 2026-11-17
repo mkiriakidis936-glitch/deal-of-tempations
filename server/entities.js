@@ -568,7 +568,7 @@ export function entityRoutes() {
         profile: profiles.find((row) => row.data?.sessionId === req.vipSession.id)
           ? { id: profiles.find((row) => row.data?.sessionId === req.vipSession.id).id, ...profiles.find((row) => row.data?.sessionId === req.vipSession.id).data }
           : null,
-        profiles: profiles.map((row) => ({
+        profiles: profiles.filter((row) => row.data?.sessionId === req.vipSession.id).map((row) => ({
           id: row.id,
           displayName: row.data?.displayName || '',
           intensity: row.data?.intensity || 3,
@@ -615,7 +615,7 @@ export function entityRoutes() {
         preferences, boundaries, updatedAt: new Date().toISOString(),
         adultConfirmed: true, consentConfirmed: true,
       };
-      const { rows: existing } = await query("SELECT id FROM records WHERE entity = 'VIPAccessProfile' AND lower(data->>'displayName') = lower($1) ORDER BY updated_date DESC LIMIT 1", [profile.displayName]);
+      const { rows: existing } = await query("SELECT id FROM records WHERE entity = 'VIPAccessProfile' AND data->>'sessionId' = $1 LIMIT 1", [req.vipSession.id]);
       let saved;
       if (existing[0]) {
         const { rows } = await query("UPDATE records SET data = $1::jsonb, updated_date = now() WHERE id = $2 RETURNING *", [JSON.stringify(profile), existing[0].id]);
@@ -652,6 +652,23 @@ export function entityRoutes() {
   };
   const guard = (op) => (req, res, next) => (needsAdmin(req.entity, op) ? requireAdmin(req, res, next) : next());
 
+  // Public RSVP count exposes only an aggregate, never attendee names or records.
+  r.get('/pajama-rsvp/count', async (req, res, next) => {
+    try {
+      const sessionCode = String(req.query.sessionCode || '').trim().toUpperCase();
+      const params = ['pajama'];
+      let where = "entity = 'InvitationRSVP' AND data->>'event' = $1 AND data->>'confirmed' = 'true'";
+      if (sessionCode) {
+        params.push(sessionCode);
+        where += " AND data->>'sessionCode' = $2";
+      } else {
+        where += " AND COALESCE(data->>'sessionCode', '') = ''";
+      }
+      const { rows } = await query(`SELECT count(*)::int AS count FROM records WHERE ${where}`, params);
+      return res.json({ count: rows[0]?.count || 0 });
+    } catch (error) { return next(error); }
+  });
+
 
   // Private VIP invitations: the shared token is only returned to administrators.
   r.post('/vip-invitations', requireAdmin, async (req, res, next) => {
@@ -664,7 +681,7 @@ export function entityRoutes() {
         const { rows: sessions } = await query("SELECT id FROM records WHERE entity = 'GameSession' AND data->>'sessionCode' = $1 LIMIT 1", [sessionCode]);
         if (!sessions[0]) return res.status(400).json({ error: 'Το επιλεγμένο Event δεν βρέθηκε.' });
       }
-      const allowedGameModes = ['classic', 'marathon', 'arrest_heist', 'pajama', 'lockdown', 'beach_bar', 'marathon_4h'];
+      const allowedGameModes = ['classic', 'marathon', 'arrest_heist', 'pajama', 'lockdown', 'beach_bar'];
       if (!allowedGameModes.includes(gameMode)) return res.status(400).json({ error: 'Επίλεξε έγκυρο παιχνίδι.' });
       const data = {
         gameMode,
@@ -879,6 +896,7 @@ export function entityRoutes() {
         if (inserted.rows.length) {
           const intake = {
             name: body.name.trim(),
+            ...(data.sessionCode ? { sessionCode: data.sessionCode } : {}),
             vipGameMode: gameMode,
             vipInvitationId: invitations[0].id,
             vipSubmissionId: submissionId,
@@ -933,8 +951,9 @@ export function entityRoutes() {
     return formLimit(req, res, async () => {
       const body = req.body || {};
       const submissionId = typeof body.submissionId === 'string' ? body.submissionId.trim() : '';
-      if (!/^[A-Za-z0-9-]{16,100}$/.test(submissionId) || typeof body.name !== 'string' || !body.name.trim()) {
-        return res.status(400).json({ error: 'Invalid invitation submission.' });
+      if (!/^[A-Za-z0-9-]{16,100}$/.test(submissionId) || typeof body.name !== 'string' || !body.name.trim() ||
+          body.adultConfirmed !== true || body.safeWordConfirmed !== true) {
+        return res.status(400).json({ error: 'Επιβεβαίωσε ότι είσαι 18+ και ότι γνωρίζεις τη λέξη STOP.' });
       }
       const sessionCode = String(body.sessionCode || '').trim().toUpperCase();
       if (sessionCode) {
@@ -1193,6 +1212,25 @@ export function entityRoutes() {
   });
 
   r.post('/:entity', guard('create'), formLimit, async (req, res) => {
+    if (!isAdmin(req) && ['PajamaIntake', 'BacheloretteIntake'].includes(req.entity)) {
+      const body = req.body || {};
+      if (body.adultConfirmed !== true || body.safeWordConfirmed !== true) {
+        return res.status(400).json({ error: 'Απαιτείται επιβεβαίωση 18+ και αποδοχή του STOP.' });
+      }
+      const formType = req.entity === 'BacheloretteIntake' ? 'heist' : (body.formType === 'modes' ? 'modes' : 'pajama');
+      const { rows: settings } = await query("SELECT data FROM records WHERE entity = 'AppSetting' AND data->>'key' = 'admin_form_questions' LIMIT 1");
+      const questions = settings[0]?.data?.value?.forms?.[formType] || [];
+      const answers = body.customAnswers || {};
+      const ids = new Set((Array.isArray(questions) ? questions : []).map((question) => String(question.id || '')).filter(Boolean));
+      const valid = isObject(answers) &&
+        Object.entries(answers).every(([id, value]) => ids.has(id) && typeof value === 'string' && value.length <= 2000) &&
+        (Array.isArray(questions) ? questions : []).every((question) => {
+          const value = answers[question.id] || '';
+          return (!question.required || String(value).trim().length > 0) &&
+            (!value || question.type !== 'select' || (question.options || []).includes(value));
+        });
+      if (!valid) return res.status(400).json({ error: 'Έλεγξε τις υποχρεωτικές πρόσθετες ερωτήσεις.' });
+    }
     const { rows } = await query(
       'INSERT INTO records (id, entity, data, created_by) VALUES ($1,$2,$3,$4) RETURNING *',
       [crypto.randomUUID(), req.entity, stripBuiltins(req.body), req.user?.email || null],
