@@ -29,7 +29,7 @@ export default function SiteNav({ ev, onEvent, isHome = false, onRegister }) {
     <header className="sticky top-0 z-40 border-b border-tarot-gold/25 bg-background/90 backdrop-blur-xl">
       <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between gap-4">
         <a href="/site" onClick={(e) => { e.preventDefault(); onEvent('home'); }} className="font-display text-tarot-gold tracking-[0.2em] text-[10px] sm:text-sm shrink-0">
-          DEAL OF TEMPTATION
+          DEAL OF TEMPTATIONS
         </a>
         <nav className="hidden xl:flex items-center gap-4 text-[10px] tracking-[0.16em] uppercase text-foreground/60">
           {(isHome ? HOME_LINKS : DETAIL_LINKS).map((l) => (
