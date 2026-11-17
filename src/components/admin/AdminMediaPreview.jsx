@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import ComicPanel from '@/components/comic/ComicPanel';
-import { SURFACES } from '@/data/mediaSlots';
 
 const PREVIEWS = [
   { id: 'site', label: 'SITE', path: '/site' },
