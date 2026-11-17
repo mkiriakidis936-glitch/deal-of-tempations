@@ -1,8 +1,8 @@
 {
   "id": "/admin",
-  "name": "Deal of Temptation",
-  "short_name": "DoT Admin",
-  "description": "Διαχείριση Deal of Temptation",
+  "name": "DEAL OF TEMPTATIONS — THE PRIVATE REALITY GAME NIGHT",
+  "short_name": "DEAL TEMPTATIONS",
+  "description": "Master Control Room — The Private Reality Game Night",
   "lang": "el",
   "start_url": "/admin?source=pwa",
   "scope": "/",
