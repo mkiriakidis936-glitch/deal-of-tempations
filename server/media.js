@@ -11,6 +11,8 @@ import { requireAdmin } from './auth.js';
 const volumeRoot = process.env.RAILWAY_VOLUME_MOUNT_PATH;
 const defaultUploadDir = volumeRoot ? path.join(volumeRoot, 'uploads') : path.join(import.meta.dirname, '..', 'uploads');
 export const UPLOAD_DIR = path.resolve(process.env.UPLOAD_DIR || defaultUploadDir);
+const PRIVATE_UPLOAD_DIR = path.join(UPLOAD_DIR, '.private');
+fs.mkdirSync(PRIVATE_UPLOAD_DIR, { recursive: true });
 const MAX_MB = Number(process.env.MAX_UPLOAD_MB) || 300;
 const MAX_BYTES = MAX_MB * 1024 * 1024;
 const KINDS = {
@@ -138,6 +140,48 @@ export function mediaRoutes() {
     if (!/^[A-Za-z0-9._-]+$/.test(n) || n.startsWith('.') || !kindOf(n)) return res.status(400).json({ error: 'Μη έγκυρο όνομα' });
     await fsp.rm(path.join(UPLOAD_DIR, n), { force: true });
     res.json({ success: true });
+  });
+
+
+  // Private production media: never exposed by the public /media static route.
+  r.post('/private-upload', requireAdmin, async (req, res) => {
+    const original = path.basename(String(req.query.name || ''));
+    const ext = path.extname(original).toLowerCase();
+    const kind = KINDS[ext];
+    if (!kind) return res.status(415).json({ error: 'Μη υποστηριζόμενος τύπος αρχείου.' });
+    if (Number(req.headers['content-length'] || 0) > MAX_BYTES) return res.status(413).json({ error: `Το αρχείο ξεπερνά τα ${MAX_MB}MB.` });
+    const name = `private-${Date.now().toString(36)}-${crypto.randomBytes(6).toString('hex')}${ext}`;
+    const tmp = path.join(PRIVATE_UPLOAD_DIR, `.${name}.part`);
+    let size = 0;
+    const counter = new Transform({ transform(chunk, _enc, cb) { size += chunk.length; size > MAX_BYTES ? cb(new Error('TOO_BIG')) : cb(null, chunk); } });
+    try {
+      await pipeline(req, counter, fs.createWriteStream(tmp));
+      if (!size) throw new Error('EMPTY');
+      await fsp.rename(tmp, path.join(PRIVATE_UPLOAD_DIR, name));
+      return res.json({ name, size, kind, private: true });
+    } catch (error) {
+      await fsp.rm(tmp, { force: true });
+      if (error.message === 'TOO_BIG') return res.status(413).json({ error: `Το αρχείο ξεπερνά τα ${MAX_MB}MB.` });
+      if (error.message === 'EMPTY') return res.status(400).json({ error: 'Κενό αρχείο.' });
+      return res.status(400).json({ error: 'Η ιδιωτική μεταφόρτωση απέτυχε.' });
+    }
+  });
+
+  r.get('/private/:name', requireAdmin, async (req, res) => {
+    const name = req.params.name;
+    if (!/^[A-Za-z0-9._-]+$/.test(name) || name.startsWith('.')) return res.status(400).json({ error: 'Μη έγκυρο όνομα αρχείου.' });
+    const file = path.join(PRIVATE_UPLOAD_DIR, name);
+    if (!fs.existsSync(file) || !kindOf(name)) return res.status(404).json({ error: 'Το αρχείο δεν βρέθηκε.' });
+    res.setHeader('Cache-Control', 'private, no-store');
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    return res.sendFile(file);
+  });
+
+  r.delete('/private/:name', requireAdmin, async (req, res) => {
+    const name = req.params.name;
+    if (!/^[A-Za-z0-9._-]+$/.test(name) || name.startsWith('.') || !kindOf(name)) return res.status(400).json({ error: 'Μη έγκυρο όνομα αρχείου.' });
+    await fsp.rm(path.join(PRIVATE_UPLOAD_DIR, name), { force: true });
+    return res.json({ success: true });
   });
 
   return r;
