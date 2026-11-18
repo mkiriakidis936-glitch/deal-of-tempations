@@ -20,6 +20,12 @@ export const IMAGE_SLOTS = [
   { id: 'banner', label: 'Banner Admin', where: 'Επάνω banner στο Dashboard του Admin', surfaces: ['tablet'] },
   { id: 'logo', label: 'Λογότυπο φόρμας', where: 'Φόρμα ερωτηματολογίου πρόσκλησης', surfaces: ['forms'] },
   { id: 'invitationBg', label: 'Φόντο πρόσκλησης', where: 'Εικόνα πριν ξεκινήσει το βίντεο στο teaser πρόσκλησης', surfaces: ['forms'] },
+  { id: 'extraHeistRoom', label: 'Κεφαλίδα φόρμας Arrest & Heist', where: 'extra_heistRoom.jpg — κεφαλίδα φόρμας Arrest & Heist', surfaces: ['forms'] },
+  { id: 'extraPediGlam', label: 'Κεφαλίδα φόρμας Pajama Pedi-Glam', where: 'extra_pediGlam.jpg — κεφαλίδα φόρμας Pajama Pedi-Glam', surfaces: ['forms'] },
+  { id: 'wallpaperPhone', label: 'Wallpaper κινητού 9:16', where: 'wallpaper_phone_9x16.jpg — φόντο κινητού', surfaces: ['mobile'] },
+  { id: 'wallpaperTablet', label: 'Wallpaper tablet 4:3', where: 'wallpaper_tablet_4x3.jpg — φόντο tablet', surfaces: ['tablet'] },
+  { id: 'wallpaperTv', label: 'Wallpaper TV 16:9', where: 'wallpaper_tv_16x9.jpg — φόντο TV', surfaces: ['tv'] },
+  { id: 'patternSeamless', label: 'Seamless pattern', where: 'pattern_seamless.jpg — επαναλαμβανόμενο μοτίβο', surfaces: ['site'] },
 ];
 
 export const PHOTO_SPOTS = [
