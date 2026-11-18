@@ -20,7 +20,6 @@ export const IMAGE_SLOTS = [
   { id: 'banner', label: 'Banner Admin', where: 'Επάνω banner στο Dashboard του Admin', surfaces: ['tablet'] },
   { id: 'logo', label: 'Λογότυπο φόρμας', where: 'Φόρμα ερωτηματολογίου πρόσκλησης', surfaces: ['forms'] },
   { id: 'invitationBg', label: 'Φόντο φόρμας πρόσκλησης', where: '11_invitationBg.jpg — φόντο της φόρμας πρόσκλησης', surfaces: ['forms'] },
-  { id: 'invitationTeaser', label: 'Εικόνα teaser πρόσκλησης', where: '15_invitation.jpg — εικόνα teaser πρόσκλησης', surfaces: ['forms'] },
   { id: 'photoHeistNight', label: 'Heist gallery — προεπιλεγμένη εικόνα', where: 'extra_heistNight.jpg — προεπιλεγμένη εικόνα Heist gallery', surfaces: ['site', 'forms'] },
   { id: 'photoGame', label: 'Pajama gallery — προεπιλεγμένη εικόνα παιχνιδιού', where: 'extra_game.jpg — προεπιλεγμένη εικόνα Pajama gallery', surfaces: ['site', 'forms'] },
   { id: 'photoSlippers', label: 'Pajama gallery — προεπιλεγμένη εικόνα παντόφλας', where: 'extra_slippers.jpg — προεπιλεγμένη εικόνα Pajama gallery', surfaces: ['site', 'forms'] },
@@ -37,7 +36,7 @@ export const PHOTO_SPOTS = [
   { id: 'siteTrailer', label: 'Site — τρέιλερ', where: 'Αρχική σελίδα, ενότητα τρέιλερ', surfaces: ['site'] },
   { id: 'tv', label: 'TV', where: 'Οθόνη TV', surfaces: ['tv'] },
   { id: 'promo', label: 'Promo', where: 'Promo, hero', surfaces: ['site'] },
-  { id: 'invitation', label: 'Πρόσκληση', where: 'Teaser πρόσκλησης', surfaces: ['forms'] },
+  { id: 'invitation', label: 'Εικόνα teaser πρόσκλησης', where: '15_invitation.jpg — εικόνα teaser πρόσκλησης', surfaces: ['forms'] },
   { id: 'pajama', label: 'Pajama πρόσκληση', where: 'Φόντο στο Pajama invite', surfaces: ['forms'] },
 ];
 export const PHOTO_SPOT_IDS = PHOTO_SPOTS.map((v) => v.id);
