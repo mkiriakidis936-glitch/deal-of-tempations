@@ -16,6 +16,7 @@ const Intake = lazy(() => import('@/pages/Intake'));
 const Admin = lazy(() => import('@/pages/Admin'));
 const Invitation = lazy(() => import('@/pages/Invitation'));
 const VIPInvitationPage = lazy(() => import('@/pages/VIPInvitationPage'));
+const VIPEventPage = lazy(() => import('@/pages/VIPEventPage'));
 const Promo = lazy(() => import('@/pages/Promo'));
 const GiftUnlock = lazy(() => import('@/pages/GiftUnlock'));
 const PajamaForm = lazy(() => import('@/pages/PajamaForm'));
@@ -70,6 +71,7 @@ const AuthenticatedApp = () => {
       <Route path="/reset-password" element={<ResetPassword />} />
       <Route path="/promo" element={<Promo />} />
       <Route path="/invitation" element={<Invitation />} />
+      <Route path="/vip" element={<VIPEventPage />} />
       <Route path="/vip/:token" element={<VIPInvitationPage />} />
       <Route path="/vip-access" element={<VIPAccess />} />
       <Route path="/forms" element={<PublicForms />} />
