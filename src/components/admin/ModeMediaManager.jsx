@@ -1,25 +1,9 @@
 import React, { useState } from 'react';
-import { NEW_MODES } from '@/data/modes/modeRegistry';
+import { NEW_MODES, MODE_MEDIA_SECTIONS } from '@/data/modes/modeRegistry';
 import { MODE_COVERS } from '@/data/brandArt';
 
 const emptyMode = { hero: '', cover: '', sections: [], gallery: [], cards: [], trailer: '' };
 
-const MODE_SECTION_PRESETS = {
-  lockdown: [
-    { id: 'level1', label: 'Level 1 — Hostage Sacrifice', image: '' },
-    { id: 'level2', label: 'Level 2 — Sensory Cipher', image: '' },
-    { id: 'level3', label: 'Level 3 — Sabotage Override', image: '' },
-    { id: 'level4', label: 'Level 4 — Exit Code', image: '' },
-    { id: 'level5', label: 'Level 5 — VIP Vault', image: '' },
-  ],
-  beach_bar: [
-    { id: 'checkin', label: 'Check-in', image: '' },
-    { id: 'dance_arena', label: 'Dance Arena', image: '' },
-    { id: 'penalty_wheel', label: 'Τροχός Ποινών', image: '' },
-    { id: 'shot_truth', label: 'Shot & Truth', image: '' },
-    { id: 'last_queen', label: 'Last Queen', image: '' },
-  ],
-};
 const inputClass = 'rounded-lg border border-border bg-background px-3 py-2 text-sm';
 
 function Thumb({ src, video = false, className = '' }) {
@@ -44,7 +28,7 @@ export default function ModeMediaManager({ value = {}, files = [], onSave, disab
     ...saved,
     sections: Array.isArray(saved.sections) && saved.sections.length
       ? saved.sections
-      : (MODE_SECTION_PRESETS[selected] || []),
+      : (MODE_MEDIA_SECTIONS[selected] || []).map((item) => ({ ...item, image: '' })),
   };
   const imageFiles = files.filter((file) => file.kind === 'image' || file.kind === 'graphic');
   const videoFiles = files.filter((file) => file.kind === 'video');
