@@ -122,10 +122,6 @@ export default function GameMediaLibraries({ value = {}, files = [], onSave, onR
     }
   }
 
-  function fileAssignments(url) {
-    return assignments.filter((item) => item.url === url);
-  }
-
   async function deleteFile(file) {
     if (!file || !onDeleteFile) return;
     await onDeleteFile(file);
