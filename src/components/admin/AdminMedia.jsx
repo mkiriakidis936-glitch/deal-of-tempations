@@ -339,7 +339,15 @@ export default function AdminMedia() {
       }
       if (gallery.length < 6) missing.push({ surface: 'site', label: `${mode.name} — Gallery (${gallery.length}/6)`, where: 'Απαιτούνται έξι αριθμημένες εικόνες Gallery 01–06' });
     }
-    for (const gallery of GALLERIES) if (!listOf(gallery.id).length) missing.push({ surface: gallery.surfaces?.[0] || 'site', label: gallery.label, where: gallery.where });
+    for (const gallery of GALLERIES) {
+      const count = listOf(gallery.id).filter(Boolean).length;
+      const required = gallery.requiredCount || 1;
+      if (count < required) missing.push({
+        surface: gallery.surfaces?.[0] || 'site',
+        label: `${gallery.label} (${count}/${required})`,
+        where: gallery.where,
+      });
+    }
     return missing;
   };
   const Progress = ({ id }) => busy === id ? (
