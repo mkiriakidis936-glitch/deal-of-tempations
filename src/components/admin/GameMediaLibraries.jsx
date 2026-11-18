@@ -1,10 +1,14 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
+import { uploadMedia } from '@/lib/media';
 
 const MODES = [
   { id: 'classic', label: 'CLASSIC' },
   { id: 'marathon', label: 'MARATHON' },
   { id: 'arrest_heist', label: 'ARREST HEIST' },
   { id: 'pajama', label: 'PAJAMA' },
+  { id: 'pedi_extended', label: 'PAJAMA PEDI-GLAM EXTENDED' },
+  { id: 'lockdown', label: 'PAJAMA LOCKDOWN 18+' },
+  { id: 'beach_bar', label: 'BEACH BAR HOME LOCKDOWN' },
 ];
 
 const inputClass = 'rounded-lg border border-border bg-background px-3 py-2 text-sm';
@@ -24,6 +28,7 @@ export default function GameMediaLibraries({ value = {}, files = [], onSave, onR
   const [assignmentUrl, setAssignmentUrl] = useState('');
   const [assignmentMode, setAssignmentMode] = useState('classic');
   const [assignmentPoint, setAssignmentPoint] = useState('');
+  const uploadInputs = useRef({});
 
   const galleries = value.gameModePhotos || {};
   const assignments = Array.isArray(value.gameMediaAssignments) ? value.gameMediaAssignments : [];
@@ -35,6 +40,26 @@ export default function GameMediaLibraries({ value = {}, files = [], onSave, onR
     setNotice(message);
     setError('');
     await onRefresh?.();
+  }
+
+  async function uploadPhotoToMode(modeId, file) {
+    if (!file) return;
+    if (!file.type.startsWith('image/')) { setError('Επίλεξε αρχείο εικόνας.'); return; }
+    setBusy(modeId);
+    setError('');
+    setNotice('');
+    try {
+      const uploaded = await uploadMedia(file);
+      if (!uploaded?.url) throw new Error('Ο server δεν επέστρεψε σύνδεσμο για το αρχείο.');
+      const nextGalleries = { ...galleries, [modeId]: [...new Set([...(galleries[modeId] || []), uploaded.url])] };
+      await saveValue({ ...value, gameModePhotos: nextGalleries }, `Το αρχείο ${file.name} ανέβηκε και συνδέθηκε στο ${MODES.find((mode) => mode.id === modeId)?.label || modeId}.`);
+      await onRefresh?.();
+    } catch (e) {
+      setError(e?.message || 'Το ανέβασμα ή η σύνδεση απέτυχε.');
+    } finally {
+      setBusy('');
+      if (uploadInputs.current[modeId]) uploadInputs.current[modeId].value = '';
+    }
   }
 
   async function addExistingPhoto(modeId) {
@@ -113,8 +138,8 @@ export default function GameMediaLibraries({ value = {}, files = [], onSave, onR
   return (
     <section className="space-y-6">
       <div className="space-y-1">
-        <h2 className="font-heading text-2xl text-primary">ΣΥΛΛΟΓΕΣ ΦΩΤΟΓΡΑΦΙΩΝ ΑΝΑ MODE</h2>
-        <p className="text-sm text-foreground/65">Οι φωτογραφίες ανεβαίνουν μία φορά στην κεντρική Βιβλιοθήκη Πολυμέσων και συνδέονται εδώ με όσα Modes χρειάζονται. Η αφαίρεση από συλλογή δεν διαγράφει το αρχείο.</p>
+        <h2 className="font-heading text-2xl text-primary">MODE MEDIA CENTER — ΦΩΤΟΓΡΑΦΙΕΣ ΑΝΑ MODE</h2>
+        <p className="text-sm text-foreground/65">Ανέβασε εικόνα απευθείας από τον υπολογιστή στη συλλογή του συγκεκριμένου Mode ή σύνδεσε υπάρχουσα εικόνα από τη βιβλιοθήκη. Η αφαίρεση από συλλογή δεν διαγράφει το αρχείο.</p>
       </div>
 
       {MODES.map((mode) => {
@@ -128,7 +153,9 @@ export default function GameMediaLibraries({ value = {}, files = [], onSave, onR
               </div>
             </div>
             <div className="flex flex-wrap gap-2">
-              <select aria-label={`Υπάρχουσα φωτογραφία για ${mode.label}`} className={inputClass} value={existingPhoto[mode.id] || ''} onChange={(event) => setExistingPhoto((current) => ({ ...current, [mode.id]: event.target.value }))}>
+              <input ref={(element) => { uploadInputs.current[mode.id] = element; }} type="file" accept="image/*,.jpg,.jpeg,.png,.webp,.gif,.avif,.svg,.heic" hidden disabled={!!busy} onChange={(event) => uploadPhotoToMode(mode.id, event.target.files?.[0])} aria-label={`Ανέβασμα φωτογραφίας από υπολογιστή για ${mode.label}`} />
+              <button type="button" disabled={!!busy} onClick={() => uploadInputs.current[mode.id]?.click()} className="rounded-lg bg-primary px-3 py-2 text-xs font-bold text-white disabled:opacity-40">Ανέβασμα από υπολογιστή εδώ</button>
+              <select aria-label={`Υπάρχουσα φωτογραφία για ${mode.label}`}  className={inputClass} value={existingPhoto[mode.id] || ''} onChange={(event) => setExistingPhoto((current) => ({ ...current, [mode.id]: event.target.value }))}>
                 <option value="">Επιλογή από τις ανεβασμένες εικόνες</option>
                 {photos.map((file) => <option key={file.url} value={file.url}>{file.name}</option>)}
               </select>
