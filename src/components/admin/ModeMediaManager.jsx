@@ -28,14 +28,6 @@ function validateSelectedFile(file, expectedName, video) {
   const extension = file.name.split('.').pop()?.toLowerCase();
   const allowed = video ? ['mp4', 'webm', 'mov'] : ['jpg', 'jpeg', 'png', 'webp', 'gif', 'avif', 'svg', 'heic', 'heif'];
   if (!allowed.includes(extension)) return video ? 'Για trailer επίλεξε MP4, WEBM ή MOV.' : 'Για εικόνα επίλεξε JPG, PNG, WEBP, GIF, AVIF, SVG ή HEIC.';
-  if (expectedName) {
-    const slug = (name) => name.replace(/\.[^.]+$/, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
-    const expectedSlug = slug(expectedName);
-    const actualSlug = slug(file.name).replace(/^[a-z0-9]+-[a-f0-9]{6}-/, '');
-    if (actualSlug !== expectedSlug) {
-      return `Λάθος αρχείο για αυτή τη θέση. Απαιτείται: ${expectedName} — επέλεξες: ${file.name}`;
-    }
-  }
   return '';
 }
 
@@ -207,7 +199,7 @@ export default function ModeMediaManager({ value = {}, files = [], onSave, onRef
             <div key={slot.id} className="rounded-xl border border-border/60 bg-secondary/30 p-3">
               <Thumb src={data[slot.id]} className="mb-3 aspect-video w-full" />
               <div className="text-sm font-bold">{slot.label}</div>
-              <div className="mt-1 text-[11px] text-foreground/55">Απαιτούμενο όνομα: {slot.id}.jpg</div>
+              <div className="mt-1 text-[11px] text-foreground/55">Επιτρεπόμενος τύπος: εικόνα</div>
               <div className="mt-1 text-[10px]">{assignmentStatus(slot.id, data[slot.id])}</div>
               <div className="mt-2 space-y-2">
                 {uploadControl(slot.id, slot.label)}
@@ -230,7 +222,7 @@ export default function ModeMediaManager({ value = {}, files = [], onSave, onRef
               <div key={item.id} className="grid sm:grid-cols-[1fr_160px_auto] gap-2 items-center rounded-lg bg-secondary/40 p-2">
                 <div className="min-w-0">
                   <input defaultValue={item.label || ''} disabled={disabled || !!busy} onBlur={(e) => { if (e.target.value !== (item.label || '')) updateLabel('sections', item.id, e.target.value); }} className="w-full min-w-0 rounded-lg border border-border bg-background px-3 py-2 text-sm" aria-label="Τίτλος ενότητας" />
-                  <div className="mt-1 text-[10px] text-foreground/55">Απαιτούμενο αρχείο: {item.filename || 'Δεν έχει οριστεί όνομα'}</div>
+                  <div className="mt-1 text-[10px] text-foreground/55">Αναμενόμενο αρχείο αναφοράς: {item.filename || 'Δεν έχει οριστεί'} — γίνεται δεκτό οποιοδήποτε έγκυρο όνομα εικόνας</div>
                   <div className="mt-1 text-[10px]">{assignmentStatus(field, item.image, item)}</div>
                 </div>
                 <Thumb src={item.image} className="aspect-video w-full" />
@@ -247,7 +239,7 @@ export default function ModeMediaManager({ value = {}, files = [], onSave, onRef
         <div className="rounded-xl border border-border/60 p-3 space-y-3">
           <div>
             <div className="font-bold text-sm">Gallery — {data.gallery.filter(Boolean).length}/6 εικόνες</div>
-            <div className="text-[11px] text-foreground/55">Κάθε αριθμημένη θέση ελέγχει το ακριβές όνομα αρχείου. Τα κενά δεν μετακινούν τις επόμενες εικόνες.</div>
+            <div className="text-[11px] text-foreground/55">Κάθε αριθμημένη θέση δέχεται απευθείας οποιοδήποτε έγκυρο αρχείο εικόνας. Τα κενά δεν μετακινούν τις επόμενες εικόνες.</div>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
             {data.gallery.map((src, index) => {
