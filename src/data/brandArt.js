@@ -71,24 +71,12 @@ export const FILM = { agent: '', welcomeVideo: '', countdownVideo: '' };
 for (const id of PHOTO_SPOT_IDS) FILM[id] = '';
 
 export const SITE_VIDEOS = []; // επιπλέον βίντεο για το /site (Admin → Φωτογραφίες & Βίντεο)
-export const PAJAMA_PHOTOS = [ART.photoPediGlam, ART.photoSlippers, ART.photoGame];
-export const HEIST_PHOTOS = [
-  ART.heist1,
-  ART.heist2,
-  ART.heist3,
-  ART.heist4,
-  ART.heist5,
-  ART.heist6,
-  ART.heist7,
-  ART.heist8,
-  ART.heist9,
-  ART.heist10,
-  ART.photoHeistRoom,
-  ART.photoHeistNight,
-];
+// Οι προεπιλεγμένες gallery εικόνες είναι ξεχωριστές από τις 12 αριθμημένες εικόνες κάθε gallery.
+export const PAJAMA_PHOTOS = [ART.photoSlippers, ART.photoGame];
+export const HEIST_PHOTOS = [ART.photoHeistNight];
 
 // Αντίγραφο των αρχικών τιμών (πριν εφαρμοστούν οι αλλαγές από το Admin)
-export const DEFAULTS = { ...ART, ...PHOTO, ...FILM, ...MODE_COVERS, heistPhotos: [...HEIST_PHOTOS], pajamaPhotos: [...PAJAMA_PHOTOS], siteVideos: [] };
+export const DEFAULTS = { ...ART, ...PHOTO, ...FILM, ...MODE_COVERS, heistPhotos: [], pajamaPhotos: [], siteVideos: [] };
 
 // Καλείται μία φορά στην εκκίνηση (src/lib/media.js), ΠΡΙΝ φορτωθεί η εφαρμογή.
 // Αλλάζει τα αντικείμενα επιτόπου, ώστε να τα δουν όλα τα components.
@@ -144,7 +132,9 @@ export function applyMediaOverrides(o = {}) {
   }
 
   const setList = (arr, v, def) => arr.splice(0, arr.length, ...(Array.isArray(v) ? v.filter(str) : def));
-  setList(HEIST_PHOTOS, o.heistPhotos, clearPhotos ? [] : [ART.heist1, ART.heist2, ART.heist3, ART.heist4, ART.heist5, ART.heist6, ART.heist7, ART.heist8, ART.heist9, ART.heist10, ART.photoHeistRoom, ART.photoHeistNight]);
-  setList(PAJAMA_PHOTOS, o.pajamaPhotos, clearPhotos ? [] : [ART.photoPediGlam, ART.photoSlippers, ART.photoGame]);
+  const heistGallery = Array.isArray(o.heistPhotos) ? o.heistPhotos.filter(str) : [];
+  const pajamaGallery = Array.isArray(o.pajamaPhotos) ? o.pajamaPhotos.filter(str) : [];
+  HEIST_PHOTOS.splice(0, HEIST_PHOTOS.length, ...[ART.photoHeistNight, ...heistGallery].filter(str));
+  PAJAMA_PHOTOS.splice(0, PAJAMA_PHOTOS.length, ...[ART.photoSlippers, ART.photoGame, ...pajamaGallery].filter(str));
   setList(SITE_VIDEOS, o.siteVideos, []);
 }
