@@ -32,12 +32,12 @@ export const IMAGE_SLOTS = [
 ];
 
 export const PHOTO_SPOTS = [
-  { id: 'siteHero', label: 'Site — φόντο', where: 'Αρχική σελίδα, φόντο hero', surfaces: ['site'] },
+  { id: 'siteHero', label: 'Site — κεντρικό φόντο', where: '12_siteHero.jpg — φόντο αρχικής σελίδας', surfaces: ['site'] },
   { id: 'siteTrailer', label: 'Site — τρέιλερ', where: 'Αρχική σελίδα, ενότητα τρέιλερ', surfaces: ['site'] },
-  { id: 'tv', label: 'TV', where: 'Οθόνη TV', surfaces: ['tv'] },
+  { id: 'tv', label: 'TV — οθόνη αναμονής', where: '13_tv.jpg — εικόνα οθόνης αναμονής TV', surfaces: ['tv'] },
   { id: 'promo', label: 'Promo', where: 'Promo, hero', surfaces: ['site'] },
   { id: 'invitation', label: 'Εικόνα teaser πρόσκλησης', where: '15_invitation.jpg — εικόνα teaser πρόσκλησης', surfaces: ['forms'] },
-  { id: 'pajama', label: 'Pajama πρόσκληση', where: 'Φόντο στο Pajama invite', surfaces: ['forms'] },
+  { id: 'pajama', label: 'Pajama invitation — φόντο', where: '16_pajama.jpg — φόντο Pajama πρόσκλησης', surfaces: ['forms'] },
 ];
 export const PHOTO_SPOT_IDS = PHOTO_SPOTS.map((v) => v.id);
 
