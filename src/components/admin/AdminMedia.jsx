@@ -478,18 +478,32 @@ export default function AdminMedia() {
       <ComicPanel className="bg-card space-y-3">
         <div className="font-heading text-lg">🖼️ ΕΙΚΟΝΕΣ ΑΝΑ ΣΗΜΕΙΟ</div>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-          {IMAGE_SLOTS.filter((s) => showSurface(...(s.surfaces || []))).map((s) => (
-            <div key={s.id} className="border-2 border-border/40 rounded-lg p-2 bg-secondary/40">
-              <Thumb src={ov[s.id] || DEFAULTS[s.id]} className="w-full aspect-square rounded" />
-              <div className="font-bold text-sm mt-2">{s.label}</div>
-              <div className="text-[11px] text-foreground/60">{s.where}</div>
-              <div className="flex gap-2 mt-2 flex-wrap">
-                <ComicButton size="sm" disabled={!!busy} onClick={() => pick(s.id, 'slot', imgOne)}>⬆️ Αλλαγή</ComicButton>
-                {ov[s.id] && <ComicButton size="sm" variant="dark" disabled={!!busy} onClick={() => reset(s.id)}>↩︎</ComicButton>}
+          {IMAGE_SLOTS.filter((s) => showSurface(...(s.surfaces || []))).map((s) => {
+            const src = ov[s.id] || DEFAULTS[s.id];
+            const uploadedFile = library.find((file) => file.url === src);
+            return (
+              <div key={s.id} className="border-2 border-border/40 rounded-lg p-2 bg-secondary/40">
+                <Thumb src={src} className="w-full aspect-square rounded" />
+                <div className="font-bold text-sm mt-2">{s.label}</div>
+                <div className="text-[11px] text-foreground/60">{s.where}</div>
+                <div className="flex gap-2 mt-2 flex-wrap">
+                  <ComicButton size="sm" disabled={!!busy} onClick={() => pick(s.id, 'slot', imgOne)}>⬆️ Αλλαγή</ComicButton>
+                  {ov[s.id] && <ComicButton size="sm" variant="dark" disabled={!!busy} onClick={() => reset(s.id)}>↩︎</ComicButton>}
+                  {uploadedFile && (
+                    <ComicButton
+                      size="sm"
+                      variant="red"
+                      disabled={!!busy}
+                      onClick={() => removeFile(uploadedFile)}
+                    >
+                      🗑️ Οριστική διαγραφή από παντού
+                    </ComicButton>
+                  )}
+                </div>
+                <Progress id={s.id} />
               </div>
-              <Progress id={s.id} />
-            </div>
-          ))}
+            );
+          })}
         </div>
       </ComicPanel>
       )}
