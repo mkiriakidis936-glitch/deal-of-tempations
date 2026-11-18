@@ -498,38 +498,78 @@ export default function AdminMedia() {
       {GALLERIES.filter((g) => showSurface(...(g.surfaces || ['site']))).map((g) => {
         const video = g.kind === 'video';
         const list = listOf(g.id);
+        const requiredCount = g.requiredCount || 0;
+        const filesForGallery = library.filter((file) => video ? file.kind === 'video' : file.kind === 'image' || file.kind === 'graphic');
         return (
           <ComicPanel key={g.id} className="bg-card space-y-3">
             <div className="flex items-start justify-between gap-2 flex-wrap">
               <div>
-                <div className="font-heading text-lg">{video ? '🎞️' : '📸'} {g.label.toUpperCase()} ({list.length})</div>
+                <div className="font-heading text-lg">{video ? '🎞️' : '📸'} {g.label.toUpperCase()} ({requiredCount ? `${list.length}/${requiredCount}` : list.length})</div>
                 <div className="text-[11px] text-foreground/60">{g.where}</div>
               </div>
-              <div className="flex gap-2 flex-wrap">
-                <select aria-label={`Αρχείο για ${g.label}`} value={galleryAsset[g.id] || ''} disabled={!!busy} onChange={(e) => setGalleryAsset((current) => ({ ...current, [g.id]: e.target.value }))} className="rounded-lg border border-border bg-background px-2 py-2 text-xs"><option value="">Επιλογή από κεντρική βιβλιοθήκη…</option>{library.filter((file) => video ? file.kind === 'video' : file.kind === 'image' || file.kind === 'graphic').map((file) => <option key={file.url} value={file.url}>{file.name}</option>)}</select>
-                <ComicButton size="sm" disabled={!!busy || !galleryAsset[g.id]} onClick={() => { addExistingToList(galleryAsset[g.id], g.id); setGalleryAsset((current) => ({ ...current, [g.id]: '' })); }}>Σύνδεση</ComicButton>
-                {ov[g.id] && <ComicButton size="sm" variant="dark" disabled={!!busy} onClick={() => reset(g.id)}>↩︎ Αρχικά</ComicButton>}
-              </div>
+              {!requiredCount && (
+                <div className="flex gap-2 flex-wrap">
+                  <select aria-label={`Αρχείο για ${g.label}`} value={galleryAsset[g.id] || ''} disabled={!!busy} onChange={(e) => setGalleryAsset((current) => ({ ...current, [g.id]: e.target.value }))} className="rounded-lg border border-border bg-background px-2 py-2 text-xs"><option value="">Επιλογή από κεντρική βιβλιοθήκη…</option>{filesForGallery.map((file) => <option key={file.url} value={file.url}>{file.name}</option>)}</select>
+                  <ComicButton size="sm" disabled={!!busy || !galleryAsset[g.id]} onClick={() => { addExistingToList(galleryAsset[g.id], g.id); setGalleryAsset((current) => ({ ...current, [g.id]: '' })); }}>Σύνδεση</ComicButton>
+                  {ov[g.id] && <ComicButton size="sm" variant="dark" disabled={!!busy} onClick={() => reset(g.id)}>↩︎ Αρχικά</ComicButton>}
+                </div>
+              )}
             </div>
             <Progress id={g.id} />
-            {!list.length && <div className="text-xs text-foreground/60">Δεν υπάρχει κανένα ακόμα.</div>}
-            <div className={`grid gap-2 ${video ? 'grid-cols-1 sm:grid-cols-2' : 'grid-cols-2 sm:grid-cols-3 md:grid-cols-5'}`}>
-              {list.map((src, i) => (
-                <div key={`${src}-${i}`} className="border-2 border-border/40 rounded overflow-hidden bg-secondary/40">
-                  <Thumb video={video} src={src} className={`w-full ${video ? 'aspect-video' : 'aspect-[4/5]'}`} />
-                  <div className="grid grid-cols-4 text-white text-base bg-black/70">
-                    <button disabled={!!busy || i === 0} onClick={() => move(g.id, i, -1)} className="py-2.5 disabled:opacity-30" aria-label="Πίσω">◀</button>
-                    <select aria-label={`Αντικατάσταση στοιχείου ${i+1}`} value="" disabled={!!busy} onChange={(e) => { if (e.target.value) run(`replace-${g.id}-${i}`, () => { const next=[...list]; next[i]=e.target.value; return save({ ...ov, [g.id]: next }); }, 'Το αρχείο αντικαταστάθηκε ✓'); }} className="col-span-2 w-full bg-black/70 text-[10px] text-white"><option value="">Αλλαγή από βιβλιοθήκη</option>{library.filter((file) => video ? file.kind === 'video' : file.kind === 'image' || file.kind === 'graphic').map((file) => <option key={file.url} value={file.url}>{file.name}</option>)}</select>
-                    <button disabled={!!busy} onClick={() => remove(g.id, i)} className="py-2.5 text-red-400" aria-label="Αφαίρεση">🗑</button>
-                    <button disabled={!!busy || i === list.length - 1} onClick={() => move(g.id, i, 1)} className="py-2.5 disabled:opacity-30" aria-label="Μπροστά">▶</button>
-                  </div>
+            {requiredCount ? (
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                {Array.from({ length: requiredCount }, (_, index) => {
+                  const src = list[index] || '';
+                  const file = library.find((item) => item.url === src);
+                  const canAdd = index === list.length;
+                  return (
+                    <div key={index} className="border-2 border-border/40 rounded-lg p-2 bg-secondary/40 space-y-2">
+                      <div className="text-xs font-bold">{g.id === 'heistPhotos' ? 'Heist' : 'Pajama'} {String(index + 1).padStart(2, '0')}</div>
+                      <Thumb src={src} className="w-full aspect-[4/3] rounded" />
+                      <div className="text-[10px] text-foreground/60 break-all">{file?.name || (src ? 'Αρχείο συνδεδεμένο' : 'Δεν έχει συνδεθεί εικόνα')}</div>
+                      <select
+                        aria-label={`${g.label} ${index + 1}`}
+                        value={src}
+                        disabled={!!busy || (!src && !canAdd)}
+                        onChange={(event) => {
+                          const selectedUrl = event.target.value;
+                          if (!selectedUrl) return;
+                          const next = [...list];
+                          if (index < next.length) next[index] = selectedUrl;
+                          else next.push(selectedUrl);
+                          setList(g.id, next);
+                        }}
+                        className="w-full rounded-lg border border-border bg-background px-2 py-2 text-[10px]"
+                      >
+                        <option value="">{src ? 'Επιλογή αντικατάστασης…' : 'Επιλογή εικόνας…'}</option>
+                        {filesForGallery.map((item) => <option key={item.url} value={item.url}>{item.name}</option>)}
+                      </select>
+                      {src && <ComicButton size="sm" variant="dark" disabled={!!busy} onClick={() => remove(g.id, index)}>Αφαίρεση θέσης</ComicButton>}
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <>
+                {!list.length && <div className="text-xs text-foreground/60">Δεν υπάρχει κανένα ακόμα.</div>}
+                <div className={`grid gap-2 ${video ? 'grid-cols-1 sm:grid-cols-2' : 'grid-cols-2 sm:grid-cols-3 md:grid-cols-5'}`}>
+                  {list.map((src, i) => (
+                    <div key={`${src}-${i}`} className="border-2 border-border/40 rounded overflow-hidden bg-secondary/40">
+                      <Thumb video={video} src={src} className={`w-full ${video ? 'aspect-video' : 'aspect-[4/5]'}`} />
+                      <div className="grid grid-cols-4 text-white text-base bg-black/70">
+                        <button disabled={!!busy || i === 0} onClick={() => move(g.id, i, -1)} className="py-2.5 disabled:opacity-30" aria-label="Πίσω">◀</button>
+                        <select aria-label={`Αντικατάσταση στοιχείου ${i+1}`} value="" disabled={!!busy} onChange={(e) => { if (e.target.value) run(`replace-${g.id}-${i}`, () => { const next=[...list]; next[i]=e.target.value; return save({ ...ov, [g.id]: next }); }, 'Το αρχείο αντικαταστάθηκε ✓'); }} className="col-span-2 w-full bg-black/70 text-[10px] text-white"><option value="">Αλλαγή από βιβλιοθήκη</option>{filesForGallery.map((item) => <option key={item.url} value={item.url}>{item.name}</option>)}</select>
+                        <button disabled={!!busy} onClick={() => remove(g.id, i)} className="py-2.5 text-red-400" aria-label="Αφαίρεση">🗑</button>
+                        <button disabled={!!busy || i === list.length - 1} onClick={() => move(g.id, i, 1)} className="py-2.5 disabled:opacity-30" aria-label="Μπροστά">▶</button>
+                      </div>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
+              </>
+            )}
           </ComicPanel>
         );
       })}
-
       </>
       )}
 
