@@ -33,7 +33,7 @@ export const ART = {
   banner: '/assets/059bca0c5_Gemini_Generated_Image_hmy5gghmy5gghmy5.jpeg',
   logo: '/assets/ee5e63437_Gemini_Generated_Image_h0aclsh0aclsh0ac.jpeg',
   invitationBg: '/assets/38a7c85ef_DealofTemptation2.jpeg',
-  invitationTeaser: '',
+  invitation: '',
   extraHeistRoom: '',
   extraPediGlam: '',
   wallpaperPhone: '',
@@ -62,7 +62,7 @@ export const PHOTO = {
   siteTrailer: ART.poster,
   tv: ART.scene,
   promo: ART.poster,
-  invitation: ART.invitationTeaser,
+  invitation: ART.invitation,
   pajama: ART.vault,
 };
 
@@ -127,7 +127,7 @@ export function applyMediaOverrides(o = {}) {
   FILM.welcomeVideo = clearVideos ? '' : (str(o.welcomeVideo) || '');
   FILM.countdownVideo = clearVideos ? '' : (str(o.countdownVideo) || '');
   for (const id of PHOTO_SPOT_IDS) {
-    const value = str(o[id]) || (id === 'invitation' ? str(o.invitationTeaser) : null);
+    const value = str(o[id]);
     if (emptySlots.includes(id)) {
       PHOTO[id] = '';
       FILM[id] = '';
