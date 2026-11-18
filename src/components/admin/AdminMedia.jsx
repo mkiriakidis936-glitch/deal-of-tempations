@@ -6,6 +6,7 @@ import { ART, DEFAULTS, applyMediaOverrides } from '@/data/brandArt';
 import { IMAGE_SLOTS, PHOTO_SPOTS, PHOTO_SPOT_IDS, VIDEO_SLOTS, MODE_COVER_SLOTS, GALLERIES, SURFACES } from '@/data/mediaSlots';
 import { NEW_MODES } from '@/data/modes/modeRegistry';
 import ModeMediaManager from '@/components/admin/ModeMediaManager';
+import GameMediaLibraries from '@/components/admin/GameMediaLibraries';
 import AdminMediaPreview from '@/components/admin/AdminMediaPreview';
 import AVControlRoom from '@/components/admin/AVControlRoom';
 import { MEDIA_KEY, fetchOverrides, uploadMedia, listMedia, deleteMedia, deleteAllMedia } from '@/lib/media';
@@ -41,6 +42,7 @@ export default function AdminMedia() {
   const [rec, setRec] = useState(null);
   const [ov, setOv] = useState({});
   const [library, setLibrary] = useState([]);
+  const [mediaRevision, setMediaRevision] = useState(0);
   const [libraryFilter, setLibraryFilter] = useState('all');
   const [librarySearch, setLibrarySearch] = useState('');
   const [surfaceFilter, setSurfaceFilter] = useState('all');
@@ -67,7 +69,7 @@ export default function AdminMedia() {
   const libraryOne = useRef(null);
 
   const refreshLibrary = useCallback(async () => {
-    try { setLibrary(await listMedia()); } catch (e) { setMsg({ ok: false, text: e.message }); }
+    try { setLibrary(await listMedia()); setMediaRevision((revision) => revision + 1); } catch (e) { setMsg({ ok: false, text: e.message }); }
   }, []);
 
   useEffect(() => {
@@ -201,17 +203,50 @@ export default function AdminMedia() {
   }, 'Η εικόνα προστέθηκε στη γκαλερί ✓');
   const removeFile = (f) => {
     const used = isUsed(f.url);
-    const q = used ? `Το «${f.name}» χρησιμοποιείται κάπου. Θα αφαιρεθεί από εκεί (θα επανέλθει το αρχικό) και θα διαγραφεί οριστικά. Συνέχεια;` : `Διαγραφή του «${f.name}» οριστικά;`;
+    const q = used
+      ? `Το «${f.name}» θα διαγραφεί οριστικά από το σύστημα και από ΟΛΑ τα σημεία όπου χρησιμοποιείται. Δεν θα παραμείνουν συνδέσεις. Συνέχεια;`
+      : `Οριστική διαγραφή του «${f.name}» από το σύστημα; Συνέχεια;`;
     if (!window.confirm(q)) return;
-    run(f.name, async () => {
+    return run(f.name, async () => {
       const next = used ? (removeUrl(ov, f.url) || {}) : { ...ov };
+      if (Array.isArray(next.gameMediaAssignments)) {
+        next.gameMediaAssignments = next.gameMediaAssignments.filter((item) => item?.url !== f.url);
+      }
       for (const key of ['libraryCategories', 'librarySurfaces', 'libraryFocalPoints']) {
         if (next[key]) { const values = { ...next[key] }; delete values[f.url]; next[key] = values; }
       }
       if (used || ['libraryCategories', 'librarySurfaces', 'libraryFocalPoints'].some((key) => ov[key]?.[f.url] !== undefined)) await save(next);
+
+      const avResult = await base44.entities.AppSetting.filter({ key: 'av_control_room_v1' }, { limit: 1 });
+      const avRecord = avResult.items?.[0];
+      if (avRecord?.id) {
+        const avValue = avRecord.value || {};
+        const metadata = { ...(avValue.metadata || {}) };
+        delete metadata[f.url];
+        const queue = (avValue.queue || []).filter((item) => item?.url !== f.url);
+        const removedIndex = (avValue.queue || []).findIndex((item) => item?.url === f.url);
+        let queueIndex = Number.isInteger(avValue.queueIndex) ? avValue.queueIndex : -1;
+        if (removedIndex >= 0) {
+          if (queueIndex === removedIndex) queueIndex = -1;
+          else if (queueIndex > removedIndex) queueIndex -= 1;
+        }
+        await base44.entities.AppSetting.update(avRecord.id, { value: { ...avValue, metadata, queue, queueIndex } });
+      }
+
+      const cueResult = await base44.entities.ProductionCue.filter({ source: f.url }, { limit: 1000 });
+      for (const cue of cueResult.items || []) {
+        if (cue?.id) await base44.entities.ProductionCue.update(cue.id, {
+          active: false,
+          source: '',
+          mediaItemId: null,
+          playbackCommand: 'stop',
+          commandAt: Date.now(),
+        });
+      }
+
       await deleteMedia(f.name);
       await refreshLibrary();
-    }, 'Διαγράφηκε ✓');
+    }, 'Το αρχείο διαγράφηκε οριστικά από παντού ✓');
   };
 
 
@@ -292,7 +327,8 @@ export default function AdminMedia() {
 
   return (
     <div className="space-y-3">
-      <AVControlRoom />
+      <GameMediaLibraries value={ov} files={library} onSave={save} onRefresh={refreshLibrary} onDeleteFile={removeFile} />
+      <AVControlRoom refreshKey={mediaRevision} />
       <input ref={imgOne} type="file" accept={IMG_ACCEPT} hidden onChange={onFiles} />
       <input ref={imgMany} type="file" accept={IMG_ACCEPT} multiple hidden onChange={onFiles} />
       <input ref={vidOne} type="file" accept={VID_ACCEPT} hidden onChange={onFiles} />

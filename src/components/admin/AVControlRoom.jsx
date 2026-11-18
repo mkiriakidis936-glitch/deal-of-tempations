@@ -10,7 +10,7 @@ const kinds = [{ id: 'all', label: 'Όλα' }, { id: 'video', label: 'Βίντε
 const folders = ['Γενικά', 'Intro & Opening', 'Sound Identity', 'Transitions', 'Commercial Breaks', 'Scenes', 'Highlights', 'Winner Reveal', 'Recap'];
 const uid = () => globalThis.crypto?.randomUUID?.() || String(Date.now() + Math.random());
 
-export default function AVControlRoom() {
+export default function AVControlRoom({ refreshKey = 0 }) {
   const [files, setFiles] = useState([]);
   const [sessions, setSessions] = useState([]);
   const [sessionCode, setSessionCode] = useState('');
@@ -55,7 +55,7 @@ export default function AVControlRoom() {
     }
   }, []);
 
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => { load(); }, [load, refreshKey]);
   useEffect(() => {
     if (!sessionCode) { setCueRecord(null); return undefined; }
     let alive = true;
@@ -251,7 +251,7 @@ export default function AVControlRoom() {
           <div className="flex items-center justify-between"><h3 className="font-heading text-lg">LIVE AV OUTPUT</h3><span className={`rounded-full px-2 py-1 text-[10px] ${cueRecord?.active ? 'bg-emerald-500/20 text-emerald-300' : 'bg-secondary text-foreground/60'}`}>{cueRecord?.active ? 'LIVE' : 'STANDBY'}</span></div>
           <p className="text-xs text-foreground/60">Η έξοδος στέλνει το επιλεγμένο media στην υπάρχουσα οθόνη /tv για το ενεργό Event.</p>
           <div className="grid grid-cols-3 gap-2"><ComicButton size="sm" disabled={busy || !queue.length} onClick={() => playQueue(0)}>▶ PLAY</ComicButton><ComicButton size="sm" variant="dark" disabled={busy || queueIndex <= 0} onClick={() => playQueue(-1)}>PREV</ComicButton><ComicButton size="sm" variant="dark" disabled={busy || queueIndex < 0 || queueIndex >= queue.length - 1} onClick={() => playQueue(1)}>NEXT</ComicButton></div>
-          <div className="grid grid-cols-3 gap-2"><ComicButton size="sm" variant="dark" disabled={busy || !cueRecord?.active} onClick={() => sendPlaybackCommand("play")}>▶ CONTINUE</ComicButton><ComicButton size="sm" variant="dark" disabled={busy || !cueRecord?.active} onClick={() => sendPlaybackCommand("pause")}>Ⅱ PAUSE</ComicButton><ComicButton size="sm" variant="dark" disabled={busy || !cueRecord?.active} onClick={() => sendPlaybackCommand("stop")}>■ STOP MEDIA</ComicButton></div>
+          <div className="grid grid-cols-3 gap-2"><ComicButton size="sm" variant="dark" disabled={busy || !cueRecord?.active} onClick={() => sendPlaybackCommand("play")}>▶ CONTINUE</ComicButton><ComicButton size="sm" variant="dark" disabled={busy || !cueRecord?.active} onClick={() => sendPlaybackCommand("pause")}>Ⅱ PAUSE</ComicButton><ComicButton size="sm" variant="dark" disabled={busy || !cueRecord?.active} onClick={stopOutput}>■ STOP MEDIA</ComicButton></div>
           <div className="flex items-center gap-3 text-xs"><span>VOLUME</span><input aria-label="Ένταση TV" className="flex-1" type="range" min="0" max="1" step="0.05" value={volume} onChange={(e) => setVolume(Number(e.target.value))} /><b>{Math.round(volume * 100)}%</b><ComicButton size="sm" variant="dark" disabled={busy || !cueRecord?.active} onClick={() => sendPlaybackCommand("volume", volume)}>SET</ComicButton><ComicButton size="sm" variant="dark" disabled={busy || !cueRecord?.active} onClick={() => sendPlaybackCommand("mute")}>MUTE</ComicButton><ComicButton size="sm" variant="dark" disabled={busy || !cueRecord?.active} onClick={() => sendPlaybackCommand("unmute")}>UNMUTE</ComicButton></div>
           <ComicButton size="sm" variant="dark" disabled={busy} onClick={stopOutput}>■ STOP TV OVERLAY</ComicButton>
           <div className="text-xs text-foreground/60">Τρέχον στοιχείο: {currentCue?.label || '—'}</div>
