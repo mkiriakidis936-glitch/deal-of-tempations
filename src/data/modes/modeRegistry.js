@@ -25,6 +25,23 @@ export const NEW_MODES = [
 
 ];
 
+export const MODE_MEDIA_SECTIONS = {
+  lockdown: [
+    { id: 'level1', label: 'Level 1 — Hostage Sacrifice' },
+    { id: 'level2', label: 'Level 2 — Sensory Cipher' },
+    { id: 'level3', label: 'Level 3 — Sabotage Override' },
+    { id: 'level4', label: 'Level 4 — Exit Code' },
+    { id: 'level5', label: 'Level 5 — VIP Vault' },
+  ],
+  beach_bar: [
+    { id: 'checkin', label: 'Check-in' },
+    { id: 'dance_arena', label: 'Dance Arena' },
+    { id: 'penalty_wheel', label: 'Τροχός Ποινών' },
+    { id: 'shot_truth', label: 'Shot & Truth' },
+    { id: 'last_queen', label: 'Last Queen' },
+  ],
+};
+
 export const isNewMode = (id) => NEW_MODES.some((m) => m.id === id);
 export const modeMeta = (id) => NEW_MODES.find((m) => m.id === id);
 
