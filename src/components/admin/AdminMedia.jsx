@@ -393,6 +393,7 @@ export default function AdminMedia() {
               <div key={s.id} className="border-2 border-border/40 rounded-lg p-2 bg-secondary/40">
                 {src ? <Thumb src={src} video={isVideoFile(src)} className="w-full aspect-video rounded" /> : <div className="w-full aspect-video rounded bg-black/40 flex items-center justify-center text-xs text-foreground/50">Κενό σημείο</div>}
                 <div className="font-bold text-sm mt-2">{s.label}</div>
+                {s.filename && <div className="text-[10px] text-foreground/55">{s.filename}</div>}
                 <div className="text-[11px] text-foreground/60">{s.where}</div>
                 <div className="flex gap-2 mt-2 flex-wrap">
                   <select aria-label={`Αρχείο για ${s.label}`} value="" disabled={!!busy} onChange={(e) => { if (e.target.value) assignMediaToSlot(e.target.value, s.id); }} className="w-full rounded-lg border border-border bg-background px-2 py-2 text-xs"><option value="">Σύνδεση από κεντρική βιβλιοθήκη…</option>{library.filter((file) => ['image','graphic','video'].includes(file.kind)).map((file) => <option key={file.url} value={file.url}>{file.kind} · {file.name}</option>)}</select>
