@@ -82,12 +82,23 @@ export default function ModeMediaManager({ value = {}, files = [], onSave, onRef
     } else if (field.startsWith('card:')) {
       const id = field.slice('card:'.length);
       next.cards = data.cards.map((item) => item.id === id ? { ...item, image: url } : item);
-    } else next[field] = url;
+    } else {
+      next[field] = url;
+      if (field === 'cover') next.coverCleared = false;
+    }
     return next;
   };
 
   const assign = (field, url) => {
-    if (url) persist(setField(field, url), 'Το αρχείο συνδέθηκε στη συγκεκριμένη θέση.');
+    if (!url) return;
+    const file = files.find((item) => item.url === url);
+    const validationError = validateSelectedFile(file, expectedNameFor(selected, field), field === 'trailer');
+    if (validationError) {
+      setError(validationError);
+      setNotice('');
+      return;
+    }
+    persist(setField(field, url), 'Το αρχείο συνδέθηκε στη συγκεκριμένη θέση.');
   };
 
   const uploadToField = async (field, file, item = null) => {
@@ -187,7 +198,7 @@ export default function ModeMediaManager({ value = {}, files = [], onSave, onRef
               <div className="mt-2 space-y-2">
                 {uploadControl(slot.id, slot.label)}
                 {libraryPicker(slot.id, slot.label)}
-                {data[slot.id] && <button type="button" disabled={disabled || !!busy} onClick={() => persist({ ...data, [slot.id]: '' }, 'Η σύνδεση αφαιρέθηκε. Το αρχείο παραμένει στη βιβλιοθήκη.')} className="rounded-lg border border-border px-3 py-2 text-xs">Αφαίρεση σύνδεσης</button>}
+                {data[slot.id] && <button type="button" disabled={disabled || !!busy} onClick={() => persist({ ...data, [slot.id]: '', ...(slot.id === 'cover' ? { coverCleared: true } : {}) }, 'Η σύνδεση αφαιρέθηκε. Το αρχείο παραμένει στη βιβλιοθήκη.')} className="rounded-lg border border-border px-3 py-2 text-xs">Αφαίρεση σύνδεσης</button>}
               </div>
             </div>
           ))}
@@ -204,7 +215,7 @@ export default function ModeMediaManager({ value = {}, files = [], onSave, onRef
             return (
               <div key={item.id} className="grid sm:grid-cols-[1fr_160px_auto] gap-2 items-center rounded-lg bg-secondary/40 p-2">
                 <div className="min-w-0">
-                  <input value={item.label || ''} disabled={disabled || !!busy} onChange={(e) => updateLabel('sections', item.id, e.target.value)} className="w-full min-w-0 rounded-lg border border-border bg-background px-3 py-2 text-sm" aria-label="Τίτλος ενότητας" />
+                  <input defaultValue={item.label || ''} disabled={disabled || !!busy} onBlur={(e) => { if (e.target.value !== (item.label || '')) updateLabel('sections', item.id, e.target.value); }} className="w-full min-w-0 rounded-lg border border-border bg-background px-3 py-2 text-sm" aria-label="Τίτλος ενότητας" />
                   <div className="mt-1 text-[10px] text-foreground/55">Απαιτούμενο αρχείο: {item.filename || 'Δεν έχει οριστεί όνομα'}</div>
                   <div className="mt-1 text-[10px]">{item.image ? 'Συνδεδεμένο αρχείο' : 'Εκκρεμεί αρχείο'}</div>
                 </div>
