@@ -105,8 +105,8 @@ export default function ModeMediaManager({ value = {}, files = [], onSave, disab
 
         <div className="grid sm:grid-cols-2 gap-3">
           {[
-            { id: 'hero', label: 'Κεντρική εικόνα / Hero', note: 'Κεντρική εικόνα παρουσίασης του Mode.' },
-            { id: 'cover', label: 'Cover image', note: 'Εικόνα επιλογής Mode στο Tablet και στη φόρμα.' },
+            { id: 'hero', label: 'Κεντρική εικόνα / Hero', note: 'Αρχείο: hero.jpg — κεντρική εικόνα παρουσίασης του Mode.' },
+            { id: 'cover', label: 'Cover image', note: 'Αρχείο: cover.jpg — εικόνα επιλογής Mode στο Tablet και στη φόρμα.' },
           ].map((slot) => (
             <div key={slot.id} className="rounded-xl border border-border/60 bg-secondary/30 p-3">
               <Thumb src={data[slot.id]} className="mb-3 aspect-video w-full" />
@@ -127,7 +127,10 @@ export default function ModeMediaManager({ value = {}, files = [], onSave, disab
           </div>
           {(data.sections || []).map((item) => (
             <div key={item.id} className="grid sm:grid-cols-[1fr_160px_auto] gap-2 items-center rounded-lg bg-secondary/40 p-2">
-              <input defaultValue={item.label || ''} disabled={disabled || busy} onBlur={(e) => { if (e.target.value !== (item.label || '')) updateLabel('sections', item.id, e.target.value); }} className="min-w-0 rounded-lg border border-border bg-background px-3 py-2 text-sm" aria-label="Τίτλος ενότητας" />
+              <div className="min-w-0">
+                <input defaultValue={item.label || ''} disabled={disabled || busy} onBlur={(e) => { if (e.target.value !== (item.label || '')) updateLabel('sections', item.id, e.target.value); }} className="w-full min-w-0 rounded-lg border border-border bg-background px-3 py-2 text-sm" aria-label="Τίτλος ενότητας" />
+                <div className="mt-1 text-[10px] text-foreground/55">{item.filename || MODE_MEDIA_SECTIONS[selected]?.find((section) => section.id === item.id)?.filename || 'Αρχείο ενότητας'}</div>
+              </div>
               <Thumb src={item.image} className="aspect-video w-full" />
               <div className="flex flex-col gap-1">
                 <select aria-label="Εικόνα ενότητας" className={inputClass} value={chosen[`section:${item.id}`] || ''} disabled={disabled || busy} onChange={(event) => setChosen((current) => ({ ...current, [`section:${item.id}`]: event.target.value }))}>
@@ -151,7 +154,7 @@ export default function ModeMediaManager({ value = {}, files = [], onSave, disab
               const src = data.gallery?.[index] || '';
               return (
                 <div key={index} className="rounded-lg border border-border/60 bg-secondary/30 p-2 space-y-2">
-                  <div className="text-xs font-bold">Gallery {String(index + 1).padStart(2, '0')}</div>
+                  <div className="text-xs font-bold">{`${selected === 'lockdown' ? 'lockdown' : 'beach'}_gallery_${String(index + 1).padStart(2, '0')}.jpg`}</div>
                   <Thumb src={src} className="aspect-[4/3] w-full" />
                   <select
                     aria-label={`Gallery ${String(index + 1).padStart(2, '0')}`}
