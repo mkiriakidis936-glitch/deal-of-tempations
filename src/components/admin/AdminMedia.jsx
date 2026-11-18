@@ -151,7 +151,7 @@ export default function AdminMedia() {
     }, 'Ανέβηκε και αποθηκεύτηκε ✓');
   };
 
-  const reset = (id) => run(id, () => { const { [id]: _, ...rest } = ov; if (PHOTO_SPOT_IDS.includes(id)) return save({ ...rest, [id]: DEFAULTS[id], emptySlots: (ov.emptySlots || []).filter((slot) => slot !== id) }); if (MODE_COVER_SLOTS.some((slot) => slot.id === id)) return save({ ...rest, [id]: DEFAULTS[id], emptyModeCovers: (ov.emptyModeCovers || []).filter((slot) => slot !== id) }); return save(rest); }, 'Επαναφορά στο αρχικό ✓');
+  const reset = (id) => run(id, () => { const { [id]: _, ...rest } = ov; if (PHOTO_SPOT_IDS.includes(id) || IMAGE_SLOTS.some((slot) => slot.id === id)) return save({ ...rest, [id]: DEFAULTS[id], emptySlots: (ov.emptySlots || []).filter((slot) => slot !== id) }); if (MODE_COVER_SLOTS.some((slot) => slot.id === id)) return save({ ...rest, [id]: DEFAULTS[id], emptyModeCovers: (ov.emptyModeCovers || []).filter((slot) => slot !== id) }); return save(rest); }, 'Επαναφορά στο αρχικό ✓');
   const clearSlot = (id) => run(id, () => save({ ...ov, [id]: undefined, emptySlots: [...new Set([...(ov.emptySlots || []), id])] }), 'Το σημείο καθαρίστηκε ✓');
   const listOf = (id) => Array.isArray(ov[id]) ? ov[id] : ((id === 'siteVideos' && (ov.clearAllVideos || ov.clearAllMedia)) || ((id === 'heistPhotos' || id === 'pajamaPhotos') && (ov.clearAllPhotos || ov.clearAllMedia)) ? [] : (DEFAULTS[id] || []));
   const setList = (id, list) => run(id, () => save({ ...ov, [id]: list }));
@@ -481,7 +481,7 @@ export default function AdminMedia() {
         <p className="text-xs text-foreground/60">Η αφαίρεση από σημείο δεν διαγράφει το αρχείο. Η οριστική διαγραφή από παντού είναι ξεχωριστή ενέργεια και εμφανίζεται για αρχεία της βιβλιοθήκης.</p>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
           {IMAGE_SLOTS.filter((s) => showSurface(...(s.surfaces || []))).map((s) => {
-            const src = ov[s.id] || DEFAULTS[s.id];
+            const src = ov[s.id] || (ov.emptySlots?.includes(s.id) || ov.clearAllPhotos || ov.clearAllMedia ? '' : DEFAULTS[s.id]);
             const uploadedFile = library.find((file) => file.url === src);
             return (
               <div key={s.id} className="border-2 border-border/40 rounded-lg p-2 bg-secondary/40">
