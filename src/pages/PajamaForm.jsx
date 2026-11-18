@@ -80,7 +80,7 @@ export default function PajamaForm() {
     <div className="min-h-screen bg-background text-foreground p-4 pb-16">
       <div className="max-w-xl mx-auto space-y-3">
         <div className="text-center pt-4 rounded-2xl border border-primary/30 bg-black/30 p-4 shadow-2xl">
-          <img src={ART.photoPediGlam || "/assets/1ef972214_4a4d9d959_Gemini_Generated_Image_ryxfyxryxfyxryxf.jpeg?v=2"} alt="Pajama Pedi-Glam" onError={(event) => { const image = event.currentTarget; if (image.dataset.fallback !== "1") { image.dataset.fallback = "1"; image.src = PAJAMA_FORM_FALLBACK_IMAGE; } else { image.style.display = "none"; } }} className="w-full h-44 sm:h-56 object-cover rounded-xl mb-4" />
+          <img src={ART.extraPediGlam || ART.photoPediGlam || "/assets/1ef972214_4a4d9d959_Gemini_Generated_Image_ryxfyxryxfyxryxf.jpeg?v=2"} alt="Pajama Pedi-Glam" onError={(event) => { const image = event.currentTarget; if (image.dataset.fallback !== "1") { image.dataset.fallback = "1"; image.src = PAJAMA_FORM_FALLBACK_IMAGE; } else { image.style.display = "none"; } }} className="w-full h-44 sm:h-56 object-cover rounded-xl mb-4" />
           <div className="text-5xl">🛏️🩴💅🎀</div>
           <h1 className="font-heading text-2xl sm:text-3xl text-foreground drop-shadow-[0_0_18px_rgba(255,105,180,0.85)] mt-1">
             {PAJAMA_TITLE}
