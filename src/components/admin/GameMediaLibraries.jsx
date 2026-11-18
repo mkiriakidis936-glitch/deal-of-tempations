@@ -1,5 +1,4 @@
-import React, { useMemo, useRef, useState } from 'react';
-import { uploadMedia } from '@/lib/media';
+import React, { useMemo, useState } from 'react';
 
 const MODES = [
   { id: 'classic', label: 'CLASSIC' },
@@ -16,7 +15,7 @@ function FilePreview({ file }) {
   return <img src={file.url} alt={file.name} loading="lazy" className="max-h-64 max-w-full object-contain" />;
 }
 
-export default function GameMediaLibraries({ value = {}, files = [], onSave, onRefresh, onDeleteFile }) {
+export default function GameMediaLibraries({ value = {}, files = [], onSave, onRefresh }) {
   const [busy, setBusy] = useState('');
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
@@ -25,55 +24,30 @@ export default function GameMediaLibraries({ value = {}, files = [], onSave, onR
   const [assignmentUrl, setAssignmentUrl] = useState('');
   const [assignmentMode, setAssignmentMode] = useState('classic');
   const [assignmentPoint, setAssignmentPoint] = useState('');
-  const photoInputs = useRef({});
-  const videoInput = useRef(null);
-  const soundInput = useRef(null);
 
   const galleries = value.gameModePhotos || {};
   const assignments = Array.isArray(value.gameMediaAssignments) ? value.gameMediaAssignments : [];
   const photos = useMemo(() => files.filter((file) => file.kind === 'image' || file.kind === 'graphic'), [files]);
-  const videos = useMemo(() => files.filter((file) => file.kind === 'video'), [files]);
-  const sounds = useMemo(() => files.filter((file) => file.kind === 'audio'), [files]);
   const selectedAssignmentFile = files.find((file) => file.url === assignmentUrl);
 
-  async function saveValue(next) {
+  async function saveValue(next, message = 'Αποθηκεύτηκε.') {
     await onSave(next);
-    setNotice('Αποθηκεύτηκε.');
+    setNotice(message);
     setError('');
-  }
-
-  async function uploadToGallery(modeId, event) {
-    const selected = [...(event.target.files || [])];
-    event.target.value = '';
-    if (!selected.length) return;
-    setBusy(modeId);
-    setError('');
-    try {
-      const uploaded = [];
-      for (const file of selected) uploaded.push((await uploadMedia(file)).url);
-      const nextGalleries = {
-        ...galleries,
-        [modeId]: [...new Set([...(galleries[modeId] || []), ...uploaded])],
-      };
-      await saveValue({ ...value, gameModePhotos: nextGalleries });
-      await onRefresh?.();
-    } catch (e) {
-      setError(e?.message || 'Δεν ανέβηκαν οι φωτογραφίες.');
-    } finally {
-      setBusy('');
-    }
+    await onRefresh?.();
   }
 
   async function addExistingPhoto(modeId) {
     const url = existingPhoto[modeId];
     if (!url) return;
     setBusy(modeId);
+    setError('');
     try {
       const nextGalleries = {
         ...galleries,
         [modeId]: [...new Set([...(galleries[modeId] || []), url])],
       };
-      await saveValue({ ...value, gameModePhotos: nextGalleries });
+      await saveValue({ ...value, gameModePhotos: nextGalleries }, 'Η φωτογραφία συνδέθηκε με το Mode.');
       setExistingPhoto((current) => ({ ...current, [modeId]: '' }));
     } catch (e) {
       setError(e?.message || 'Δεν προστέθηκε η φωτογραφία.');
@@ -82,18 +56,18 @@ export default function GameMediaLibraries({ value = {}, files = [], onSave, onR
     }
   }
 
-  async function uploadToLibrary(kind, event) {
-    const selected = [...(event.target.files || [])];
-    event.target.value = '';
-    if (!selected.length) return;
-    setBusy(kind);
+  async function removePhotoFromGallery(modeId, url) {
+    if (!window.confirm('Να αφαιρεθεί η φωτογραφία μόνο από αυτή τη συλλογή; Το αρχείο θα παραμείνει στη Βιβλιοθήκη Πολυμέσων.')) return;
+    setBusy(modeId);
     setError('');
     try {
-      for (const file of selected) await uploadMedia(file);
-      await onRefresh?.();
-      setNotice(kind === 'video' ? 'Τα βίντεο προστέθηκαν στη Video Library.' : 'Οι ήχοι προστέθηκαν στη Sound Library.');
+      const nextGalleries = {
+        ...galleries,
+        [modeId]: (galleries[modeId] || []).filter((item) => item !== url),
+      };
+      await saveValue({ ...value, gameModePhotos: nextGalleries }, 'Η φωτογραφία αφαιρέθηκε από τη συλλογή. Το αρχείο διατηρήθηκε.');
     } catch (e) {
-      setError(e?.message || 'Δεν ανέβηκε το αρχείο.');
+      setError(e?.message || 'Δεν αφαιρέθηκε η φωτογραφία.');
     } finally {
       setBusy('');
     }
@@ -112,8 +86,9 @@ export default function GameMediaLibraries({ value = {}, files = [], onSave, onR
       next.push(nextAssignment);
     }
     setBusy('assignment');
+    setError('');
     try {
-      await saveValue({ ...value, gameMediaAssignments: next });
+      await saveValue({ ...value, gameMediaAssignments: next }, 'Η σύνδεση αρχείου με το σημείο αποθηκεύτηκε.');
       setAssignmentPoint('');
     } catch (e) {
       setError(e?.message || 'Δεν αποθηκεύτηκε η σύνδεση.');
@@ -122,16 +97,24 @@ export default function GameMediaLibraries({ value = {}, files = [], onSave, onR
     }
   }
 
-  async function deleteFile(file) {
-    if (!file || !onDeleteFile) return;
-    await onDeleteFile(file);
+  async function removeAssignment(id) {
+    if (!window.confirm('Να αφαιρεθεί μόνο η σύνδεση με αυτό το σημείο; Το αρχείο θα παραμείνει στη Βιβλιοθήκη Πολυμέσων.')) return;
+    setBusy('assignment');
+    setError('');
+    try {
+      await saveValue({ ...value, gameMediaAssignments: assignments.filter((item) => item.id !== id) }, 'Η σύνδεση αφαιρέθηκε. Το αρχείο διατηρήθηκε.');
+    } catch (e) {
+      setError(e?.message || 'Δεν αφαιρέθηκε η σύνδεση.');
+    } finally {
+      setBusy('');
+    }
   }
 
   return (
-    <section className="space-y-7">
+    <section className="space-y-6">
       <div className="space-y-1">
-        <h2 className="font-heading text-2xl text-primary">GAME MEDIA</h2>
-        <p className="text-sm text-foreground/65">Ξεχωριστές βιβλιοθήκες φωτογραφιών ανά Mode, βίντεο και ήχων. Το ίδιο αρχείο μπορεί να συνδεθεί με πολλά σημεία χωρίς νέο ανέβασμα.</p>
+        <h2 className="font-heading text-2xl text-primary">ΣΥΛΛΟΓΕΣ ΦΩΤΟΓΡΑΦΙΩΝ ΑΝΑ MODE</h2>
+        <p className="text-sm text-foreground/65">Οι φωτογραφίες ανεβαίνουν μία φορά στην κεντρική Βιβλιοθήκη Πολυμέσων και συνδέονται εδώ με όσα Modes χρειάζονται. Η αφαίρεση από συλλογή δεν διαγράφει το αρχείο.</p>
       </div>
 
       {MODES.map((mode) => {
@@ -140,34 +123,28 @@ export default function GameMediaLibraries({ value = {}, files = [], onSave, onR
           <section key={mode.id} className="space-y-3 border-b border-border/60 pb-6">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
-                <h3 className="font-heading text-xl">{mode.label} — PHOTOS</h3>
+                <h3 className="font-heading text-xl">{mode.label}</h3>
                 <p className="text-xs text-foreground/60">{gallery.length} φωτογραφίες</p>
               </div>
-              <div className="flex flex-wrap gap-2">
-                <button type="button" disabled={!!busy} onClick={() => photoInputs.current[mode.id]?.click()} className="rounded-lg bg-primary px-3 py-2 text-xs font-bold text-white">Προσθήκη φωτογραφιών</button>
-                <input ref={(node) => { photoInputs.current[mode.id] = node; }} hidden type="file" accept="image/*,.jpg,.jpeg,.png,.webp,.gif,.avif,.heic,.svg" multiple onChange={(event) => uploadToGallery(mode.id, event)} />
-              </div>
             </div>
-
             <div className="flex flex-wrap gap-2">
-              <select className={inputClass} value={existingPhoto[mode.id] || ''} onChange={(event) => setExistingPhoto((current) => ({ ...current, [mode.id]: event.target.value }))}>
-                <option value="">Επιλογή υπάρχουσας φωτογραφίας</option>
+              <select aria-label={`Υπάρχουσα φωτογραφία για ${mode.label}`} className={inputClass} value={existingPhoto[mode.id] || ''} onChange={(event) => setExistingPhoto((current) => ({ ...current, [mode.id]: event.target.value }))}>
+                <option value="">Επιλογή από τις ανεβασμένες εικόνες</option>
                 {photos.map((file) => <option key={file.url} value={file.url}>{file.name}</option>)}
               </select>
-              <button type="button" disabled={!!busy || !existingPhoto[mode.id]} onClick={() => addExistingPhoto(mode.id)} className="rounded-lg border border-border px-3 py-2 text-xs">Σύνδεση χωρίς νέο upload</button>
+              <button type="button" disabled={!!busy || !existingPhoto[mode.id]} onClick={() => addExistingPhoto(mode.id)} className="rounded-lg border border-border px-3 py-2 text-xs">Σύνδεση φωτογραφίας</button>
             </div>
-
             {gallery.length ? (
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-x-3 gap-y-4">
                 {gallery.map((url) => {
-                  const file = files.find((item) => item.url === url);
+                  const file = files.find((item) => item.url === url) || { url, kind: 'image', name: url.split('/').pop() };
                   return (
                     <div key={url} className="min-w-0 space-y-1">
-                      <button type="button" onClick={() => setPreviewFile(file || { url, kind: 'image', name: url.split('/').pop() })} className="block w-full">
-                        <img src={url} alt={file?.name || mode.label} loading="lazy" className="w-full aspect-[4/3] object-contain bg-black/30" />
+                      <button type="button" onClick={() => setPreviewFile(file)} className="block w-full">
+                        <img src={url} alt={file.name} loading="lazy" className="w-full aspect-[4/3] object-contain bg-black/30" />
                       </button>
-                      <div className="truncate text-[11px] text-foreground/65">{file?.name || url.split('/').pop()}</div>
-                      <button type="button" disabled={!!busy || !file} onClick={() => deleteFile(file)} className="text-xs text-red-400 underline disabled:opacity-40">Διαγραφή αρχείου από παντού</button>
+                      <div className="truncate text-[11px] text-foreground/65">{file.name}</div>
+                      <button type="button" disabled={!!busy} onClick={() => removePhotoFromGallery(mode.id, url)} className="text-xs text-foreground/75 underline disabled:opacity-40">Αφαίρεση από τη συλλογή</button>
                     </div>
                   );
                 })}
@@ -177,56 +154,18 @@ export default function GameMediaLibraries({ value = {}, files = [], onSave, onR
         );
       })}
 
-      <section className="space-y-3 border-b border-border/60 pb-6">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <h3 className="font-heading text-xl">VIDEO LIBRARY</h3>
-            <p className="text-xs text-foreground/60">{videos.length} βίντεο</p>
-          </div>
-          <button type="button" disabled={!!busy} onClick={() => videoInput.current?.click()} className="rounded-lg bg-primary px-3 py-2 text-xs font-bold text-white">Προσθήκη βίντεο</button>
-          <input ref={videoInput} hidden type="file" accept="video/*,.mp4,.webm,.mov" multiple onChange={(event) => uploadToLibrary('video', event)} />
-        </div>
-        {videos.map((file) => (
-          <div key={file.url} className="flex flex-col sm:flex-row sm:items-center gap-3 border-b border-border/40 py-3">
-            <div className="w-full sm:w-64"><video src={file.url} controls playsInline preload="metadata" className="w-full max-h-36 bg-black object-contain" /></div>
-            <div className="min-w-0 flex-1"><div className="break-all text-sm font-medium">{file.name}</div><div className="text-xs text-foreground/55">{Math.ceil((file.size || 0) / 1024)} KB</div></div>
-            <button type="button" disabled={!!busy} onClick={() => deleteFile(file)} className="text-xs text-red-400 underline">Διαγραφή αρχείου από παντού</button>
-          </div>
-        ))}
-        {!videos.length && <p className="text-xs text-foreground/45">Δεν υπάρχουν βίντεο.</p>}
-      </section>
-
-      <section className="space-y-3 border-b border-border/60 pb-6">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <h3 className="font-heading text-xl">SOUND LIBRARY</h3>
-            <p className="text-xs text-foreground/60">{sounds.length} ηχητικά αρχεία</p>
-          </div>
-          <button type="button" disabled={!!busy} onClick={() => soundInput.current?.click()} className="rounded-lg bg-primary px-3 py-2 text-xs font-bold text-white">Προσθήκη ήχων</button>
-          <input ref={soundInput} hidden type="file" accept="audio/*,.mp3,.wav,.ogg,.m4a,.aac" multiple onChange={(event) => uploadToLibrary('audio', event)} />
-        </div>
-        {sounds.map((file) => (
-          <div key={file.url} className="flex flex-col sm:flex-row sm:items-center gap-3 border-b border-border/40 py-3">
-            <div className="w-full sm:w-64"><audio src={file.url} controls preload="metadata" className="w-full" /></div>
-            <div className="min-w-0 flex-1"><div className="break-all text-sm font-medium">{file.name}</div><div className="text-xs text-foreground/55">{Math.ceil((file.size || 0) / 1024)} KB</div></div>
-            <button type="button" disabled={!!busy} onClick={() => deleteFile(file)} className="text-xs text-red-400 underline">Διαγραφή αρχείου από παντού</button>
-          </div>
-        ))}
-        {!sounds.length && <p className="text-xs text-foreground/45">Δεν υπάρχουν ήχοι.</p>}
-      </section>
-
       <section className="space-y-3">
         <h3 className="font-heading text-xl">ΣΥΝΔΕΣΗ ΑΡΧΕΙΩΝ ΜΕ ΣΗΜΕΙΑ ΠΑΙΧΝΙΔΙΟΥ</h3>
-        <p className="text-xs text-foreground/60">Επίλεξε ένα ήδη ανεβασμένο αρχείο και σύνδεσέ το με όσα σημεία χρειάζεται. Δεν δημιουργείται δεύτερο αντίγραφο.</p>
+        <p className="text-xs text-foreground/60">Επίλεξε αρχείο από την κεντρική βιβλιοθήκη. Το ίδιο αρχείο μπορεί να συνδεθεί με πολλά σημεία χωρίς νέο ανέβασμα.</p>
         <div className="grid sm:grid-cols-2 lg:grid-cols-[1.5fr_1fr_1.5fr_auto] gap-2">
-          <select className={inputClass} value={assignmentUrl} onChange={(event) => setAssignmentUrl(event.target.value)}>
+          <select aria-label="Επιλογή αρχείου" className={inputClass} value={assignmentUrl} onChange={(event) => setAssignmentUrl(event.target.value)}>
             <option value="">Επιλογή αρχείου</option>
             {files.map((file) => <option key={file.url} value={file.url}>{file.kind} · {file.name}</option>)}
           </select>
-          <select className={inputClass} value={assignmentMode} onChange={(event) => setAssignmentMode(event.target.value)}>
+          <select aria-label="Mode" className={inputClass} value={assignmentMode} onChange={(event) => setAssignmentMode(event.target.value)}>
             {MODES.map((mode) => <option key={mode.id} value={mode.id}>{mode.label}</option>)}
           </select>
-          <input className={inputClass} value={assignmentPoint} onChange={(event) => setAssignmentPoint(event.target.value)} placeholder="Σημείο παιχνιδιού / Round / Scene" />
+          <input aria-label="Σημείο παιχνιδιού" className={inputClass} value={assignmentPoint} onChange={(event) => setAssignmentPoint(event.target.value)} placeholder="Σημείο παιχνιδιού / Round / Scene" />
           <button type="button" disabled={!!busy || !selectedAssignmentFile || !assignmentPoint.trim()} onClick={addAssignment} className="rounded-lg bg-primary px-3 py-2 text-xs font-bold text-white">Σύνδεση</button>
         </div>
         {assignments.length ? (
@@ -234,7 +173,7 @@ export default function GameMediaLibraries({ value = {}, files = [], onSave, onR
             {assignments.map((item) => {
               const file = files.find((candidate) => candidate.url === item.url);
               if (!file) return null;
-              return <div key={item.id} className="flex flex-wrap items-center gap-2 border-b border-border/40 py-2 text-xs"><strong>{MODES.find((mode) => mode.id === item.mode)?.label || item.mode}</strong><span>· {item.point}</span><span className="min-w-0 flex-1 truncate text-foreground/60">{file.name}</span><button type="button" disabled={!!busy} onClick={() => deleteFile(file)} className="text-red-400 underline">Διαγραφή αρχείου από παντού</button></div>;
+              return <div key={item.id} className="flex flex-wrap items-center gap-2 border-b border-border/40 py-2 text-xs"><strong>{MODES.find((mode) => mode.id === item.mode)?.label || item.mode}</strong><span>· {item.point}</span><span className="min-w-0 flex-1 truncate text-foreground/60">{file.name}</span><button type="button" disabled={!!busy} onClick={() => removeAssignment(item.id)} className="text-foreground/75 underline">Αφαίρεση σύνδεσης</button></div>;
             })}
           </div>
         ) : <p className="text-xs text-foreground/45">Δεν έχουν συνδεθεί αρχεία με σημεία παιχνιδιού.</p>}
