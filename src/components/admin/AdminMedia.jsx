@@ -182,12 +182,7 @@ export default function AdminMedia() {
         : 'branding';
     await save({ ...ov, [slotId]: url, libraryCategories: { ...(ov.libraryCategories || {}), [url]: category } });
   }, 'Η εικόνα ανατέθηκε στο σημείο ✓');
-  const addLibraryImageToGallery = (url, galleryId) => run(`assign-${url}`, async () => {
-    const current = [...(ov[galleryId] || DEFAULTS[galleryId] || [])];
-    if (!current.includes(url)) current.push(url);
-    const category = galleryId === 'heistPhotos' ? 'heist' : 'pajama';
-    await save({ ...ov, [galleryId]: current, libraryCategories: { ...(ov.libraryCategories || {}), [url]: category } });
-  }, 'Η εικόνα προστέθηκε στη γκαλερί ✓');
+
   const removeFile = (f) => {
     const used = isUsed(f.url);
     const q = used
@@ -638,10 +633,6 @@ export default function AdminMedia() {
                   <select value={ov.libraryFocalPoints?.[f.url] || '50% 50%'} disabled={!!busy} onChange={(e) => setLibraryFocalPoint(f.url, e.target.value)} className="w-full rounded bg-black/50 border border-border/50 p-1 text-[10px]">
                     <option value="50% 50%">Κέντρο</option><option value="50% 0%">Πάνω</option><option value="50% 100%">Κάτω</option><option value="0% 50%">Αριστερά</option><option value="100% 50%">Δεξιά</option>
                   </select>
-                  <div className="grid grid-cols-2 gap-1">
-                    <button disabled={!!busy} onClick={() => addLibraryImageToGallery(f.url, 'heistPhotos')} className="text-[10px] py-1 rounded bg-black/50 disabled:opacity-30">+ Heist</button>
-                    <button disabled={!!busy} onClick={() => addLibraryImageToGallery(f.url, 'pajamaPhotos')} className="text-[10px] py-1 rounded bg-black/50 disabled:opacity-30">+ Pajama</button>
-                  </div>
                   <select defaultValue="" disabled={!!busy} onChange={(e) => { if (e.target.value) assignLibraryImageToSlot(f.url, e.target.value); e.target.value = ''; }} className="w-full rounded bg-black/50 border border-border/50 p-1 text-[10px]">
                     <option value="">Ανάθεση σε σημείο εφαρμογής…</option>
                     {IMAGE_SLOTS.map((slot) => <option key={slot.id} value={slot.id}>{slot.label} — {(slot.surfaces || []).map((id) => SURFACES.find((surface) => surface.id === id)?.label || id).join(' / ')}</option>)}
