@@ -546,7 +546,7 @@ export default function AdminMedia() {
               )}
             </div>
             <Progress id={g.id} />
-            {!requiredCount && directUploadControl(`gallery-${g.id}`, video ? 'video/mp4,video/webm,video/quicktime,.mp4,.webm,.mov' : 'image/*', (url) => ({ ...ov, [g.id]: [...listOf(g.id), url] }), video ? 'Ανέβασμα βίντεο εδώ' : 'Ανέβασμα εικόνας εδώ'))
+            {!requiredCount && directUploadControl(`gallery-${g.id}`, video ? 'video/mp4,video/webm,video/quicktime,.mp4,.webm,.mov' : 'image/*', (url) => ({ ...ov, [g.id]: [...listOf(g.id), url] }), video ? 'Ανέβασμα βίντεο εδώ' : 'Ανέβασμα εικόνας εδώ')}
             {requiredCount ? (
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
                 {Array.from({ length: requiredCount }, (_, index) => {
