@@ -315,7 +315,6 @@ export default function AdminMedia() {
       const src = ov[slot.id] || (ov.emptySlots?.includes(slot.id) || clearedImages ? '' : DEFAULTS[slot.id]);
       if (!src) missing.push({ surface: slot.surfaces?.[0] || 'site', label: slot.label, where: slot.where });
     }
-    for (const slot of VIDEO_SLOTS) if (!ov[slot.id]) missing.push({ surface: 'tv', label: slot.label, where: slot.where });
     for (const slot of IMAGE_SLOTS) if (!ov[slot.id] && (clearedImages || !DEFAULTS[slot.id])) missing.push({ surface: slot.surfaces?.[0] || 'site', label: slot.label, where: slot.where });
     for (const slot of MODE_COVER_SLOTS.filter((item) => item.modeId !== 'pedi_extended' && !NEW_MODES.some((mode) => mode.id === item.modeId))) {
       const src = ov[slot.id] || (ov.emptyModeCovers?.includes(slot.id) || clearedImages ? '' : DEFAULTS[slot.id]);
@@ -336,8 +335,8 @@ export default function AdminMedia() {
     }
     for (const gallery of GALLERIES) {
       const count = listOf(gallery.id).filter(Boolean).length;
-      const required = gallery.requiredCount || 1;
-      if (count < required) missing.push({
+      const required = gallery.requiredCount || 0;
+      if (required > 0 && count < required) missing.push({
         surface: gallery.surfaces?.[0] || 'site',
         label: `${gallery.label} (${count}/${required})`,
         where: gallery.where,
@@ -572,7 +571,7 @@ export default function AdminMedia() {
       {surfaceFilter !== 'preview' && (
       <ComicPanel className="bg-card space-y-3">
         <div className="font-heading text-lg">📋 ΑΝΑΦΟΡΑ ΚΕΝΩΝ ΣΗΜΕΙΩΝ</div>
-        <p className="text-xs text-foreground/60">Εμφανίζονται μόνο τα σημεία όπου δεν υπάρχει διαθέσιμο αρχείο. Δεν χαρακτηρίζονται ως υποχρεωτικά.</p>
+        <p className="text-xs text-foreground/60">Εμφανίζονται οι ελλείψεις της λίστας εικόνων και οι αριθμημένες galleries που δεν έχουν συμπληρωθεί.</p>
         {missingMediaPoints().filter((item) => surfaceFilter === 'all' || item.surface === surfaceFilter).length === 0
           ? <div className="rounded-lg border border-emerald-500/30 bg-emerald-500/5 p-3 text-sm">Δεν εντοπίστηκαν κενά σημεία στην επιλεγμένη κατηγορία.</div>
           : <div className="grid sm:grid-cols-2 gap-2">
