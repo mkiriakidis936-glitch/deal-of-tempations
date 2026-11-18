@@ -19,7 +19,6 @@ export default function ModeMediaManager({ value = {}, files = [], onSave, disab
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
   const [chosen, setChosen] = useState({});
-  const [chosenGallery, setChosenGallery] = useState({});
   const mode = NEW_MODES.find((item) => item.id === selected) || NEW_MODES[0];
   const saved = value[selected] || {};
   const data = {
@@ -62,12 +61,7 @@ export default function ModeMediaManager({ value = {}, files = [], onSave, disab
     setChosen((current) => ({ ...current, [field]: '' }));
   };
 
-  const addGalleryFiles = () => {
-    const urls = chosenGallery[selected] || [];
-    if (!urls.length) return;
-    persist({ ...data, gallery: [...new Set([...(data.gallery || []), ...urls])] }, 'Τα υπάρχοντα αρχεία συνδέθηκαν με τη Gallery.');
-    setChosenGallery((current) => ({ ...current, [selected]: [] }));
-  };
+
 
   const updateItems = (field, items) => persist({ ...data, [field]: items });
   const addItem = (field) => {
