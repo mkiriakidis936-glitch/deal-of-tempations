@@ -3,6 +3,23 @@ import { NEW_MODES } from '@/data/modes/modeRegistry';
 import { MODE_COVERS } from '@/data/brandArt';
 
 const emptyMode = { hero: '', cover: '', sections: [], gallery: [], cards: [], trailer: '' };
+
+const MODE_SECTION_PRESETS = {
+  lockdown: [
+    { id: 'level1', label: 'Level 1 — Hostage Sacrifice', image: '' },
+    { id: 'level2', label: 'Level 2 — Sensory Cipher', image: '' },
+    { id: 'level3', label: 'Level 3 — Sabotage Override', image: '' },
+    { id: 'level4', label: 'Level 4 — Exit Code', image: '' },
+    { id: 'level5', label: 'Level 5 — VIP Vault', image: '' },
+  ],
+  beach_bar: [
+    { id: 'checkin', label: 'Check-in', image: '' },
+    { id: 'dance_arena', label: 'Dance Arena', image: '' },
+    { id: 'penalty_wheel', label: 'Τροχός Ποινών', image: '' },
+    { id: 'shot_truth', label: 'Shot & Truth', image: '' },
+    { id: 'last_queen', label: 'Last Queen', image: '' },
+  ],
+};
 const inputClass = 'rounded-lg border border-border bg-background px-3 py-2 text-sm';
 
 function Thumb({ src, video = false, className = '' }) {
@@ -20,7 +37,15 @@ export default function ModeMediaManager({ value = {}, files = [], onSave, disab
   const [chosen, setChosen] = useState({});
   const [chosenGallery, setChosenGallery] = useState({});
   const mode = NEW_MODES.find((item) => item.id === selected) || NEW_MODES[0];
-  const data = { ...emptyMode, cover: MODE_COVERS[`modeCover_${selected}`] || '', ...(value[selected] || {}) };
+  const saved = value[selected] || {};
+  const data = {
+    ...emptyMode,
+    cover: MODE_COVERS[`modeCover_${selected}`] || '',
+    ...saved,
+    sections: Array.isArray(saved.sections) && saved.sections.length
+      ? saved.sections
+      : (MODE_SECTION_PRESETS[selected] || []),
+  };
   const imageFiles = files.filter((file) => file.kind === 'image' || file.kind === 'graphic');
   const videoFiles = files.filter((file) => file.kind === 'video');
   const availableFor = (field) => field === 'trailer' ? videoFiles : imageFiles;
@@ -140,7 +165,7 @@ export default function ModeMediaManager({ value = {}, files = [], onSave, disab
 
         <div className="rounded-xl border border-border/60 p-3 space-y-3">
           <div className="flex items-center justify-between gap-2">
-            <div><div className="font-bold text-sm">Gallery ({(data.gallery || []).length})</div><div className="text-[11px] text-foreground/55">Επιλογή πολλών υπαρχόντων εικόνων από την κεντρική βιβλιοθήκη.</div></div>
+            <div><div className="font-bold text-sm">Gallery ({(data.gallery || []).length}/6)</div><div className="text-[11px] text-foreground/55">Το αρχείο προδιαγραφών ζητά 6 εικόνες για κάθε νέο Mode. Επίλεξε τις έξι αντίστοιχες εικόνες από την κεντρική βιβλιοθήκη.</div></div>
           </div>
           <div className="flex flex-wrap gap-2">
             <select multiple aria-label="Επιλογή φωτογραφιών Gallery" className={inputClass} value={chosenGallery[selected] || []} disabled={disabled || busy} onChange={(event) => setChosenGallery((current) => ({ ...current, [selected]: [...event.target.selectedOptions].map((option) => option.value) }))}>
