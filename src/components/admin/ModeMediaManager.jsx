@@ -28,8 +28,13 @@ function validateSelectedFile(file, expectedName, video) {
   const extension = file.name.split('.').pop()?.toLowerCase();
   const allowed = video ? ['mp4', 'webm', 'mov'] : ['jpg', 'jpeg', 'png', 'webp', 'gif', 'avif', 'svg', 'heic', 'heif'];
   if (!allowed.includes(extension)) return video ? 'Για trailer επίλεξε MP4, WEBM ή MOV.' : 'Για εικόνα επίλεξε JPG, PNG, WEBP, GIF, AVIF, SVG ή HEIC.';
-  if (expectedName && file.name.toLocaleLowerCase('en') !== expectedName.toLocaleLowerCase('en')) {
-    return `Λάθος αρχείο για αυτή τη θέση. Απαιτείται ακριβώς: ${expectedName} — επέλεξες: ${file.name}`;
+  if (expectedName) {
+    const slug = (name) => name.replace(/\\.[^.]+$/, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+    const expectedSlug = slug(expectedName);
+    const actualSlug = slug(file.name).replace(/^[a-z0-9]+-[a-f0-9]{6}-/, '');
+    if (actualSlug !== expectedSlug) {
+      return `Λάθος αρχείο για αυτή τη θέση. Απαιτείται: ${expectedName} — επέλεξες: ${file.name}`;
+    }
   }
   return '';
 }
