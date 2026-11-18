@@ -382,7 +382,7 @@ export default function AdminMedia() {
 
       {surfaceFilter === "preview" && <AdminMediaPreview />}
 
-      {showSurface("site", "forms", "tv") && (
+      {showSurface("site", "forms", "tv", "tablet", "mobile") && (
       <ComicPanel className="bg-card space-y-3">
         <div className="font-heading text-lg">🖼️ ΠΟΛΥΜΕΣΑ ΑΝΑ ΣΗΜΕΙΟ</div>
         <p className="text-xs text-foreground/60">Κάθε αρχείο ανεβαίνει μία φορά στην κεντρική βιβλιοθήκη. Από εδώ συνδέεις υπάρχοντα αρχεία στα σημεία εμφάνισης ή αφαιρείς μόνο τη σύνδεση.</p>
