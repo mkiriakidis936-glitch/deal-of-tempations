@@ -251,9 +251,9 @@ export default function AdminMedia() {
 
 
   const clearMedia = (kind) => {
-    const label = kind === 'image' ? 'ΟΛΕΣ ΤΙΣ ΦΩΤΟΓΡΑΦΙΕΣ' : kind === 'video' ? 'ΟΛΑ ΤΑ ΒΙΝΤΕΟ' : 'ΟΛΑ ΤΑ ΠΟΛΥΜΕΣΑ';
-    if (!window.confirm(`ΠΡΟΣΟΧΗ: Θα διαγραφούν οριστικά ${label} από τη βιβλιοθήκη του project και θα αφαιρεθούν από όλα τα σημεία εμφάνισης. Συνέχεια;`)) return;
-    run(`clear-${kind}`, async () => {
+    const label = kind === 'image' ? 'ΟΛΕΣ ΤΙΣ ΦΩΤΟΓΡΑΦΙΕΣ' : kind === 'video' ? 'ΟΛΑ ΤΑ ΒΙΝΤΕΟ' : kind === 'audio' ? 'ΟΛΟΥΣ ΤΟΥΣ ΗΧΟΥΣ' : 'ΟΛΑ ΤΑ ΠΟΛΥΜΕΣΑ';
+    if (!window.confirm(`ΠΡΟΣΟΧΗ: Θα διαγραφούν οριστικά ${label} από τη βιβλιοθήκη του project και από ΟΛΑ τα σημεία χρήσης, συμπεριλαμβανομένου του AV Control Room. Συνέχεια;`)) return;
+    return run(`clear-${kind}`, async () => {
       const deletedUrls = new Set(library.filter((file) => kind === 'all' || file.kind === kind).map((file) => file.url));
       const pruneFileMap = (map = {}) => Object.fromEntries(Object.entries(map).filter(([url]) => !deletedUrls.has(url)));
       const nextModeMedia = Object.fromEntries(Object.entries(ov.modeMedia || {}).map(([modeId, media]) => [modeId, {
@@ -283,9 +283,11 @@ export default function AdminMedia() {
           emptyModeCovers: MODE_COVER_SLOTS.map(({ id }) => id),
           heistPhotos: [],
           pajamaPhotos: [],
+          gameModePhotos: Object.fromEntries(Object.entries(ov.gameModePhotos || {}).map(([modeId, urls]) => [modeId, (urls || []).filter((url) => !deletedUrls.has(url))])),
           ...Object.fromEntries(PHOTO_SPOT_IDS.map((id) => [id, kind === 'image' && isVideoFile(ov[id]) ? ov[id] : undefined])),
           clearAllPhotos: true,
         } : {}),
+        gameMediaAssignments: (ov.gameMediaAssignments || []).filter((item) => !deletedUrls.has(item?.url)),
         ...(kind === 'all' ? { clearAllPhotos: true, clearAllVideos: true, clearAllMedia: true, emptySlots: PHOTO_SPOT_IDS } : {}),
         ...(kind === 'video' ? { clearAllVideos: true } : {}),
         libraryCategories: pruneFileMap(ov.libraryCategories),
@@ -293,9 +295,35 @@ export default function AdminMedia() {
         libraryFocalPoints: pruneFileMap(ov.libraryFocalPoints),
       };
       await save(next);
+
+      const avResult = await base44.entities.AppSetting.filter({ key: 'av_control_room_v1' }, { limit: 1 });
+      const avRecord = avResult.items?.[0];
+      if (avRecord?.id) {
+        const avValue = avRecord.value || {};
+        const oldQueue = avValue.queue || [];
+        const queue = oldQueue.filter((item) => !deletedUrls.has(item?.url));
+        const oldIndex = Number.isInteger(avValue.queueIndex) ? avValue.queueIndex : -1;
+        const currentDeleted = oldIndex >= 0 && deletedUrls.has(oldQueue[oldIndex]?.url);
+        const removedBefore = oldIndex >= 0 ? oldQueue.slice(0, oldIndex).filter((item) => deletedUrls.has(item?.url)).length : 0;
+        const queueIndex = currentDeleted ? -1 : oldIndex < 0 ? -1 : oldIndex - removedBefore;
+        const metadata = Object.fromEntries(Object.entries(avValue.metadata || {}).filter(([url]) => !deletedUrls.has(url)));
+        await base44.entities.AppSetting.update(avRecord.id, { value: { ...avValue, metadata, queue, queueIndex } });
+      }
+
+      await Promise.all([...deletedUrls].map(async (url) => {
+        const cueResult = await base44.entities.ProductionCue.filter({ source: url }, { limit: 1000 });
+        await Promise.all((cueResult.items || []).filter((cue) => cue?.id).map((cue) => base44.entities.ProductionCue.update(cue.id, {
+          active: false,
+          source: '',
+          mediaItemId: null,
+          playbackCommand: 'stop',
+          commandAt: Date.now(),
+        })));
+      }));
+
       await deleteAllMedia(kind);
       await refreshLibrary();
-    }, `${label}: ολοκληρώθηκε ✓`);
+    }, `${label}: οριστική διαγραφή από παντού ολοκληρώθηκε ✓`);
   };
 
   const missingMediaPoints = () => {
