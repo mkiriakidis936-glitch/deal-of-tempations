@@ -33,6 +33,12 @@ export const ART = {
   banner: '/assets/059bca0c5_Gemini_Generated_Image_hmy5gghmy5gghmy5.jpeg',
   logo: '/assets/ee5e63437_Gemini_Generated_Image_h0aclsh0aclsh0ac.jpeg',
   invitationBg: '/assets/38a7c85ef_DealofTemptation2.jpeg',
+  extraHeistRoom: '',
+  extraPediGlam: '',
+  wallpaperPhone: '',
+  wallpaperTablet: '',
+  wallpaperTv: '',
+  patternSeamless: '',
 };
 
 export const MODE_COVERS = {
