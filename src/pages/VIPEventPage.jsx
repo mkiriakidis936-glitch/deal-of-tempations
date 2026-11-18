@@ -70,7 +70,7 @@ export default function VIPEventPage() {
           {status === 'ready' && <>
             <div className="text-xs font-bold tracking-[.2em]" style={{ color: theme.accent }}>{theme.label}</div>
             <h1 className="mt-4 text-2xl font-bold sm:text-3xl">{title}</h1>
-            {mode?.desc && <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-white/65">{mode.desc}</p>}
+
           </>}
         </header>
 
