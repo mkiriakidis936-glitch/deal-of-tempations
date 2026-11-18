@@ -132,6 +132,14 @@ export default function ModeMediaManager({ value = {}, files = [], onSave, onRef
     }
   };
 
+  const assignmentStatus = (field, url, item = null) => {
+    if (!url) return 'Εκκρεμεί αρχείο';
+    const file = files.find((entry) => entry.url === url);
+    if (!file) return 'Προεπιλεγμένο ή μη καταχωρισμένο αρχείο — δεν επαληθεύτηκε';
+    const problem = validateSelectedFile(file, expectedNameFor(selected, field, item), field === 'trailer');
+    return problem ? 'ΛΑΘΟΣ ΑΡΧΕΙΟ: ' + problem : '✓ Το όνομα και ο τύπος αρχείου είναι σωστά';
+  };
+
   const triggerUpload = (field) => fileInputs.current[field]?.click();
   const uploadControl = (field, label, item = null) => (
     <div className="flex flex-wrap items-center gap-2">
@@ -200,6 +208,7 @@ export default function ModeMediaManager({ value = {}, files = [], onSave, onRef
               <Thumb src={data[slot.id]} className="mb-3 aspect-video w-full" />
               <div className="text-sm font-bold">{slot.label}</div>
               <div className="mt-1 text-[11px] text-foreground/55">Απαιτούμενο όνομα: {slot.id}.jpg</div>
+              <div className="mt-1 text-[10px]">{assignmentStatus(slot.id, data[slot.id])}</div>
               <div className="mt-2 space-y-2">
                 {uploadControl(slot.id, slot.label)}
                 {libraryPicker(slot.id, slot.label)}
@@ -222,7 +231,7 @@ export default function ModeMediaManager({ value = {}, files = [], onSave, onRef
                 <div className="min-w-0">
                   <input defaultValue={item.label || ''} disabled={disabled || !!busy} onBlur={(e) => { if (e.target.value !== (item.label || '')) updateLabel('sections', item.id, e.target.value); }} className="w-full min-w-0 rounded-lg border border-border bg-background px-3 py-2 text-sm" aria-label="Τίτλος ενότητας" />
                   <div className="mt-1 text-[10px] text-foreground/55">Απαιτούμενο αρχείο: {item.filename || 'Δεν έχει οριστεί όνομα'}</div>
-                  <div className="mt-1 text-[10px]">{item.image ? 'Συνδεδεμένο αρχείο' : 'Εκκρεμεί αρχείο'}</div>
+                  <div className="mt-1 text-[10px]">{assignmentStatus(field, item.image, item)}</div>
                 </div>
                 <Thumb src={item.image} className="aspect-video w-full" />
                 <div className="flex flex-col gap-1">
@@ -248,7 +257,7 @@ export default function ModeMediaManager({ value = {}, files = [], onSave, onRef
                 <div key={index} className="rounded-lg border border-border/60 bg-secondary/30 p-2 space-y-2">
                   <div className="text-xs font-bold">{filename}</div>
                   <Thumb src={src} className="aspect-[4/3] w-full" />
-                  <div className="text-[10px]">{src ? 'Συνδεδεμένο αρχείο' : 'Εκκρεμεί αρχείο'}</div>
+                  <div className="text-[10px]">{assignmentStatus(field, src)}</div>
                   {uploadControl(field, filename)}
                   {libraryPicker(field, filename)}
                   {src && <button type="button" disabled={disabled || !!busy} onClick={() => persist(setField(field, ''), 'Η θέση Gallery καθαρίστηκε.')} className="w-full rounded-lg border border-border px-2 py-1.5 text-xs">Αφαίρεση σύνδεσης</button>}
@@ -261,6 +270,7 @@ export default function ModeMediaManager({ value = {}, files = [], onSave, onRef
         <div className="rounded-xl border border-border/60 bg-secondary/30 p-3">
           <div className="font-bold text-sm">Video trailer — Tablet Setup & Site mode page</div>
           <Thumb src={data.trailer} video className="mt-3 aspect-video w-full" />
+          <div className="mt-1 text-[10px]">{assignmentStatus('trailer', data.trailer)}</div>
           <div className="mt-2 space-y-2">
             {uploadControl('trailer', 'Video trailer')}
             {libraryPicker('trailer', 'Video trailer')}
