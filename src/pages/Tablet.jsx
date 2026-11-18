@@ -13,6 +13,7 @@ const MarathonScreen = React.lazy(() => import('@/components/tablet/MarathonScre
 const PajamaGame = React.lazy(() => import('@/components/pajama/PajamaGame'));
 const ModeGame = React.lazy(() => import('@/components/modes/ModeGame'));
 import { isNewMode } from '@/data/modes/modeRegistry';
+import { ART } from '@/data/brandArt';
 const PajamaTVPreview = React.lazy(() => import('@/components/tablet/PajamaTVPreview'));
 const PajamaForcePhase = React.lazy(() => import('@/components/tablet/PajamaForcePhase'));
 const PajamaMiniBar = React.lazy(() => import('@/components/tablet/PajamaMiniBar'));
@@ -470,7 +471,7 @@ export default function Tablet() {
   const mostWantedName = calculateMostWanted(state.players)?.name;
 
   return (
-    <div className="relative">
+    <div className="relative" style={ART.wallpaperTablet ? { backgroundImage: `url("${ART.wallpaperTablet}")`, backgroundSize: "cover", backgroundPosition: "center", backgroundAttachment: "fixed" } : undefined}>
       <WantedStrobePanic wantedLevel={wantedLevel} playerName={mostWantedName} />
       <StopButton active={state.stopActive} onToggle={handleStop} />
       <GameDurationClock state={displayState} />
