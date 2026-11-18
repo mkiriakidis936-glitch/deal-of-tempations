@@ -186,7 +186,7 @@ export default function AVControlRoom({ refreshKey = 0 }) {
   return <div className="space-y-4">
     <ComicPanel className="bg-card space-y-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <div><h2 className="font-heading text-2xl text-primary">MEDIA MANAGEMENT & AV CONTROL ROOM</h2><p className="text-xs text-foreground/60">Ενιαία διαχείριση βιβλιοθήκης, δικαιωμάτων, ουράς και ζωντανής εξόδου TV.</p></div>
+        <div><h2 className="font-heading text-2xl text-primary">AV CONTROL ROOM — ΧΕΙΡΙΣΜΟΣ TV</h2><p className="text-xs text-foreground/60">Επιλογή αρχείων από την κεντρική βιβλιοθήκη για δικαιώματα, ουρά και ζωντανή έξοδο TV. Δεν ανεβάζει ούτε διατηρεί δεύτερη βιβλιοθήκη.</p></div>
         <ComicButton size="sm" variant="dark" onClick={load} disabled={busy}>↻ Ανανέωση Media</ComicButton>
       </div>
       <label className="block space-y-1 text-xs font-bold">ΕΝΕΡΓΟ EVENT
@@ -207,7 +207,7 @@ export default function AVControlRoom({ refreshKey = 0 }) {
 
     <div className="grid xl:grid-cols-[1.1fr_.9fr] gap-3">
       <ComicPanel className="bg-card space-y-3">
-        <div className="flex flex-wrap items-center justify-between gap-2"><h3 className="font-heading text-lg">MEDIA LIBRARY · {files.length} ΑΡΧΕΙΑ</h3><span className="text-[10px] text-foreground/50">Uploads από την υπάρχουσα Βιβλιοθήκη Πολυμέσων</span></div>
+        <div className="flex flex-wrap items-center justify-between gap-2"><h3 className="font-heading text-lg">ΕΠΙΛΟΓΗ ΑΡΧΕΙΟΥ ΑΠΟ ΤΗΝ ΚΕΝΤΡΙΚΗ ΒΙΒΛΙΟΘΗΚΗ · {files.length}</h3><span className="text-[10px] text-foreground/50">Προβολή και επιλογή — χωρίς ανεβάσματα ή δεύτερο αποθηκευτικό χώρο</span></div>
         <input className={field} type="search" placeholder="Αναζήτηση ονόματος αρχείου…" value={search} onChange={(e) => setSearch(e.target.value)} />
         <div className="flex flex-wrap gap-1">{kinds.map((kind) => <ComicButton key={kind.id} size="sm" variant={filter === kind.id ? 'default' : 'dark'} onClick={() => setFilter(kind.id)}>{kind.label}</ComicButton>)}</div>
         <select className={field} value={folderFilter} onChange={(e) => setFolderFilter(e.target.value)}><option value="all">Όλοι οι φάκελοι</option>{folders.map((folder) => <option key={folder}>{folder}</option>)}</select>
