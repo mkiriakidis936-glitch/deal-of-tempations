@@ -481,8 +481,22 @@ export default function AdminMedia() {
         <ModeMediaManager
           value={ov.modeMedia || {}}
           files={library}
+          onRefresh={refreshLibrary}
           disabled={!!busy}
-          onSave={(modeMedia) => run('mode-media', () => save({ ...ov, modeMedia }), 'Το Πολυμέσα Mode αποθηκεύτηκε ✓')}
+          onSave={async (modeMedia) => {
+            setBusy('mode-media');
+            setMsg(null);
+            try {
+              await save({ ...ov, modeMedia });
+              setMsg({ ok: true, text: 'Το Πολυμέσα Mode αποθηκεύτηκε ✓' });
+            } catch (error) {
+              setMsg({ ok: false, text: error.message });
+              throw error;
+            } finally {
+              setBusy(null);
+              setProgress(0);
+            }
+          }}
         />
         </div>
       </ComicPanel>

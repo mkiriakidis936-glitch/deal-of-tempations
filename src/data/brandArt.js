@@ -98,12 +98,12 @@ export function applyMediaOverrides(o = {}) {
   for (const { id } of NEW_MODES) {
     const saved = modeMediaOverrides[id] && typeof modeMediaOverrides[id] === 'object' ? modeMediaOverrides[id] : {};
     const coverId = `modeCover_${id}`;
-    const cover = str(saved.cover) || str(o[coverId]) || (clearPhotos ? '' : DEFAULTS[coverId]);
+    const cover = saved.coverCleared === true ? '' : (str(saved.cover) || str(o[coverId]) || (clearPhotos ? '' : DEFAULTS[coverId]));
     MODE_MEDIA[id] = {
       hero: str(saved.hero) || '',
       cover,
       sections: Array.isArray(saved.sections) ? saved.sections : [],
-      gallery: Array.isArray(saved.gallery) ? saved.gallery.filter(str) : [],
+      gallery: Array.isArray(saved.gallery) ? Array.from({ length: 6 }, (_, index) => str(saved.gallery[index]) || '') : Array(6).fill(''),
       cards: Array.isArray(saved.cards) ? saved.cards : [],
       trailer: str(saved.trailer) || '',
     };
