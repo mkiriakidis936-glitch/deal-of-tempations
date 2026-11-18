@@ -58,12 +58,12 @@ export const MODE_MEDIA = Object.fromEntries(NEW_MODES.map(({ id }) => [id, {
 }]));
 
 export const PHOTO = {
-  siteHero: ART.poster,
+  siteHero: '',
   siteTrailer: ART.poster,
-  tv: ART.scene,
+  tv: '',
   promo: ART.poster,
   invitation: ART.invitation,
-  pajama: ART.vault,
+  pajama: '',
 };
 
 // Τα βίντεο είναι προαιρετικά. Δεν υπάρχει πλέον υποχρεωτικό/προεπιλεγμένο βίντεο.
