@@ -1,5 +1,6 @@
 import ModeMobile from '@/components/modes/ModeMobile';
 import { isNewMode } from '@/data/modes/modeRegistry';
+import { ART } from '@/data/brandArt';
 import React, { useRef, useState } from 'react';
 import { useGameSession } from '@/hooks/useGameSession';
 import { getActiveSessionCode, subscribeActiveSession } from '@/lib/activeSession';
@@ -37,9 +38,26 @@ export default function Play() {
   useAudioSync(state);
 
   React.useEffect(() => {
-    document.body.classList.add('dot-mobile-experience');
+    const body = document.body;
+    const previous = {
+      backgroundImage: body.style.backgroundImage,
+      backgroundSize: body.style.backgroundSize,
+      backgroundPosition: body.style.backgroundPosition,
+      backgroundAttachment: body.style.backgroundAttachment,
+    };
+    body.classList.add('dot-mobile-experience');
+    if (ART.wallpaperPhone) {
+      body.style.backgroundImage = `url("${ART.wallpaperPhone}")`;
+      body.style.backgroundSize = 'cover';
+      body.style.backgroundPosition = 'center';
+      body.style.backgroundAttachment = 'fixed';
+    }
     return () => {
-      document.body.classList.remove('dot-mobile-experience');
+      body.classList.remove('dot-mobile-experience');
+      body.style.backgroundImage = previous.backgroundImage;
+      body.style.backgroundSize = previous.backgroundSize;
+      body.style.backgroundPosition = previous.backgroundPosition;
+      body.style.backgroundAttachment = previous.backgroundAttachment;
     };
   }, []);
 
