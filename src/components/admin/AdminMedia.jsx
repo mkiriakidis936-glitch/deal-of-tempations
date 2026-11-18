@@ -175,7 +175,7 @@ export default function AdminMedia() {
     await save({ ...ov, [listId]: current });
   }, 'Το υπάρχον αρχείο προστέθηκε στη συλλογή ✓');
   const assignLibraryImageToSlot = (url, slotId) => run(`slot-${url}`, async () => {
-    const category = ['poster', 'heistNight', 'photoHeistNight', 'group', 'scene'].includes(slotId)
+    const category = ['poster', 'heistNight', 'photoHeistNight', 'extraHeistRoom', 'group', 'scene'].includes(slotId)
       ? 'heist'
       : ['party1', 'slipper', 'party2', 'vault', 'photoGame', 'photoSlippers', 'photoPediGlam', 'extraPediGlam'].includes(slotId)
         ? 'pajama'
