@@ -144,7 +144,7 @@ export function applyMediaOverrides(o = {}) {
   }
 
   const setList = (arr, v, def) => arr.splice(0, arr.length, ...(Array.isArray(v) ? v.filter(str) : def));
-  setList(HEIST_PHOTOS, o.heistPhotos, clearPhotos ? [] : DEFAULTS.heistPhotos);
-  setList(PAJAMA_PHOTOS, o.pajamaPhotos, clearPhotos ? [] : DEFAULTS.pajamaPhotos);
+  setList(HEIST_PHOTOS, o.heistPhotos, clearPhotos ? [] : [ART.heist1, ART.heist2, ART.heist3, ART.heist4, ART.heist5, ART.heist6, ART.heist7, ART.heist8, ART.heist9, ART.heist10, ART.photoHeistRoom, ART.photoHeistNight]);
+  setList(PAJAMA_PHOTOS, o.pajamaPhotos, clearPhotos ? [] : [ART.photoPediGlam, ART.photoSlippers, ART.photoGame]);
   setList(SITE_VIDEOS, o.siteVideos, []);
 }
