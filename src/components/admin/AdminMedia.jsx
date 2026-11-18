@@ -11,8 +11,6 @@ import AdminMediaPreview from '@/components/admin/AdminMediaPreview';
 import AVControlRoom from '@/components/admin/AVControlRoom';
 import { MEDIA_KEY, fetchOverrides, uploadMedia, listMedia, deleteMedia, deleteAllMedia } from '@/lib/media';
 
-const IMG_ACCEPT = 'image/*,.jpg,.jpeg,.png,.webp,.gif,.avif,.heic,.svg';
-const VID_ACCEPT = 'video/*,.mp4,.webm,.mov';
 const MEDIA_ACCEPT = 'image/*,video/*,audio/*,.jpg,.jpeg,.png,.webp,.gif,.avif,.heic,.svg,.mp4,.webm,.mov,.mp3,.wav,.ogg,.m4a,.aac';
 const isVideoFile = (url) => /\.(mp4|webm|mov)(?:[?#]|$)/i.test(url || '');
 const containsUrl = (value, url) => typeof value === 'string'
@@ -110,41 +108,25 @@ export default function AdminMedia() {
     finally { setBusy(null); setProgress(0); }
   };
 
-  // mode: 'slot' (αντικατάσταση σημείου) | 'add' (προσθήκη σε λίστα) | 'replace' (αντικατάσταση στοιχείου λίστας)
+  // Το μοναδικό σημείο ανεβάσματος αρχείων είναι η κεντρική βιβλιοθήκη.
   const pick = (id, mode, ref, index, surface = surfaceFilter) => { target.current = { id, mode, index, surface }; ref.current?.click(); };
 
   const onFiles = async (e) => {
-    const files = [...e.target.files];
+    const files = [...(e.target.files || [])];
     e.target.value = '';
     const t = target.current;
-    if (!files.length || !t) return;
-    await run(t.id, async () => {
+    if (!files.length || !t || t.mode !== 'library') return;
+    await run('library-upload', async () => {
       const urls = [];
       for (let i = 0; i < files.length; i++) {
-        const r = await uploadMedia(files[i], (p) => setProgress((i + p) / files.length));
-        urls.push(r.url);
+        const uploaded = await uploadMedia(files[i], (p) => setProgress((i + p) / files.length));
+        urls.push(uploaded.url);
       }
-      if (t.mode === 'library') {
-        const librarySurfaces = { ...(ov.librarySurfaces || {}) };
-        for (const url of urls) if (t.surface && t.surface !== 'all' && t.surface !== 'preview') librarySurfaces[url] = t.surface;
-        await save({ ...ov, librarySurfaces });
-        refreshLibrary();
-        return;
-      }
-      if (t.mode === 'slot') await save({ ...ov, [t.id]: urls[0], emptySlots: (ov.emptySlots || []).filter((id) => id !== t.id), emptyModeCovers: (ov.emptyModeCovers || []).filter((id) => id !== t.id) });
-      else if (t.mode === 'replace') {
-        const l = [...(ov[t.id] || DEFAULTS[t.id] || [])];
-        l[t.index] = urls[0];
-        await save({ ...ov, [t.id]: l });
-      } else {
-        const categories = { ...(ov.libraryCategories || {}) };
-        if (t.id === 'heistPhotos' || t.id === 'pajamaPhotos') {
-          for (const url of urls) categories[url] = t.id === 'heistPhotos' ? 'heist' : 'pajama';
-        }
-        await save({ ...ov, [t.id]: [...(ov[t.id] || DEFAULTS[t.id] || []), ...urls], libraryCategories: categories });
-      }
-      refreshLibrary();
-    }, 'Ανέβηκε και αποθηκεύτηκε ✓');
+      const librarySurfaces = { ...(ov.librarySurfaces || {}) };
+      for (const url of urls) if (t.surface && t.surface !== 'all' && t.surface !== 'preview') librarySurfaces[url] = t.surface;
+      await save({ ...ov, librarySurfaces });
+      await refreshLibrary();
+    }, 'Τα αρχεία προστέθηκαν στην κεντρική βιβλιοθήκη ✓');
   };
 
   const reset = (id) => run(id, () => { const { [id]: _, ...rest } = ov; if (PHOTO_SPOT_IDS.includes(id) || IMAGE_SLOTS.some((slot) => slot.id === id)) return save({ ...rest, [id]: DEFAULTS[id], emptySlots: (ov.emptySlots || []).filter((slot) => slot !== id) }); if (MODE_COVER_SLOTS.some((slot) => slot.id === id)) return save({ ...rest, [id]: DEFAULTS[id], emptyModeCovers: (ov.emptyModeCovers || []).filter((slot) => slot !== id) }); return save(rest); }, 'Επαναφορά στο αρχικό ✓');
