@@ -1,5 +1,5 @@
 import { PHOTO_SPOT_IDS, MODE_COVER_SLOTS } from '@/data/mediaSlots';
-import { NEW_MODES } from '@/data/modes/modeRegistry';
+import { MEDIA_MODES } from '@/data/modes/modeRegistry';
 
 const BASE = '/assets/';
 
@@ -53,7 +53,7 @@ export const MODE_COVERS = {
 };
 
 // Ανεξάρτητη φωτογραφική ταυτότητα για καθένα από τα τέσσερα νέα Modes.
-export const MODE_MEDIA = Object.fromEntries(NEW_MODES.map(({ id }) => [id, {
+export const MODE_MEDIA = Object.fromEntries(MEDIA_MODES.map(({ id }) => [id, {
   hero: '', cover: MODE_COVERS[`modeCover_${id}`] || '', sections: [], gallery: [], cards: [], trailer: '',
 }]));
 
@@ -95,7 +95,7 @@ export function applyMediaOverrides(o = {}) {
   for (const { id } of MODE_COVER_SLOTS) MODE_COVERS[id] = emptyModeCovers.includes(id) ? '' : (str(o[id]) || (clearPhotos ? '' : DEFAULTS[id]));
 
   const modeMediaOverrides = o.modeMedia && typeof o.modeMedia === 'object' ? o.modeMedia : {};
-  for (const { id } of NEW_MODES) {
+  for (const { id } of MEDIA_MODES) {
     const saved = modeMediaOverrides[id] && typeof modeMediaOverrides[id] === 'object' ? modeMediaOverrides[id] : {};
     const coverId = `modeCover_${id}`;
     const cover = saved.coverCleared === true ? '' : (str(saved.cover) || str(o[coverId]) || (clearPhotos ? '' : DEFAULTS[coverId]));

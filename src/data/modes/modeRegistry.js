@@ -57,3 +57,15 @@ export const ACT_META = {
   morning: { title: 'Act 4 · Extended Morning Escape & VIP Vault', minutes: 45 },
   beach: { title: 'Beach Bar Home Lockdown', minutes: 150 },
 };
+
+
+// Vollständige Liste αποκλειστικά για το ενιαίο MODE MEDIA CENTER.
+// Δεν αλλάζει τη λίστα των ενεργών/διαθέσιμων game modes.
+export const MEDIA_MODES = [
+  { id: 'classic', name: 'CLASSIC', icon: '' },
+  { id: 'marathon', name: 'MARATHON', icon: '' },
+  { id: 'arrest_heist', name: 'ARREST HEIST', icon: '' },
+  { id: 'pajama', name: 'PAJAMA', icon: '' },
+  { id: 'pedi_extended', name: 'PAJAMA PEDI-GLAM EXTENDED', icon: '' },
+  ...NEW_MODES.map(({ id, name, icon }) => ({ id, name, icon })),
+];

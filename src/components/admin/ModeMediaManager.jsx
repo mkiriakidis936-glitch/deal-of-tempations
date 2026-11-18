@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { NEW_MODES, MODE_MEDIA_SECTIONS } from '@/data/modes/modeRegistry';
+import { MEDIA_MODES, MODE_MEDIA_SECTIONS } from '@/data/modes/modeRegistry';
 import { MODE_COVERS } from '@/data/brandArt';
 import { uploadMedia } from '@/lib/media';
 
@@ -19,7 +19,7 @@ function expectedNameFor(modeId, field, item) {
   if (field === 'hero') return 'hero.jpg';
   if (field === 'cover') return 'cover.jpg';
   if (field.startsWith('section:')) return item?.filename || MODE_MEDIA_SECTIONS[modeId]?.find((section) => section.id === field.slice(8))?.filename || '';
-  if (field.startsWith('gallery:')) return `${modeId === 'lockdown' ? 'lockdown' : 'beach'}_gallery_${String(Number(field.slice(8)) + 1).padStart(2, '0')}.jpg`;
+  if (field.startsWith('gallery:')) return ['lockdown', 'beach_bar'].includes(modeId) ? `${modeId === 'lockdown' ? 'lockdown' : 'beach'}_gallery_${String(Number(field.slice(8)) + 1).padStart(2, '0')}.jpg` : '';
   return '';
 }
 
@@ -32,13 +32,13 @@ function validateSelectedFile(file, expectedName, video) {
 }
 
 export default function ModeMediaManager({ value = {}, files = [], onSave, onRefresh, disabled = false }) {
-  const [selected, setSelected] = useState(NEW_MODES[0].id);
+  const [selected, setSelected] = useState(MEDIA_MODES[0].id);
   const [busy, setBusy] = useState('');
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
   const [chosen, setChosen] = useState({});
   const fileInputs = useRef({});
-  const mode = NEW_MODES.find((item) => item.id === selected) || NEW_MODES[0];
+  const mode = MEDIA_MODES.find((item) => item.id === selected) || MEDIA_MODES[0];
   const saved = value[selected] || {};
   const data = {
     ...emptyMode,
@@ -176,7 +176,7 @@ export default function ModeMediaManager({ value = {}, files = [], onSave, onRef
         <div className="mt-1 font-heading text-2xl">Φωτογραφική ταυτότητα ανά Mode</div>
         <p className="mt-1 text-xs text-white/65">Κάθε θέση δέχεται απευθείας ανέβασμα από τον υπολογιστή ή επιλογή ήδη ανεβασμένου αρχείου. Όπου υπάρχει καθορισμένο όνομα στις προδιαγραφές, ελέγχεται πριν γίνει το ανέβασμα.</p>
         <div className="mt-4 grid grid-cols-2 xl:grid-cols-4 gap-2">
-          {NEW_MODES.map((item) => (
+          {MEDIA_MODES.map((item) => (
             <button key={item.id} type="button" disabled={disabled || !!busy} onClick={() => { setSelected(item.id); setError(''); setNotice(''); }} className={`rounded-xl border p-3 text-left transition ${selected === item.id ? 'border-primary bg-primary/20' : 'border-white/15 bg-white/5 hover:bg-white/10'}`}>
               <div className="text-xs font-black">{item.icon} {item.name}</div>
               <div className="mt-1 text-[10px] text-white/55">{(value[item.id]?.gallery || []).filter(Boolean).length}/6 gallery · {(value[item.id]?.sections || []).length || (MODE_MEDIA_SECTIONS[item.id] || []).length} ενότητες</div>
