@@ -44,6 +44,7 @@ export default function AdminMedia() {
   const [library, setLibrary] = useState([]);
   const [mediaRevision, setMediaRevision] = useState(0);
   const [libraryFilter, setLibraryFilter] = useState('all');
+  const [libraryKindFilter, setLibraryKindFilter] = useState('all');
   const [librarySearch, setLibrarySearch] = useState('');
   const [surfaceFilter, setSurfaceFilter] = useState('all');
   const [fileLoadStatus, setFileLoadStatus] = useState({});
@@ -150,7 +151,7 @@ export default function AdminMedia() {
     }, 'Ανέβηκε και αποθηκεύτηκε ✓');
   };
 
-  const reset = (id) => run(id, () => { const { [id]: _, ...rest } = ov; if (PHOTO_SPOT_IDS.includes(id)) return save({ ...rest, [id]: DEFAULTS[id], emptySlots: (ov.emptySlots || []).filter((slot) => slot !== id) }); if (MODE_COVER_SLOTS.some((slot) => slot.id === id)) return save({ ...rest, [id]: DEFAULTS[id], emptyModeCovers: (ov.emptyModeCovers || []).filter((slot) => slot !== id) }); return save(rest); }, 'Επαναφορά στο αρχικό ✓');
+  const reset = (id) => run(id, () => { const { [id]: _, ...rest } = ov; if (PHOTO_SPOT_IDS.includes(id) || IMAGE_SLOTS.some((slot) => slot.id === id)) return save({ ...rest, [id]: DEFAULTS[id], emptySlots: (ov.emptySlots || []).filter((slot) => slot !== id) }); if (MODE_COVER_SLOTS.some((slot) => slot.id === id)) return save({ ...rest, [id]: DEFAULTS[id], emptyModeCovers: (ov.emptyModeCovers || []).filter((slot) => slot !== id) }); return save(rest); }, 'Επαναφορά στο αρχικό ✓');
   const clearSlot = (id) => run(id, () => save({ ...ov, [id]: undefined, emptySlots: [...new Set([...(ov.emptySlots || []), id])] }), 'Το σημείο καθαρίστηκε ✓');
   const listOf = (id) => Array.isArray(ov[id]) ? ov[id] : ((id === 'siteVideos' && (ov.clearAllVideos || ov.clearAllMedia)) || ((id === 'heistPhotos' || id === 'pajamaPhotos') && (ov.clearAllPhotos || ov.clearAllMedia)) ? [] : (DEFAULTS[id] || []));
   const setList = (id, list) => run(id, () => save({ ...ov, [id]: list }));
@@ -355,7 +356,7 @@ export default function AdminMedia() {
 
   return (
     <div className="space-y-3">
-      <GameMediaLibraries value={ov} files={library} onSave={save} onRefresh={refreshLibrary} onDeleteFile={removeFile} />
+      <GameMediaLibraries value={ov} files={library} onSave={save} onRefresh={refreshLibrary} />
       <AVControlRoom refreshKey={mediaRevision} />
       <input ref={imgOne} type="file" accept={IMG_ACCEPT} hidden onChange={onFiles} />
       <input ref={imgMany} type="file" accept={IMG_ACCEPT} multiple hidden onChange={onFiles} />
@@ -477,9 +478,10 @@ export default function AdminMedia() {
       {showSurface('site', 'forms', 'tablet', 'mobile') && (
       <ComicPanel className="bg-card space-y-3">
         <div className="font-heading text-lg">🖼️ ΕΙΚΟΝΕΣ ΑΝΑ ΣΗΜΕΙΟ</div>
+        <p className="text-xs text-foreground/60">Η αφαίρεση από σημείο δεν διαγράφει το αρχείο. Η οριστική διαγραφή από παντού είναι ξεχωριστή ενέργεια και εμφανίζεται για αρχεία της βιβλιοθήκης.</p>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
           {IMAGE_SLOTS.filter((s) => showSurface(...(s.surfaces || []))).map((s) => {
-            const src = ov[s.id] || DEFAULTS[s.id];
+            const src = ov[s.id] || (ov.emptySlots?.includes(s.id) || ov.clearAllPhotos || ov.clearAllMedia ? '' : DEFAULTS[s.id]);
             const uploadedFile = library.find((file) => file.url === src);
             return (
               <div key={s.id} className="border-2 border-border/40 rounded-lg p-2 bg-secondary/40">
@@ -488,17 +490,9 @@ export default function AdminMedia() {
                 <div className="text-[11px] text-foreground/60">{s.where}</div>
                 <div className="flex gap-2 mt-2 flex-wrap">
                   <ComicButton size="sm" disabled={!!busy} onClick={() => pick(s.id, 'slot', imgOne)}>⬆️ Αλλαγή</ComicButton>
-                  {ov[s.id] && <ComicButton size="sm" variant="dark" disabled={!!busy} onClick={() => reset(s.id)}>↩︎</ComicButton>}
-                  {uploadedFile && (
-                    <ComicButton
-                      size="sm"
-                      variant="red"
-                      disabled={!!busy}
-                      onClick={() => removeFile(uploadedFile)}
-                    >
-                      🗑️ Οριστική διαγραφή από παντού
-                    </ComicButton>
-                  )}
+                  {src && <ComicButton size="sm" variant="dark" disabled={!!busy} onClick={() => clearSlot(s.id)}>Αφαίρεση από σημείο</ComicButton>}
+                  {ov[s.id] && <ComicButton size="sm" variant="dark" disabled={!!busy} onClick={() => reset(s.id)}>↩︎ Αρχική εικόνα</ComicButton>}
+                  {uploadedFile && <ComicButton size="sm" variant="red" disabled={!!busy} onClick={() => removeFile(uploadedFile)}>🗑️ Οριστική διαγραφή από παντού</ComicButton>}
                 </div>
                 <Progress id={s.id} />
               </div>
@@ -570,10 +564,19 @@ export default function AdminMedia() {
         <div className="flex items-center justify-between gap-2 flex-wrap"><div className="font-heading text-lg">🗂️ ΒΙΒΛΙΟΘΗΚΗ ΑΡΧΕΙΩΝ ({library.length})</div><ComicButton size="sm" disabled={!!busy} onClick={() => pick('library', 'library', libraryOne, undefined, surfaceFilter)}>＋ ΠΡΟΣΘΗΚΗ ΑΡΧΕΙΟΥ</ComicButton></div>
         <input type="search" value={librarySearch} onChange={(e) => setLibrarySearch(e.target.value)} placeholder="Αναζήτηση αρχείων…" className="w-full rounded-lg border-2 border-border bg-background px-3 py-2 text-sm" />
         <p className="text-[11px] text-foreground/60">Οργάνωσε φωτογραφίες, γραφικά, βίντεο και ήχους σε Heist, Pajama ή Εταιρική ταυτότητα. Η διαγραφή αφαιρεί το αρχείο οριστικά.</p>
-        <div className="flex flex-wrap gap-2">
-          {[{ id: 'all', label: 'Όλα' }, ...LIBRARY_CATEGORIES].map((c) => (
-            <ComicButton key={c.id} size="sm" variant={libraryFilter === c.id ? 'default' : 'dark'} disabled={!!busy} onClick={() => setLibraryFilter(c.id)}>{c.label}</ComicButton>
-          ))}
+        <div className="space-y-2">
+          <div className="text-xs font-bold text-foreground/65">ΤΥΠΟΣ ΑΡΧΕΙΟΥ</div>
+          <div className="flex flex-wrap gap-2">
+            {[{ id: 'all', label: 'Όλα' }, { id: 'image', label: 'Εικόνες' }, { id: 'video', label: 'Βίντεο' }, { id: 'audio', label: 'Ήχοι' }].map((kind) => (
+              <ComicButton key={kind.id} size="sm" variant={libraryKindFilter === kind.id ? 'default' : 'dark'} disabled={!!busy} onClick={() => setLibraryKindFilter(kind.id)}>{kind.label}</ComicButton>
+            ))}
+          </div>
+          <div className="text-xs font-bold text-foreground/65">ΟΜΑΔΑ ΑΡΧΕΙΟΥ</div>
+          <div className="flex flex-wrap gap-2">
+            {[{ id: 'all', label: 'Όλα' }, ...LIBRARY_CATEGORIES].map((c) => (
+              <ComicButton key={c.id} size="sm" variant={libraryFilter === c.id ? 'default' : 'dark'} disabled={!!busy} onClick={() => setLibraryFilter(c.id)}>{c.label}</ComicButton>
+            ))}
+          </div>
         </div>
         <div className="flex flex-wrap gap-2">
           {[
@@ -584,7 +587,7 @@ export default function AdminMedia() {
         </div>
         {!library.length && <div className="text-xs text-foreground/60">Δεν έχεις ανεβάσει ακόμα αρχεία.</div>}
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2">
-          {library.filter((f) => (libraryFilter === 'all' || categoryOf(f.url) === libraryFilter) && (surfaceFilter === 'all' || getFileSurfaces(f.url).includes(surfaceFilter)) && (libraryStatusFilter === 'all' || (libraryStatusFilter === 'unused' && !isUsed(f.url)) || (libraryStatusFilter === 'broken' && fileLoadStatus[f.url] === 'error')) && f.name.toLowerCase().includes(librarySearch.toLowerCase())).map((f) => (
+          {library.filter((f) => (libraryKindFilter === 'all' || f.kind === libraryKindFilter || (libraryKindFilter === 'image' && f.kind === 'graphic')) && (libraryFilter === 'all' || categoryOf(f.url) === libraryFilter) && (surfaceFilter === 'all' || getFileSurfaces(f.url).includes(surfaceFilter)) && (libraryStatusFilter === 'all' || (libraryStatusFilter === 'unused' && !isUsed(f.url)) || (libraryStatusFilter === 'broken' && fileLoadStatus[f.url] === 'error')) && f.name.toLowerCase().includes(librarySearch.toLowerCase())).map((f) => (
             <div key={f.name} className="border-2 border-border/40 rounded overflow-hidden bg-secondary/40">
               <Thumb video={f.kind === 'video'} audio={f.kind === 'audio'} src={f.url} objectPosition={ov.libraryFocalPoints?.[f.url] || '50% 50%'} onLoad={() => setFileLoadStatus((v) => ({ ...v, [f.url]: 'ok' }))} onError={() => setFileLoadStatus((v) => ({ ...v, [f.url]: 'error' }))} className="w-full aspect-square" />
               <div className="p-1 text-[10px] leading-tight break-all">{f.name.replace(/^[a-z0-9]+-[a-f0-9]{6}-/, '')}<br />{mb(f.size)}<br />Κατάσταση: {fileLoadStatus[f.url] === 'error' ? '⚠ Σφάλμα φόρτωσης' : fileLoadStatus[f.url] === 'ok' ? (isUsed(f.url) ? `Σε χρήση · ${getFileSurfaces(f.url).map((id) => SURFACES.find((s) => s.id === id)?.label || id).join(', ') || 'Εντοπισμένη αντιστοίχιση'}` : 'Δεν χρησιμοποιείται') : 'Έλεγχος φόρτωσης…'}</div>
