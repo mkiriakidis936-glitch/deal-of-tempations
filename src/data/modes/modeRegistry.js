@@ -27,18 +27,18 @@ export const NEW_MODES = [
 
 export const MODE_MEDIA_SECTIONS = {
   lockdown: [
-    { id: 'level1', label: 'Level 1 — Hostage Sacrifice' },
-    { id: 'level2', label: 'Level 2 — Sensory Cipher' },
-    { id: 'level3', label: 'Level 3 — Sabotage Override' },
-    { id: 'level4', label: 'Level 4 — Exit Code' },
-    { id: 'level5', label: 'Level 5 — VIP Vault' },
+    { id: 'level1', label: 'Level 1 — Hostage Sacrifice', filename: 'section1_Level1_Hostage_Sacrifice.jpg' },
+    { id: 'level2', label: 'Level 2 — Sensory Cipher', filename: 'section2_Level2_Sensory_Cipher.jpg' },
+    { id: 'level3', label: 'Level 3 — Sabotage Override', filename: 'section3_Level3_Sabotage_Override.jpg' },
+    { id: 'level4', label: 'Level 4 — Exit Code', filename: 'section4_Level4_Exit_Code.jpg' },
+    { id: 'level5', label: 'Level 5 — VIP Vault', filename: 'section5_Level5_VIP_Vault.jpg' },
   ],
   beach_bar: [
-    { id: 'checkin', label: 'Check-in' },
-    { id: 'dance_arena', label: 'Dance Arena' },
-    { id: 'penalty_wheel', label: 'Τροχός Ποινών' },
-    { id: 'shot_truth', label: 'Shot & Truth' },
-    { id: 'last_queen', label: 'Last Queen' },
+    { id: 'checkin', label: 'Check-in', filename: 'beach_sec1.jpg' },
+    { id: 'dance_arena', label: 'Dance Arena', filename: 'beach_sec2.jpg' },
+    { id: 'penalty_wheel', label: 'Τροχός Ποινών', filename: 'beach_sec3.jpg' },
+    { id: 'shot_truth', label: 'Shot & Truth', filename: 'beach_sec4.jpg' },
+    { id: 'last_queen', label: 'Last Queen', filename: 'beach_sec5.jpg' },
   ],
 };
 
