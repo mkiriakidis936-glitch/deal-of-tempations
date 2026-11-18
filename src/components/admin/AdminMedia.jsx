@@ -6,7 +6,6 @@ import { ART, DEFAULTS, applyMediaOverrides } from '@/data/brandArt';
 import { IMAGE_SLOTS, PHOTO_SPOTS, PHOTO_SPOT_IDS, VIDEO_SLOTS, MODE_COVER_SLOTS, GALLERIES, SURFACES } from '@/data/mediaSlots';
 import { NEW_MODES } from '@/data/modes/modeRegistry';
 import ModeMediaManager from '@/components/admin/ModeMediaManager';
-import GameMediaLibraries from '@/components/admin/GameMediaLibraries';
 import AdminMediaPreview from '@/components/admin/AdminMediaPreview';
 import AVControlRoom from '@/components/admin/AVControlRoom';
 import { MEDIA_KEY, fetchOverrides, uploadMedia, listMedia, deleteMedia, deleteAllMedia } from '@/lib/media';
@@ -46,6 +45,7 @@ export default function AdminMedia() {
   const [libraryFilter, setLibraryFilter] = useState('all');
   const [libraryKindFilter, setLibraryKindFilter] = useState('all');
   const [librarySearch, setLibrarySearch] = useState('');
+  const [galleryAsset, setGalleryAsset] = useState({});
   const [surfaceFilter, setSurfaceFilter] = useState('all');
   const [fileLoadStatus, setFileLoadStatus] = useState({});
   const [libraryStatusFilter, setLibraryStatusFilter] = useState('all');
@@ -62,11 +62,6 @@ export default function AdminMedia() {
   const [dragging, setDragging] = useState(false);
   const [msg, setMsg] = useState(null);
   const target = useRef(null);
-  const imgOne = useRef(null);
-  const imgMany = useRef(null);
-  const vidOne = useRef(null);
-  const vidMany = useRef(null);
-  const mediaOne = useRef(null);
   const libraryOne = useRef(null);
 
   const refreshLibrary = useCallback(async () => {
@@ -188,6 +183,14 @@ export default function AdminMedia() {
   }, 'Η κατηγορία εφαρμογής αποθηκεύτηκε ✓');
   const setLibraryCategory = (url, category) => run(`category-${url}`, () => save({ ...ov, libraryCategories: { ...(ov.libraryCategories || {}), [url]: category } }), 'Η κατηγορία αποθηκεύτηκε ✓');
   const setLibraryFocalPoint = (url, focalPoint) => run(`focal-${url}`, () => save({ ...ov, libraryFocalPoints: { ...(ov.libraryFocalPoints || {}), [url]: focalPoint } }), 'Το σημείο εστίασης αποθηκεύτηκε ✓');
+  const assignMediaToSlot = (url, slotId) => run(`slot-${slotId}`, async () => {
+    await save({ ...ov, [slotId]: url, emptySlots: (ov.emptySlots || []).filter((id) => id !== slotId), emptyModeCovers: (ov.emptyModeCovers || []).filter((id) => id !== slotId) });
+  }, 'Το υπάρχον αρχείο συνδέθηκε με το σημείο ✓');
+  const addExistingToList = (url, listId) => run(`list-${listId}`, async () => {
+    const current = [...listOf(listId)];
+    if (!current.includes(url)) current.push(url);
+    await save({ ...ov, [listId]: current });
+  }, 'Το υπάρχον αρχείο προστέθηκε στη συλλογή ✓');
   const assignLibraryImageToSlot = (url, slotId) => run(`slot-${url}`, async () => {
     const category = ['poster', 'heistNight', 'group', 'scene'].includes(slotId)
       ? 'heist'
@@ -356,13 +359,7 @@ export default function AdminMedia() {
 
   return (
     <div className="space-y-3">
-      <GameMediaLibraries value={ov} files={library} onSave={save} onRefresh={refreshLibrary} />
       <AVControlRoom refreshKey={mediaRevision} />
-      <input ref={imgOne} type="file" accept={IMG_ACCEPT} hidden onChange={onFiles} />
-      <input ref={imgMany} type="file" accept={IMG_ACCEPT} multiple hidden onChange={onFiles} />
-      <input ref={vidOne} type="file" accept={VID_ACCEPT} hidden onChange={onFiles} />
-      <input ref={vidMany} type="file" accept={VID_ACCEPT} multiple hidden onChange={onFiles} />
-      <input ref={mediaOne} type="file" accept="image/*,video/*,.jpg,.jpeg,.png,.webp,.gif,.avif,.heic,.svg,.mp4,.webm,.mov" hidden onChange={onFiles} />
       <input ref={libraryOne} type="file" accept={MEDIA_ACCEPT} hidden onChange={onFiles} />
 
       <ComicPanel className="bg-card">
@@ -393,8 +390,8 @@ export default function AdminMedia() {
 
       {showSurface("site", "forms", "tv") && (
       <ComicPanel className="bg-card space-y-3">
-        <div className="font-heading text-lg">🖼️ ΦΩΤΟΓΡΑΦΙΑ Ή ΒΙΝΤΕΟ ΑΝΑ ΣΗΜΕΙΟ</div>
-        <p className="text-xs text-foreground/60">Και τα έξι σημεία είναι προαιρετικά. Σε κάθε σημείο ανεβάζεις εσύ φωτογραφία ή βίντεο, το αλλάζεις ή το διαγράφεις. Δεν απαιτείται να υπάρχει αρχείο σε κανένα σημείο.</p>
+        <div className="font-heading text-lg">🖼️ ΠΟΛΥΜΕΣΑ ΑΝΑ ΣΗΜΕΙΟ</div>
+        <p className="text-xs text-foreground/60">Κάθε αρχείο ανεβαίνει μία φορά στην κεντρική βιβλιοθήκη. Από εδώ συνδέεις υπάρχοντα αρχεία στα σημεία εμφάνισης ή αφαιρείς μόνο τη σύνδεση.</p>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {PHOTO_SPOTS.filter((s) => showSurface(...(s.surfaces || []))).map((s) => {
             const src = ov[s.id] || (ov.emptySlots?.includes(s.id) || ov.clearAllPhotos || ov.clearAllMedia ? '' : DEFAULTS[s.id]);
@@ -404,8 +401,8 @@ export default function AdminMedia() {
                 <div className="font-bold text-sm mt-2">{s.label}</div>
                 <div className="text-[11px] text-foreground/60">{s.where}</div>
                 <div className="flex gap-2 mt-2 flex-wrap">
-                  <ComicButton size="sm" disabled={!!busy} onClick={() => pick(s.id, 'slot', mediaOne)}>⬆️ Ανέβασμα φωτογραφίας/βίντεο</ComicButton>
-                  {src && <ComicButton size="sm" variant="dark" disabled={!!busy} onClick={() => clearSlot(s.id)}>🗑 Διαγραφή</ComicButton>}
+                  <select aria-label={`Αρχείο για ${s.label}`} value="" disabled={!!busy} onChange={(e) => { if (e.target.value) assignMediaToSlot(e.target.value, s.id); }} className="w-full rounded-lg border border-border bg-background px-2 py-2 text-xs"><option value="">Σύνδεση από κεντρική βιβλιοθήκη…</option>{library.filter((file) => ['image','graphic','video'].includes(file.kind)).map((file) => <option key={file.url} value={file.url}>{file.kind} · {file.name}</option>)}</select>
+                  {src && <ComicButton size="sm" variant="dark" disabled={!!busy} onClick={() => clearSlot(s.id)}>Αφαίρεση από σημείο</ComicButton>}
                   <ComicButton size="sm" variant="dark" disabled={!!busy} onClick={() => reset(s.id)}>↩︎ Αρχικό</ComicButton>
                 </div>
                 <Progress id={s.id} />
@@ -429,7 +426,7 @@ export default function AdminMedia() {
                 <div className="text-xs text-foreground/60">{slot.where}</div>
                 {src ? <Thumb src={src} video className="w-full aspect-video rounded" /> : <div className="w-full aspect-video rounded bg-black/40 flex items-center justify-center text-xs text-foreground/50">Δεν έχει ανέβει βίντεο</div>}
                 <div className="flex flex-wrap gap-2">
-                  <ComicButton size="sm" disabled={!!busy} onClick={() => pick(slot.id, 'slot', vidOne)}>{src ? '↻ Αλλαγή βίντεο' : '⬆️ Ανέβασμα βίντεο'}</ComicButton>
+                  <select aria-label={`Βίντεο για ${slot.label}`} value="" disabled={!!busy} onChange={(e) => { if (e.target.value) assignMediaToSlot(e.target.value, slot.id); }} className="w-full rounded-lg border border-border bg-background px-2 py-2 text-xs"><option value="">Σύνδεση βίντεο από κεντρική βιβλιοθήκη…</option>{library.filter((file) => file.kind === 'video').map((file) => <option key={file.url} value={file.url}>{file.name}</option>)}</select>
                   {src && <ComicButton size="sm" variant="dark" disabled={!!busy} onClick={() => run(slot.id, () => save({ ...ov, [slot.id]: undefined }), 'Το βίντεο αφαιρέθηκε ✓')}>🗑 Αφαίρεση</ComicButton>}
                 </div>
                 <Progress id={slot.id} />
@@ -452,7 +449,7 @@ export default function AdminMedia() {
                 {src ? <Thumb src={src} className="w-full aspect-video rounded" /> : <div className="w-full aspect-video rounded bg-black/40 flex items-center justify-center text-xs text-foreground/50">Χωρίς φωτογραφία</div>}
                 <div className="font-bold text-sm mt-2">{s.label}</div>
                 <div className="flex gap-2 mt-2 flex-wrap">
-                  <ComicButton size="sm" disabled={!!busy} onClick={() => pick(s.id, 'slot', imgOne)}>⬆️ Ανέβασμα / Αλλαγή</ComicButton>
+                  <select aria-label={`Εικόνα εξωφύλλου ${s.label}`} value="" disabled={!!busy} onChange={(e) => { if (e.target.value) assignMediaToSlot(e.target.value, s.id); }} className="w-full rounded-lg border border-border bg-background px-2 py-2 text-xs"><option value="">Σύνδεση εικόνας από κεντρική βιβλιοθήκη…</option>{library.filter((file) => file.kind === 'image' || file.kind === 'graphic').map((file) => <option key={file.url} value={file.url}>{file.name}</option>)}</select>
                   <ComicButton size="sm" variant="dark" disabled={!!busy} onClick={() => reset(s.id)}>↩︎ Αρχική φωτογραφία</ComicButton>
                 </div>
                 <Progress id={s.id} />
@@ -465,10 +462,11 @@ export default function AdminMedia() {
 
       {showSurface('site', 'forms', 'tablet') && (
       <ComicPanel className="bg-card space-y-3">
-        <div className="font-heading text-lg">🎮 ΠΟΛΥΜΕΣΑ ΑΝΑ MODE</div>
-        <p className="text-xs text-foreground/60">Ανεξάρτητο υλικό για τα PAJAMA LOCKDOWN 18+ και BEACH BAR HOME LOCKDOWN. Cover: επιλογή Mode. Hero και ενότητες: Tablet Setup. Gallery και Trailer: Tablet Setup και σελίδα Mode στο Site.</p>
+        <div className="font-heading text-lg">🎮 ΔΙΑΧΕΙΡΙΣΗ ΣΥΝΔΕΣΕΩΝ ΑΝΑ MODE</div>
+        <p className="text-xs text-foreground/60">Τα Modes χρησιμοποιούν αρχεία που υπάρχουν ήδη στην κεντρική βιβλιοθήκη. Δεν γίνεται νέο ανέβασμα από αυτή την ενότητα.</p>
         <ModeMediaManager
           value={ov.modeMedia || {}}
+          files={library}
           disabled={!!busy}
           onSave={(modeMedia) => run('mode-media', () => save({ ...ov, modeMedia }), 'Το Πολυμέσα Mode αποθηκεύτηκε ✓')}
         />
@@ -489,7 +487,7 @@ export default function AdminMedia() {
                 <div className="font-bold text-sm mt-2">{s.label}</div>
                 <div className="text-[11px] text-foreground/60">{s.where}</div>
                 <div className="flex gap-2 mt-2 flex-wrap">
-                  <ComicButton size="sm" disabled={!!busy} onClick={() => pick(s.id, 'slot', imgOne)}>⬆️ Αλλαγή</ComicButton>
+                  <select aria-label={`Εικόνα για ${s.label}`} value="" disabled={!!busy} onChange={(e) => { if (e.target.value) assignMediaToSlot(e.target.value, s.id); }} className="w-full rounded-lg border border-border bg-background px-2 py-2 text-xs"><option value="">Σύνδεση εικόνας από κεντρική βιβλιοθήκη…</option>{library.filter((file) => file.kind === 'image' || file.kind === 'graphic').map((file) => <option key={file.url} value={file.url}>{file.name}</option>)}</select>
                   {src && <ComicButton size="sm" variant="dark" disabled={!!busy} onClick={() => clearSlot(s.id)}>Αφαίρεση από σημείο</ComicButton>}
                   {ov[s.id] && <ComicButton size="sm" variant="dark" disabled={!!busy} onClick={() => reset(s.id)}>↩︎ Αρχική εικόνα</ComicButton>}
                   {uploadedFile && <ComicButton size="sm" variant="red" disabled={!!busy} onClick={() => removeFile(uploadedFile)}>🗑️ Οριστική διαγραφή από παντού</ComicButton>}
@@ -515,7 +513,8 @@ export default function AdminMedia() {
                 <div className="text-[11px] text-foreground/60">{g.where}</div>
               </div>
               <div className="flex gap-2 flex-wrap">
-                <ComicButton size="sm" disabled={!!busy} onClick={() => pick(g.id, 'add', video ? vidMany : imgMany)}>➕ Προσθήκη {video ? 'βίντεο' : 'φωτογραφιών'}</ComicButton>
+                <select aria-label={`Αρχείο για ${g.label}`} value={galleryAsset[g.id] || ''} disabled={!!busy} onChange={(e) => setGalleryAsset((current) => ({ ...current, [g.id]: e.target.value }))} className="rounded-lg border border-border bg-background px-2 py-2 text-xs"><option value="">Επιλογή από κεντρική βιβλιοθήκη…</option>{library.filter((file) => video ? file.kind === 'video' : file.kind === 'image' || file.kind === 'graphic').map((file) => <option key={file.url} value={file.url}>{file.name}</option>)}</select>
+                <ComicButton size="sm" disabled={!!busy || !galleryAsset[g.id]} onClick={() => { addExistingToList(galleryAsset[g.id], g.id); setGalleryAsset((current) => ({ ...current, [g.id]: '' })); }}>Σύνδεση</ComicButton>
                 {ov[g.id] && <ComicButton size="sm" variant="dark" disabled={!!busy} onClick={() => reset(g.id)}>↩︎ Αρχικά</ComicButton>}
               </div>
             </div>
@@ -527,7 +526,7 @@ export default function AdminMedia() {
                   <Thumb video={video} src={src} className={`w-full ${video ? 'aspect-video' : 'aspect-[4/5]'}`} />
                   <div className="grid grid-cols-4 text-white text-base bg-black/70">
                     <button disabled={!!busy || i === 0} onClick={() => move(g.id, i, -1)} className="py-2.5 disabled:opacity-30" aria-label="Πίσω">◀</button>
-                    <button disabled={!!busy} onClick={() => pick(g.id, 'replace', video ? vidOne : imgOne, i)} className="py-2.5" aria-label="Αλλαγή">✏️</button>
+                    <select aria-label={`Αντικατάσταση στοιχείου ${i+1}`} value="" disabled={!!busy} onChange={(e) => { if (e.target.value) run(`replace-${g.id}-${i}`, () => { const next=[...list]; next[i]=e.target.value; return save({ ...ov, [g.id]: next }); }, 'Το αρχείο αντικαταστάθηκε ✓'); }} className="col-span-2 w-full bg-black/70 text-[10px] text-white"><option value="">Αλλαγή από βιβλιοθήκη</option>{library.filter((file) => video ? file.kind === 'video' : file.kind === 'image' || file.kind === 'graphic').map((file) => <option key={file.url} value={file.url}>{file.name}</option>)}</select>
                     <button disabled={!!busy} onClick={() => remove(g.id, i)} className="py-2.5 text-red-400" aria-label="Αφαίρεση">🗑</button>
                     <button disabled={!!busy || i === list.length - 1} onClick={() => move(g.id, i, 1)} className="py-2.5 disabled:opacity-30" aria-label="Μπροστά">▶</button>
                   </div>
