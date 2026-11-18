@@ -116,7 +116,7 @@ export default function InvitationIntakeForm({ onDone }) {
   const canNext = step === 0 ? form.name.trim().length > 0 && form.accommodation : step === 3 ? form.safeWordConfirmed && customQuestionsValid : true;
 
   return (
-    <div className="min-h-screen" style={{ background: '#0a0a0a' }}>
+    <div className="min-h-screen" style={{ background: '#0a0a0a', ...(ART.invitationBg ? { backgroundImage: `linear-gradient(rgba(10,10,10,.82), rgba(10,10,10,.9)), url("${ART.invitationBg}")`, backgroundSize: 'cover', backgroundPosition: 'center' } : {}) }}>
       <div className="max-w-md mx-auto space-y-3 p-4">
         <ComicPanel className="bg-background text-center py-4 border-primary">
           {ART.extraHeistRoom && <img src={ART.extraHeistRoom} alt="Arrest & Heist" className="mb-3 w-full max-h-56 rounded-lg object-cover" />}
