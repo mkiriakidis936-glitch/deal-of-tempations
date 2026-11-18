@@ -119,6 +119,7 @@ export default function InvitationIntakeForm({ onDone }) {
     <div className="min-h-screen" style={{ background: '#0a0a0a' }}>
       <div className="max-w-md mx-auto space-y-3 p-4">
         <ComicPanel className="bg-background text-center py-4 border-primary">
+          {ART.extraHeistRoom && <img src={ART.extraHeistRoom} alt="Arrest & Heist" className="mb-3 w-full max-h-56 rounded-lg object-cover" />}
           <div className="mb-2 mx-auto" style={{ width: 80, height: 80 }}>
             <Image src={LOGO_URL} fittingType="fill" className="rounded-full border-2 border-primary/40" />
           </div>
