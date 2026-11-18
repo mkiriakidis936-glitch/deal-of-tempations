@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import ComicPanel from '@/components/comic/ComicPanel';
 import ComicButton from '@/components/comic/ComicButton';
+import { QRCodeSVG } from 'qrcode.react';
 
 const csvCell = (value) => '"' + String(value ?? '').replace(/"/g, '""') + '"';
 
@@ -47,6 +48,17 @@ export default function AdminEventCenter({ sessions: initialSessions = [], selec
     ...vipSubmissions.filter((r) => r.confirmed !== false).map((r) => ({ id: r.id, source: 'vip', name: r.displayName || r.name || 'Χωρίς όνομα', contact: r.contact || '' })),
   ], [rsvps, vipSubmissions]);
   const capacity = Math.max(0, Number(event.capacity) || 0);
+  const vipUrl = selected ? `${window.location.origin}/vip?event=${encodeURIComponent(selected.sessionCode)}` : '';
+
+  async function copyVipLink() {
+    if (!vipUrl) return;
+    try {
+      await navigator.clipboard.writeText(vipUrl);
+      setMessage('Ο προσωπικός σύνδεσμος VIP αντιγράφηκε.');
+    } catch {
+      setMessage('Δεν ήταν δυνατή η αντιγραφή του συνδέσμου VIP.');
+    }
+  }
   const waitlist = capacity > 0 ? guests.slice(capacity) : [];
 
   async function saveEvent(patch) {
@@ -133,6 +145,22 @@ export default function AdminEventCenter({ sessions: initialSessions = [], selec
         <label className="block text-xs font-bold">Χώρος<input value={draft.venue} onChange={(e) => setDraft((d) => ({ ...d, venue: e.target.value }))} className="mt-1 w-full rounded border border-border bg-background p-2" /></label>
         <label className="block text-xs font-bold">Διαθέσιμες θέσεις<input type="number" min="0" value={draft.capacity} onChange={(e) => setDraft((d) => ({ ...d, capacity: e.target.value }))} className="mt-1 w-full rounded border border-border bg-background p-2" /></label>
         <ComicButton disabled={busy} onClick={() => saveEvent({ ...draft, capacity: draft.capacity === '' ? null : Number(draft.capacity) })}>ΑΠΟΘΗΚΕΥΣΗ ΣΤΟΙΧΕΙΩΝ EVENT</ComicButton><div className="text-[11px] text-foreground/50">Κωδικός σύνδεσης: {selected.sessionCode} · Mode: {selected.mode}</div>
+      </ComicPanel>
+      <ComicPanel className="bg-card space-y-3">
+        <div>
+          <div className="font-heading text-lg text-primary">VIP · ΠΡΟΣΩΠΙΚΗ ΣΕΛΙΔΑ EVENT</div>
+          <div className="text-xs text-foreground/60">Μοναδικός δημόσιος σύνδεσμος και QR Code για τη συγκεκριμένη εκδήλωση.</div>
+        </div>
+        <div className="flex flex-col sm:flex-row items-center gap-4">
+          <div className="rounded-xl bg-white p-3 shrink-0"><QRCodeSVG value={vipUrl} size={176} level="H" includeMargin /></div>
+          <div className="min-w-0 flex-1 w-full space-y-2">
+            <code className="block break-all rounded border border-border bg-background p-3 text-xs">{vipUrl}</code>
+            <div className="flex flex-wrap gap-2">
+              <ComicButton onClick={copyVipLink}>ΑΝΤΙΓΡΑΦΗ VIP LINK</ComicButton>
+              <a href={vipUrl} target="_blank" rel="noreferrer" className="inline-flex"><ComicButton variant="dark">ΠΡΟΕΠΙΣΚΟΠΗΣΗ</ComicButton></a>
+            </div>
+          </div>
+        </div>
       </ComicPanel>
       <ComicPanel className="bg-card space-y-2">
         <div className="font-heading text-lg">ΠΡΟΣΘΗΚΗ ΚΑΛΕΣΜΕΝΟΥ</div>
