@@ -4,7 +4,7 @@ import ComicPanel from '@/components/comic/ComicPanel';
 import ComicButton from '@/components/comic/ComicButton';
 import { ART, DEFAULTS, applyMediaOverrides } from '@/data/brandArt';
 import { IMAGE_SLOTS, PHOTO_SPOTS, PHOTO_SPOT_IDS, VIDEO_SLOTS, MODE_COVER_SLOTS, GALLERIES, SURFACES } from '@/data/mediaSlots';
-import { NEW_MODES } from '@/data/modes/modeRegistry';
+import { NEW_MODES, MODE_MEDIA_SECTIONS } from '@/data/modes/modeRegistry';
 import ModeMediaManager from '@/components/admin/ModeMediaManager';
 import GameMediaLibraries from '@/components/admin/GameMediaLibraries';
 import AdminMediaPreview from '@/components/admin/AdminMediaPreview';
@@ -328,8 +328,16 @@ export default function AdminMedia() {
     }
     for (const mode of NEW_MODES) {
       const saved = ov.modeMedia?.[mode.id] || {};
-      const cover = saved.cover || ov[`modeCover_${mode.id}`] || (clearedImages ? '' : DEFAULTS[`modeCover_${mode.id}`]);
-      if (!cover) missing.push({ surface: 'tablet', label: `${mode.name} — Cover`, where: 'Εξώφυλλο επιλογής Mode στο Tablet / Forms' });
+      const sections = Array.isArray(saved.sections) && saved.sections.length
+        ? saved.sections
+        : (MODE_MEDIA_SECTIONS[mode.id] || []).map((item) => ({ ...item, image: '' }));
+      const gallery = Array.isArray(saved.gallery) ? saved.gallery.filter(Boolean) : [];
+      if (!saved.hero) missing.push({ surface: 'site', label: `${mode.name} — Hero`, where: 'Κεντρική εικόνα παρουσίασης του Mode' });
+      if (!saved.cover && !ov[`modeCover_${mode.id}`]) missing.push({ surface: 'tablet', label: `${mode.name} — Cover`, where: 'Ξεχωριστό εξώφυλλο επιλογής Mode στο Tablet / Forms' });
+      for (const section of sections) {
+        if (!section.image) missing.push({ surface: 'tablet', label: `${mode.name} — ${section.label}`, where: 'Εικόνα ενότητας στο Tablet Setup' });
+      }
+      if (gallery.length < 6) missing.push({ surface: 'site', label: `${mode.name} — Gallery (${gallery.length}/6)`, where: 'Απαιτούνται έξι αριθμημένες εικόνες Gallery 01–06' });
     }
     for (const gallery of GALLERIES) if (!listOf(gallery.id).length) missing.push({ surface: gallery.surfaces?.[0] || 'site', label: gallery.label, where: gallery.where });
     return missing;
