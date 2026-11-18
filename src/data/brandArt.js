@@ -127,7 +127,7 @@ export function applyMediaOverrides(o = {}) {
   FILM.welcomeVideo = clearVideos ? '' : (str(o.welcomeVideo) || '');
   FILM.countdownVideo = clearVideos ? '' : (str(o.countdownVideo) || '');
   for (const id of PHOTO_SPOT_IDS) {
-    const value = str(o[id]);
+    const value = str(o[id]) || (id === 'invitation' ? str(o.invitationTeaser) : null);
     if (emptySlots.includes(id)) {
       PHOTO[id] = '';
       FILM[id] = '';
