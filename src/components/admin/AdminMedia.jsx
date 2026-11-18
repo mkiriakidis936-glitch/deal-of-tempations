@@ -6,6 +6,7 @@ import { ART, DEFAULTS, applyMediaOverrides } from '@/data/brandArt';
 import { IMAGE_SLOTS, PHOTO_SPOTS, PHOTO_SPOT_IDS, VIDEO_SLOTS, MODE_COVER_SLOTS, GALLERIES, SURFACES } from '@/data/mediaSlots';
 import { NEW_MODES } from '@/data/modes/modeRegistry';
 import ModeMediaManager from '@/components/admin/ModeMediaManager';
+import GameMediaLibraries from '@/components/admin/GameMediaLibraries';
 import AdminMediaPreview from '@/components/admin/AdminMediaPreview';
 import AVControlRoom from '@/components/admin/AVControlRoom';
 import { MEDIA_KEY, fetchOverrides, uploadMedia, listMedia, deleteMedia, deleteAllMedia } from '@/lib/media';
@@ -409,6 +410,24 @@ export default function AdminMedia() {
               </div>
             );
           })}
+          {IMAGE_SLOTS.filter((slot) => showSurface(...(slot.surfaces || []))).map((slot) => {
+            const src = ov[slot.id] || (ov.emptySlots?.includes(slot.id) || ov.clearAllPhotos || ov.clearAllMedia ? '' : DEFAULTS[slot.id]);
+            const uploadedFile = library.find((file) => file.url === src);
+            return <div key={slot.id} className="border-2 border-border/40 rounded-lg p-2 bg-secondary/40">
+              <Thumb src={src} className="w-full aspect-video rounded" />
+              <div className="font-bold text-sm mt-2">{slot.label}</div>
+              <div className="text-[11px] text-foreground/60">{slot.where}</div>
+              <select aria-label={`Αρχείο για ${slot.label}`} value="" disabled={!!busy} onChange={(e) => { if (e.target.value) assignMediaToSlot(e.target.value, slot.id); }} className="mt-2 w-full rounded-lg border border-border bg-background px-2 py-2 text-xs">
+                <option value="">Σύνδεση από κεντρική βιβλιοθήκη…</option>
+                {library.filter((file) => file.kind === 'image' || file.kind === 'graphic').map((file) => <option key={file.url} value={file.url}>{file.name}</option>)}
+              </select>
+              <div className="mt-2 flex flex-wrap gap-2">
+                {src && <ComicButton size="sm" variant="dark" disabled={!!busy} onClick={() => clearSlot(slot.id)}>Αφαίρεση από σημείο</ComicButton>}
+                {ov[slot.id] && <ComicButton size="sm" variant="dark" disabled={!!busy} onClick={() => reset(slot.id)}>↩︎ Αρχική εικόνα</ComicButton>}
+                {uploadedFile && <ComicButton size="sm" variant="red" disabled={!!busy} onClick={() => removeFile(uploadedFile)}>🗑️ Οριστική διαγραφή από παντού</ComicButton>}
+              </div>
+            </div>;
+          })}
         </div>
       </ComicPanel>
       )}
@@ -464,38 +483,14 @@ export default function AdminMedia() {
       <ComicPanel className="bg-card space-y-3">
         <div className="font-heading text-lg">🎮 ΔΙΑΧΕΙΡΙΣΗ ΣΥΝΔΕΣΕΩΝ ΑΝΑ MODE</div>
         <p className="text-xs text-foreground/60">Τα Modes χρησιμοποιούν αρχεία που υπάρχουν ήδη στην κεντρική βιβλιοθήκη. Δεν γίνεται νέο ανέβασμα από αυτή την ενότητα.</p>
+        <GameMediaLibraries value={ov} files={library} onSave={save} onRefresh={refreshLibrary} />
+        <div className="border-t border-border/60 pt-4">
         <ModeMediaManager
           value={ov.modeMedia || {}}
           files={library}
           disabled={!!busy}
           onSave={(modeMedia) => run('mode-media', () => save({ ...ov, modeMedia }), 'Το Πολυμέσα Mode αποθηκεύτηκε ✓')}
         />
-      </ComicPanel>
-      )}
-
-      {showSurface('site', 'forms', 'tablet', 'mobile') && (
-      <ComicPanel className="bg-card space-y-3">
-        <div className="font-heading text-lg">🖼️ ΕΙΚΟΝΕΣ ΑΝΑ ΣΗΜΕΙΟ</div>
-        <p className="text-xs text-foreground/60">Η αφαίρεση από σημείο δεν διαγράφει το αρχείο. Η οριστική διαγραφή από παντού είναι ξεχωριστή ενέργεια και εμφανίζεται για αρχεία της βιβλιοθήκης.</p>
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-          {IMAGE_SLOTS.filter((s) => showSurface(...(s.surfaces || []))).map((s) => {
-            const src = ov[s.id] || (ov.emptySlots?.includes(s.id) || ov.clearAllPhotos || ov.clearAllMedia ? '' : DEFAULTS[s.id]);
-            const uploadedFile = library.find((file) => file.url === src);
-            return (
-              <div key={s.id} className="border-2 border-border/40 rounded-lg p-2 bg-secondary/40">
-                <Thumb src={src} className="w-full aspect-square rounded" />
-                <div className="font-bold text-sm mt-2">{s.label}</div>
-                <div className="text-[11px] text-foreground/60">{s.where}</div>
-                <div className="flex gap-2 mt-2 flex-wrap">
-                  <select aria-label={`Εικόνα για ${s.label}`} value="" disabled={!!busy} onChange={(e) => { if (e.target.value) assignMediaToSlot(e.target.value, s.id); }} className="w-full rounded-lg border border-border bg-background px-2 py-2 text-xs"><option value="">Σύνδεση εικόνας από κεντρική βιβλιοθήκη…</option>{library.filter((file) => file.kind === 'image' || file.kind === 'graphic').map((file) => <option key={file.url} value={file.url}>{file.name}</option>)}</select>
-                  {src && <ComicButton size="sm" variant="dark" disabled={!!busy} onClick={() => clearSlot(s.id)}>Αφαίρεση από σημείο</ComicButton>}
-                  {ov[s.id] && <ComicButton size="sm" variant="dark" disabled={!!busy} onClick={() => reset(s.id)}>↩︎ Αρχική εικόνα</ComicButton>}
-                  {uploadedFile && <ComicButton size="sm" variant="red" disabled={!!busy} onClick={() => removeFile(uploadedFile)}>🗑️ Οριστική διαγραφή από παντού</ComicButton>}
-                </div>
-                <Progress id={s.id} />
-              </div>
-            );
-          })}
         </div>
       </ComicPanel>
       )}
