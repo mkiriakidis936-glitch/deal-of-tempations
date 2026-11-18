@@ -29,7 +29,7 @@ function validateSelectedFile(file, expectedName, video) {
   const allowed = video ? ['mp4', 'webm', 'mov'] : ['jpg', 'jpeg', 'png', 'webp', 'gif', 'avif', 'svg', 'heic', 'heif'];
   if (!allowed.includes(extension)) return video ? 'Για trailer επίλεξε MP4, WEBM ή MOV.' : 'Για εικόνα επίλεξε JPG, PNG, WEBP, GIF, AVIF, SVG ή HEIC.';
   if (expectedName) {
-    const slug = (name) => name.replace(/\\.[^.]+$/, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+    const slug = (name) => name.replace(/\.[^.]+$/, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
     const expectedSlug = slug(expectedName);
     const actualSlug = slug(file.name).replace(/^[a-z0-9]+-[a-f0-9]{6}-/, '');
     if (actualSlug !== expectedSlug) {
