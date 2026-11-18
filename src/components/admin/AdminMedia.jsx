@@ -481,6 +481,7 @@ export default function AdminMedia() {
         <ModeMediaManager
           value={ov.modeMedia || {}}
           files={library}
+          onRefresh={refreshLibrary}
           disabled={!!busy}
           onSave={(modeMedia) => run('mode-media', () => save({ ...ov, modeMedia }), 'Το Πολυμέσα Mode αποθηκεύτηκε ✓')}
         />
