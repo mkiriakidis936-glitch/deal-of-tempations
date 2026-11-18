@@ -33,6 +33,7 @@ export const ART = {
   banner: '/assets/059bca0c5_Gemini_Generated_Image_hmy5gghmy5gghmy5.jpeg',
   logo: '/assets/ee5e63437_Gemini_Generated_Image_h0aclsh0aclsh0ac.jpeg',
   invitationBg: '/assets/38a7c85ef_DealofTemptation2.jpeg',
+  invitationTeaser: '',
   extraHeistRoom: '',
   extraPediGlam: '',
   wallpaperPhone: '',
@@ -61,7 +62,7 @@ export const PHOTO = {
   siteTrailer: ART.poster,
   tv: ART.scene,
   promo: ART.poster,
-  invitation: ART.invitationBg,
+  invitation: ART.invitationTeaser,
   pajama: ART.vault,
 };
 
