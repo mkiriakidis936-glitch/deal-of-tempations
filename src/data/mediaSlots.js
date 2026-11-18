@@ -48,13 +48,13 @@ export const GALLERIES = [
 ];
 
 export const MODE_COVER_SLOTS = [
-  { id: 'modeCover_classic', modeId: 'classic', label: 'Κλασικό', surfaces: ['tablet', 'forms'] },
-  { id: 'modeCover_marathon', modeId: 'marathon', label: 'Mega Marathon', surfaces: ['tablet', 'forms'] },
-  { id: 'modeCover_arrest_heist', modeId: 'arrest_heist', label: 'Arrest & Heist', surfaces: ['tablet', 'forms'] },
-  { id: 'modeCover_pajama', modeId: 'pajama', label: 'Pajama Mode', surfaces: ['tablet', 'forms'] },
-  { id: 'modeCover_pedi_extended', modeId: 'pedi_extended', label: 'Pedi-Glam Extended', surfaces: ['tablet', 'forms'] },
-  { id: 'modeCover_lockdown', modeId: 'lockdown', label: 'PAJAMA LOCKDOWN 18+', surfaces: ['tablet', 'forms'] },
-  { id: 'modeCover_beach_bar', modeId: 'beach_bar', label: 'BEACH BAR HOME LOCKDOWN', surfaces: ['tablet', 'forms'] },
+  { id: 'modeCover_classic', modeId: 'classic', label: 'Κλασικό', filename: 'modeCover_classic.jpg', surfaces: ['tablet', 'forms'] },
+  { id: 'modeCover_marathon', modeId: 'marathon', label: 'Mega Marathon', filename: 'modeCover_marathon.jpg', surfaces: ['tablet', 'forms'] },
+  { id: 'modeCover_arrest_heist', modeId: 'arrest_heist', label: 'Arrest & Heist', filename: 'modeCover_arrest_heist.jpg', surfaces: ['tablet', 'forms'] },
+  { id: 'modeCover_pajama', modeId: 'pajama', label: 'Pajama Mode', filename: 'modeCover_pajama.jpg', surfaces: ['tablet', 'forms'] },
+  { id: 'modeCover_pedi_extended', modeId: 'pedi_extended', label: 'Pedi-Glam Extended', filename: '', surfaces: ['tablet', 'forms'] },
+  { id: 'modeCover_lockdown', modeId: 'lockdown', label: 'PAJAMA LOCKDOWN 18+', filename: 'cover.jpg', surfaces: ['tablet', 'forms'] },
+  { id: 'modeCover_beach_bar', modeId: 'beach_bar', label: 'BEACH BAR HOME LOCKDOWN', filename: 'cover.jpg', surfaces: ['tablet', 'forms'] },
 ];
 
 // Τα δύο βίντεο έναρξης της τηλεόρασης.
