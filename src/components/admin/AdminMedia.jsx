@@ -519,7 +519,7 @@ export default function AdminMedia() {
                   const canAdd = index === list.length;
                   return (
                     <div key={index} className="border-2 border-border/40 rounded-lg p-2 bg-secondary/40 space-y-2">
-                      <div className="text-xs font-bold">{g.id === 'heistPhotos' ? 'Heist' : 'Pajama'} {String(index + 1).padStart(2, '0')}</div>
+                      <div className="text-xs font-bold">{g.id === 'heistPhotos' ? `heist_${String(index + 1).padStart(2, '0')}.jpg` : `pajama_${String(index + 1).padStart(2, '0')}.jpg`}</div>
                       <Thumb src={src} className="w-full aspect-[4/3] rounded" />
                       <div className="text-[10px] text-foreground/60 break-all">{file?.name || (src ? 'Αρχείο συνδεδεμένο' : 'Δεν έχει συνδεθεί εικόνα')}</div>
                       <select
