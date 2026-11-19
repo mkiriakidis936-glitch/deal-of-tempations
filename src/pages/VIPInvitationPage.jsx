@@ -62,7 +62,7 @@ export default function VIPInvitationPage() {
     setError('');
     try {
       await request('POST', `/api/entities/vip-invitations/${encodeURIComponent(token)}/submit`, {
-        submissionId, name: name.trim(), avatar, answers, customAnswers, adultConfirmed,
+        submissionId, name: name.trim(), avatar, answers, customAnswers, adultConfirmed, consentConfirmed,
       });
       setDone(true);
     } catch (e) { setError(e.message || 'Δεν αποθηκεύτηκε η συμμετοχή.'); }
