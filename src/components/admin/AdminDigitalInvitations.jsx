@@ -44,7 +44,7 @@ export default function AdminDigitalInvitations() {
       setItems(currentItems);
       if (rec?.id && currentItems.length !== savedItems.length) {
         await base44.entities.AppSetting.update(rec.id, { value: { items: currentItems } });
-        setMessage('Οι παλιοί σύνδεσμοι καταργήθηκαν. Διατηρήθηκαν μόνο οι σύνδεσμοι της ενιαίας φόρμας και του VIP.');
+        setMessage('Οι παλιοί σύνδεσμοι καταργήθηκαν. Διατηρήθηκαν μόνο οι σύνδεσμοι της ενιαίας φόρμας και οι προσωπικές VIP προσκλήσεις.');
       }
     }).catch((e) => setMessage(e.message));
     loadVipInvitations();
@@ -138,6 +138,25 @@ export default function AdminDigitalInvitations() {
     finally { setVipBusy(false); }
   }
 
+  async function rejectVipSubmission(invitation, response) {
+    if (!window.confirm(`Να απορριφθεί η συμμετοχή του/της ${response.displayName || response.name || 'συμμετέχοντα/ουσας'};`)) return;
+    setVipBusy(true);
+    setVipMessage('');
+    try {
+      const updated = await base44.entities.VIPInvitationSubmission.update(response.id, {
+        approved: false,
+        approvalStatus: 'rejected',
+        rejectedAt: new Date().toISOString(),
+      });
+      setVipSubmissions((current) => ({
+        ...current,
+        [invitation.id]: (current[invitation.id] || []).map((item) => item.id === response.id ? updated : item),
+      }));
+      setVipMessage('Η συμμετοχή απορρίφθηκε. Δεν δημιουργήθηκε προφίλ στο Tablet.');
+    } catch (e) { setVipMessage(e.message || 'Η απόρριψη απέτυχε.'); }
+    finally { setVipBusy(false); }
+  }
+
   async function loadVipSubmissions(invitation) {
     setVipBusy(true);
     try {
@@ -205,8 +224,8 @@ export default function AdminDigitalInvitations() {
                 <pre className="mt-2 whitespace-pre-wrap break-words text-foreground/70">{JSON.stringify({ answers: response.answers || {}, customAnswers: response.customAnswers || {}, customAnswerLabels: response.customAnswerLabels || {} }, null, 2)}</pre>
               </details>
               <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
-                <div className="text-[10px] text-foreground/40">{new Date(response.created_date).toLocaleString('el-GR')} · {response.approved ? '✅ ΕΓΚΕΚΡΙΜΕΝΗ' : '⏳ ΣΕ ΑΝΑΜΟΝΗ'}</div>
-                <div className="flex flex-wrap gap-2">{!response.approved && <ComicButton size="sm" variant="green" disabled={vipBusy} onClick={() => approveVipSubmission(invitation, response)}>ΕΓΚΡΙΣΗ & ΔΗΜΙΟΥΡΓΙΑ ΠΡΟΦΙΛ</ComicButton>}<ComicButton size="sm" variant="red" disabled={vipBusy} onClick={() => deleteVipSubmission(invitation, response)}>ΔΙΑΓΡΑΦΗ ΑΠΑΝΤΗΣΗΣ</ComicButton></div>
+                <div className="text-[10px] text-foreground/40">{new Date(response.created_date).toLocaleString('el-GR')} · {response.approved ? '✅ ΕΓΚΕΚΡΙΜΕΝΗ' : response.approvalStatus === 'rejected' ? '✕ ΑΠΟΡΡΙΦΘΕΙΣΑ' : '⏳ ΣΕ ΑΝΑΜΟΝΗ'}</div>
+                <div className="flex flex-wrap gap-2">{!response.approved && response.approvalStatus !== 'rejected' && <><ComicButton size="sm" variant="green" disabled={vipBusy} onClick={() => approveVipSubmission(invitation, response)}>ΕΓΚΡΙΣΗ & ΔΗΜΙΟΥΡΓΙΑ ΠΡΟΦΙΛ</ComicButton><ComicButton size="sm" variant="red" disabled={vipBusy} onClick={() => rejectVipSubmission(invitation, response)}>ΑΠΟΡΡΙΨΗ</ComicButton></>}<ComicButton size="sm" variant="red" disabled={vipBusy} onClick={() => deleteVipSubmission(invitation, response)}>ΔΙΑΓΡΑΦΗ ΑΠΑΝΤΗΣΗΣ</ComicButton></div>
               </div>
             </div>
           ))}
