@@ -1,4 +1,5 @@
 import React, { lazy, Suspense, useState, useEffect, useCallback } from 'react';
+import './admin-theme.css';
 import { useSearchParams } from 'react-router-dom';
 import { base44, request } from '@/api/base44Client';
 import ComicPanel from '@/components/comic/ComicPanel';
@@ -331,7 +332,7 @@ export default function Admin() {
   }
 
   return (
-    <div className="admin-root min-h-[100dvh] comic-dots p-2.5 sm:p-4 pb-[calc(env(safe-area-inset-bottom,0px)+5.5rem)]">
+    <div id="admin-root" className="admin-root min-h-[100dvh] comic-dots p-2.5 sm:p-4 pb-[calc(env(safe-area-inset-bottom,0px)+5.5rem)]">
       <div className="max-w-6xl mx-auto space-y-3">
         {searchOpen && <div className="fixed inset-0 z-[100] bg-black/70 p-3 sm:p-8" onMouseDown={(e) => { if (e.target === e.currentTarget) setSearchOpen(false); }}><div className="mx-auto mt-[8vh] max-w-xl rounded-2xl border border-primary/40 bg-card p-4 shadow-2xl"><div className="flex items-center gap-2"><input autoFocus value={globalSearch} onChange={(e) => setGlobalSearch(e.target.value)} placeholder="Αναζήτηση σε ενότητες, Events, παίκτριες..." className="min-w-0 flex-1 rounded-lg border border-border bg-background p-3 text-sm" /><ComicButton size="sm" variant="dark" onClick={() => setSearchOpen(false)}>ΚΛΕΙΣΙΜΟ</ComicButton></div><div className="mt-3 max-h-[60vh] overflow-y-auto space-y-1">{[
           ...NAV_GROUPS.flatMap((group) => group.tabs.map((tab) => ({ type: 'tab', id: tab.id, label: tab.label.replace(/^[^ ]+ /, ''), detail: group.label }))),
