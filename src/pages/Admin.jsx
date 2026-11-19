@@ -229,7 +229,7 @@ export default function Admin() {
       const newState = {
         ...fresh,
         gameDurationMinutes: state.gameDurationMinutes ?? 300,
-        gameStartedAt: null,
+        gameStartedAt: Date.now(),
         gamePausedMs: 0,
         gamePausedAt: null,
         safetyProfile: state.safetyProfile || null,
