@@ -69,7 +69,7 @@ export default function AdminOverview({ sessions = [], loading = false, onNaviga
         <h2 className="mt-2 font-heading text-3xl sm:text-4xl">Κέντρο ελέγχου</h2>
         <p className="mt-2 max-w-xl text-sm leading-relaxed text-[#e5c76b]/75">Η κεντρική εικόνα της εφαρμογής. Άμεση πρόσβαση στις βασικές λειτουργίες και στην τρέχουσα κατάσταση των παρτίδων.</p>
         <div className="mt-5 flex flex-wrap gap-2">
-          <button type="button" onClick={() => onNavigate('modes')} className="rounded-xl text-[#e5c76b] px-4 py-2.5 text-xs font-black text-black transition hover:text-[#e5c76b]">ΔΙΑΧΕΙΡΙΣΗ MODES →</button>
+          <button type="button" onClick={() => onNavigate('modes')} className="rounded-xl bg-[#d4af37] px-4 py-2.5 text-xs font-black text-black transition hover:bg-[#e5c76b]">ΔΙΑΧΕΙΡΙΣΗ MODES →</button>
           <button type="button" onClick={() => onNavigate('sessions')} className="rounded-xl border border-[#d4af37]/35 bg-[#d4af37]/10 px-4 py-2.5 text-xs font-bold text-[#e5c76b] transition hover:bg-[#d4af37]/15">ΠΡΟΒΟΛΗ ΠΑΡΤΙΔΩΝ</button>
         </div>
       </div>
