@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { base44, request } from '@/api/base44Client';
 import ComicPanel from '@/components/comic/ComicPanel';
 import ComicButton from '@/components/comic/ComicButton';
-import { NEW_MODES } from '@/data/modes/modeRegistry';
+import { GAME_MODES } from '@/data/gameConfig';
 
 export default function PajamaIntakeList() {
   const [items, setItems] = useState([]);
@@ -55,7 +55,7 @@ export default function PajamaIntakeList() {
   }
 
   const shown = modeFilter === 'all' ? items : items.filter((i) => (i.preferredModes || []).includes(modeFilter));
-  const modeName = (id) => NEW_MODES.find((m) => m.id === id);
+  const modeName = (id) => GAME_MODES.find((m) => m.id === id);
   const LEVEL = { none: 'χωρίς δεσίματα', light: 'ελαφριά δεσίματα', full: 'και hogtie' };
 
   if (loading) return <div className="text-center font-heading text-xl comic-pulse">ΦΟΡΤΩΣΗ...</div>;
@@ -81,7 +81,7 @@ export default function PajamaIntakeList() {
         <div className="flex items-center gap-2">
           <select value={modeFilter} onChange={(e) => setModeFilter(e.target.value)} className="px-2 py-1.5 rounded border-2 border-border bg-background text-sm">
             <option value="all">Όλα τα modes</option>
-            {NEW_MODES.map((m) => <option key={m.id} value={m.id}>{m.icon} {m.name}</option>)}
+            {GAME_MODES.map((m) => <option key={m.id} value={m.id}>{m.icon} {m.name}</option>)}
           </select>
           <ComicButton variant="dark" size="sm" onClick={load}>🔄 ΑΝΑΝΕΩΣΗ</ComicButton>
         </div>
