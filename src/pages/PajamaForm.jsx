@@ -44,6 +44,8 @@ export default function PajamaForm() {
     try {
       await base44.entities.PajamaIntake.create({
         ...form,
+        formType: 'pajama',
+        preferredModes: ['pajama'],
         name: form.name.trim(),
         ...(sessionCode ? { sessionCode: sessionCode.trim().toUpperCase() } : {}),
         footSensitivity: Number(form.footSensitivity),

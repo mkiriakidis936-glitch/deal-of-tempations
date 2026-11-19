@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { base44, request } from '@/api/base44Client';
 import ComicPanel from '@/components/comic/ComicPanel';
 import ComicButton from '@/components/comic/ComicButton';
-import { isIntakeEnabled, setIntakeEnabled } from '@/lib/intakeFlag';
+import { GAME_MODES } from '@/data/gameConfig';
 import PajamaIntakeList from '@/components/admin/PajamaIntakeList';
 
 const SHOE_LABELS = { boots: '👢 Μπότες', sneakers: '👟 Sneakers', sandals: '👡 Πέδιλα', barefoot: '🦶 Ξυπόλυτη' };
@@ -10,26 +10,24 @@ const INTENSITY_LABELS = { soft: '🟢 Soft', medium: '🟡 Medium', hardcore: '
 const NAIL_LABELS = { red: '🔴 Κόκκινο', pink: '🩷 Ροζ', white: '⚪ Άσπρο', black: '⚫ Μαύρο', nude: '🤎 Nude', french: '💅 Γαλλικό', blue: '🔵 Γαλάζιο', purple: '🟣 Μωβ', green: '🟢 Πράσινο', orange: '🟠 Πορτοκαλί', gold: '✨ Χρυσό', silver: '🤍 Ασημί', none: '⭕ Χωρίς' };
 const COMFORT_LABELS = { comfortTruth: '💬 Αλήθειες', comfortDare: '🔥 Θάρρη', comfortTickle: '🍃 Αύρα', comfortBondage: '🌙 Σκοτάδι', comfortDrinking: '🍹 Ποτό' };
 const ACCOMMODATION_LABELS = { house: '🏠 Μένει', oneday: '🕐 Μία μέρα' };
+const MODE_NAMES = Object.fromEntries(GAME_MODES.map((mode) => [mode.id, mode.name]));
 
 export default function AdminIntakes() {
   const [intakes, setIntakes] = useState([]);
   const [bachIntakes, setBachIntakes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [subtab, setSubtab] = useState('players');
-  const [bachEnabled, setBachEnabled] = useState(null);
   const [msg, setMsg] = useState(null);
 
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const [playerRes, bachRes, enabled] = await Promise.all([
+      const [playerRes, bachRes] = await Promise.all([
         base44.entities.PlayerIntake.filter({}, { sort: '-created_date', limit: 100 }),
         base44.entities.BacheloretteIntake.filter({}, { sort: '-created_date', limit: 50 }),
-        isIntakeEnabled(),
       ]);
-      setIntakes(playerRes.items || []);
+      setIntakes((playerRes.items || []).filter((item) => item.sourceEntity !== 'PajamaIntake'));
       setBachIntakes(bachRes.items || []);
-      setBachEnabled(enabled);
     } catch (e) {
       console.error('Intake load error', e);
       setMsg({ ok: false, text: e.message || 'Δεν φορτώθηκαν τα ερωτηματολόγια.' });
@@ -39,18 +37,6 @@ export default function AdminIntakes() {
   }, []);
 
   useEffect(() => { load(); }, [load]);
-
-  async function toggleBach() {
-    const next = !bachEnabled;
-    setBachEnabled(next);
-    try {
-      await setIntakeEnabled(next);
-      setMsg({ ok: true, text: next ? 'Η φόρμα ενεργοποιήθηκε.' : 'Η φόρμα απενεργοποιήθηκε.' });
-    } catch (e) {
-      setBachEnabled(!next);
-      setMsg({ ok: false, text: e.message || 'Δεν άλλαξε η κατάσταση της φόρμας.' });
-    }
-  }
 
   async function handleApprove(item) {
     try {
@@ -101,14 +87,6 @@ export default function AdminIntakes() {
           <div className="font-heading text-lg">📝 {intakes.length} παίκτριες · {bachIntakes.length} intake</div>
           <ComicButton variant="dark" size="sm" onClick={load}>🔄 ΑΝΑΝΕΩΣΗ</ComicButton>
         </div>
-        <button
-          onClick={toggleBach}
-          disabled={bachEnabled === null}
-          className={`comic-panel-sm w-full mt-2 p-2 flex items-center justify-between transition-all ${bachEnabled ? 'bg-tarot-forest' : 'bg-secondary'} disabled:opacity-50`}
-        >
-          <span className="font-heading text-sm">📝 ΦΟΡΜΑ ΣΥΜΜΕΤΟΧΗΣ A&H</span>
-          <span className="font-bold text-sm">{bachEnabled === null ? '…' : bachEnabled ? '🟢 ΕΝΕΡΓΟΠΟΙΗΜΕΝΟ' : '🔴 ΑΠΕΝΕΡΓΟΠΟΙΗΜΕΝΟ'}</span>
-        </button>
         {intakes.length > 0 && (
           <div className="flex flex-wrap gap-x-4 gap-y-1 mt-2 text-xs font-bold">
             <span>👟 Παπούτσια: {Object.entries(shoeCounts).map(([k, v]) => `${SHOE_LABELS[k]?.split(' ')[0] || k}×${v}`).join(' ')}</span>
@@ -151,6 +129,7 @@ export default function AdminIntakes() {
                   <div className="flex-1 space-y-1">
                     <div className="flex items-center gap-2 flex-wrap">
                       <span className="font-heading text-lg">{i.name}</span>
+                      {(i.gameMode || i.vipGameMode) && <span className="text-xs bg-primary/20 border border-primary/40 px-2 py-0.5 rounded font-bold">{MODE_NAMES[i.gameMode || i.vipGameMode] || i.gameMode || i.vipGameMode}</span>}
                       <span className="text-xs bg-background text-primary px-2 py-0.5 rounded font-bold">{SHOE_LABELS[i.shoeType]}</span>
                       {i.shoeSize && <span className="text-xs bg-tarot-teal/30 px-2 py-0.5 rounded font-bold">🔢 {i.shoeSize}</span>}
                       {i.nailColor && <span className="text-xs bg-tarot-wine/40 px-2 py-0.5 rounded font-bold">💅 {NAIL_LABELS[i.nailColor]}</span>}

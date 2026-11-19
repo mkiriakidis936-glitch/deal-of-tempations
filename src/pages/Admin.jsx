@@ -33,6 +33,7 @@ const AdminDigitalInvitations = lazy(() => import('@/components/admin/AdminDigit
 const AdminSecretVault = lazy(() => import('@/components/admin/AdminSecretVault'));
 const AdminProduction = lazy(() => import('@/components/admin/AdminProduction'));
 import { setActiveSessionCode } from '@/lib/activeSession';
+import { createInitialState } from '@/lib/gameLogic';
 
 const NAV_GROUPS = [
   {
@@ -187,7 +188,10 @@ export default function Admin() {
       await base44.entities.GameSession.update(id, { state: newState });
       setSessions((prev) => prev.map((s) => s.id === id ? { ...s, state: newState } : s));
       setPickedSession((prev) => (prev?.id === id ? { ...prev, state: newState } : prev));
-    } catch (e) { console.error('Update error', e); }
+    } catch (e) {
+      console.error('Update error', e);
+      window.alert('Η αποθήκευση της συνεδρίας απέτυχε. Οι αλλαγές δεν καταχωρήθηκαν.');
+    }
   }
 
   async function handleDeleteSession(id) {
@@ -197,7 +201,10 @@ export default function Admin() {
       await request('DELETE', `/api/entities/game-events/${encodeURIComponent(target.sessionCode)}`);
       setSessions((prev) => prev.filter((s) => s.id !== id));
       setPickedSession((prev) => (prev?.id === id ? null : prev));
-    } catch (e) { console.error('Delete error', e); throw e; }
+    } catch (e) {
+      console.error('Delete error', e);
+      throw e;
+    }
   }
 
   async function handleRestartSession(session) {
@@ -213,28 +220,29 @@ export default function Admin() {
         state: JSON.parse(JSON.stringify(state)),
         sourceUpdatedAt: session.updated_date || session.created_date || null,
       });
-      const players = Array.isArray(state.players) ? state.players.map((p) => ({
-        ...p,
-        penaltyStep: 0,
-        bounty: 0,
-        position: 0,
-        isChief: false,
-      })) : [];
+      const roster = Array.isArray(state.players) ? state.players : [];
+      const fresh = createInitialState(
+        state.mode || session.mode,
+        state.intensity || session.intensity || 'standard',
+        roster.map((player) => ({ ...player, footwearLevel: player.footwearLevel ?? 2 })),
+      );
       const newState = {
-        ...state,
-        stage: 0,
-        round: 1,
-        currentPlayerId: null,
-        currentTeam: state.currentTeam || 'A',
-        players,
-        history: [],
-        activeCard: null,
-        stopActive: false,
+        ...fresh,
+        gameDurationMinutes: state.gameDurationMinutes ?? 300,
+        gameStartedAt: Date.now(),
+        gamePausedMs: 0,
+        gamePausedAt: null,
+        safetyProfile: state.safetyProfile || null,
+        testMode: !!state.testMode,
+        ...(state.customScenario ? { customScenario: state.customScenario } : {}),
       };
       await base44.entities.GameSession.update(session.id, { state: newState });
       setSessions((prev) => prev.map((s) => s.id === session.id ? { ...s, state: newState } : s));
       setPickedSession((prev) => (prev?.id === session.id ? { ...prev, state: newState } : prev));
-    } catch (e) { console.error('Restart error', e); }
+    } catch (e) {
+      console.error('Restart error', e);
+      window.alert('Το restart δεν ολοκληρώθηκε. Η προηγούμενη κατάσταση της συνεδρίας διατηρήθηκε.');
+    }
   }
 
   function renderTab() {

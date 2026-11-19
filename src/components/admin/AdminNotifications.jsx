@@ -61,7 +61,7 @@ export default function AdminNotifications() {
       <ComicPanel className="bg-card space-y-3">
         <div className="font-heading text-xl text-primary">🔔 ΕΙΔΟΠΟΙΗΣΕΙΣ (PUSH)</div>
         <p className="text-xs font-body text-foreground/70">
-          Παίρνεις ειδοποίηση στη συσκευή σου όταν κάποια κοπέλα συμπληρώνει το <b>/invitation</b>, το <b>/pajama-invite</b>, το <b>/pajama-form</b> ή το <b>VIP ερωτηματολόγιο</b>.
+          Παίρνεις ειδοποίηση στη συσκευή σου όταν υποβάλλεται νέα αίτηση από την ενιαία δημόσια φόρμα <b>/forms</b> ή όταν συμπληρώνεται το <b>VIP ερωτηματολόγιο</b>.
           Ενεργοποίησέ τες σε κάθε συσκευή που θες (κινητό, MacBook).
         </p>
 

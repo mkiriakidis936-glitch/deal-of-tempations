@@ -74,14 +74,15 @@ export function notifyNewSubmission(entity, rec) {
   let msg = null;
   const name = clip(rec.name, 80) || 'Κάποια κοπέλα';
   if (entity === 'PlayerIntake') {
-    msg = { title: '💌 Νέα πρόσκληση', body: `${name} συμπλήρωσε το ερωτηματολόγιο στο /invitation`, url: '/admin?tab=intakes' };
+    const mode = clip(rec.gameMode || rec.vipGameMode, 80);
+    msg = { title: '📝 Νέα αίτηση συμμετοχής', body: `${name} υπέβαλε νέα αίτηση${mode ? ` · ${mode}` : ''} μέσω της δημόσιας φόρμας`, url: '/admin?tab=forms' };
   } else if (entity === 'InvitationRSVP' && rec.event === 'pajama') {
     msg = { title: '🩴 Νέα κράτηση θέσης', body: `${name} κράτησε θέση στο /pajama-invite`, url: '/admin?tab=rsvp' };
   } else if (entity === 'VIPInvitationSubmission') {
     msg = { title: '✦ Νέο VIP Ερωτηματολόγιο', body: `${clip(rec.displayName || name, 80)} συμπλήρωσε το VIP Questionnaire`, url: '/admin?tab=digital-invitations' };
   } else if (entity === 'PajamaIntake') {
-    const modes = Array.isArray(rec.preferredModes) && rec.preferredModes.length ? ` (${clip(rec.preferredModes.join(', '), 80)})` : '';
-    msg = { title: '🩴 Νέα φόρμα', body: `${name} συμπλήρωσε τη φόρμα${modes}`, url: '/admin?tab=pajama' };
+    const modes = Array.isArray(rec.preferredModes) && rec.preferredModes.length ? ` · ${clip(rec.preferredModes.join(', '), 80)}` : '';
+    msg = { title: '📝 Νέα αίτηση συμμετοχής', body: `${name} υπέβαλε νέα αίτηση μέσω της δημόσιας φόρμας${modes}`, url: '/admin?tab=forms' };
   } else if (entity === 'BacheloretteIntake') {
     const leader = clip(rec.leaderName, 80) || 'Κάποια ομάδα';
     const code = clip(rec.sessionCode, 8);

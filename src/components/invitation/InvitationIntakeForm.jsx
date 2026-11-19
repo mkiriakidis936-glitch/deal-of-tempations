@@ -102,6 +102,8 @@ export default function InvitationIntakeForm({ onDone }) {
         customAnswers: form.customAnswers,
         submissionId: form.submissionId,
         sessionCode: new URLSearchParams(window.location.search).get('event') || new URLSearchParams(window.location.search).get('sessionCode') || new URLSearchParams(window.location.search).get('code') || '',
+        gameMode: new URLSearchParams(window.location.search).get('mode') || 'classic',
+        preferredModes: [new URLSearchParams(window.location.search).get('mode') || 'classic'],
       });
       try { localStorage.removeItem(DRAFT_KEY); } catch { /* ignore */ }
       onDone();

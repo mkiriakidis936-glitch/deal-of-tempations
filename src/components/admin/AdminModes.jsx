@@ -101,7 +101,7 @@ export default function AdminModes() {
               <div className="font-heading">{m.icon} {m.name}</div>
               <div className="text-[11px] opacity-70">Παίκτριες {m.min}-{m.max} · Δραστηριότητες: {m.acts.join(' → ')}</div>
               <div className="text-[11px] mt-1 flex gap-3 flex-wrap">
-                <a className="underline" target="_blank" rel="noreferrer" href={`${ORIGIN}/modes-form?mode=${m.id}`}>📝 Φόρμα</a>
+                <a className="underline" target="_blank" rel="noreferrer" href={`${ORIGIN}/forms?mode=${m.id}`}>📝 Φόρμα</a>
                 <a className="underline" target="_blank" rel="noreferrer" href={`${ORIGIN}/site?event=${SITE_IDS[m.id]}`}>🌐 Ιστοσελίδα</a>
               </div>
             </div>

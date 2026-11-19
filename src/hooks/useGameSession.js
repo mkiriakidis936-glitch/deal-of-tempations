@@ -52,7 +52,8 @@ export function useGameSession({ autoLoad = true } = {}) {
 
   const updateState = useCallback(async (newState, { playerId } = {}) => {
     if (!sessionRef.current) return;
-    const merged = { ...stateRef.current, ...newState };
+    const previousState = stateRef.current;
+    const merged = { ...previousState, ...newState };
     stateRef.current = merged;
     setState(merged);
     const payload = { statePatch: newState };
@@ -69,7 +70,10 @@ export function useGameSession({ autoLoad = true } = {}) {
         setState(updated.state);
       }
     } catch (e) {
-      console.error('Failed to update state', e);
+      stateRef.current = sessionRef.current?.state || previousState || {};
+      setState(stateRef.current);
+      console.error('Failed to update state; local state was reverted', e);
+      return false;
     }
   }, []);
 
@@ -84,17 +88,12 @@ export function useGameSession({ autoLoad = true } = {}) {
 
   const deleteSession = useCallback(async () => {
     const id = sessionRef.current?.id;
+    if (id) await base44.entities.GameSession.delete(id);
     sessionRef.current = null;
     stateRef.current = null;
     setViewerPlayerId(null);
     setSession(null);
     setState(null);
-    if (!id) return;
-    try {
-      await base44.entities.GameSession.delete(id);
-    } catch (e) {
-      console.warn('Session already removed', e?.message || e);
-    }
   }, []);
 
   const refresh = useCallback(async () => {
