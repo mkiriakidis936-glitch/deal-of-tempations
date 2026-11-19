@@ -1,41 +1,41 @@
 /* DEAL OF TEMPTATION — unified visual experience layer
    Visual-only overrides. No application state, rules, content or interactions. */
 :root, .dark {
-  --background: 270 28% 5%;
+  --background: 0 0% 0%;
   --foreground: 42 34% 93%;
-  --card: 268 22% 9%;
+  --card: 0 0% 7%;
   --card-foreground: 42 34% 93%;
-  --popover: 268 24% 8%;
+  --popover: 0 0% 8%;
   --popover-foreground: 42 34% 93%;
   --primary: 43 72% 61%;
-  --primary-foreground: 265 35% 7%;
-  --secondary: 268 18% 13%;
+  --primary-foreground: 0 0% 0%;
+  --secondary: 0 0% 12%;
   --secondary-foreground: 42 28% 90%;
-  --muted: 267 14% 17%;
+  --muted: 0 0% 14%;
   --muted-foreground: 38 14% 66%;
-  --accent: 276 42% 28%;
+  --accent: 42 55% 24%;
   --accent-foreground: 42 35% 95%;
   --destructive: 354 58% 48%;
   --destructive-foreground: 0 0% 100%;
   --border: 42 28% 24%;
-  --input: 268 18% 12%;
+  --input: 0 0% 11%;
   --ring: 43 78% 65%;
-  --surface-1: 268 24% 7%;
-  --surface-2: 268 20% 11%;
-  --surface-3: 270 16% 17%;
+  --surface-1: 0 0% 5%;
+  --surface-2: 0 0% 9%;
+  --surface-3: 0 0% 14%;
   --hairline: 42 38% 88%;
-  --shadow-color: 270 70% 2%;
+  --shadow-color: 0 0% 0%;
   --radius: .9rem;
   color-scheme: dark;
 }
-html { background: #09070d; }
+html { background: #000000; }
 body {
-  color: #f4eddf;
+  color: #F5F1E8;
   background:
-    radial-gradient(ellipse at 50% -18%, rgba(123, 63, 173, .20), transparent 48%),
-    radial-gradient(ellipse at 4% 48%, rgba(93, 47, 135, .10), transparent 36%),
+    radial-gradient(ellipse at 50% -18%, rgba(232, 194, 107, .10), transparent 48%),
+    radial-gradient(ellipse at 4% 48%, rgba(232, 194, 107, .05), transparent 36%),
     radial-gradient(ellipse at 100% 100%, rgba(174, 132, 49, .075), transparent 34%),
-    #09070d !important;
+    #000000 !important;
   background-attachment: fixed;
   font-family: var(--font-ui);
 }
@@ -44,9 +44,9 @@ h1, h2, h3, h4, h5 { text-wrap: balance; }
 
 /* Shared luxury surfaces */
 .comic-dots, .comic-dots-dark {
-  background-color: #09070d;
+  background-color: #000000;
   background-image:
-    radial-gradient(ellipse at 50% 0%, rgba(128, 74, 175, .17), transparent 58%),
+    radial-gradient(ellipse at 50% 0%, rgba(232, 194, 107, .11), transparent 58%),
     radial-gradient(circle, rgba(230, 205, 150, .045) 1px, transparent 1px);
   background-size: auto, 34px 34px;
 }
@@ -56,11 +56,11 @@ h1, h2, h3, h4, h5 { text-wrap: balance; }
   border-radius: 17px !important;
   background:
     linear-gradient(145deg, rgba(255,255,255,.045), transparent 42%),
-    linear-gradient(160deg, rgba(34, 25, 43, .96), rgba(15, 12, 20, .98)) !important;
+    linear-gradient(160deg, rgba(22, 22, 24, .96), rgba(10, 10, 12, .98)) !important;
   box-shadow:
     0 22px 58px rgba(0,0,0,.34),
     0 1px 0 rgba(255,255,255,.045) inset,
-    0 0 28px rgba(111,65,151,.055) !important;
+    0 0 28px rgba(232,194,107,.055) !important;
 }
 .comic-panel { padding: clamp(14px, 2vw, 22px); }
 .comic-panel-sm { border-radius: 13px !important; }
@@ -85,7 +85,7 @@ button, [role="button"] {
   border-radius: 12px !important;
   background:
     linear-gradient(180deg, rgba(255,255,255,.09), transparent 52%),
-    linear-gradient(135deg, #3a2b47, #1b1524 72%) !important;
+    linear-gradient(135deg, #242426, #141416 72%) !important;
   color: #f4e8ce !important;
   box-shadow: 0 9px 24px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,255,255,.10) !important;
 }
@@ -140,8 +140,8 @@ input:focus, select:focus, textarea:focus {
 /* Tablet / Host control room */
 .admin-root {
   background:
-    radial-gradient(ellipse at 50% -12%, rgba(118,69,158,.18), transparent 54%),
-    #09070d !important;
+    radial-gradient(ellipse at 50% -12%, rgba(232,194,107,.10), transparent 54%),
+    #000000 !important;
 }
 .admin-root .comic-panel, .admin-root .comic-panel-sm {
   backdrop-filter: blur(12px);
@@ -166,25 +166,25 @@ input:focus, select:focus, textarea:focus {
 /* TV / stage — richer depth, cleaner overlays */
 .dot-tv-shell {
   background:
-    radial-gradient(ellipse at 50% 0%, rgba(128,70,175,.22), transparent 48%),
+    radial-gradient(ellipse at 50% 0%, rgba(232,194,107,.12), transparent 48%),
     radial-gradient(ellipse at 50% 100%, rgba(206,164,82,.13), transparent 50%),
-    #07060a !important;
+    #000000 !important;
 }
 .dot-tv-shell .comic-panel, .dot-tv-shell .comic-panel-sm {
   border-color: rgba(224,190,119,.26) !important;
-  background: linear-gradient(145deg, rgba(38,27,49,.94), rgba(12,10,16,.97)) !important;
+  background: linear-gradient(145deg, rgba(22,22,24,.94), rgba(10,10,12,.97)) !important;
   backdrop-filter: blur(14px);
 }
 .dot-tv-moment {
   border-color: rgba(231,197,125,.72);
-  box-shadow: 0 30px 100px rgba(0,0,0,.68), 0 0 90px rgba(139,92,246,.22), 0 0 38px rgba(218,181,103,.12), inset 0 1px 0 rgba(255,255,255,.10);
+  box-shadow: 0 30px 100px rgba(0,0,0,.68), 0 0 90px rgba(232,194,107,.12), 0 0 38px rgba(218,181,103,.12), inset 0 1px 0 rgba(255,255,255,.10);
 }
 
 /* Mobile controller and touch surfaces */
 body.dot-mobile-experience {
   background:
     radial-gradient(ellipse at 50% -10%, rgba(118,69,158,.20), transparent 50%),
-    #09070d !important;
+    #000000 !important;
 }
 body.dot-mobile-experience .comic-panel,
 body.dot-mobile-experience .comic-panel-sm {
@@ -213,43 +213,43 @@ body.dot-mobile-experience button, body.dot-mobile-experience [role="button"] {
    Presentation-only layer. Gameplay, state, rules and event handlers untouched.
    ========================================================================== */
 :root, .dark {
-  --background: 240 7% 5%;
-  --foreground: 220 18% 94%;
-  --card: 240 6% 9%;
-  --card-foreground: 220 18% 94%;
-  --popover: 240 7% 8%;
-  --popover-foreground: 220 18% 94%;
-  --primary: 211 100% 62%;
-  --primary-foreground: 245 35% 9%;
-  --secondary: 240 6% 13%;
-  --secondary-foreground: 220 16% 91%;
-  --muted: 240 5% 16%;
-  --muted-foreground: 220 8% 64%;
-  --accent: 211 45% 24%;
-  --accent-foreground: 220 18% 95%;
+  --background: 0 0% 0%;
+  --foreground: 40 25% 96%;
+  --card: 0 0% 7%;
+  --card-foreground: 40 25% 96%;
+  --popover: 0 0% 8%;
+  --popover-foreground: 40 25% 96%;
+  --primary: 42 76% 65%;
+  --primary-foreground: 0 0% 0%;
+  --secondary: 0 0% 12%;
+  --secondary-foreground: 40 25% 94%;
+  --muted: 0 0% 14%;
+  --muted-foreground: 40 7% 63%;
+  --accent: 42 55% 24%;
+  --accent-foreground: 40 30% 96%;
   --destructive: 2 72% 58%;
   --destructive-foreground: 0 0% 100%;
-  --border: 240 5% 22%;
-  --input: 240 6% 12%;
-  --ring: 211 100% 62%;
-  --surface-1: 240 7% 7%;
-  --surface-2: 240 6% 10%;
-  --surface-3: 240 5% 15%;
-  --hairline: 220 18% 94%;
-  --shadow-color: 240 30% 1%;
+  --border: 0 0% 21%;
+  --input: 0 0% 11%;
+  --ring: 42 76% 65%;
+  --surface-1: 0 0% 5%;
+  --surface-2: 0 0% 9%;
+  --surface-3: 0 0% 14%;
+  --hairline: 40 25% 96%;
+  --shadow-color: 0 0% 0%;
   --radius: 1.15rem;
   color-scheme: dark;
 }
 html {
-  background: #0b0b0e !important;
+  background: #000000 !important;
   scroll-behavior: auto !important;
 }
 body, body.dot-mobile-experience {
-  color: #eef0f6 !important;
-  background: #0b0b0e !important;
+  color: #F5F1E8 !important;
+  background: #000000 !important;
   background-image:
-    radial-gradient(ellipse at 50% -22%, rgba(10, 132, 255, .13), transparent 54%),
-    linear-gradient(180deg, #0b0b0e 0%, #101014 58%, #0b0b0e 100%) !important;
+    radial-gradient(ellipse at 50% -22%, rgba(232, 194, 107, .13), transparent 54%),
+    linear-gradient(180deg, #000000 0%, #000000 58%, #000000 100%) !important;
   background-attachment: fixed !important;
   font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", Inter, sans-serif !important;
   font-size: 15px;
@@ -257,15 +257,15 @@ body, body.dot-mobile-experience {
   letter-spacing: -.012em;
 }
 h1, h2, h3, h4, h5 {
-  color: #f5f5fa !important;
+  color: #F5F1E8 !important;
   font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", Inter, sans-serif !important;
   font-weight: 650 !important;
   letter-spacing: -.035em !important;
   line-height: 1.12 !important;
 }
 p, label, small, span { text-wrap: pretty; }
-::selection { background: rgba(10, 132, 255, .32); color: #fff; }
-* { scrollbar-color: #34343d transparent; }
+::selection { background: rgba(232, 194, 107, .32); color: #fff; }
+* { scrollbar-color: #242426 transparent; }
 
 /* All existing surfaces become restrained, layered graphite materials. */
 .comic-dots, .comic-dots-dark {
@@ -292,21 +292,21 @@ p, label, small, span { text-wrap: pretty; }
   box-shadow: none !important;
 }
 .ds-eyebrow, .ds-label {
-  color: #9999a7 !important;
+  color: #999999 !important;
   font-family: -apple-system, BlinkMacSystemFont, Inter, sans-serif !important;
   font-size: 10px !important;
   font-weight: 650 !important;
   letter-spacing: .13em !important;
 }
 .ds-title, .comic-text-stroke, .comic-text-stroke-thin {
-  color: #f4f2fa !important;
+  color: #F5F1E8 !important;
   font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", Inter, sans-serif !important;
   font-weight: 700 !important;
   letter-spacing: -.035em !important;
   text-shadow: none !important;
   -webkit-text-stroke: 0 !important;
 }
-.ds-lede { color: #b8b8c4 !important; }
+.ds-lede { color: #B6B6C2 !important; }
 
 /* Native-feeling controls: clear hierarchy, generous touch targets. */
 button, [role="button"], input, select, textarea {
@@ -316,10 +316,10 @@ button, [role="button"], input, select, textarea {
 button, [role="button"] { border-radius: 13px; }
 .comic-boom, button.comic-boom {
   min-height: 44px;
-  border: 1px solid rgba(10,132,255,.30) !important;
+  border: 1px solid rgba(232,194,107,.30) !important;
   border-radius: 13px !important;
-  background: #0A84FF !important;
-  color: #100d19 !important;
+  background: #E8C26B !important;
+  color: #000000 !important;
   font-size: 13px !important;
   font-weight: 700 !important;
   letter-spacing: .015em !important;
@@ -328,15 +328,15 @@ button, [role="button"] { border-radius: 13px; }
   background-image: none !important;
 }
 .comic-boom:hover, .comic-boom:active {
-  border-color: rgba(10,132,255,.4) !important;
-  background: #0A84FF !important;
+  border-color: rgba(232,194,107,.4) !important;
+  background: #E8C26B !important;
   box-shadow: none !important;
   filter: brightness(1.04);
   transform: none !important;
 }
 button:focus-visible, [role="button"]:focus-visible,
 input:focus-visible, select:focus-visible, textarea:focus-visible {
-  outline: 2px solid #0A84FF !important;
+  outline: 2px solid #E8C26B !important;
   outline-offset: 3px !important;
 }
 button:disabled { opacity: .42; filter: none !important; }
@@ -345,25 +345,25 @@ select, textarea {
   min-height: 44px;
   border: 1px solid rgba(255,255,255,.10) !important;
   border-radius: 12px !important;
-  background: #17171d !important;
-  color: #f1f1f6 !important;
+  background: #171719 !important;
+  color: #F5F1E8 !important;
   box-shadow: none !important;
 }
-input::placeholder, textarea::placeholder { color: #777783 !important; }
+input::placeholder, textarea::placeholder { color: #888888 !important; }
 input:focus, select:focus, textarea:focus {
-  border-color: rgba(10,132,255,.7) !important;
-  box-shadow: 0 0 0 3px rgba(10,132,255,.12) !important;
+  border-color: rgba(232,194,107,.7) !important;
+  box-shadow: 0 0 0 3px rgba(232,194,107,.12) !important;
 }
 
 /* Selected states, tabs, navigation and segmented controls. */
 [aria-selected="true"], [data-state="active"], [role="tab"][aria-selected="true"] {
-  border-color: rgba(167,139,250,.32) !important;
-  background-color: rgba(10,132,255,.17) !important;
-  color: #d6e9ff !important;
+  border-color: rgba(232,194,107,.32) !important;
+  background-color: rgba(232,194,107,.17) !important;
+  color: #FFF1C7 !important;
 }
 .admin-root {
-  color: #eef0f6 !important;
-  background: #0b0b0e !important;
+  color: #F5F1E8 !important;
+  background: #000000 !important;
 }
 .admin-root nav button, .admin-root [role="tab"] {
   min-height: 42px;
@@ -379,7 +379,7 @@ input:focus, select:focus, textarea:focus {
 }
 .admin-root table { border-collapse: collapse !important; }
 .admin-root th {
-  color: #a7a7b4 !important;
+  color: #B6B6C2 !important;
   font-family: -apple-system, BlinkMacSystemFont, Inter, sans-serif !important;
   font-size: 10px !important;
   font-weight: 700 !important;
@@ -399,27 +399,27 @@ input:focus, select:focus, textarea:focus {
 }
 .game-board button, [data-game-board] button, [data-box],
 .game-square, .box-card, .vault-box, .case-box, .briefcase {
-  background-color: #1b1b22;
+  background-color: #1C1C1E;
 }
 .game-board button:hover, [data-game-board] button:hover, [data-box]:hover,
 .game-square:hover, .box-card:hover, .vault-box:hover, .case-box:hover, .briefcase:hover,
 [class*="grid"] > button:hover, [class*="grid"] > [role="button"]:hover {
-  border-color: rgba(10,132,255,.35) !important;
+  border-color: rgba(232,194,107,.35) !important;
   box-shadow: inset 0 1px 0 rgba(255,255,255,.045) !important;
   filter: none !important;
   transform: none !important;
 }
 .dot-tv-shell {
-  background: #09090c !important;
+  background: #000000 !important;
   background-image: none !important;
 }
 .dot-tv-shell .comic-panel, .dot-tv-shell .comic-panel-sm {
-  background: #17171e !important;
+  background: #171719 !important;
   border-color: rgba(255,255,255,.12) !important;
   backdrop-filter: none !important;
 }
 .dot-tv-moment {
-  border-color: rgba(10,132,255,.45) !important;
+  border-color: rgba(232,194,107,.45) !important;
   box-shadow: 0 18px 60px rgba(0,0,0,.45) !important;
 }
 body.dot-mobile-experience .comic-panel,
