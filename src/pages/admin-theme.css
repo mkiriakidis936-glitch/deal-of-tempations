@@ -1,0 +1,103 @@
+/* Full Admin palette: black surfaces and gold accents. Scoped to Admin only. */
+#admin-root {
+  --background: 0 0% 3%;
+  --foreground: 43 74% 78%;
+  --card: 0 0% 5%;
+  --card-foreground: 43 74% 78%;
+  --popover: 0 0% 5%;
+  --popover-foreground: 43 74% 78%;
+  --primary: 43 65% 53%;
+  --primary-foreground: 0 0% 3%;
+  --secondary: 0 0% 8%;
+  --secondary-foreground: 43 74% 78%;
+  --muted: 0 0% 10%;
+  --muted-foreground: 43 35% 65%;
+  --accent: 43 55% 35%;
+  --accent-foreground: 43 74% 88%;
+  --border: 43 45% 30%;
+  --input: 0 0% 7%;
+  --ring: 43 65% 53%;
+  background: #050505 !important;
+  color: #e5c76b !important;
+  color-scheme: dark;
+}
+#admin-root,
+#admin-root * {
+  border-color: #6f5925;
+  scrollbar-color: #8f7028 #080808;
+}
+#admin-root [class*="bg-"] {
+  background-color: #090909 !important;
+}
+#admin-root [class*="bg-gradient"] {
+  background-image: none !important;
+  background-color: #090909 !important;
+}
+#admin-root [class*="text-"],
+#admin-root :is(h1,h2,h3,h4,h5,h6,p,span,label,small,strong,em,li,td,th,dt,dd,summary) {
+  color: #e5c76b !important;
+}
+#admin-root [class*="border-"] {
+  border-color: #6f5925 !important;
+}
+#admin-root :is(input,textarea,select),
+#admin-root [contenteditable="true"] {
+  color: #f0d98a !important;
+  background-color: #080808 !important;
+  border-color: #8a6b27 !important;
+  caret-color: #d4af37;
+}
+#admin-root input::placeholder,
+#admin-root textarea::placeholder {
+  color: #a58a4a !important;
+  opacity: 1;
+}
+#admin-root button,
+#admin-root [role="button"] {
+  border-color: #8a6b27;
+}
+#admin-root button[class*="bg-[#d4af37]"],
+#admin-root button[class*="bg-[#e5c76b]"],
+#admin-root button[class*="bg-primary"],
+#admin-root [role="button"][class*="bg-[#d4af37]"],
+#admin-root [role="button"][class*="bg-primary"],
+#admin-root [aria-selected="true"],
+#admin-root [aria-current="page"] {
+  background-color: #d4af37 !important;
+  color: #080808 !important;
+  border-color: #d4af37 !important;
+}
+#admin-root button[class*="bg-[#d4af37]"] *,
+#admin-root button[class*="bg-[#e5c76b]"] *,
+#admin-root button[class*="bg-primary"] *,
+#admin-root [role="button"][class*="bg-[#d4af37]"] *,
+#admin-root [role="button"][class*="bg-primary"] *,
+#admin-root [aria-selected="true"] *,
+#admin-root [aria-current="page"] * {
+  color: #080808 !important;
+}
+#admin-root :is(svg) [fill]:not([fill="none"]) {
+  fill: #d4af37;
+}
+#admin-root :is(svg) [stroke]:not([stroke="none"]) {
+  stroke: #d4af37;
+}
+#admin-root :is(table) thead,
+#admin-root :is(thead tr) {
+  background-color: #111111 !important;
+}
+#admin-root :is(hr) {
+  border-color: #6f5925 !important;
+}
+#admin-root :is([data-state="checked"],[data-state="active"]) {
+  background-color: #d4af37 !important;
+  color: #080808 !important;
+  border-color: #d4af37 !important;
+}
+#admin-root :is([data-state="checked"],[data-state="active"]) * {
+  color: #080808 !important;
+}
+#admin-root ::selection {
+  color: #080808;
+  background: #d4af37;
+}
