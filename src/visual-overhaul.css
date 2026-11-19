@@ -183,7 +183,7 @@ input:focus, select:focus, textarea:focus {
 /* Mobile controller and touch surfaces */
 body.dot-mobile-experience {
   background:
-    radial-gradient(ellipse at 50% -10%, rgba(118,69,158,.20), transparent 50%),
+    radial-gradient(ellipse at 50% -10%, rgba(232,194,107,.10), transparent 50%),
     #000000 !important;
 }
 body.dot-mobile-experience .comic-panel,
