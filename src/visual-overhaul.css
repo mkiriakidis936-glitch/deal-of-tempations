@@ -1,208 +1,259 @@
-/* DEAL OF TEMPTATION — unified visual experience layer
-   Visual-only overrides. No application state, rules, content or interactions. */
+/* DEAL OF TEMPTATIONS — iOS-inspired dark visual system
+   Visual layer only. Preserves React state, game rules, copy, routes and handlers. */
+
 :root, .dark {
-  --background: 270 28% 5%;
-  --foreground: 42 34% 93%;
-  --card: 268 22% 9%;
-  --card-foreground: 42 34% 93%;
-  --popover: 268 24% 8%;
-  --popover-foreground: 42 34% 93%;
-  --primary: 43 72% 61%;
-  --primary-foreground: 265 35% 7%;
-  --secondary: 268 18% 13%;
-  --secondary-foreground: 42 28% 90%;
-  --muted: 267 14% 17%;
-  --muted-foreground: 38 14% 66%;
-  --accent: 276 42% 28%;
-  --accent-foreground: 42 35% 95%;
-  --destructive: 354 58% 48%;
-  --destructive-foreground: 0 0% 100%;
-  --border: 42 28% 24%;
-  --input: 268 18% 12%;
-  --ring: 43 78% 65%;
-  --surface-1: 268 24% 7%;
-  --surface-2: 268 20% 11%;
-  --surface-3: 270 16% 17%;
-  --hairline: 42 38% 88%;
-  --shadow-color: 270 70% 2%;
-  --radius: .9rem;
   color-scheme: dark;
+  --background: 225 12% 6%;
+  --foreground: 220 14% 94%;
+  --card: 225 11% 10%;
+  --card-foreground: 220 14% 94%;
+  --popover: 225 12% 9%;
+  --popover-foreground: 220 14% 94%;
+  --primary: 211 100% 58%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 225 9% 15%;
+  --secondary-foreground: 220 14% 92%;
+  --muted: 225 8% 17%;
+  --muted-foreground: 220 7% 64%;
+  --accent: 211 35% 20%;
+  --accent-foreground: 210 30% 96%;
+  --destructive: 0 72% 55%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 220 8% 23%;
+  --input: 225 9% 13%;
+  --ring: 211 100% 62%;
+  --surface-1: 225 11% 9%;
+  --surface-2: 225 10% 12%;
+  --surface-3: 225 8% 17%;
+  --hairline: 220 14% 94%;
+  --shadow-color: 225 35% 2%;
+  --radius: 1rem;
+  --font-ui: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", sans-serif;
+  --font-heading: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif;
+  --font-body: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", sans-serif;
+  --font-display: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif;
 }
-html { background: #09070d; }
+
+html {
+  background: #0b0d11;
+  color-scheme: dark;
+  scroll-behavior: auto;
+}
 body {
-  color: #f4eddf;
-  background:
-    radial-gradient(ellipse at 50% -18%, rgba(123, 63, 173, .20), transparent 48%),
-    radial-gradient(ellipse at 4% 48%, rgba(93, 47, 135, .10), transparent 36%),
-    radial-gradient(ellipse at 100% 100%, rgba(174, 132, 49, .075), transparent 34%),
-    #09070d !important;
-  background-attachment: fixed;
+  color: #eef1f6;
+  background: #0b0d11 !important;
+  background-image: none !important;
+  background-attachment: initial !important;
+  font-family: var(--font-ui) !important;
+  font-size: 15px;
+  line-height: 1.5;
+  letter-spacing: -.012em;
+}
+h1, h2, h3, h4, h5, .font-heading, .font-display, .ds-title,
+.comic-text-stroke, .comic-text-stroke-thin {
+  color: #f5f7fa;
+  font-family: var(--font-ui) !important;
+  font-weight: 650 !important;
+  letter-spacing: -.035em !important;
+  line-height: 1.12;
+  text-shadow: none !important;
+  -webkit-text-stroke: 0 !important;
+  text-wrap: balance;
+}
+p, label, input, textarea, select, button {
   font-family: var(--font-ui);
 }
-h1, h2, h3, h4, h5 { text-wrap: balance; }
-::selection { background: rgba(218, 178, 91, .34); color: #fff8e9; }
-
-/* Shared luxury surfaces */
-.comic-dots, .comic-dots-dark {
-  background-color: #09070d;
-  background-image:
-    radial-gradient(ellipse at 50% 0%, rgba(128, 74, 175, .17), transparent 58%),
-    radial-gradient(circle, rgba(230, 205, 150, .045) 1px, transparent 1px);
-  background-size: auto, 34px 34px;
+::selection { background: rgba(10,132,255,.32); color: #fff; }
+* { scrollbar-color: #343a45 transparent; }
+*,
+*::before,
+*::after {
+  animation: none !important;
+  transition: none !important;
+  scroll-behavior: auto !important;
 }
-.comic-panel, .comic-panel-sm, .ds-surface {
-  position: relative;
-  border: 1px solid rgba(213, 178, 105, .19) !important;
-  border-radius: 17px !important;
-  background:
-    linear-gradient(145deg, rgba(255,255,255,.045), transparent 42%),
-    linear-gradient(160deg, rgba(34, 25, 43, .96), rgba(15, 12, 20, .98)) !important;
-  box-shadow:
-    0 22px 58px rgba(0,0,0,.34),
-    0 1px 0 rgba(255,255,255,.045) inset,
-    0 0 28px rgba(111,65,151,.055) !important;
-}
-.comic-panel { padding: clamp(14px, 2vw, 22px); }
-.comic-panel-sm { border-radius: 13px !important; }
-.comic-panel:hover, .comic-panel-sm:hover {
-  border-color: rgba(220, 185, 108, .34) !important;
-}
-.ds-rule {
-  background: linear-gradient(90deg, transparent, rgba(218,181,103,.72), transparent) !important;
-  box-shadow: 0 0 12px rgba(218,181,103,.18);
-}
-.ds-eyebrow, .ds-label { letter-spacing: .22em; }
-.ds-title, .comic-text-stroke, .comic-text-stroke-thin {
-  text-shadow: 0 0 28px rgba(202,160,82,.16), 0 2px 18px rgba(0,0,0,.55);
-}
-
-/* Buttons: consistent metal / glass finish while preserving their handlers */
-button, [role="button"] {
-  -webkit-tap-highlight-color: transparent;
-}
-.comic-boom, button.comic-boom {
-  border: 1px solid rgba(218,181,103,.36) !important;
-  border-radius: 12px !important;
-  background:
-    linear-gradient(180deg, rgba(255,255,255,.09), transparent 52%),
-    linear-gradient(135deg, #3a2b47, #1b1524 72%) !important;
-  color: #f4e8ce !important;
-  box-shadow: 0 9px 24px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,255,255,.10) !important;
-}
-.comic-boom:hover {
-  border-color: rgba(235,199,121,.78) !important;
-  box-shadow: 0 0 0 1px rgba(218,181,103,.12), 0 12px 30px rgba(0,0,0,.36), 0 0 24px rgba(202,160,82,.10) !important;
-}
-button:focus-visible, [role="button"]:focus-visible {
-  outline: 2px solid #e7c77d !important;
+:focus-visible {
+  outline: 2px solid #0a84ff !important;
   outline-offset: 3px !important;
 }
-button:disabled { filter: saturate(.55); }
 
-/* Forms and selectors */
+/* Neutral graphite surfaces replace the former decorative purple/gold panels. */
+.comic-dots, .comic-dots-dark {
+  background: #0b0d11 !important;
+  background-image: none !important;
+}
+.comic-panel, .comic-panel-sm, .ds-surface,
+.admin-root .comic-panel, .admin-root .comic-panel-sm {
+  border: 1px solid rgba(255,255,255,.085) !important;
+  border-radius: 18px !important;
+  background: #15181e !important;
+  background-image: none !important;
+  box-shadow: 0 8px 28px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.035) !important;
+  backdrop-filter: none !important;
+}
+.comic-panel { padding: clamp(16px, 2vw, 24px); }
+.comic-panel-sm { border-radius: 14px !important; }
+.ds-rule {
+  height: 1px;
+  background: rgba(255,255,255,.10) !important;
+  box-shadow: none !important;
+}
+.ds-eyebrow, .ds-label {
+  color: #9ba3af !important;
+  font-family: var(--font-ui) !important;
+  font-size: 11px !important;
+  font-weight: 650 !important;
+  letter-spacing: .075em !important;
+}
+.ds-lede { color: #b8c0cc !important; font-family: var(--font-ui) !important; }
+.ds-value { color: #f5f7fa !important; font-family: var(--font-ui) !important; }
+.text-tarot-gold, .text-yellow-300, .text-yellow-400, .text-amber-300,
+.text-amber-400 { color: #69aaff !important; }
+
+/* App controls: consistent native-feeling geometry and high-contrast states. */
+button, [role="button"], a, input, select, textarea {
+  -webkit-tap-highlight-color: transparent;
+}
+button, [role="button"] {
+  border-radius: 12px;
+}
+.comic-boom, button.comic-boom {
+  min-height: 42px;
+  border: 1px solid rgba(255,255,255,.10) !important;
+  border-radius: 12px !important;
+  color: #f7f9fc !important;
+  background: #252a33 !important;
+  background-image: none !important;
+  box-shadow: none !important;
+  text-shadow: none !important;
+  font-family: var(--font-ui) !important;
+  font-weight: 600 !important;
+  letter-spacing: -.01em !important;
+  text-transform: none !important;
+}
+button[class*="bg-blue"], button[class*="bg-sky"],
+button[class*="bg-primary"], .comic-boom[class*="bg-primary"] {
+  background: #0a84ff !important;
+  color: white !important;
+  border-color: #0a84ff !important;
+}
+button:disabled { opacity: .42; filter: none !important; }
+button:hover, [role="button"]:hover,
+.comic-panel:hover, .comic-panel-sm:hover {
+  transform: none !important;
+  filter: none !important;
+  box-shadow: inherit;
+}
+
+/* Inputs, selectors and editable fields. */
 input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
 select, textarea {
-  border-color: rgba(210,181,127,.22) !important;
+  min-height: 42px;
+  border: 1px solid rgba(255,255,255,.11) !important;
   border-radius: 11px !important;
-  background: rgba(10,8,15,.78) !important;
-  color: #f5eddf !important;
-  box-shadow: inset 0 1px 4px rgba(0,0,0,.24);
+  background: #101319 !important;
+  color: #f2f4f8 !important;
+  box-shadow: none !important;
+  font-family: var(--font-ui) !important;
 }
-input::placeholder, textarea::placeholder { color: rgba(226,213,190,.42) !important; }
+input::placeholder, textarea::placeholder { color: #737d8b !important; }
 input:focus, select:focus, textarea:focus {
-  border-color: rgba(225,190,112,.72) !important;
-  box-shadow: 0 0 0 3px rgba(218,181,103,.10), 0 0 20px rgba(218,181,103,.07) !important;
+  border-color: #0a84ff !important;
+  box-shadow: 0 0 0 3px rgba(10,132,255,.16) !important;
 }
+input[type="checkbox"], input[type="radio"] { accent-color: #0a84ff; }
 
-/* Game setup, mode tiles and the 24-space board: dimensional presentation */
-[class*="grid"] > button,
-[class*="grid"] > [role="button"],
-.game-board button, .game-board [role="button"],
-[data-game-board] button, [data-box], .game-square,
-.box-card, .vault-box, .case-box, .briefcase {
-  border-radius: 14px;
-  transition: border-color .22s ease, box-shadow .22s ease, filter .22s ease, transform .22s ease;
-}
-.game-board button, [data-game-board] button, [data-box],
-.game-square, .box-card, .vault-box, .case-box, .briefcase {
-  border: 1px solid rgba(219,183,106,.34);
-  box-shadow: 0 10px 24px rgba(0,0,0,.30), inset 0 1px 0 rgba(255,255,255,.09);
-}
-.game-board button:hover, [data-game-board] button:hover, [data-box]:hover,
-.game-square:hover, .box-card:hover, .vault-box:hover, .case-box:hover, .briefcase:hover {
-  filter: brightness(1.12);
-  box-shadow: 0 14px 30px rgba(0,0,0,.38), 0 0 22px rgba(218,181,103,.13), inset 0 1px 0 rgba(255,255,255,.13);
-}
-[class*="grid"] > button:hover, [class*="grid"] > [role="button"]:hover {
-  border-color: rgba(225,190,112,.52);
-}
-
-/* Tablet / Host control room */
-.admin-root {
-  background:
-    radial-gradient(ellipse at 50% -12%, rgba(118,69,158,.18), transparent 54%),
-    #09070d !important;
-}
-.admin-root .comic-panel, .admin-root .comic-panel-sm {
-  backdrop-filter: blur(12px);
+/* Admin, host, player and public views share the same restrained foundation. */
+.admin-root, .admin-root > div {
+  color: #eef1f6;
+  background: #0b0d11 !important;
+  background-image: none !important;
 }
 .admin-root nav button, .admin-root [role="tab"] {
-  border-radius: 11px;
-  transition: background .2s ease, color .2s ease, border-color .2s ease;
+  min-height: 40px;
+  border: 1px solid transparent;
+  border-radius: 11px !important;
+  color: #aeb6c2;
+  background: transparent;
+  font-family: var(--font-ui) !important;
+  letter-spacing: -.01em !important;
 }
-.admin-root nav button:hover, .admin-root [role="tab"]:hover {
-  background: rgba(196,157,88,.10);
+.admin-root nav button[aria-selected="true"],
+.admin-root [role="tab"][aria-selected="true"] {
+  color: #fff;
+  background: #202631 !important;
+  border-color: rgba(255,255,255,.08) !important;
 }
 .admin-root table { border-collapse: separate; border-spacing: 0; }
 .admin-root th {
-  color: #d9bd83;
-  font-family: var(--font-ui);
-  font-size: .72rem;
-  letter-spacing: .12em;
+  color: #aeb8c6 !important;
+  font: 650 11px/1.3 var(--font-ui) !important;
+  letter-spacing: .055em !important;
   text-transform: uppercase;
 }
-.admin-root td, .admin-root th { border-color: rgba(210,181,127,.13) !important; }
+.admin-root td, .admin-root th { border-color: rgba(255,255,255,.075) !important; }
 
-/* TV / stage — richer depth, cleaner overlays */
-.dot-tv-shell {
-  background:
-    radial-gradient(ellipse at 50% 0%, rgba(128,70,175,.22), transparent 48%),
-    radial-gradient(ellipse at 50% 100%, rgba(206,164,82,.13), transparent 50%),
-    #07060a !important;
+/* Game boards and selectable tiles: clear states, no bounce, glow or decorative motion. */
+[class*="grid"] > button, [class*="grid"] > [role="button"],
+.game-board button, .game-board [role="button"], [data-game-board] button,
+[data-box], .game-square, .box-card, .vault-box, .case-box, .briefcase {
+  border-radius: 14px !important;
+  box-shadow: none !important;
+  transition: none !important;
+  transform: none !important;
 }
+.game-board button, [data-game-board] button, [data-box],
+.game-square, .box-card, .vault-box, .case-box, .briefcase {
+  border: 1px solid rgba(255,255,255,.14) !important;
+}
+.game-board button:hover, [data-game-board] button:hover, [data-box]:hover,
+.game-square:hover, .box-card:hover, .vault-box:hover, .case-box:hover, .briefcase:hover,
+[class*="grid"] > button:hover, [class*="grid"] > [role="button"]:hover {
+  filter: none !important;
+  transform: none !important;
+  box-shadow: none !important;
+  border-color: rgba(10,132,255,.58) !important;
+}
+
+/* TV presentation keeps its full-screen layout, but removes atmosphere effects. */
+.dot-tv-shell, .dot-tv-shell .dot-tv-atmosphere {
+  background: #080a0e !important;
+  background-image: none !important;
+}
+.dot-tv-orb, .dot-tv-grain, .dot-tv-stage-marker,
+.dot-tv-moment, .dot-tv-hud, .dot-tv-stage { animation: none !important; }
 .dot-tv-shell .comic-panel, .dot-tv-shell .comic-panel-sm {
-  border-color: rgba(224,190,119,.26) !important;
-  background: linear-gradient(145deg, rgba(38,27,49,.94), rgba(12,10,16,.97)) !important;
-  backdrop-filter: blur(14px);
+  background: #15181e !important;
+  border-color: rgba(255,255,255,.10) !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
 }
-.dot-tv-moment {
-  border-color: rgba(231,197,125,.72);
-  box-shadow: 0 30px 100px rgba(0,0,0,.68), 0 0 90px rgba(139,92,246,.22), 0 0 38px rgba(218,181,103,.12), inset 0 1px 0 rgba(255,255,255,.10);
+.dot-tv-brand-mark, .dot-tv-fullscreen-button {
+  color: #dceaff !important;
+  border-color: rgba(10,132,255,.42) !important;
+  box-shadow: none !important;
 }
 
-/* Mobile controller and touch surfaces */
+/* Mobile: safe touch targets and edge-to-edge dark surfaces. */
 body.dot-mobile-experience {
-  background:
-    radial-gradient(ellipse at 50% -10%, rgba(118,69,158,.20), transparent 50%),
-    #09070d !important;
+  background: #0b0d11 !important;
+  background-image: none !important;
+}
+body.dot-mobile-experience button,
+body.dot-mobile-experience [role="button"] {
+  min-height: 44px;
+  transform: none !important;
+  filter: none !important;
+  box-shadow: none;
 }
 body.dot-mobile-experience .comic-panel,
-body.dot-mobile-experience .comic-panel-sm {
-  border-radius: 15px !important;
-}
-body.dot-mobile-experience button, body.dot-mobile-experience [role="button"] {
-  min-height: 42px;
-}
+body.dot-mobile-experience .comic-panel-sm { border-radius: 16px !important; }
 @media (max-width: 760px) {
-  .comic-panel { padding: 14px; }
-  .dot-tv-shell .dot-tv-hud { backdrop-filter: blur(10px); }
+  .comic-panel { padding: 15px; }
+  .dot-tv-shell { min-height: 100dvh; }
+  .dot-tv-shell .dot-tv-hud { backdrop-filter: none !important; }
+  .admin-root nav { gap: 6px; }
 }
 @media (min-width: 1200px) {
-  .admin-root > div { max-width: 1440px; }
-}
-@media (prefers-reduced-motion: reduce) {
-  .comic-panel, .comic-panel-sm, .comic-boom,
-  [class*="grid"] > button, [data-box], .game-square {
-    transition: none !important;
-  }
+  .admin-root > div { max-width: 1480px; }
 }
