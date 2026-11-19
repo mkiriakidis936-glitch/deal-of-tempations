@@ -26,7 +26,7 @@ export default function AdminIntakes() {
         base44.entities.PlayerIntake.filter({}, { sort: '-created_date', limit: 100 }),
         base44.entities.BacheloretteIntake.filter({}, { sort: '-created_date', limit: 50 }),
       ]);
-      setIntakes(playerRes.items || []);
+      setIntakes((playerRes.items || []).filter((item) => item.sourceEntity !== 'PajamaIntake'));
       setBachIntakes(bachRes.items || []);
     } catch (e) {
       console.error('Intake load error', e);
