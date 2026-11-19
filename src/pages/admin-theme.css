@@ -1,4 +1,4 @@
-/* Admin-only monochrome black and gold. No decorative frames, cards, gradients or shadows. */
+/* Admin-only black and gold theme. Keeps the existing Admin layout and control behavior intact. */
 #admin-root {
   --background: 0 0% 0%;
   --foreground: 43 75% 72%;
@@ -11,55 +11,54 @@
   --secondary: 0 0% 0%;
   --secondary-foreground: 43 75% 72%;
   --muted: 0 0% 0%;
-  --muted-foreground: 43 45% 60%;
+  --muted-foreground: 43 55% 65%;
   --accent: 43 65% 53%;
   --accent-foreground: 0 0% 0%;
   --border: 0 0% 0%;
   --input: 0 0% 0%;
   --ring: 43 65% 53%;
+  color-scheme: dark;
   background: #000 !important;
   color: #d4af37 !important;
-  color-scheme: dark;
 }
 
-/* Every Admin surface stays black; every text element stays gold. */
-#admin-root,
-#admin-root *,
-#admin-root *::before,
-#admin-root *::after {
-  box-shadow: none !important;
-  text-shadow: none !important;
-  background-image: none !important;
-  scrollbar-color: #8a6b27 #000;
-}
+/* Remove decorative effects without changing spacing, sizing, positioning or component structure. */
 #admin-root,
 #admin-root * {
+  box-shadow: none !important;
+  text-shadow: none !important;
   border-color: transparent !important;
+  scrollbar-color: #8a6b27 #000;
 }
-#admin-root,
-#admin-root :is(div,section,article,aside,header,footer,nav,main,form,fieldset,table,thead,tbody,tr,td,th,ul,ol,li),
+
+/* Admin surfaces that already use a background class remain pure black. */
 #admin-root [class*="bg-"],
-#admin-root [style*="background"],
-#admin-root [role="dialog"],
-#admin-root [role="alertdialog"] {
+#admin-root [style*="background-color"] {
   background-color: #000 !important;
 }
-#admin-root :is(*, *::before, *::after) {
+#admin-root [class*="bg-gradient"] {
+  background-image: none !important;
+}
+
+/* All Admin text and icons use gold; no global display/layout rules are applied. */
+#admin-root [class*="text-"],
+#admin-root :is(h1,h2,h3,h4,h5,h6,p,span,label,small,strong,em,li,td,th,dt,dd,summary,legend) {
   color: #d4af37 !important;
 }
-#admin-root :is(svg) [fill]:not([fill="none"]) {
+#admin-root svg [fill]:not([fill="none"]) {
   fill: #d4af37 !important;
 }
-#admin-root :is(svg) [stroke]:not([stroke="none"]) {
+#admin-root svg [stroke]:not([stroke="none"]) {
   stroke: #d4af37 !important;
 }
 
-/* Inputs and controls: black fill, gold text; no surrounding frames. */
+/* Inputs stay usable and identifiable with a gold underline, not a surrounding box. */
 #admin-root :is(input,textarea,select),
 #admin-root [contenteditable="true"] {
   color: #f0d98a !important;
   background: #000 !important;
   border: 0 !important;
+  border-bottom: 1px solid #d4af37 !important;
   border-radius: 0 !important;
   outline-color: #d4af37 !important;
   caret-color: #d4af37;
@@ -69,46 +68,59 @@
   color: #a58a4a !important;
   opacity: 1;
 }
+
+/* Buttons retain their existing dimensions and placement; only their palette changes. */
 #admin-root :is(button,[role="button"],a) {
   color: #d4af37 !important;
-  background: #000 !important;
-  border: 0 !important;
-  border-radius: 0 !important;
-  box-shadow: none !important;
+}
+#admin-root button[class*="bg-primary"],
+#admin-root button[class*="bg-[#d4af37]"],
+#admin-root button[class*="bg-[#e5c76b]"],
+#admin-root [role="button"][class*="bg-primary"],
+#admin-root [role="button"][class*="bg-[#d4af37]"] {
+  background-color: #d4af37 !important;
+  color: #000 !important;
+}
+#admin-root button[class*="bg-primary"] *,
+#admin-root button[class*="bg-[#d4af37]"] *,
+#admin-root button[class*="bg-[#e5c76b]"] *,
+#admin-root [role="button"][class*="bg-primary"] *,
+#admin-root [role="button"][class*="bg-[#d4af37]"] * {
+  color: #000 !important;
 }
 #admin-root :is(button,[role="button"],a):is(:hover,:focus-visible) {
-  color: #f0d98a !important;
   outline: 1px solid #d4af37 !important;
   outline-offset: 2px;
 }
 #admin-root :is([aria-selected="true"],[aria-current="page"],[data-state="active"],[data-state="checked"]) {
   color: #000 !important;
-  background: #d4af37 !important;
-  border: 0 !important;
+  background-color: #d4af37 !important;
 }
 #admin-root :is([aria-selected="true"],[aria-current="page"],[data-state="active"],[data-state="checked"]) * {
   color: #000 !important;
 }
-#admin-root :is(hr) {
+
+/* Gold separators remain visible without restoring decorative frames or cards. */
+#admin-root hr {
   border: 0 !important;
-  background: #d4af37 !important;
   height: 1px;
+  background: #d4af37 !important;
 }
 #admin-root ::selection {
   color: #000;
   background: #d4af37;
 }
 
-/* Radix/portal overlays are mounted outside #admin-root; keep Admin dialogs black and gold too. */
-:root:has(#admin-root) :is([data-radix-portal],[data-radix-popper-content-wrapper],[role="dialog"],[role="alertdialog"]) {
+/* Admin dialogs and menus mounted in portals use the same palette. */
+:root:has(#admin-root) :is([data-radix-popper-content-wrapper],[role="dialog"],[role="alertdialog"]) {
   color: #d4af37 !important;
   background: #000 !important;
-  border: 0 !important;
   box-shadow: none !important;
-}
-:root:has(#admin-root) :is([data-radix-portal],[data-radix-popper-content-wrapper],[role="dialog"],[role="alertdialog"]) * {
-  color: #d4af37 !important;
-  background-color: #000 !important;
   border-color: transparent !important;
-  box-shadow: none !important;
+}
+:root:has(#admin-root) :is([data-radix-popper-content-wrapper],[role="dialog"],[role="alertdialog"]) [class*="bg-"] {
+  background-color: #000 !important;
+}
+:root:has(#admin-root) :is([data-radix-popper-content-wrapper],[role="dialog"],[role="alertdialog"]) [class*="text-"] {
+  color: #d4af37 !important;
 }
