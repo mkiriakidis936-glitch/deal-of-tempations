@@ -1,7 +1,7 @@
 /* ==========================================================================
    DEAL OF TEMPTATION — iOS 27 · BLACK & GOLD
-   Τελευταίο layer (φορτώνεται τελευταίο στο main.jsx) — υπερισχύει των
-   index.css / visual-overhaul.css / cinematic-tv.css / responsive.css.
+   Βασικό iOS layer. Το τελικό καθολικό visual layer φορτώνεται μετά από αυτό
+   στο visual-overhaul.css.
    Μόνο εμφάνιση: καμία αλλαγή σε state, routes, κανόνες παιχνιδιού.
 
    Γλώσσα σχεδίασης
