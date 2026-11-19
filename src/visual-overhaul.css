@@ -206,3 +206,239 @@ body.dot-mobile-experience button, body.dot-mobile-experience [role="button"] {
     transition: none !important;
   }
 }
+
+
+/* ==========================================================================
+   iOS 27 DARK — complete visual system
+   Presentation-only layer. Gameplay, state, rules and event handlers untouched.
+   ========================================================================== */
+:root, .dark {
+  --background: 240 7% 5%;
+  --foreground: 220 18% 94%;
+  --card: 240 6% 9%;
+  --card-foreground: 220 18% 94%;
+  --popover: 240 7% 8%;
+  --popover-foreground: 220 18% 94%;
+  --primary: 258 78% 72%;
+  --primary-foreground: 245 35% 9%;
+  --secondary: 240 6% 13%;
+  --secondary-foreground: 220 16% 91%;
+  --muted: 240 5% 16%;
+  --muted-foreground: 220 8% 64%;
+  --accent: 258 34% 22%;
+  --accent-foreground: 220 18% 95%;
+  --destructive: 2 72% 58%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 240 5% 22%;
+  --input: 240 6% 12%;
+  --ring: 258 78% 72%;
+  --surface-1: 240 7% 7%;
+  --surface-2: 240 6% 10%;
+  --surface-3: 240 5% 15%;
+  --hairline: 220 18% 94%;
+  --shadow-color: 240 30% 1%;
+  --radius: 1.15rem;
+  color-scheme: dark;
+}
+html {
+  background: #0b0b0e !important;
+  scroll-behavior: auto !important;
+}
+body, body.dot-mobile-experience {
+  color: #eef0f6 !important;
+  background: #0b0b0e !important;
+  background-image:
+    radial-gradient(ellipse at 50% -22%, rgba(126, 93, 190, .13), transparent 54%),
+    linear-gradient(180deg, #0b0b0e 0%, #101014 58%, #0b0b0e 100%) !important;
+  background-attachment: fixed !important;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", Inter, sans-serif !important;
+  font-size: 15px;
+  line-height: 1.5;
+  letter-spacing: -.012em;
+}
+h1, h2, h3, h4, h5 {
+  color: #f5f5fa !important;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", Inter, sans-serif !important;
+  font-weight: 650 !important;
+  letter-spacing: -.035em !important;
+  line-height: 1.12 !important;
+}
+p, label, small, span { text-wrap: pretty; }
+::selection { background: rgba(167, 139, 250, .32); color: #fff; }
+* { scrollbar-color: #34343d transparent; }
+
+/* All existing surfaces become restrained, layered graphite materials. */
+.comic-dots, .comic-dots-dark {
+  background: transparent !important;
+  background-image: none !important;
+}
+.comic-panel, .comic-panel-sm, .ds-surface,
+.admin-root .comic-panel, .admin-root .comic-panel-sm,
+.dot-tv-shell .comic-panel, .dot-tv-shell .comic-panel-sm {
+  border: 1px solid rgba(255,255,255,.085) !important;
+  border-radius: 20px !important;
+  background: linear-gradient(155deg, rgba(34,34,42,.96), rgba(22,22,28,.98)) !important;
+  box-shadow: 0 12px 34px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.045) !important;
+  backdrop-filter: none !important;
+}
+.comic-panel { padding: clamp(16px, 2.1vw, 24px); }
+.comic-panel-sm { border-radius: 15px !important; }
+.comic-panel:hover, .comic-panel-sm:hover {
+  border-color: rgba(255,255,255,.11) !important;
+}
+.ds-rule {
+  height: 1px;
+  background: rgba(255,255,255,.10) !important;
+  box-shadow: none !important;
+}
+.ds-eyebrow, .ds-label {
+  color: #9999a7 !important;
+  font-family: -apple-system, BlinkMacSystemFont, Inter, sans-serif !important;
+  font-size: 10px !important;
+  font-weight: 650 !important;
+  letter-spacing: .13em !important;
+}
+.ds-title, .comic-text-stroke, .comic-text-stroke-thin {
+  color: #f4f2fa !important;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", Inter, sans-serif !important;
+  font-weight: 700 !important;
+  letter-spacing: -.035em !important;
+  text-shadow: none !important;
+  -webkit-text-stroke: 0 !important;
+}
+.ds-lede { color: #b8b8c4 !important; }
+
+/* Native-feeling controls: clear hierarchy, generous touch targets. */
+button, [role="button"], input, select, textarea {
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", Inter, sans-serif !important;
+  -webkit-tap-highlight-color: transparent;
+}
+button, [role="button"] { border-radius: 13px; }
+.comic-boom, button.comic-boom {
+  min-height: 44px;
+  border: 1px solid rgba(167,139,250,.30) !important;
+  border-radius: 13px !important;
+  background: #8b75d6 !important;
+  color: #100d19 !important;
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  letter-spacing: .015em !important;
+  text-transform: none !important;
+  box-shadow: none !important;
+  background-image: none !important;
+}
+.comic-boom:hover, .comic-boom:active {
+  border-color: rgba(167,139,250,.4) !important;
+  background: #8b75d6 !important;
+  box-shadow: none !important;
+  filter: brightness(1.04);
+  transform: none !important;
+}
+button:focus-visible, [role="button"]:focus-visible,
+input:focus-visible, select:focus-visible, textarea:focus-visible {
+  outline: 2px solid #a78bfa !important;
+  outline-offset: 3px !important;
+}
+button:disabled { opacity: .42; filter: none !important; }
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+select, textarea {
+  min-height: 44px;
+  border: 1px solid rgba(255,255,255,.10) !important;
+  border-radius: 12px !important;
+  background: #17171d !important;
+  color: #f1f1f6 !important;
+  box-shadow: none !important;
+}
+input::placeholder, textarea::placeholder { color: #777783 !important; }
+input:focus, select:focus, textarea:focus {
+  border-color: rgba(167,139,250,.7) !important;
+  box-shadow: 0 0 0 3px rgba(167,139,250,.12) !important;
+}
+
+/* Selected states, tabs, navigation and segmented controls. */
+[aria-selected="true"], [data-state="active"], [role="tab"][aria-selected="true"] {
+  border-color: rgba(167,139,250,.32) !important;
+  background-color: rgba(139,117,214,.17) !important;
+  color: #d9ccff !important;
+}
+.admin-root {
+  color: #eef0f6 !important;
+  background: #0b0b0e !important;
+}
+.admin-root nav button, .admin-root [role="tab"] {
+  min-height: 42px;
+  border: 1px solid transparent;
+  border-radius: 12px !important;
+  background: transparent;
+  color: #b6b6c2;
+  transition: none !important;
+}
+.admin-root nav button:hover, .admin-root [role="tab"]:hover {
+  background: rgba(255,255,255,.045) !important;
+  color: #f5f3fb !important;
+}
+.admin-root table { border-collapse: collapse !important; }
+.admin-root th {
+  color: #a7a7b4 !important;
+  font-family: -apple-system, BlinkMacSystemFont, Inter, sans-serif !important;
+  font-size: 10px !important;
+  font-weight: 700 !important;
+  letter-spacing: .11em !important;
+  text-transform: uppercase;
+}
+.admin-root td, .admin-root th { border-color: rgba(255,255,255,.075) !important; }
+
+/* Player, mode and board tiles retain their existing content and actions. */
+[class*="grid"] > button, [class*="grid"] > [role="button"],
+.game-board button, .game-board [role="button"],
+[data-game-board] button, [data-box], .game-square,
+.box-card, .vault-box, .case-box, .briefcase {
+  border-radius: 15px !important;
+  border-color: rgba(255,255,255,.10) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.035) !important;
+}
+.game-board button, [data-game-board] button, [data-box],
+.game-square, .box-card, .vault-box, .case-box, .briefcase {
+  background-color: #1b1b22;
+}
+.game-board button:hover, [data-game-board] button:hover, [data-box]:hover,
+.game-square:hover, .box-card:hover, .vault-box:hover, .case-box:hover, .briefcase:hover,
+[class*="grid"] > button:hover, [class*="grid"] > [role="button"]:hover {
+  border-color: rgba(167,139,250,.35) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.045) !important;
+  filter: none !important;
+  transform: none !important;
+}
+.dot-tv-shell {
+  background: #09090c !important;
+  background-image: none !important;
+}
+.dot-tv-shell .comic-panel, .dot-tv-shell .comic-panel-sm {
+  background: #17171e !important;
+  border-color: rgba(255,255,255,.12) !important;
+  backdrop-filter: none !important;
+}
+.dot-tv-moment {
+  border-color: rgba(167,139,250,.45) !important;
+  box-shadow: 0 18px 60px rgba(0,0,0,.45) !important;
+}
+body.dot-mobile-experience .comic-panel,
+body.dot-mobile-experience .comic-panel-sm {
+  border-radius: 18px !important;
+}
+body.dot-mobile-experience button, body.dot-mobile-experience [role="button"] {
+  min-height: 44px;
+}
+
+/* Explicitly remove motion from every existing screen and interaction. */
+*, *::before, *::after {
+  animation: none !important;
+  transition: none !important;
+  scroll-behavior: auto !important;
+}
+.comic-boom:hover, .comic-boom:active,
+button:hover, [role="button"]:hover,
+[class*="grid"] > button:hover, [data-box]:hover,
+.game-square:hover, .box-card:hover, .vault-box:hover, .case-box:hover, .briefcase:hover {
+  transform: none !important;
+}
