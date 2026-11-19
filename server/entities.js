@@ -1275,7 +1275,7 @@ export function entityRoutes() {
           vipGameMode: sourceRecord.gameMode || invitations[0].data.gameMode || 'classic',
           vipInvitationId: sourceRecord.invitationId,
           vipSubmissionId: sourceRecord.submissionId,
-          vipProfile: { displayName: answers.displayName || '', avatar: sourceRecord.avatar || '', answers: { ...answers, customAnswers: sourceRecord.customAnswers || {}, customAnswerLabels: sourceRecord.customAnswerLabels || {} }, answerLabels: sourceRecord.answerLabels || {} },
+          vipProfile: { displayName: answers.displayName || '', avatar: sourceRecord.avatar || '', consentConfirmed: sourceRecord.consentConfirmed === true, answers: { ...answers, customAnswers: sourceRecord.customAnswers || {}, customAnswerLabels: sourceRecord.customAnswerLabels || {} }, answerLabels: sourceRecord.answerLabels || {} },
           shoeSize: answers.shoeSize || '',
           nailColor: answers.nailColor || '',
           slipperType: answers.slipperType || '',
