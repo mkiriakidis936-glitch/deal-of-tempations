@@ -556,3 +556,87 @@ code, pre, kbd {
 @media (min-width: 768px) {
   form { color: #eef1f6; }
 }
+
+
+/* Root-level normalization for every routed screen (tablet, TV, player, auth, site, portal). */
+#root > main, #root > div, #root > section {
+  color: #eef1f6 !important;
+  background-color: #0b0d11 !important;
+  background-image: none !important;
+}
+#root > main > header, #root > div > header {
+  color: #eef1f6;
+}
+#root > main [class*="bg-tarot-"],
+#root > div [class*="bg-tarot-"] {
+  background-color: #20252d !important;
+  background-image: none !important;
+}
+#root > main [class*="bg-[#0"],
+#root > main [class*="bg-[#1"],
+#root > main [class*="bg-[#2"],
+#root > div [class*="bg-[#0"],
+#root > div [class*="bg-[#1"],
+#root > div [class*="bg-[#2"] {
+  background-color: #15181e !important;
+  background-image: none !important;
+}
+#root > main [class*="text-[#"],
+#root > div [class*="text-[#"] {
+  color: #dce3ed !important;
+}
+#root > main [class*="border-[#"],
+#root > div [class*="border-[#"] {
+  border-color: rgba(255,255,255,.12) !important;
+}
+
+/* Legacy invitation, promo and cinematic styles become static, restrained components. */
+.cinv-beam, .cinv-mote, .cinv-sealwrap, .cinv-sealglow,
+.cinv-seal, .cinv-line, .cinv-btn, .promo-zoom, .promo-mote,
+.promo-glow, .film-slide, .film-progress, .tv-marquee {
+  animation: none !important;
+  transition: none !important;
+  transform: none !important;
+}
+.cinv-count {
+  border: 1px solid rgba(255,255,255,.12) !important;
+  border-radius: 16px !important;
+  background: #15181e !important;
+  box-shadow: none !important;
+}
+.cinv-cl, .cinv-line { color: #dce3ed !important; text-shadow: none !important; }
+.cinv-btn {
+  border: 1px solid #0a84ff !important;
+  border-radius: 12px !important;
+  background: #0a84ff !important;
+  color: #fff !important;
+  box-shadow: none !important;
+  text-shadow: none !important;
+}
+.cinp {
+  border: 1px solid rgba(255,255,255,.14) !important;
+  border-radius: 11px !important;
+  background: #0e1117 !important;
+  color: #f3f6fa !important;
+  box-shadow: none !important;
+}
+.film-frame { background: #0b0d11 !important; }
+.promo-glow { text-shadow: none !important; }
+
+/* Common Tailwind utility variants used by legacy game and site screens. */
+.bg-tarot-wine, .bg-tarot-crimson, .bg-tarot-teal,
+.bg-tarot-forest, .bg-tarot-royal, .bg-tarot-sienna,
+.bg-tarot-wine\/30, .bg-tarot-crimson\/30, .bg-tarot-teal\/30,
+.bg-tarot-forest\/30, .bg-tarot-royal\/30, .bg-tarot-sienna\/30 {
+  background-color: #20252d !important;
+  background-image: none !important;
+}
+.border-tarot-gold, .border-primary\/20, .border-primary\/30,
+.border-primary\/40, .border-primary\/50 {
+  border-color: rgba(255,255,255,.12) !important;
+}
+.text-tarot-gold, .text-primary { color: #78b7ff !important; }
+.bg-primary { background-color: #0a84ff !important; }
+.bg-secondary { background-color: #20252d !important; }
+.bg-card { background-color: #15181e !important; }
+.bg-background { background-color: #0b0d11 !important; }
