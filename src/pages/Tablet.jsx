@@ -1,4 +1,3 @@
-import ScreenWallpaper from '@/components/shared/ScreenWallpaper';
 import React from 'react';
 import { useGameSession } from '@/hooks/useGameSession';
 import { getActiveSessionCode, setActiveSessionCode, subscribeActiveSession } from '@/lib/activeSession';
@@ -484,8 +483,7 @@ export default function Tablet() {
   const mostWantedName = calculateMostWanted(state.players)?.name;
 
   return (
-    <div className="relative">
-      <ScreenWallpaper src={ART.wallpaperTablet} />
+    <div className="relative" style={ART.wallpaperTablet ? { backgroundImage: `url("${ART.wallpaperTablet}")`, backgroundSize: "cover", backgroundPosition: "center", backgroundAttachment: "fixed" } : undefined}>
       <WantedStrobePanic wantedLevel={wantedLevel} playerName={mostWantedName} />
       <StopButton active={state.stopActive} onToggle={handleStop} />
       <GameDurationClock state={displayState} />

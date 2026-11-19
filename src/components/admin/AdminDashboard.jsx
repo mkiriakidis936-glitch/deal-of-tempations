@@ -4,6 +4,7 @@ import { Image } from '@/components/ui/image';
 import { GAME_MODES, INTENSITY_LEVELS } from '@/data/gameConfig';
 import { ART } from '@/data/brandArt';
 
+const BANNER_URL = ART.banner;
 
 export default function AdminDashboard({ sessions, loading }) {
   if (loading) {
@@ -43,7 +44,7 @@ export default function AdminDashboard({ sessions, loading }) {
     <div className="space-y-4">
       {/* Brand banner */}
       <div className="relative h-32 rounded-xl overflow-hidden border-2 border-border" style={{ boxShadow: '0 0 20px rgba(201,162,39,.15)' }}>
-        <Image src={ART.banner} fittingType="fill" className="w-full h-full" />
+        <Image src={BANNER_URL} fittingType="fill" className="w-full h-full" />
         <div className="absolute inset-0" style={{ background: 'linear-gradient(90deg, rgba(10,10,10,.7), transparent 60%, rgba(10,10,10,.7))' }} />
         <div className="absolute inset-0 flex items-center px-6">
           <div className="font-heading text-2xl comic-text-stroke text-primary">DEAL OF TEMPTATION</div>

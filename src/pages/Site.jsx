@@ -73,7 +73,7 @@ export default function Site() {
   };
 
   return (
-    <div className="min-h-screen overflow-x-clip bg-background text-foreground" style={ART.patternSeamless ? { backgroundImage: `url("${ART.patternSeamless}")`, backgroundRepeat: 'repeat', backgroundSize: '420px auto' } : undefined}>
+    <div className="min-h-screen overflow-x-clip bg-background text-foreground">
       <SiteNav ev={isHome ? '' : ev} onEvent={setEvent} c={pageContent} isHome={isHome} onRegister={register} />
       {isHome ? (
         <>

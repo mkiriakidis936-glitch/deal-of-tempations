@@ -86,6 +86,7 @@ export function applyMediaOverrides(o = {}) {
   const str = (v) => (typeof v === 'string' && v ? v : null);
   const isVideo = (v) => /\.(mp4|webm|mov)(?:[?#]|$)/i.test(v || '');
   const clearPhotos = !!(o.clearAllPhotos || o.clearAllMedia);
+  const clearVideos = !!(o.clearAllVideos || o.clearAllMedia);
   const emptySlots = Array.isArray(o.emptySlots) ? o.emptySlots : [];
 
   for (const k of Object.keys(ART)) ART[k] = str(o[k]) || (clearPhotos ? '' : DEFAULTS[k]);
@@ -110,11 +111,9 @@ export function applyMediaOverrides(o = {}) {
   }
 
   // Κάθε ένα από τα έξι σημεία δέχεται είτε φωτογραφία είτε βίντεο, ή παραμένει κενό.
-  // Το «διαγραφή όλων των βίντεο» αδειάζει τα σημεία, αλλά ένα βίντεο που ανεβαίνει ΜΕΤΑ τη διαγραφή
-  // πρέπει να εμφανίζεται κανονικά (πριν, η σημαία clearAllVideos το απέκρυπτε για πάντα).
-  FILM.agent = str(o.agent) || '';
-  FILM.welcomeVideo = str(o.welcomeVideo) || '';
-  FILM.countdownVideo = str(o.countdownVideo) || '';
+  FILM.agent = clearVideos ? '' : (str(o.agent) || '');
+  FILM.welcomeVideo = clearVideos ? '' : (str(o.welcomeVideo) || '');
+  FILM.countdownVideo = clearVideos ? '' : (str(o.countdownVideo) || '');
   for (const id of PHOTO_SPOT_IDS) {
     const value = str(o[id]);
     if (emptySlots.includes(id)) {

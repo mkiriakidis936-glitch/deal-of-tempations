@@ -113,10 +113,6 @@ app.use((err, _req, res, _next) => {
 const port = Number(process.env.PORT) || 3000;
 await migrate();
 const server = app.listen(port, '0.0.0.0', () => console.log(`Server listening on :${port}`));
-// Μεγάλα βίντεο από κινητό/αργό δίκτυο: το προεπιλεγμένο requestTimeout του Node (5′) διέκοπτε το ανέβασμα.
-server.requestTimeout = 30 * 60 * 1000;
-server.headersTimeout = 65 * 1000;
-server.keepAliveTimeout = 65 * 1000;
 startAutoBackup();
 
 for (const sig of ['SIGTERM', 'SIGINT']) {

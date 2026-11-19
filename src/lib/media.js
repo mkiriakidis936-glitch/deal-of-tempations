@@ -33,86 +33,17 @@ export async function patchOverrides(mutator) {
   return clean;
 }
 
-// ---- Φόρτωση / συγχρονισμός media σε Site, Tablet, TV, κινητά ----
-// 1) Εφαρμόζεται αμέσως η τελευταία γνωστή ρύθμιση (cache) ώστε να μη φαίνονται ποτέ λάθος/κενές εικόνες.
-// 2) Η φόρτωση από τον server έχει υπομονή (8″) και ΔΕΝ εγκαταλείπεται: συνεχίζει ξανά και ξανά στο παρασκήνιο.
-// 3) Η TV/Tablet/Κινητό ελέγχουν περιοδικά για αλλαγές από το Admin (χωρίς χειροκίνητο refresh).
-const CACHE_KEY = 'media_overrides_cache_v2';
-const POLL_MS = 45_000;
-const STATIC_PATHS = /^\/(site|promo|forms|gift-unlock|vip\/|production-consent)/;
-const mediaListeners = new Set();
-let lastSignature = '';
-
-export const subscribeMediaRefresh = (fn) => { mediaListeners.add(fn); return () => mediaListeners.delete(fn); };
-const emit = (kind) => mediaListeners.forEach((fn) => { try { fn(kind); } catch { /* ignore */ } });
-
-const readCache = () => {
-  try { return JSON.parse(localStorage.getItem(CACHE_KEY) || 'null'); } catch { return null; }
-};
-const writeCache = (payload) => {
-  try { localStorage.setItem(CACHE_KEY, JSON.stringify(payload)); } catch { /* ignore (private mode / quota) */ }
-};
-const withTimeout = (promise, ms) => Promise.race([
-  promise,
-  new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), ms)),
-]);
-
-function applyPayload(media, site) {
-  applyMediaOverrides(media || {});
-  setSiteOverrides(site || {});
-}
-
-async function fetchPayload(ms = 8000) {
-  const [rec, site] = await withTimeout(Promise.all([fetchOverrides(), fetchSiteRecord()]), ms);
-  return { media: rec?.value || {}, site: site?.value || {} };
-}
-
-let pollStarted = false;
-function startBackgroundSync() {
-  if (pollStarted || typeof window === 'undefined') return;
-  pollStarted = true;
-  const check = async () => {
-    if (document.visibilityState === 'hidden') return;
-    try {
-      const payload = await fetchPayload(10000);
-      const signature = JSON.stringify(payload);
-      if (signature === lastSignature) return;
-      const firstReal = !lastSignature;
-      lastSignature = signature;
-      applyPayload(payload.media, payload.site);
-      writeCache(payload);
-      emit(firstReal || STATIC_PATHS.test(window.location.pathname) ? 'remount' : 'applied');
-    } catch { /* επόμενη προσπάθεια */ }
-  };
-  setInterval(check, POLL_MS);
-  document.addEventListener('visibilitychange', check);
-  window.addEventListener('online', check);
-  window.addEventListener('focus', check);
-}
-
 export async function loadMedia() {
-  const cached = readCache();
-  if (cached) { try { applyPayload(cached.media, cached.site); } catch { /* ignore */ } }
   try {
-    const payload = await fetchPayload(cached ? 2500 : 8000);
-    lastSignature = JSON.stringify(payload);
-    applyPayload(payload.media, payload.site);
-    writeCache(payload);
+    const [rec, site] = await Promise.race([
+      Promise.all([fetchOverrides(), fetchSiteRecord()]),
+      new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 3000)),
+    ]);
+    applyMediaOverrides(rec?.value || {});
+    setSiteOverrides(site?.value || {});
   } catch (e) {
-    console.warn('[media] προσωρινά χρήση αποθηκευμένων/αρχικών αρχείων:', e.message);
-    // Δεν μένουμε με τα αρχικά: ξαναδοκιμάζει σύντομα και, μόλις έρθουν, ανανεώνει την οθόνη.
-    const retry = async (delay) => {
-      try {
-        const payload = await fetchPayload(10000);
-        lastSignature = JSON.stringify(payload);
-        applyPayload(payload.media, payload.site);
-        writeCache(payload);
-        emit('remount');
-      } catch { setTimeout(() => retry(Math.min(delay * 2, 30000)), delay); }
-    };
-    setTimeout(() => retry(3000), 3000);
+    console.warn('[media] χρήση αρχικών αρχείων:', e.message);
   }
-  startBackgroundSync();
 }
 
 // Μικραίνει τις φωτογραφίες (max 2400px, JPEG) ώστε να φορτώνουν γρήγορα στα κινητά/TV.

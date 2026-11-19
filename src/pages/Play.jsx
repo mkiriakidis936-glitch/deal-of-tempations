@@ -1,4 +1,3 @@
-import ScreenWallpaper from '@/components/shared/ScreenWallpaper';
 import ModeMobile from '@/components/modes/ModeMobile';
 import { isNewMode } from '@/data/modes/modeRegistry';
 import { ART } from '@/data/brandArt';
@@ -28,7 +27,7 @@ import SyncTimerDisplay from '@/components/shared/SyncTimerDisplay';
 import WaitingRoom from '@/components/play/WaitingRoom';
 import PajamaMobile from '@/components/play/PajamaMobile';
 
-function PlayInner() {
+export default function Play() {
   const { session, state, loading, updateState: saveState, joinByCode } = useGameSession({ autoLoad: false });
   const [selectedPlayerId, setSelectedPlayerId] = useState(null);
   const updateState = React.useCallback((patch) => saveState(patch, { playerId: selectedPlayerId }), [saveState, selectedPlayerId]);
@@ -40,9 +39,25 @@ function PlayInner() {
 
   React.useEffect(() => {
     const body = document.body;
+    const previous = {
+      backgroundImage: body.style.backgroundImage,
+      backgroundSize: body.style.backgroundSize,
+      backgroundPosition: body.style.backgroundPosition,
+      backgroundAttachment: body.style.backgroundAttachment,
+    };
     body.classList.add('dot-mobile-experience');
+    if (ART.wallpaperPhone) {
+      body.style.backgroundImage = `url("${ART.wallpaperPhone}")`;
+      body.style.backgroundSize = 'cover';
+      body.style.backgroundPosition = 'center';
+      body.style.backgroundAttachment = 'fixed';
+    }
     return () => {
       body.classList.remove('dot-mobile-experience');
+      body.style.backgroundImage = previous.backgroundImage;
+      body.style.backgroundSize = previous.backgroundSize;
+      body.style.backgroundPosition = previous.backgroundPosition;
+      body.style.backgroundAttachment = previous.backgroundAttachment;
     };
   }, []);
 
@@ -455,12 +470,3 @@ function BailoutAuctionMobile({ state, myPlayer, updateState }) {
   );
 }
 
-// Wallpaper κινητού (Admin → Βιβλιοθήκη πολυμέσων): ξεχωριστό στρώμα πίσω από όλες τις οθόνες του /play.
-export default function Play() {
-  return (
-    <>
-      <ScreenWallpaper src={ART.wallpaperPhone} />
-      <PlayInner />
-    </>
-  );
-}

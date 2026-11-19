@@ -1,408 +1,126 @@
-/* ==========================================================================
-   ADMIN · iOS 27 BLACK & GOLD
-   Μόνο το Admin. Όλοι οι κανόνες ξεκινούν από #admin-root (ή από dialogs που
-   ανοίγουν μέσα από το Admin), άρα Site / Tablet / TV / Κινητά δεν επηρεάζονται.
-   Δεν αλλάζει καμία λειτουργία — μόνο εμφάνιση.
-   ========================================================================== */
-
-/* ---------- 1 · TOKENS (shadcn HSL triplets) ---------- */
-#admin-root,
-:root:has(#admin-root) {
-  --background: 0 0% 0%;
-  --foreground: 42 42% 91%;
-  --card: 40 16% 7%;
-  --card-foreground: 42 42% 91%;
-  --popover: 40 16% 8%;
-  --popover-foreground: 42 42% 91%;
-  --primary: 42 74% 65%;
-  --primary-foreground: 0 0% 0%;
-  --secondary: 40 14% 11%;
-  --secondary-foreground: 42 42% 91%;
-  --muted: 40 10% 13%;
-  --muted-foreground: 42 24% 66%;
-  --accent: 42 50% 20%;
-  --accent-foreground: 42 42% 94%;
-  --destructive: 4 100% 61%;
-  --destructive-foreground: 0 0% 100%;
-  --border: 42 46% 40%;
-  --input: 40 12% 10%;
-  --ring: 42 74% 65%;
-  --surface-1: 0 0% 3%;
-  --surface-2: 40 14% 7%;
-  --surface-3: 40 12% 11%;
-  --hairline: 42 70% 86%;
-  --shadow-color: 0 0% 0%;
-  --adm-gold: #E8C26B;
-  --adm-gold-hi: #F9E7B2;
-  --adm-gold-lo: #C99B2E;
-  --adm-line: rgba(232, 194, 107, 0.30);
-  --adm-line-strong: rgba(232, 194, 107, 0.55);
-  --adm-glass: rgba(16, 14, 9, 0.72);
-  --adm-glass-thick: rgba(10, 9, 6, 0.88);
-  --adm-hi: rgba(255, 244, 205, 0.16);
-  --adm-spring: cubic-bezier(0.32, 0.72, 0, 1);
-  color-scheme: dark;
-}
-
-/* ---------- 2 · CANVAS ---------- */
+/* Admin-only black and gold theme. Keeps the existing Admin layout and control behavior intact. */
 #admin-root {
+  --background: 0 0% 0%;
+  --foreground: 43 75% 72%;
+  --card: 0 0% 0%;
+  --card-foreground: 43 75% 72%;
+  --popover: 0 0% 0%;
+  --popover-foreground: 43 75% 72%;
+  --primary: 43 65% 53%;
+  --primary-foreground: 0 0% 0%;
+  --secondary: 0 0% 0%;
+  --secondary-foreground: 43 75% 72%;
+  --muted: 0 0% 0%;
+  --muted-foreground: 43 55% 65%;
+  --accent: 43 65% 53%;
+  --accent-foreground: 0 0% 0%;
+  --border: 0 0% 0%;
+  --input: 0 0% 0%;
+  --ring: 43 65% 53%;
+  color-scheme: dark;
+  background: #000 !important;
+  color: #d4af37 !important;
+}
+
+/* Remove decorative effects without changing spacing, sizing, positioning or component structure. */
+#admin-root,
+#admin-root * {
+  box-shadow: none !important;
+  text-shadow: none !important;
+  border-color: transparent !important;
+  scrollbar-color: #8a6b27 #000;
+}
+
+/* Admin surfaces that already use a background class remain pure black. */
+#admin-root [class*="bg-"],
+#admin-root [style*="background-color"] {
   background-color: #000 !important;
-  background-image:
-    radial-gradient(900px 420px at 50% -140px, rgba(232, 194, 107, 0.17), transparent 70%),
-    radial-gradient(640px 360px at 100% 100%, rgba(232, 194, 107, 0.07), transparent 70%) !important;
-  background-attachment: fixed !important;
-  color: hsl(var(--foreground));
-  font-family: var(--font-ui, -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Inter', system-ui, sans-serif);
-  -webkit-font-smoothing: antialiased;
-  text-rendering: optimizeLegibility;
-  scrollbar-color: #7a6024 #000;
-  scrollbar-width: thin;
 }
-#admin-root ::selection { background: var(--adm-gold); color: #000; }
-#admin-root *::-webkit-scrollbar { width: 10px; height: 10px; }
-#admin-root *::-webkit-scrollbar-thumb { background: #6e5820; border-radius: 99px; border: 2px solid #000; }
-#admin-root *::-webkit-scrollbar-track { background: transparent; }
-
-/* ---------- 3 · TYPOGRAPHY ---------- */
-#admin-root .font-heading,
-#admin-root h1, #admin-root h2, #admin-root h3 {
-  font-family: var(--font-display, ui-rounded, -apple-system, 'SF Pro Display', 'Inter', system-ui, sans-serif);
-  letter-spacing: -0.012em;
-}
-#admin-root .comic-text-stroke,
-#admin-root .comic-text-stroke-thin { -webkit-text-stroke: 0 !important; text-shadow: none !important; }
-#admin-root .font-heading.text-primary,
-#admin-root .font-heading.text-lg,
-#admin-root .font-heading.text-xl { color: var(--adm-gold-hi); }
-
-/* ---------- 4 · SURFACES (Liquid Glass + gold outline) ---------- */
-#admin-root .comic-panel,
-#admin-root .comic-panel-sm {
-  background:
-    linear-gradient(180deg, rgba(255, 236, 180, 0.075), rgba(255, 236, 180, 0.012) 42%),
-    var(--adm-glass) !important;
-  border: 1px solid var(--adm-line) !important;
-  border-radius: 24px !important;
-  -webkit-backdrop-filter: blur(28px) saturate(180%);
-  backdrop-filter: blur(28px) saturate(180%);
-  box-shadow:
-    inset 0 1px 0 var(--adm-hi),
-    inset 0 0 0 0.5px rgba(255, 255, 255, 0.04),
-    0 26px 60px -36px rgba(0, 0, 0, 0.95) !important;
-}
-#admin-root .comic-panel-sm { border-radius: 18px !important; }
-/* panels μέσα σε panels: ελαφρύτερα, χωρίς διπλό blur */
-#admin-root .comic-panel .comic-panel,
-#admin-root .comic-panel .comic-panel-sm {
-  -webkit-backdrop-filter: none; backdrop-filter: none;
-  background: rgba(255, 236, 180, 0.035) !important;
-  border-radius: 18px !important;
-  box-shadow: inset 0 1px 0 rgba(255, 244, 205, 0.08) !important;
+#admin-root [class*="bg-gradient"] {
+  background-image: none !important;
 }
 
-/* Κάρτες περιεχομένου που φτιάχνουν τα components (border + bg-secondary/card κ.λπ.) */
-#admin-root .rounded-lg, #admin-root .rounded-md { border-radius: 16px; }
-#admin-root .rounded-xl { border-radius: 18px; }
-#admin-root .rounded-2xl { border-radius: 22px; }
-#admin-root .rounded { border-radius: 12px; }
-#admin-root [class*="border-border"],
-#admin-root [class*="border-primary"] { border-color: var(--adm-line) !important; }
-#admin-root .border-2, #admin-root .border-4 { border-width: 1px !important; }
-#admin-root [class*="bg-secondary"]:not(button):not(select):not(input):not(.comic-panel) {
-  background-color: rgba(255, 236, 180, 0.045) !important;
+/* All Admin text and icons use gold; no global display/layout rules are applied. */
+#admin-root [class*="text-"],
+#admin-root :is(h1,h2,h3,h4,h5,h6,p,span,label,small,strong,em,li,td,th,dt,dd,summary,legend) {
+  color: #d4af37 !important;
 }
-#admin-root [class*="bg-black/"]:not(button):not(select):not(input) { background-color: rgba(0, 0, 0, 0.55) !important; }
-#admin-root [class*="bg-primary/"]:not(button) {
-  background-color: rgba(232, 194, 107, 0.13) !important;
-  border-color: var(--adm-line-strong) !important;
+#admin-root svg [fill]:not([fill="none"]) {
+  fill: #d4af37 !important;
 }
-#admin-root hr, #admin-root [class*="border-t"] { border-color: rgba(232, 194, 107, 0.18) !important; }
-#admin-root .border-dashed { border-style: dashed !important; border-color: var(--adm-line-strong) !important; }
+#admin-root svg [stroke]:not([stroke="none"]) {
+  stroke: #d4af37 !important;
+}
 
-/* ---------- 5 · BUTTONS (κάψουλες) ---------- */
-#admin-root .comic-boom {
-  min-height: 40px;
-  padding-inline: 16px;
-  border-radius: 999px !important;
-  font-family: var(--font-ui, -apple-system, 'SF Pro Text', 'Inter', system-ui, sans-serif);
-  font-size: 12.5px;
-  font-weight: 600;
-  letter-spacing: 0.01em;
-  text-transform: none !important;
-  color: #F3DFA6 !important;
-  background: rgba(232, 194, 107, 0.09) !important;
-  border: 1px solid var(--adm-line-strong) !important;
-  box-shadow: inset 0 1px 0 var(--adm-hi) !important;
-  transition: transform 0.35s var(--adm-spring), background-color 0.2s, border-color 0.2s, filter 0.2s;
+/* Inputs stay usable and identifiable with a gold underline, not a surrounding box. */
+#admin-root :is(input,textarea,select),
+#admin-root [contenteditable="true"] {
+  color: #f0d98a !important;
+  background: #000 !important;
+  border: 0 !important;
+  border-bottom: 1px solid #d4af37 !important;
+  border-radius: 0 !important;
+  outline-color: #d4af37 !important;
+  caret-color: #d4af37;
 }
-#admin-root .comic-boom:hover { background: rgba(232, 194, 107, 0.17) !important; border-color: var(--adm-gold) !important; transform: none; }
-#admin-root .comic-boom:active { transform: scale(0.965); }
-#admin-root .comic-boom:focus-visible,
-#admin-root button:focus-visible,
-#admin-root a:focus-visible { outline: 2px solid var(--adm-gold); outline-offset: 2px; }
-/* κύριο κουμπί */
-#admin-root .comic-boom[class~="bg-primary"],
-#admin-root .comic-boom[class*="tarot-parchment"] {
+#admin-root input::placeholder,
+#admin-root textarea::placeholder {
+  color: #a58a4a !important;
+  opacity: 1;
+}
+
+/* Buttons retain their existing dimensions and placement; only their palette changes. */
+#admin-root :is(button,[role="button"],a) {
+  color: #d4af37 !important;
+}
+#admin-root button[class*="bg-primary"],
+#admin-root button[class*="bg-[#d4af37]"],
+#admin-root button[class*="bg-[#e5c76b]"],
+#admin-root [role="button"][class*="bg-primary"],
+#admin-root [role="button"][class*="bg-[#d4af37]"] {
+  background-color: #d4af37 !important;
   color: #000 !important;
-  background: linear-gradient(180deg, #F9E7B2 0%, #E8C26B 48%, #C99B2E 100%) !important;
-  border-color: rgba(255, 233, 160, 0.9) !important;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.55), 0 10px 26px -14px rgba(232, 194, 107, 0.7) !important;
 }
-#admin-root .comic-boom[class~="bg-primary"]:hover { filter: brightness(1.06); }
-#admin-root .comic-boom[class~="bg-primary"] *,
-#admin-root .comic-boom[class*="tarot-parchment"] * { color: #000 !important; }
-/* κίνδυνος / διαγραφή: το ΜΟΝΟ κόκκινο */
-#admin-root .comic-boom[class*="tarot-crimson"],
-#admin-root .comic-boom[class*="bg-red"],
-#admin-root .comic-boom[class*="bg-destructive"] {
-  color: #FF8E86 !important;
-  background: rgba(255, 69, 58, 0.12) !important;
-  border-color: rgba(255, 69, 58, 0.6) !important;
-}
-#admin-root .comic-boom[class*="tarot-crimson"]:hover { background: rgba(255, 69, 58, 0.22) !important; border-color: #FF453A !important; }
-#admin-root .comic-boom:disabled { opacity: 0.38; }
-#admin-root button:not(.comic-boom):not(:disabled) { transition: transform 0.3s var(--adm-spring), background-color 0.2s, border-color 0.2s; }
-#admin-root button:not(.comic-boom):not(:disabled):active { transform: scale(0.985); }
-#admin-root button, #admin-root select, #admin-root [role="button"] { touch-action: manipulation; }
-
-/* ---------- 6 · FORM CONTROLS ---------- */
-#admin-root input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="color"]),
-#admin-root select,
-#admin-root textarea {
-  min-height: 40px;
-  color: hsl(var(--foreground)) !important;
-  background-color: rgba(255, 244, 205, 0.045) !important;
-  border: 1px solid rgba(232, 194, 107, 0.34) !important;
-  border-radius: 14px !important;
-  caret-color: var(--adm-gold);
-  transition: border-color 0.2s, box-shadow 0.2s, background-color 0.2s;
-}
-#admin-root input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):hover,
-#admin-root select:hover, #admin-root textarea:hover { border-color: rgba(232, 194, 107, 0.6) !important; }
-#admin-root input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):focus,
-#admin-root select:focus, #admin-root textarea:focus {
-  outline: none !important;
-  border-color: var(--adm-gold) !important;
-  background-color: rgba(255, 244, 205, 0.075) !important;
-  box-shadow: 0 0 0 3px rgba(232, 194, 107, 0.22) !important;
-}
-#admin-root textarea { padding: 10px 12px; line-height: 1.5; }
-#admin-root select {
-  -webkit-appearance: none; appearance: none;
-  padding-right: 34px;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%23E8C26B' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") !important;
-  background-repeat: no-repeat !important;
-  background-position: right 12px center !important;
-}
-#admin-root select option { background: #111009; color: #F3E7C4; }
-#admin-root input::placeholder, #admin-root textarea::placeholder { color: rgba(232, 194, 107, 0.45) !important; opacity: 1; }
-#admin-root input[type="checkbox"], #admin-root input[type="radio"], #admin-root input[type="range"] { accent-color: var(--adm-gold); }
-#admin-root input[type="file"]::file-selector-button {
-  margin-right: 10px; padding: 7px 14px; border-radius: 999px; cursor: pointer;
-  border: 1px solid var(--adm-line-strong); background: rgba(232, 194, 107, 0.12); color: #F3DFA6; font-weight: 600;
-}
-#admin-root :disabled { cursor: not-allowed; }
-#admin-root label { color: hsl(var(--muted-foreground)); }
-
-/* ---------- 7 · TABLES ---------- */
-#admin-root table { border-collapse: separate !important; border-spacing: 0; width: 100%; }
-#admin-root th {
-  color: rgba(232, 194, 107, 0.92) !important; font-size: 0.68rem; font-weight: 700;
-  letter-spacing: 0.08em; text-transform: uppercase; text-align: left;
-  background: rgba(232, 194, 107, 0.06);
-}
-#admin-root td, #admin-root th { border-bottom: 1px solid rgba(232, 194, 107, 0.16) !important; padding: 10px 12px; }
-#admin-root tr:hover td { background: rgba(232, 194, 107, 0.045); }
-
-/* ---------- 8 · TABS (role=tab) ---------- */
-#admin-root [role="tablist"]:not(.adm-tabbar) {
-  background: rgba(255, 244, 205, 0.05); border: 1px solid rgba(232, 194, 107, 0.22);
-  border-radius: 999px; padding: 4px; gap: 2px;
-}
-#admin-root [role="tablist"]:not(.adm-tabbar) [role="tab"] { border-radius: 999px !important; font-weight: 600; }
-#admin-root [role="tablist"]:not(.adm-tabbar) [aria-selected="true"],
-#admin-root [role="tablist"]:not(.adm-tabbar) [data-state="active"] {
+#admin-root button[class*="bg-primary"] *,
+#admin-root button[class*="bg-[#d4af37]"] *,
+#admin-root button[class*="bg-[#e5c76b]"] *,
+#admin-root [role="button"][class*="bg-primary"] *,
+#admin-root [role="button"][class*="bg-[#d4af37]"] * {
   color: #000 !important;
-  background: linear-gradient(180deg, #F9E7B2, #E8C26B 55%, #C99B2E) !important;
+}
+#admin-root :is(button,[role="button"],a):is(:hover,:focus-visible) {
+  outline: 1px solid #d4af37 !important;
+  outline-offset: 2px;
+}
+#admin-root :is([aria-selected="true"],[aria-current="page"],[data-state="active"],[data-state="checked"]) {
+  color: #000 !important;
+  background-color: #d4af37 !important;
+}
+#admin-root :is([aria-selected="true"],[aria-current="page"],[data-state="active"],[data-state="checked"]) * {
+  color: #000 !important;
 }
 
-/* ---------- 9 · ADMIN CHROME ---------- */
-.adm-shell { max-width: 88rem; margin-inline: auto; display: flex; flex-direction: column; gap: 14px; }
-
-.adm-header {
-  position: sticky; top: max(8px, env(safe-area-inset-top, 0px)); z-index: 30;
-  display: flex; align-items: center; gap: 14px; padding: 12px 14px 12px 16px;
-  border-radius: 28px;
-  background: linear-gradient(180deg, rgba(255, 236, 180, 0.09), rgba(255, 236, 180, 0.015)), var(--adm-glass-thick);
-  border: 1px solid var(--adm-line-strong);
-  -webkit-backdrop-filter: blur(32px) saturate(190%); backdrop-filter: blur(32px) saturate(190%);
-  box-shadow: inset 0 1px 0 var(--adm-hi), 0 28px 60px -34px #000;
+/* Gold separators remain visible without restoring decorative frames or cards. */
+#admin-root hr {
+  border: 0 !important;
+  height: 1px;
+  background: #d4af37 !important;
 }
-.adm-mark {
-  flex: none; width: 46px; height: 46px; border-radius: 15px; display: grid; place-items: center;
-  background: linear-gradient(180deg, #F9E7B2, #E8C26B 52%, #B98A22);
-  color: #000; font-weight: 800; font-size: 20px; letter-spacing: -0.04em;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6), 0 10px 24px -12px rgba(232, 194, 107, 0.8);
-}
-.adm-titles { min-width: 0; flex: 1; }
-.adm-title {
-  font-family: var(--font-display, ui-rounded, -apple-system, 'SF Pro Display', 'Inter', system-ui, sans-serif);
-  font-size: clamp(1.25rem, 2.4vw, 1.75rem); font-weight: 750; letter-spacing: -0.025em; line-height: 1.1;
-  background: linear-gradient(180deg, #FFF1C7 0%, #E8C26B 62%, #C99B2E 100%);
-  -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: transparent;
-}
-.adm-subtitle { margin-top: 3px; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: rgba(232, 194, 107, 0.62); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.adm-actions { display: flex; align-items: center; gap: 8px; flex: none; }
-.adm-pill {
-  display: inline-flex; align-items: center; gap: 8px; height: 40px; padding: 0 14px; border-radius: 999px;
-  color: #F3DFA6; font-size: 12.5px; font-weight: 600; cursor: pointer;
-  background: rgba(232, 194, 107, 0.09); border: 1px solid var(--adm-line-strong);
-  box-shadow: inset 0 1px 0 var(--adm-hi);
-  transition: transform 0.35s var(--adm-spring), background-color 0.2s, border-color 0.2s;
-}
-.adm-pill:hover { background: rgba(232, 194, 107, 0.18); border-color: var(--adm-gold); }
-.adm-pill:active { transform: scale(0.96); }
-.adm-pill:disabled { opacity: 0.45; }
-.adm-pill--icon { width: 40px; padding: 0; justify-content: center; }
-.adm-kbd { font-size: 10.5px; padding: 2px 7px; border-radius: 7px; border: 1px solid var(--adm-line); color: rgba(232, 194, 107, 0.75); }
-
-.adm-layout { display: flex; gap: 14px; align-items: flex-start; }
-.adm-sidebar {
-  display: none; width: 268px; flex: none; position: sticky; top: calc(max(8px, env(safe-area-inset-top, 0px)) + 84px);
-  max-height: calc(100dvh - 108px); overflow-y: auto; overscroll-behavior: contain;
-  padding: 12px; border-radius: 26px;
-  background: linear-gradient(180deg, rgba(255, 236, 180, 0.06), rgba(255, 236, 180, 0.01)), var(--adm-glass);
-  border: 1px solid var(--adm-line);
-  -webkit-backdrop-filter: blur(28px) saturate(180%); backdrop-filter: blur(28px) saturate(180%);
-  box-shadow: inset 0 1px 0 var(--adm-hi), 0 26px 60px -36px #000;
-}
-@media (min-width: 1024px) { .adm-sidebar { display: block; } }
-.adm-content { flex: 1; min-width: 0; width: 100%; }
-
-.adm-group + .adm-group { margin-top: 14px; padding-top: 12px; border-top: 1px solid rgba(232, 194, 107, 0.14); }
-.adm-group-label { padding: 0 10px 6px; font-size: 10px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: rgba(232, 194, 107, 0.58); }
-.adm-navitem {
-  width: 100%; display: flex; align-items: center; gap: 11px; min-height: 42px; padding: 0 12px; margin-top: 2px;
-  border-radius: 14px; text-align: left; font-size: 13px; font-weight: 600; letter-spacing: -0.005em;
-  color: rgba(243, 231, 196, 0.86); background: transparent; border: 1px solid transparent;
-  transition: transform 0.3s var(--adm-spring), background-color 0.2s, border-color 0.2s, color 0.2s;
-}
-.adm-navitem svg { flex: none; width: 18px; height: 18px; color: var(--adm-gold); stroke-width: 1.9; }
-.adm-navitem:hover { background: rgba(232, 194, 107, 0.1); border-color: rgba(232, 194, 107, 0.3); color: #FFF3CE; }
-.adm-navitem[aria-current="page"] {
-  color: #000; border-color: rgba(255, 233, 160, 0.85);
-  background: linear-gradient(180deg, #F9E7B2 0%, #E8C26B 52%, #C99B2E 100%);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.55), 0 10px 24px -14px rgba(232, 194, 107, 0.75);
-}
-.adm-navitem[aria-current="page"] svg { color: #000; }
-.adm-navitem > span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-
-/* Session bar */
-.adm-sessionbar {
-  display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; padding: 10px 14px; border-radius: 22px;
-  background: linear-gradient(180deg, rgba(255, 236, 180, 0.06), rgba(255, 236, 180, 0.01)), var(--adm-glass);
-  border: 1px solid var(--adm-line);
-  -webkit-backdrop-filter: blur(24px) saturate(180%); backdrop-filter: blur(24px) saturate(180%);
-  box-shadow: inset 0 1px 0 var(--adm-hi);
-}
-.adm-eyebrow { font-size: 10.5px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: rgba(232, 194, 107, 0.7); display: inline-flex; align-items: center; gap: 8px; }
-.adm-dot { width: 8px; height: 8px; border-radius: 99px; background: var(--adm-gold); box-shadow: 0 0 0 3px rgba(232, 194, 107, 0.22); }
-.adm-dot--off { background: #5b5340; box-shadow: none; }
-.adm-chip {
-  display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 12px; border-radius: 999px;
-  font-size: 11.5px; font-weight: 600; color: #F3DFA6; text-decoration: none;
-  background: rgba(232, 194, 107, 0.09); border: 1px solid var(--adm-line);
-  transition: transform 0.3s var(--adm-spring), background-color 0.2s, border-color 0.2s;
-}
-.adm-chip:hover { background: rgba(232, 194, 107, 0.2); border-color: var(--adm-gold); }
-.adm-chip:active { transform: scale(0.96); }
-.adm-chip svg { width: 14px; height: 14px; }
-
-/* Search sheet */
-.adm-overlay { position: fixed; inset: 0; z-index: 100; padding: 12px; background: rgba(0, 0, 0, 0.72); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
-.adm-sheet {
-  margin: 8vh auto 0; max-width: 40rem; padding: 14px; border-radius: 28px;
-  background: linear-gradient(180deg, rgba(255, 236, 180, 0.08), rgba(255, 236, 180, 0.015)), var(--adm-glass-thick);
-  border: 1px solid var(--adm-line-strong);
-  box-shadow: inset 0 1px 0 var(--adm-hi), 0 40px 100px -30px #000;
-}
-.adm-result {
-  width: 100%; display: flex; flex-direction: column; gap: 2px; padding: 10px 14px; border-radius: 14px; text-align: left;
-  border: 1px solid transparent; transition: background-color 0.15s, border-color 0.15s;
-}
-.adm-result:hover, .adm-result:focus-visible { background: rgba(232, 194, 107, 0.12); border-color: var(--adm-line-strong); outline: none; }
-.adm-result b { font-size: 13.5px; font-weight: 650; color: #FFF3CE; }
-.adm-result small { font-size: 11px; color: rgba(232, 194, 107, 0.6); }
-.adm-empty { padding: 28px 12px; text-align: center; font-size: 13px; color: rgba(232, 194, 107, 0.6); }
-
-/* Κινητό: πλωτή κάψουλα πλοήγησης */
-.adm-tabbar-wrap {
-  position: fixed; z-index: 40; left: 0; right: 0; bottom: 0; display: flex; justify-content: center;
-  padding: 0 12px calc(env(safe-area-inset-bottom, 0px) + 10px); pointer-events: none;
-}
-@media (min-width: 1024px) { .adm-tabbar-wrap { display: none; } }
-.adm-tabbar {
-  pointer-events: auto; position: relative; display: flex; align-items: stretch; justify-content: space-around; gap: 2px;
-  width: min(100%, 30rem); padding: 6px; border-radius: 999px;
-  background: linear-gradient(180deg, rgba(255, 236, 180, 0.1), rgba(255, 236, 180, 0.02)), var(--adm-glass-thick);
-  border: 1px solid var(--adm-line-strong);
-  -webkit-backdrop-filter: blur(30px) saturate(190%); backdrop-filter: blur(30px) saturate(190%);
-  box-shadow: inset 0 1px 0 var(--adm-hi), 0 22px 50px -18px #000;
-}
-.adm-tab {
-  flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
-  padding: 7px 4px; border-radius: 999px; font-size: 10px; font-weight: 650; color: rgba(243, 231, 196, 0.8);
-  border: 1px solid transparent; transition: transform 0.3s var(--adm-spring), background-color 0.2s;
-}
-.adm-tab svg { width: 20px; height: 20px; stroke-width: 1.9; color: var(--adm-gold); }
-.adm-tab span { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.adm-tab:active { transform: scale(0.94); }
-.adm-tab[aria-selected="true"] {
-  color: #000; background: linear-gradient(180deg, #F9E7B2, #E8C26B 55%, #C99B2E);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.55);
-}
-.adm-tab[aria-selected="true"] svg { color: #000; }
-.adm-more {
-  position: absolute; left: 0; right: 0; bottom: calc(100% + 10px); max-height: 66dvh; overflow-y: auto; padding: 14px;
-  border-radius: 28px; background: linear-gradient(180deg, rgba(255, 236, 180, 0.09), rgba(255, 236, 180, 0.015)), var(--adm-glass-thick);
-  border: 1px solid var(--adm-line-strong);
-  -webkit-backdrop-filter: blur(30px) saturate(190%); backdrop-filter: blur(30px) saturate(190%);
-  box-shadow: inset 0 1px 0 var(--adm-hi), 0 30px 70px -20px #000;
-}
-.adm-more-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 10px; }
-.adm-more-title { font-size: 15px; font-weight: 750; letter-spacing: -0.01em; color: #FFF3CE; }
-
-.adm-footer { text-align: center; padding: 6px 0 2px; font-size: 11px; letter-spacing: 0.08em; color: rgba(232, 194, 107, 0.5); }
-.adm-loading { padding: 28px; text-align: center; font-size: 13px; color: rgba(232, 194, 107, 0.7); border-radius: 22px; border: 1px dashed var(--adm-line); }
-
-@media (max-width: 640px) {
-  .adm-header { padding: 10px 10px 10px 12px; gap: 10px; border-radius: 24px; }
-  .adm-mark { width: 40px; height: 40px; border-radius: 13px; font-size: 17px; }
-  .adm-subtitle { display: none; }
-  #admin-root .comic-panel { border-radius: 20px !important; }
+#admin-root ::selection {
+  color: #000;
+  background: #d4af37;
 }
 
-/* ---------- 10 · DIALOGS / POPOVERS (portals) ---------- */
-:root:has(#admin-root) [role="dialog"],
-:root:has(#admin-root) [role="alertdialog"],
-:root:has(#admin-root) [data-radix-popper-content-wrapper] > * {
-  background: linear-gradient(180deg, rgba(255, 236, 180, 0.08), rgba(255, 236, 180, 0.015)), rgba(12, 11, 7, 0.94) !important;
-  color: hsl(var(--foreground)) !important;
-  border: 1px solid var(--adm-line-strong) !important;
-  border-radius: 24px !important;
-  -webkit-backdrop-filter: blur(30px) saturate(180%); backdrop-filter: blur(30px) saturate(180%);
-  box-shadow: inset 0 1px 0 var(--adm-hi), 0 40px 100px -30px #000 !important;
+/* Admin dialogs and menus mounted in portals use the same palette. */
+:root:has(#admin-root) :is([data-radix-popper-content-wrapper],[role="dialog"],[role="alertdialog"]) {
+  color: #d4af37 !important;
+  background: #000 !important;
+  box-shadow: none !important;
+  border-color: transparent !important;
 }
-
-/* ---------- 11 · ACCESSIBILITY ---------- */
-@media (prefers-reduced-motion: reduce) {
-  #admin-root *, .adm-pill, .adm-chip, .adm-navitem, .adm-tab { transition: none !important; animation: none !important; }
+:root:has(#admin-root) :is([data-radix-popper-content-wrapper],[role="dialog"],[role="alertdialog"]) [class*="bg-"] {
+  background-color: #000 !important;
 }
-@media (prefers-reduced-transparency: reduce) {
-  #admin-root .comic-panel, #admin-root .comic-panel-sm, .adm-header, .adm-sidebar, .adm-sessionbar, .adm-tabbar, .adm-more, .adm-sheet {
-    -webkit-backdrop-filter: none !important; backdrop-filter: none !important; background: #0b0a06 !important;
-  }
-}
-@media (forced-colors: active) {
-  .adm-navitem[aria-current="page"], .adm-tab[aria-selected="true"] { outline: 2px solid Highlight; }
+:root:has(#admin-root) :is([data-radix-popper-content-wrapper],[role="dialog"],[role="alertdialog"]) [class*="text-"] {
+  color: #d4af37 !important;
 }
