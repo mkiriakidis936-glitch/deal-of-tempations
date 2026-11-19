@@ -73,7 +73,7 @@ export function useGameSession({ autoLoad = true } = {}) {
       stateRef.current = sessionRef.current?.state || previousState || {};
       setState(stateRef.current);
       console.error('Failed to update state; local state was reverted', e);
-      throw e;
+      return false;
     }
   }, []);
 
