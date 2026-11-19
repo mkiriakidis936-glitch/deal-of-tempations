@@ -115,5 +115,5 @@ npm run dev                 # frontend στο :5173 (proxy προς το API)
 
 ## Δημόσια links (κοινοποίηση)
 - Όρισε στο hosting τη μεταβλητή `PUBLIC_URL` (π.χ. `https://dealoftemptation.gr`) ώστε τα προεπισκόπηση-links (WhatsApp/Viber) να δείχνουν σωστή διεύθυνση και εικόνα (`/og-image.jpg`).
-- Δημόσιες σελίδες: `/site`, `/promo`, `/forms`, `/vip`, `/vip/:token`, `/vip-access`, `/gift-unlock`, `/play`, `/tv`. Τα `/`, `/admin` και οι ιδιωτικές ενότητες ζητούν σύνδεση διαχειριστή.
+- Δημόσιες σελίδες: `/site`, `/promo`, `/forms`, `/vip/:token`, `/gift-unlock`, `/play`, `/tv`. Τα `/`, `/admin` και οι ιδιωτικές ενότητες ζητούν σύνδεση διαχειριστή.
 - Το `robots.txt` επιτρέπει ευρετηρίαση μόνο σε `/site` και `/promo`.
