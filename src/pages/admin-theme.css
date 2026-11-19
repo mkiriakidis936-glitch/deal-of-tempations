@@ -1,50 +1,67 @@
-/* Full Admin palette: black surfaces and gold accents. Scoped to Admin only. */
+/* Admin-only monochrome black and gold. No decorative frames, cards, gradients or shadows. */
 #admin-root {
-  --background: 0 0% 3%;
-  --foreground: 43 74% 78%;
-  --card: 0 0% 5%;
-  --card-foreground: 43 74% 78%;
-  --popover: 0 0% 5%;
-  --popover-foreground: 43 74% 78%;
+  --background: 0 0% 0%;
+  --foreground: 43 75% 72%;
+  --card: 0 0% 0%;
+  --card-foreground: 43 75% 72%;
+  --popover: 0 0% 0%;
+  --popover-foreground: 43 75% 72%;
   --primary: 43 65% 53%;
-  --primary-foreground: 0 0% 3%;
-  --secondary: 0 0% 8%;
-  --secondary-foreground: 43 74% 78%;
-  --muted: 0 0% 10%;
-  --muted-foreground: 43 35% 65%;
-  --accent: 43 55% 35%;
-  --accent-foreground: 43 74% 88%;
-  --border: 43 45% 30%;
-  --input: 0 0% 7%;
+  --primary-foreground: 0 0% 0%;
+  --secondary: 0 0% 0%;
+  --secondary-foreground: 43 75% 72%;
+  --muted: 0 0% 0%;
+  --muted-foreground: 43 45% 60%;
+  --accent: 43 65% 53%;
+  --accent-foreground: 0 0% 0%;
+  --border: 0 0% 0%;
+  --input: 0 0% 0%;
   --ring: 43 65% 53%;
-  background: #050505 !important;
-  color: #e5c76b !important;
+  background: #000 !important;
+  color: #d4af37 !important;
   color-scheme: dark;
+}
+
+/* Every Admin surface stays black; every text element stays gold. */
+#admin-root,
+#admin-root *,
+#admin-root *::before,
+#admin-root *::after {
+  box-shadow: none !important;
+  text-shadow: none !important;
+  background-image: none !important;
+  scrollbar-color: #8a6b27 #000;
 }
 #admin-root,
 #admin-root * {
-  border-color: #6f5925;
-  scrollbar-color: #8f7028 #080808;
+  border-color: transparent !important;
 }
-#admin-root [class*="bg-"] {
-  background-color: #090909 !important;
+#admin-root,
+#admin-root :is(div,section,article,aside,header,footer,nav,main,form,fieldset,table,thead,tbody,tr,td,th,ul,ol,li),
+#admin-root [class*="bg-"],
+#admin-root [style*="background"],
+#admin-root [role="dialog"],
+#admin-root [role="alertdialog"] {
+  background-color: #000 !important;
 }
-#admin-root [class*="bg-gradient"] {
-  background-image: none !important;
-  background-color: #090909 !important;
+#admin-root :is(*, *::before, *::after) {
+  color: #d4af37 !important;
 }
-#admin-root [class*="text-"],
-#admin-root :is(h1,h2,h3,h4,h5,h6,p,span,label,small,strong,em,li,td,th,dt,dd,summary) {
-  color: #e5c76b !important;
+#admin-root :is(svg) [fill]:not([fill="none"]) {
+  fill: #d4af37 !important;
 }
-#admin-root [class*="border-"] {
-  border-color: #6f5925 !important;
+#admin-root :is(svg) [stroke]:not([stroke="none"]) {
+  stroke: #d4af37 !important;
 }
+
+/* Inputs and controls: black fill, gold text; no surrounding frames. */
 #admin-root :is(input,textarea,select),
 #admin-root [contenteditable="true"] {
   color: #f0d98a !important;
-  background-color: #080808 !important;
-  border-color: #8a6b27 !important;
+  background: #000 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  outline-color: #d4af37 !important;
   caret-color: #d4af37;
 }
 #admin-root input::placeholder,
@@ -52,52 +69,46 @@
   color: #a58a4a !important;
   opacity: 1;
 }
-#admin-root button,
-#admin-root [role="button"] {
-  border-color: #8a6b27;
+#admin-root :is(button,[role="button"],a) {
+  color: #d4af37 !important;
+  background: #000 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
 }
-#admin-root button[class*="bg-[#d4af37]"],
-#admin-root button[class*="bg-[#e5c76b]"],
-#admin-root button[class*="bg-primary"],
-#admin-root [role="button"][class*="bg-[#d4af37]"],
-#admin-root [role="button"][class*="bg-primary"],
-#admin-root [aria-selected="true"],
-#admin-root [aria-current="page"] {
-  background-color: #d4af37 !important;
-  color: #080808 !important;
-  border-color: #d4af37 !important;
+#admin-root :is(button,[role="button"],a):is(:hover,:focus-visible) {
+  color: #f0d98a !important;
+  outline: 1px solid #d4af37 !important;
+  outline-offset: 2px;
 }
-#admin-root button[class*="bg-[#d4af37]"] *,
-#admin-root button[class*="bg-[#e5c76b]"] *,
-#admin-root button[class*="bg-primary"] *,
-#admin-root [role="button"][class*="bg-[#d4af37]"] *,
-#admin-root [role="button"][class*="bg-primary"] *,
-#admin-root [aria-selected="true"] *,
-#admin-root [aria-current="page"] * {
-  color: #080808 !important;
+#admin-root :is([aria-selected="true"],[aria-current="page"],[data-state="active"],[data-state="checked"]) {
+  color: #000 !important;
+  background: #d4af37 !important;
+  border: 0 !important;
 }
-#admin-root :is(svg) [fill]:not([fill="none"]) {
-  fill: #d4af37;
-}
-#admin-root :is(svg) [stroke]:not([stroke="none"]) {
-  stroke: #d4af37;
-}
-#admin-root :is(table) thead,
-#admin-root :is(thead tr) {
-  background-color: #111111 !important;
+#admin-root :is([aria-selected="true"],[aria-current="page"],[data-state="active"],[data-state="checked"]) * {
+  color: #000 !important;
 }
 #admin-root :is(hr) {
-  border-color: #6f5925 !important;
-}
-#admin-root :is([data-state="checked"],[data-state="active"]) {
-  background-color: #d4af37 !important;
-  color: #080808 !important;
-  border-color: #d4af37 !important;
-}
-#admin-root :is([data-state="checked"],[data-state="active"]) * {
-  color: #080808 !important;
+  border: 0 !important;
+  background: #d4af37 !important;
+  height: 1px;
 }
 #admin-root ::selection {
-  color: #080808;
+  color: #000;
   background: #d4af37;
+}
+
+/* Radix/portal overlays are mounted outside #admin-root; keep Admin dialogs black and gold too. */
+:root:has(#admin-root) :is([data-radix-portal],[data-radix-popper-content-wrapper],[role="dialog"],[role="alertdialog"]) {
+  color: #d4af37 !important;
+  background: #000 !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+:root:has(#admin-root) :is([data-radix-portal],[data-radix-popper-content-wrapper],[role="dialog"],[role="alertdialog"]) * {
+  color: #d4af37 !important;
+  background-color: #000 !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
 }
