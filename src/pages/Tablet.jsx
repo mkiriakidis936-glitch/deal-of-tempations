@@ -174,8 +174,14 @@ export default function Tablet() {
   }
 
   async function archiveAndDelete() {
-    if (!session || !state) { await deleteSession(); return; }
-    if (state.testMode) { await deleteSession(); return; }
+    if (!session || !state || state.testMode) {
+      try { await deleteSession(); }
+      catch (error) {
+        console.error('Session deletion failed', error);
+        window.alert('Η διαγραφή της συνεδρίας απέτυχε. Η συνεδρία παραμένει αποθηκευμένη.');
+      }
+      return;
+    }
     if (endingRef.current) return;
     endingRef.current = true;
     try {
@@ -239,7 +245,14 @@ export default function Tablet() {
     } catch (e) {
       console.error('Achievement save failed', e);
     }
-    await deleteSession();
+    try {
+      await deleteSession();
+    } catch (e) {
+      console.error('Session deletion failed after archive', e);
+      window.alert('Η αρχειοθέτηση ολοκληρώθηκε, αλλά η διαγραφή της ενεργής συνεδρίας απέτυχε. Η συνεδρία παραμένει διαθέσιμη.');
+      endingRef.current = false;
+      return;
+    }
     endingRef.current = false;
   }
 
