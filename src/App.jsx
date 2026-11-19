@@ -30,6 +30,7 @@ const Register = lazy(() => import('@/pages/Register'));
 const ForgotPassword = lazy(() => import('@/pages/ForgotPassword'));
 const ResetPassword = lazy(() => import('@/pages/ResetPassword'));
 const PublicForms = lazy(() => import('@/pages/PublicForms'));
+const PublicFormRedirect = () => { const location = useLocation(); return <Navigate to={`/forms${location.search}`} replace />; };
 const VIPAccess = lazy(() => import('@/pages/VIPAccess'));
 
 // Game-master screens (tablet + admin) need an admin account.
@@ -63,21 +64,21 @@ const AuthenticatedApp = () => {
       <Route path="/" element={<RequireAdmin><Tablet /></RequireAdmin>} />
       <Route path="/tv" element={<TVScreen />} />
       <Route path="/play" element={<Play />} />
-      <Route path="/intake" element={<Intake />} />
+      <Route path="/intake" element={<PublicFormRedirect />} />
       <Route path="/admin" element={<RequireAdmin><Admin /></RequireAdmin>} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password" element={<ResetPassword />} />
       <Route path="/promo" element={<Promo />} />
-      <Route path="/invitation" element={<Invitation />} />
+      <Route path="/invitation" element={<PublicFormRedirect />} />
       <Route path="/vip" element={<VIPEventPage />} />
       <Route path="/vip/:token" element={<VIPInvitationPage />} />
       <Route path="/vip-access" element={<VIPAccess />} />
       <Route path="/forms" element={<PublicForms />} />
-      <Route path="/welcome" element={<Navigate to="/invitation" replace />} />
-      <Route path="/pajama-form" element={<PajamaForm />} />
-      <Route path="/modes-form" element={<ModeForm />} />
+      <Route path="/welcome" element={<PublicFormRedirect />} />
+      <Route path="/pajama-form" element={<PublicFormRedirect />} />
+      <Route path="/modes-form" element={<PublicFormRedirect />} />
       <Route path="/gift-unlock" element={<GiftUnlock />} />
       <Route path="/pajama-invite" element={<PajamaInvite />} />
       <Route path="/site" element={<Site />} />
