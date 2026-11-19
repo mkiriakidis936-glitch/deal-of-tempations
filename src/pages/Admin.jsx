@@ -2,8 +2,10 @@ import React, { lazy, Suspense, useState, useEffect, useCallback } from 'react';
 import './admin-theme.css';
 import { useSearchParams } from 'react-router-dom';
 import { base44, request } from '@/api/base44Client';
-import ComicPanel from '@/components/comic/ComicPanel';
-import ComicButton from '@/components/comic/ComicButton';
+import {
+  LayoutDashboard, Inbox, Ticket, BarChart3, Gamepad2, Radio, Clapperboard, Video, Users, Award, Layers, Drama,
+  Images, Globe, Mail, FileText, Link2, History, Film, HardDrive, LifeBuoy, Settings, CalendarDays, Bell, Search, RefreshCw,
+} from 'lucide-react';
 import AdminNav, { AdminTabBar } from '@/components/admin/AdminNav';
 import AdminSessionBar from '@/components/admin/AdminSessionBar';
 const AdminContentHub = lazy(() => import('@/components/admin/AdminContentHub'));
@@ -39,80 +41,80 @@ import { createInitialState } from '@/lib/gameLogic';
 const NAV_GROUPS = [
   {
     id: 'overview',
-    label: '01 · ΚΕΝΤΡΙΚΗ ΕΙΚΟΝΑ',
+    label: '01 · Κεντρική εικόνα',
     tabs: [
-      { id: 'dashboard', label: '📊 Επισκόπηση' },
-      { id: 'inbox', label: '📥 Εισερχόμενα' },
-      { id: 'events', label: '🎟️ Events & καλεσμένοι' },
-      { id: 'statistics', label: '📈 Στατιστικά & επισκέψεις' },
+      { id: 'dashboard', label: 'Επισκόπηση', icon: LayoutDashboard },
+      { id: 'inbox', label: 'Εισερχόμενα', icon: Inbox },
+      { id: 'events', label: 'Events & καλεσμένοι', icon: Ticket },
+      { id: 'statistics', label: 'Στατιστικά & επισκέψεις', icon: BarChart3 },
     ],
   },
   {
     id: 'game',
-    label: '02 · ΠΑΙΧΝΙΔΙ & ΖΩΝΤΑΝΟΣ ΕΛΕΓΧΟΣ',
+    label: '02 · Παιχνίδι & ζωντανός έλεγχος',
     tabs: [
-      { id: 'modes', label: '🎮 Λειτουργίες παιχνιδιού' },
-      { id: 'live', label: '⏯️ Ζωντανός έλεγχος' },
-      { id: 'casting', label: '🎬 Επιλογή Επεισοδίου' },
+      { id: 'modes', label: 'Λειτουργίες παιχνιδιού', icon: Gamepad2 },
+      { id: 'live', label: 'Ζωντανός έλεγχος', icon: Radio },
+      { id: 'casting', label: 'Επιλογή επεισοδίου', icon: Clapperboard },
     ],
   },
   {
     id: 'production',
-    label: '03 · REALITY SHOW PRODUCTION',
+    label: '03 · Reality show production',
     tabs: [
-      { id: 'production', label: '🎥 Production Room' },
+      { id: 'production', label: 'Production room', icon: Video },
     ],
   },
   {
     id: 'players',
-    label: '03 · ΠΑΙΚΤΕΣ',
+    label: '04 · Παίκτες',
     tabs: [
-      { id: 'players', label: '👥 Παίκτες & Ρόλοι' },
-      { id: 'achievements', label: '🏅 Επιτεύγματα' },
+      { id: 'players', label: 'Παίκτες & ρόλοι', icon: Users },
+      { id: 'achievements', label: 'Επιτεύγματα', icon: Award },
     ],
   },
   {
     id: 'content',
-    label: '04 · ΠΕΡΙΕΧΟΜΕΝΟ & ΣΕΝΑΡΙΑ',
+    label: '05 · Περιεχόμενο & σενάρια',
     tabs: [
-      { id: 'editor', label: '🃏 Κάρτες & επεξεργασία παιχνιδιού' },
-      { id: 'scenarios', label: '🎭 Σενάρια' },
-      { id: 'media', label: '🖼️ Βιβλιοθήκη πολυμέσων' },
+      { id: 'editor', label: 'Κάρτες & επεξεργασία', icon: Layers },
+      { id: 'scenarios', label: 'Σενάρια', icon: Drama },
+      { id: 'media', label: 'Βιβλιοθήκη πολυμέσων', icon: Images },
     ],
   },
   {
     id: 'website',
-    label: '05 · ΙΣΤΟΣΕΛΙΔΑ',
+    label: '06 · Ιστοσελίδα',
     tabs: [
-      { id: 'website', label: '🌐 Ιστοσελίδα' },
+      { id: 'website', label: 'Ιστοσελίδα', icon: Globe },
     ],
   },
   {
     id: 'experiences',
-    label: '06 · ΠΡΟΣΚΛΗΣΕΙΣ & ΣΥΜΜΕΤΟΧΕΣ',
+    label: '07 · Προσκλήσεις & συμμετοχές',
     tabs: [
-      { id: 'invitations', label: '✉️ Ψηφιακές προσκλήσεις' },
-      { id: 'forms', label: '📝 Φόρμες & δηλώσεις συμμετοχής' },
-      { id: 'links', label: '🔗 Σύνδεσμοι & QR' },
+      { id: 'invitations', label: 'Ψηφιακές προσκλήσεις', icon: Mail },
+      { id: 'forms', label: 'Φόρμες & δηλώσεις', icon: FileText },
+      { id: 'links', label: 'Σύνδεσμοι & QR', icon: Link2 },
     ],
   },
   {
     id: 'history',
-    label: '07 · ΙΣΤΟΡΙΚΟ & ΑΝΑΚΤΗΣΗ',
+    label: '08 · Ιστορικό & ανάκτηση',
     tabs: [
-      { id: 'sessions', label: '🎲 Ιστορικό παρτίδων' },
-      { id: 'archive', label: '🎬 Αρχείο επεισοδίων' },
-      { id: 'backup', label: '💾 Αντίγραφα ασφαλείας' },
-      { id: 'recovery', label: '🛟 Ανάκτηση παρτίδων' },
+      { id: 'sessions', label: 'Ιστορικό παρτίδων', icon: History },
+      { id: 'archive', label: 'Αρχείο επεισοδίων', icon: Film },
+      { id: 'backup', label: 'Αντίγραφα ασφαλείας', icon: HardDrive },
+      { id: 'recovery', label: 'Ανάκτηση παρτίδων', icon: LifeBuoy },
     ],
   },
   {
     id: 'settings',
-    label: '08 · ΡΥΘΜΙΣΕΙΣ & ΥΠΟΣΤΗΡΙΞΗ',
+    label: '09 · Ρυθμίσεις & υποστήριξη',
     tabs: [
-      { id: 'settings', label: '⚙️ Ρυθμίσεις εφαρμογής' },
-      { id: 'eventinfo', label: '🗓️ Πληροφορίες Event' },
-      { id: 'notifications', label: '🔔 Ειδοποιήσεις PUSH' },
+      { id: 'settings', label: 'Ρυθμίσεις εφαρμογής', icon: Settings },
+      { id: 'eventinfo', label: 'Πληροφορίες event', icon: CalendarDays },
+      { id: 'notifications', label: 'Ειδοποιήσεις push', icon: Bell },
     ],
   },
 ];
@@ -331,47 +333,87 @@ export default function Admin() {
     }
   }
 
-  return (
-    <div id="admin-root" className="admin-root min-h-[100dvh] comic-dots p-2.5 sm:p-4 pb-[calc(env(safe-area-inset-bottom,0px)+5.5rem)]">
-      <div className="max-w-6xl mx-auto space-y-3">
-        {searchOpen && <div className="fixed inset-0 z-[100] bg-black/70 p-3 sm:p-8" onMouseDown={(e) => { if (e.target === e.currentTarget) setSearchOpen(false); }}><div className="mx-auto mt-[8vh] max-w-xl rounded-2xl border border-primary/40 bg-card p-4 shadow-2xl"><div className="flex items-center gap-2"><input autoFocus value={globalSearch} onChange={(e) => setGlobalSearch(e.target.value)} placeholder="Αναζήτηση σε ενότητες, Events, παίκτριες..." className="min-w-0 flex-1 rounded-lg border border-border bg-background p-3 text-sm" /><ComicButton size="sm" variant="dark" onClick={() => setSearchOpen(false)}>ΚΛΕΙΣΙΜΟ</ComicButton></div><div className="mt-3 max-h-[60vh] overflow-y-auto space-y-1">{[
-          ...NAV_GROUPS.flatMap((group) => group.tabs.map((tab) => ({ type: 'tab', id: tab.id, label: tab.label.replace(/^[^ ]+ /, ''), detail: group.label }))),
-          ...sessions.map((session) => ({ type: 'session', id: session.id, label: session.event?.title || session.mode || 'Game', detail: session.sessionCode + ' · ' + (session.state?.players || []).map((player) => player.name).join(', ') })),
-        ].filter((item) => !globalSearch || (item.label + ' ' + item.detail).toLocaleLowerCase('el-GR').includes(globalSearch.toLocaleLowerCase('el-GR'))).slice(0, 30).map((item) => <button key={item.type + item.id} className="w-full rounded-lg p-3 text-left hover:bg-secondary" onClick={() => { if (item.type === 'tab') setTab(item.id); else { const found = sessions.find((session) => session.id === item.id); setPickedSession(found || null); setTab('events'); } setSearchOpen(false); }}><div className="text-sm font-bold">{item.label}</div><div className="text-[10px] text-foreground/50">{item.detail}</div></button>)}</div></div></div>}
-        <ComicPanel className="bg-secondary flex items-center justify-between gap-2">
-          <div className="min-w-0">
-            <div className="font-heading text-2xl sm:text-3xl comic-text-stroke text-primary">🔧 ΚΕΝΤΡΟ ΕΛΕΓΧΟΥ</div>
-            <div className="text-[11px] sm:text-xs font-bold text-foreground/70 font-body truncate">DEAL OF TEMPTATIONS — THE PRIVATE REALITY GAME NIGHT</div>
-          </div>
-          <ComicButton variant="dark" size="sm" onClick={() => { setGlobalSearch(''); setSearchOpen(true); }}>⌕ <span className="hidden sm:inline">ΑΝΑΖΗΤΗΣΗ · ⌘K</span></ComicButton>
-          <ComicButton variant="dark" size="sm" onClick={loadSessions} disabled={loading}>
-            🔄 <span className="hidden sm:inline">{loading ? 'ΦΟΡΤΩΣΗ...' : 'ΑΝΑΝΕΩΣΗ'}</span>
-          </ComicButton>
-        </ComicPanel>
+  const searchItems = [
+    ...NAV_GROUPS.flatMap((group) => group.tabs.map((item) => ({ type: 'tab', id: item.id, label: item.label, detail: group.label.replace(/^\d+ · /, '') }))),
+    ...sessions.map((session) => ({ type: 'session', id: session.id, label: session.event?.title || session.mode || 'Game', detail: `${session.sessionCode} · ${(session.state?.players || []).map((player) => player.name).join(', ')}` })),
+  ];
+  const needle = globalSearch.toLocaleLowerCase('el-GR');
+  const searchResults = searchItems.filter((item) => !needle || `${item.label} ${item.detail}`.toLocaleLowerCase('el-GR').includes(needle)).slice(0, 30);
+  const pickResult = (item) => {
+    if (!item) return;
+    if (item.type === 'tab') setTab(item.id);
+    else { setPickedSession(sessions.find((session) => session.id === item.id) || null); setTab('events'); }
+    setSearchOpen(false);
+  };
 
-        {/* Κινητό: μενού που σκρολάρει οριζόντια, πάντα ορατό */}
-        <div className="lg:hidden fixed z-40 bottom-0 left-0 right-0 px-2 pb-[env(safe-area-inset-bottom,0px)] bg-background/95 backdrop-blur border-t border-border/50 shadow-lg">
+  return (
+    <div id="admin-root" className="admin-root min-h-[100dvh] p-2.5 sm:p-4 pb-[calc(env(safe-area-inset-bottom,0px)+6.5rem)] lg:pb-6">
+      <div className="adm-shell">
+        {searchOpen && (
+          <div className="adm-overlay" role="dialog" aria-modal="true" aria-label="Αναζήτηση" onMouseDown={(e) => { if (e.target === e.currentTarget) setSearchOpen(false); }}>
+            <div className="adm-sheet">
+              <div className="flex items-center gap-2">
+                <input
+                  autoFocus
+                  value={globalSearch}
+                  onChange={(e) => setGlobalSearch(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === 'Enter') pickResult(searchResults[0]); }}
+                  placeholder="Αναζήτηση σε ενότητες, events, παίκτριες…"
+                  className="min-w-0 flex-1 px-4 text-sm"
+                />
+                <button type="button" className="adm-pill" onClick={() => setSearchOpen(false)}>Κλείσιμο</button>
+              </div>
+              <div className="mt-3 max-h-[60vh] overflow-y-auto">
+                {searchResults.length === 0 && <div className="adm-empty">Δεν βρέθηκε τίποτα.</div>}
+                {searchResults.map((item) => (
+                  <button type="button" key={item.type + item.id} className="adm-result" onClick={() => pickResult(item)}>
+                    <b>{item.label}</b>
+                    <small>{item.detail}</small>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        <header className="adm-header">
+          <div className="adm-mark" aria-hidden="true">D</div>
+          <div className="adm-titles">
+            <h1 className="adm-title">Κέντρο ελέγχου</h1>
+            <div className="adm-subtitle">Deal of Temptations — The Private Reality Game Night</div>
+          </div>
+          <div className="adm-actions">
+            <button type="button" className="adm-pill" onClick={() => { setGlobalSearch(''); setSearchOpen(true); }} aria-label="Αναζήτηση">
+              <Search size={16} strokeWidth={2} />
+              <span className="hidden sm:inline">Αναζήτηση</span>
+              <span className="adm-kbd hidden md:inline">⌘K</span>
+            </button>
+            <button type="button" className="adm-pill" onClick={loadSessions} disabled={loading} aria-label="Ανανέωση">
+              <RefreshCw size={16} strokeWidth={2} className={loading ? 'animate-spin' : ''} />
+              <span className="hidden sm:inline">{loading ? 'Φόρτωση…' : 'Ανανέωση'}</span>
+            </button>
+          </div>
+        </header>
+
+        {/* Κινητό: πλωτή γυάλινη μπάρα πλοήγησης */}
+        <div className="adm-tabbar-wrap">
           <AdminTabBar groups={navGroups} active={tab} onChange={setTab} />
         </div>
 
         <AdminSessionBar sessions={sessions} activeSession={activeSession} onSelect={selectSession} />
 
-        <div className="flex flex-col lg:flex-row gap-3 items-start">
-          <div className="hidden lg:block w-52 shrink-0 lg:sticky lg:top-3">
-            <ComicPanel className="bg-card p-2">
-              <AdminNav groups={navGroups} active={tab} onChange={setTab} />
-            </ComicPanel>
-          </div>
-          <div className="flex-1 min-w-0 w-full">
-            <Suspense fallback={<div className="rounded-xl border border-border bg-card p-6 text-center text-sm text-foreground/60">Φόρτωση ενότητας…</div>}>
+        <div className="adm-layout">
+          <aside className="adm-sidebar">
+            <AdminNav groups={navGroups} active={tab} onChange={setTab} />
+          </aside>
+          <main className="adm-content">
+            <Suspense fallback={<div className="adm-loading">Φόρτωση ενότητας…</div>}>
               {renderTab()}
             </Suspense>
-          </div>
+          </main>
         </div>
 
-        <div className="text-center text-xs text-foreground/50 pt-2 font-body">
-          🔧 Πίνακας διαχείρισης — {sessions.length} συνεδρίες φορτωμένες
-        </div>
+        <div className="adm-footer">Πίνακας διαχείρισης · {sessions.length} συνεδρίες φορτωμένες</div>
       </div>
     </div>
   );

@@ -22,6 +22,40 @@ const KINDS = {
   '.mp3': 'audio', '.wav': 'audio', '.ogg': 'audio', '.m4a': 'audio', '.aac': 'audio',
 };
 fs.mkdirSync(UPLOAD_DIR, { recursive: true });
+// Καθαρισμός ημιτελών ανεβασμάτων (.part) από προηγούμενο crash/restart.
+for (const dir of [UPLOAD_DIR, PRIVATE_UPLOAD_DIR]) {
+  try { for (const n of fs.readdirSync(dir)) if (n.endsWith('.part')) fs.rmSync(path.join(dir, n), { force: true }); } catch { /* ignore */ }
+}
+
+// Έλεγχος ότι το περιεχόμενο ταιριάζει με την κατάληξη (όχι απλώς όνομα .jpg) + απόρριψη SVG με scripts.
+async function validateContent(file, ext) {
+  const fh = await fsp.open(file, 'r');
+  try {
+    const head = Buffer.alloc(32);
+    const { bytesRead } = await fh.read(head, 0, 32, 0);
+    const b = head.subarray(0, bytesRead);
+    const ascii = (from, to) => b.subarray(from, to).toString('latin1');
+    switch (ext) {
+      case '.jpg': case '.jpeg': return b[0] === 0xff && b[1] === 0xd8;
+      case '.png': return b.subarray(0, 8).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]));
+      case '.gif': return ascii(0, 3) === 'GIF';
+      case '.webp': return ascii(0, 4) === 'RIFF' && ascii(8, 12) === 'WEBP';
+      case '.avif': return ascii(4, 8) === 'ftyp';
+      case '.mp4': case '.mov': case '.m4a': return ascii(4, 8) === 'ftyp';
+      case '.webm': return b[0] === 0x1a && b[1] === 0x45 && b[2] === 0xdf && b[3] === 0xa3;
+      case '.ogg': return ascii(0, 4) === 'OggS';
+      case '.wav': return ascii(0, 4) === 'RIFF' && ascii(8, 12) === 'WAVE';
+      case '.mp3': return ascii(0, 3) === 'ID3' || (b[0] === 0xff && (b[1] & 0xe0) === 0xe0);
+      case '.aac': return (b[0] === 0xff && (b[1] & 0xf0) === 0xf0) || ascii(0, 3) === 'ID3' || ascii(4, 8) === 'ftyp';
+      case '.svg': {
+        const text = (await fsp.readFile(file, 'utf8')).slice(0, 2_000_000);
+        if (!/<svg[\s>]/i.test(text)) return false;
+        return !/<script|\son[a-z]+\s*=|javascript:|<foreignObject|<iframe|<embed|<object/i.test(text);
+      }
+      default: return true;
+    }
+  } finally { await fh.close(); }
+}
 
 const slugOf = (base) => base.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40) || 'file';
 const kindOf = (name) => KINDS[path.extname(name).toLowerCase()];
@@ -35,6 +69,7 @@ export const mediaStatic = [
     immutable: true,
     setHeaders: (res, file) => {
       res.setHeader('X-Content-Type-Options', 'nosniff');
+      if (/\.svg$/i.test(file)) res.setHeader('Content-Security-Policy', "default-src 'none'; style-src 'unsafe-inline'; img-src data:; sandbox");
       if (path.basename(file).startsWith('published-')) res.setHeader('Cache-Control', 'no-store, max-age=0');
     },
   }),
@@ -107,10 +142,12 @@ export function mediaRoutes() {
     try {
       await pipeline(req, counter, fs.createWriteStream(tmp));
       if (!size) throw new Error('EMPTY');
+      if (!(await validateContent(tmp, ext))) throw new Error('BAD_TYPE');
       await fsp.rename(tmp, path.join(UPLOAD_DIR, name));
     } catch (e) {
       await fsp.rm(tmp, { force: true });
       if (res.headersSent) return;
+      if (e.message === 'BAD_TYPE') return res.status(415).json({ error: `Το «${original}» δεν είναι έγκυρο αρχείο ${ext.slice(1).toUpperCase()} (ή περιέχει μη ασφαλές περιεχόμενο).` });
       if (e.message === 'TOO_BIG') return res.status(413).json({ error: `Το αρχείο ξεπερνά τα ${MAX_MB}MB.` });
       if (e.message === 'EMPTY') return res.status(400).json({ error: 'Κενό αρχείο.' });
       return res.status(400).json({ error: 'Η μεταφόρτωση διακόπηκε. Δοκίμασε ξανά.' });
@@ -161,10 +198,12 @@ export function mediaRoutes() {
     try {
       await pipeline(req, counter, fs.createWriteStream(tmp));
       if (!size) throw new Error('EMPTY');
+      if (!(await validateContent(tmp, ext))) throw new Error('BAD_TYPE');
       await fsp.rename(tmp, path.join(PRIVATE_UPLOAD_DIR, name));
       return res.json({ name, size, kind, private: true });
     } catch (error) {
       await fsp.rm(tmp, { force: true });
+      if (error.message === 'BAD_TYPE') return res.status(415).json({ error: 'Το αρχείο δεν είναι έγκυρο για τον τύπο του.' });
       if (error.message === 'TOO_BIG') return res.status(413).json({ error: `Το αρχείο ξεπερνά τα ${MAX_MB}MB.` });
       if (error.message === 'EMPTY') return res.status(400).json({ error: 'Κενό αρχείο.' });
       return res.status(400).json({ error: 'Η ιδιωτική μεταφόρτωση απέτυχε.' });

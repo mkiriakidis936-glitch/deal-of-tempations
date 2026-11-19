@@ -1,0 +1,27 @@
+/* Wallpaper οθόνης: ενεργό ΜΟΝΟ όταν υπάρχει εικόνα (body[data-wallpaper]). Χωρίς εικόνα, τίποτα δεν αλλάζει. */
+.dot-wallpaper {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+/* σκούρο «σεντόνι» για ευανάγνωστα κείμενα πάνω από οποιαδήποτε φωτογραφία */
+.dot-wallpaper::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.7));
+}
+body[data-wallpaper] {
+  background: transparent !important;
+  background-image: none !important;
+}
+body[data-wallpaper] .comic-dots,
+body[data-wallpaper] .comic-dots-dark,
+body[data-wallpaper] .dot-tv-shell {
+  background: transparent !important;
+  background-image: none !important;
+}

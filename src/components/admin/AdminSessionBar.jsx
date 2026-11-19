@@ -1,5 +1,5 @@
 import React from 'react';
-import ComicPanel from '@/components/comic/ComicPanel';
+import { Tablet, Tv, Smartphone } from 'lucide-react';
 
 const PJ_PHASES = {
   setup: 'Στήσιμο',
@@ -15,9 +15,9 @@ const PJ_PHASES = {
 };
 
 const LINKS = [
-  { label: '📱 Ταμπλέτα', href: '/' },
-  { label: '📺 TV', href: '/tv' },
-  { label: '📲 Κινητά', href: '/play' },
+  { label: 'Tablet', href: '/', icon: Tablet },
+  { label: 'TV', href: '/tv', icon: Tv },
+  { label: 'Κινητά', href: '/play', icon: Smartphone },
 ];
 
 function describe(session) {
@@ -32,45 +32,52 @@ function describe(session) {
 
 export default function AdminSessionBar({ sessions, activeSession, onSelect }) {
   const info = describe(activeSession);
+  const hasSessions = sessions.length > 0;
 
   return (
-    <ComicPanel className="bg-secondary flex flex-wrap items-center justify-between gap-2 py-2">
-      <div className="flex flex-wrap items-center gap-2 min-w-0 w-full">
-        <span className="font-heading text-xs text-primary">ΕΝΕΡΓΗ ΣΥΝΕΔΡΙΑ</span>
-        {sessions.length > 0 ? (
-          <select
-            value={activeSession?.id || ''}
-            onChange={(e) => onSelect(sessions.find((s) => s.id === e.target.value) || null)}
-            className="px-2 py-2 rounded-lg border-2 border-border bg-background text-foreground font-bold text-xs max-w-full w-full sm:w-auto"
-          >
-            {sessions.map((s) => (
-              <option key={s.id} value={s.id}>
-                {s.sessionCode} · {s.mode} · {s.state?.players?.length || 0} παίκτριες
-              </option>
-            ))}
-          </select>
-        ) : (
-          <span className="text-xs text-foreground/60 font-body">καμία — ξεκίνα από την ταμπλέτα</span>
-        )}
-        {info && (
-          <span className="text-[11px] font-body text-foreground/70">
-            {info.mode} · {info.phase} · 👥 {info.players}
-          </span>
-        )}
+    <section className="adm-sessionbar" aria-label="Ενεργή συνεδρία">
+      <span className="adm-eyebrow">
+        <span className={hasSessions ? 'adm-dot' : 'adm-dot adm-dot--off'} aria-hidden="true" />
+        Ενεργή συνεδρία
+      </span>
+      {hasSessions ? (
+        <select
+          aria-label="Επιλογή ενεργής συνεδρίας"
+          value={activeSession?.id || ''}
+          onChange={(e) => onSelect(sessions.find((s) => s.id === e.target.value) || null)}
+          className="px-3 text-xs font-semibold max-w-full w-full sm:w-auto sm:min-w-[260px]"
+        >
+          {sessions.map((s) => (
+            <option key={s.id} value={s.id}>
+              {s.sessionCode} · {s.mode} · {s.state?.players?.length || 0} παίκτριες
+            </option>
+          ))}
+        </select>
+      ) : (
+        <span className="text-xs text-foreground/60">Καμία — ξεκίνα από το tablet</span>
+      )}
+      {hasSessions && (
+        <span className="text-[11.5px] text-foreground/70">
+          {info.mode} · {info.phase} · {info.players} παίκτριες
+        </span>
+      )}
+      <div className="ml-auto flex flex-wrap items-center gap-1.5">
+        {LINKS.map((l) => {
+          const Icon = l.icon;
+          return (
+            <a
+              key={l.href}
+              href={activeSession?.sessionCode ? `${l.href}?code=${activeSession.sessionCode}` : l.href}
+              target="_blank"
+              rel="noreferrer"
+              className="adm-chip"
+            >
+              <Icon aria-hidden="true" />
+              {l.label}
+            </a>
+          );
+        })}
       </div>
-      <div className="flex items-center gap-1.5">
-        {LINKS.map((l) => (
-          <a
-            key={l.href}
-            href={activeSession?.sessionCode ? `${l.href}?code=${activeSession.sessionCode}` : l.href}
-            target="_blank"
-            rel="noreferrer"
-            className="px-2 py-1 rounded-lg border-2 border-border/50 bg-card text-[11px] font-bold hover:bg-primary hover:text-tarot-dark"
-          >
-            {l.label}
-          </a>
-        ))}
-      </div>
-    </ComicPanel>
+    </section>
   );
 }

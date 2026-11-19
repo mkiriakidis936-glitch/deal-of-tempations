@@ -94,8 +94,10 @@ export default function AdminMedia() {
   const save = async (next) => {
     const galleryIds = ['heistPhotos', 'pajamaPhotos', 'siteVideos'];
     const clean = Object.fromEntries(Object.entries(next).filter(([k, v]) => (k.startsWith('clearAll') ? !!v : (Array.isArray(v) ? (v.length > 0 || galleryIds.includes(k)) : v))));
-    if (rec?.id) {
-      await base44.entities.AppSetting.update(rec.id, { value: clean });
+    const record = rec?.id ? rec : await fetchOverrides();
+    if (record?.id) {
+      if (!rec?.id) setRec(record);
+      await base44.entities.AppSetting.update(record.id, { value: clean });
     }
     else setRec(await base44.entities.AppSetting.create({ key: MEDIA_KEY, value: clean }));
     applyMediaOverrides(clean);
@@ -119,14 +121,24 @@ export default function AdminMedia() {
     if (!files.length || !t || t.mode !== 'library') return;
     await run('library-upload', async () => {
       const urls = [];
+      const failed = [];
       for (let i = 0; i < files.length; i++) {
-        const uploaded = await uploadMedia(files[i], (p) => setProgress((i + p) / files.length));
-        urls.push(uploaded.url);
+        try {
+          const uploaded = await uploadMedia(files[i], (p) => setProgress((i + p) / files.length));
+          urls.push(uploaded.url);
+        } catch (err) {
+          failed.push(`${files[i].name}: ${err.message}`);
+        }
       }
-      const librarySurfaces = { ...(ov.librarySurfaces || {}) };
-      for (const url of urls) if (t.surface && t.surface !== 'all' && t.surface !== 'preview') librarySurfaces[url] = t.surface;
-      await save({ ...ov, librarySurfaces });
-      await refreshLibrary();
+      if (urls.length) {
+        // Πάντα πάνω στις πιο πρόσφατες ρυθμίσεις (το ανέβασμα βίντεο μπορεί να κράτησε λεπτά).
+        const fresh = (await fetchOverrides())?.value || {};
+        const librarySurfaces = { ...(fresh.librarySurfaces || {}) };
+        for (const url of urls) if (t.surface && t.surface !== 'all' && t.surface !== 'preview') librarySurfaces[url] = t.surface;
+        await save({ ...fresh, librarySurfaces });
+        await refreshLibrary();
+      }
+      if (failed.length) throw new Error(`Ανέβηκαν ${urls.length}/${files.length}. Απέτυχαν: ${failed.join(' · ')}`);
     }, 'Τα αρχεία προστέθηκαν στην κεντρική βιβλιοθήκη ✓');
   };
 
@@ -175,7 +187,8 @@ export default function AdminMedia() {
     await run(`direct-upload-${slotId}`, async () => {
       const uploaded = await uploadMedia(file, setProgress);
       if (!uploaded?.url) throw new Error('Ο server δεν επέστρεψε σύνδεσμο για το αρχείο.');
-      await save(apply(uploaded.url));
+      const fresh = (await fetchOverrides())?.value || {};
+      await save(apply(uploaded.url, fresh));
       await refreshLibrary();
     }, successText);
   };
@@ -413,7 +426,7 @@ export default function AdminMedia() {
                 <div className="text-[11px] text-foreground/60">{s.where}</div>
                 <div className="flex gap-2 mt-2 flex-wrap">
                   <select aria-label={`Αρχείο για ${s.label}`} value="" disabled={!!busy} onChange={(e) => { if (e.target.value) assignMediaToSlot(e.target.value, s.id); }} className="w-full rounded-lg border border-border bg-background px-2 py-2 text-xs"><option value="">Σύνδεση από κεντρική βιβλιοθήκη…</option>{library.filter((file) => ['image','graphic','video'].includes(file.kind)).map((file) => <option key={file.url} value={file.url}>{file.kind} · {file.name}</option>)}</select>
-                  {directUploadControl(`photo-spot-${s.id}`, 'image/*,video/*', (url) => ({ ...ov, [s.id]: url, emptySlots: (ov.emptySlots || []).filter((id) => id !== s.id) }))}
+                  {directUploadControl(`photo-spot-${s.id}`, 'image/*,video/*', (url, ov) => ({ ...ov, [s.id]: url, emptySlots: (ov.emptySlots || []).filter((id) => id !== s.id) }))}
                   {src && <ComicButton size="sm" variant="dark" disabled={!!busy} onClick={() => clearSlot(s.id)}>Αφαίρεση από σημείο</ComicButton>}
                   <ComicButton size="sm" variant="dark" disabled={!!busy} onClick={() => reset(s.id)}>↩︎ Αρχικό</ComicButton>
                 </div>
@@ -433,7 +446,7 @@ export default function AdminMedia() {
                 {library.filter((file) => file.kind === 'image' || file.kind === 'graphic').map((file) => <option key={file.url} value={file.url}>{file.name}</option>)}
               </select>
               <div className="mt-2 flex flex-wrap gap-2">
-                {directUploadControl(`image-slot-${slot.id}`, 'image/*', (url) => ({ ...ov, [slot.id]: url, emptySlots: (ov.emptySlots || []).filter((id) => id !== slot.id) }))}
+                {directUploadControl(`image-slot-${slot.id}`, 'image/*', (url, ov) => ({ ...ov, [slot.id]: url, emptySlots: (ov.emptySlots || []).filter((id) => id !== slot.id) }))}
                 {src && <ComicButton size="sm" variant="dark" disabled={!!busy} onClick={() => clearSlot(slot.id)}>Αφαίρεση από σημείο</ComicButton>}
                 {ov[slot.id] && <ComicButton size="sm" variant="dark" disabled={!!busy} onClick={() => reset(slot.id)}>↩︎ Αρχική εικόνα</ComicButton>}
                 {uploadedFile && <ComicButton size="sm" variant="red" disabled={!!busy} onClick={() => removeFile(uploadedFile)}>🗑️ Οριστική διαγραφή από παντού</ComicButton>}
@@ -458,7 +471,7 @@ export default function AdminMedia() {
                 {src ? <Thumb src={src} video className="w-full aspect-video rounded" /> : <div className="w-full aspect-video rounded bg-black/40 flex items-center justify-center text-xs text-foreground/50">Δεν έχει ανέβει βίντεο</div>}
                 <div className="flex flex-wrap gap-2">
                   <select aria-label={`Βίντεο για ${slot.label}`} value="" disabled={!!busy} onChange={(e) => { if (e.target.value) assignMediaToSlot(e.target.value, slot.id); }} className="w-full rounded-lg border border-border bg-background px-2 py-2 text-xs"><option value="">Σύνδεση βίντεο από κεντρική βιβλιοθήκη…</option>{library.filter((file) => file.kind === 'video').map((file) => <option key={file.url} value={file.url}>{file.name}</option>)}</select>
-                  {directUploadControl(`video-slot-${slot.id}`, 'video/mp4,video/webm,video/quicktime,.mp4,.webm,.mov', (url) => ({ ...ov, [slot.id]: url }))}
+                  {directUploadControl(`video-slot-${slot.id}`, 'video/mp4,video/webm,video/quicktime,.mp4,.webm,.mov', (url, ov) => ({ ...ov, [slot.id]: url }))}
                   {src && <ComicButton size="sm" variant="dark" disabled={!!busy} onClick={() => run(slot.id, () => save({ ...ov, [slot.id]: undefined }), 'Το βίντεο αφαιρέθηκε ✓')}>🗑 Αφαίρεση</ComicButton>}
                 </div>
                 <Progress id={slot.id} />
@@ -482,7 +495,7 @@ export default function AdminMedia() {
                 <div className="font-bold text-sm mt-2">{s.label}</div>
                 <div className="flex gap-2 mt-2 flex-wrap">
                   <select aria-label={`Εικόνα εξωφύλλου ${s.label}`} value="" disabled={!!busy} onChange={(e) => { if (e.target.value) assignMediaToSlot(e.target.value, s.id); }} className="w-full rounded-lg border border-border bg-background px-2 py-2 text-xs"><option value="">Σύνδεση εικόνας από κεντρική βιβλιοθήκη…</option>{library.filter((file) => file.kind === 'image' || file.kind === 'graphic').map((file) => <option key={file.url} value={file.url}>{file.name}</option>)}</select>
-                  {directUploadControl(`mode-cover-${s.id}`, 'image/*', (url) => ({ ...ov, [s.id]: url, emptyModeCovers: (ov.emptyModeCovers || []).filter((id) => id !== s.id) }))}
+                  {directUploadControl(`mode-cover-${s.id}`, 'image/*', (url, ov) => ({ ...ov, [s.id]: url, emptyModeCovers: (ov.emptyModeCovers || []).filter((id) => id !== s.id) }))}
                   <ComicButton size="sm" variant="dark" disabled={!!busy} onClick={() => reset(s.id)}>↩︎ Αρχική φωτογραφία</ComicButton>
                 </div>
                 <Progress id={s.id} />
@@ -546,7 +559,7 @@ export default function AdminMedia() {
               )}
             </div>
             <Progress id={g.id} />
-            {!requiredCount && directUploadControl(`gallery-${g.id}`, video ? 'video/mp4,video/webm,video/quicktime,.mp4,.webm,.mov' : 'image/*', (url) => ({ ...ov, [g.id]: [...listOf(g.id), url] }), video ? 'Ανέβασμα βίντεο εδώ' : 'Ανέβασμα εικόνας εδώ')}
+            {!requiredCount && directUploadControl(`gallery-${g.id}`, video ? 'video/mp4,video/webm,video/quicktime,.mp4,.webm,.mov' : 'image/*', (url, base) => ({ ...base, [g.id]: [...(Array.isArray(base[g.id]) ? base[g.id] : listOf(g.id)), url] }), video ? 'Ανέβασμα βίντεο εδώ' : 'Ανέβασμα εικόνας εδώ')}
             {requiredCount ? (
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
                 {Array.from({ length: requiredCount }, (_, index) => {
@@ -575,7 +588,7 @@ export default function AdminMedia() {
                         <option value="">{src ? 'Επιλογή αντικατάστασης…' : 'Επιλογή εικόνας…'}</option>
                         {filesForGallery.map((item) => <option key={item.url} value={item.url}>{item.name}</option>)}
                       </select>
-                      {canAdd && directUploadControl(`required-gallery-${g.id}-${index}`, 'image/*', (url) => { const next = [...list]; next[index] = url; return { ...ov, [g.id]: next }; }, 'Ανέβασμα απευθείας εδώ')}
+                      {canAdd && directUploadControl(`required-gallery-${g.id}-${index}`, 'image/*', (url, base) => { const next = [...(Array.isArray(base[g.id]) ? base[g.id] : list)]; next[index] = url; return { ...base, [g.id]: next }; }, 'Ανέβασμα απευθείας εδώ')}
                       {src && <ComicButton size="sm" variant="dark" disabled={!!busy} onClick={() => remove(g.id, index)}>Αφαίρεση θέσης</ComicButton>}
                     </div>
                   );
