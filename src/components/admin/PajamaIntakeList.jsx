@@ -8,6 +8,7 @@ export default function PajamaIntakeList() {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [modeFilter, setModeFilter] = useState('all');
+  const [msg, setMsg] = useState('');
 
   async function load() {
     setLoading(true);
@@ -16,8 +17,10 @@ export default function PajamaIntakeList() {
       setItems(res || []);
     } catch (e) {
       console.error('Pajama intake load error', e);
+      setMsg(e.message || 'Δεν φορτώθηκαν οι αιτήσεις.');
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   }
 
   useEffect(() => { load(); }, []);
@@ -31,11 +34,15 @@ export default function PajamaIntakeList() {
         await request('POST', '/api/entities/intake-approvals/PajamaIntake/' + item.id, { approved: false });
       }
       setItems((prev) => prev.map((i) => (i.id === item.id ? { ...i, approved: next, approvalStatus: next ? 'approved' : 'pending' } : i)));
+      setMsg(next ? `Η συμμετοχή της ${item.name} εγκρίθηκε.` : `Η έγκριση της ${item.name} ανακλήθηκε.`);
       if (next) {
         const names = items.map((i) => (i.id === item.id ? { ...i, approved: true } : i)).filter((i) => i.approved && i.name).map((i) => i.name);
         await broadcastReveal(names);
       }
-    } catch (e) { console.error('Approve error', e); }
+    } catch (e) {
+      console.error('Approve error', e);
+      setMsg(e.message || 'Η έγκριση δεν ολοκληρώθηκε.');
+    }
   }
 
   async function broadcastReveal(names) {
@@ -51,7 +58,11 @@ export default function PajamaIntakeList() {
     try {
       await request('DELETE', `/api/entities/pajama-intakes/${id}`);
       setItems((prev) => prev.filter((i) => i.id !== id));
-    } catch (e) { console.error('Delete error', e); }
+      setMsg('Η αίτηση και το συνδεδεμένο προφίλ διαγράφηκαν.');
+    } catch (e) {
+      console.error('Delete error', e);
+      setMsg(e.message || 'Η διαγραφή δεν ολοκληρώθηκε.');
+    }
   }
 
   const shown = modeFilter === 'all' ? items : items.filter((i) => (i.preferredModes || []).includes(modeFilter));
@@ -72,6 +83,7 @@ export default function PajamaIntakeList() {
 
   return (
     <div className="space-y-3">
+      {msg && <ComicPanel className="bg-secondary p-3"><div role="status" className="text-sm font-bold">{msg}</div></ComicPanel>}
       <div className="flex items-center justify-between">
         <div className="font-heading text-lg">
           🩴 {items.length} φόρμες · <span className="text-tarot-forest">{items.filter((i) => i.approved).length} εγκεκριμένες</span>
