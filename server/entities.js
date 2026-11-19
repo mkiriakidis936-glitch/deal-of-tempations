@@ -1129,6 +1129,30 @@ export function entityRoutes() {
     finally { client.release(); }
   });
 
+  r.delete('/pajama-intakes/:id', requireAdmin, async (req, res, next) => {
+    const client = await pool.connect();
+    try {
+      await client.query('BEGIN');
+      const { rows: source } = await client.query(
+        "SELECT id FROM records WHERE id = $1 AND entity = 'PajamaIntake' FOR UPDATE",
+        [req.params.id],
+      );
+      if (!source[0]) { await client.query('ROLLBACK'); return res.status(404).json({ error: 'Η αίτηση δεν βρέθηκε.' }); }
+      const { rows: profiles } = await client.query(
+        "DELETE FROM records WHERE entity = 'PlayerIntake' AND data->>'sourceEntity' = 'PajamaIntake' AND data->>'sourceIntakeId' = $1 RETURNING id",
+        [req.params.id],
+      );
+      await client.query("DELETE FROM records WHERE id = $1 AND entity = 'PajamaIntake'", [req.params.id]);
+      await client.query('COMMIT');
+      profiles.forEach(({ id }) => broadcast('PlayerIntake', { type: 'delete', id, data: { id } }));
+      broadcast('PajamaIntake', { type: 'delete', id: req.params.id, data: { id: req.params.id } });
+      return res.json({ success: true, deletedProfiles: profiles.length });
+    } catch (error) {
+      await client.query('ROLLBACK').catch(() => {});
+      return next(error);
+    } finally { client.release(); }
+  });
+
   r.delete('/player-intakes/:id', requireAdmin, async (req, res, next) => {
     const client = await pool.connect();
     try {
