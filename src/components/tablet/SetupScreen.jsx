@@ -62,7 +62,7 @@ export default function SetupScreen({ onStart }) {
       ]);
       const scopeToEvent = (items) => (items || []).filter((item) => eventCode ? item.sessionCode === eventCode : !item.sessionCode);
       const allClassic = scopeToEvent(classicRes.items).filter((item) => item.approved === true);
-      const classic = allClassic.filter((item) => item.gameMode === 'classic' || item.vipGameMode === 'classic' || (!item.gameMode && (!item.vipGameMode || item.vipGameMode === 'classic')));
+      const classic = allClassic.filter((item) => item.gameMode === 'classic' || item.vipGameMode === 'classic' || (!item.gameMode && !item.vipGameMode && !['pajama', 'modes'].includes(item.formType) && !Array.isArray(item.preferredModes)));
       const approved = scopeToEvent(pajamaRes.items).filter((i) => i.approved === true && i.name);
       const legacyPajama = approved.filter((i) => (i.formType || 'pajama') !== 'modes');
       setHeistIntakes([...scopeToEvent(heistRes.items), ...allClassic.filter((item) => item.gameMode === 'arrest_heist')]);
@@ -155,7 +155,7 @@ export default function SetupScreen({ onStart }) {
       const seeded = names.map((name, i) => ({ name, footwearLevel: 2, toenailPerk: TOENAIL_PERKS[i % TOENAIL_PERKS.length].id }));
       setPlayers([...seeded, ...Array.from({ length: Math.max(0, 4 - seeded.length) }, (_, i) => ({ name: '', footwearLevel: 2, toenailPerk: TOENAIL_PERKS[(seeded.length + i) % TOENAIL_PERKS.length].id }))]);
     } else if (m.id === 'classic') {
-      const names = [...new Set(intakes.filter((item) => item.gameMode === 'classic' || (!item.gameMode && (!item.vipGameMode || item.vipGameMode === 'classic'))).map((item) => (item.name || '').trim()).filter(Boolean))].slice(0, 6);
+      const names = [...new Set(intakes.filter((item) => item.gameMode === 'classic' || (!item.gameMode && !item.vipGameMode && !['pajama', 'modes'].includes(item.formType) && !Array.isArray(item.preferredModes))).map((item) => (item.name || '').trim()).filter(Boolean))].slice(0, 6);
       const seeded = names.map((name, i) => ({ name, footwearLevel: 2, toenailPerk: TOENAIL_PERKS[i % TOENAIL_PERKS.length].id }));
       setPlayers([...seeded, ...Array.from({ length: Math.max(0, 2 - seeded.length) }, (_, i) => ({ name: '', footwearLevel: 2, toenailPerk: TOENAIL_PERKS[(seeded.length + i) % TOENAIL_PERKS.length].id }))]);
     } else if (isNewMode(m.id)) {
