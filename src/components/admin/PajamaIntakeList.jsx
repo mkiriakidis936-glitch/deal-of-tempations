@@ -49,7 +49,7 @@ export default function PajamaIntakeList() {
 
   async function remove(id) {
     try {
-      await base44.entities.PajamaIntake.delete(id);
+      await request('DELETE', `/api/entities/pajama-intakes/${id}`);
       setItems((prev) => prev.filter((i) => i.id !== id));
     } catch (e) { console.error('Delete error', e); }
   }
