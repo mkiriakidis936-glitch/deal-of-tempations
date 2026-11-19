@@ -203,7 +203,7 @@ export default function Admin() {
       setPickedSession((prev) => (prev?.id === id ? null : prev));
     } catch (e) {
       console.error('Delete error', e);
-      window.alert(e.message || 'Η διαγραφή της συνεδρίας απέτυχε.');
+      throw e;
     }
   }
 
