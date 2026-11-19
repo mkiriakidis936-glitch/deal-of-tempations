@@ -122,7 +122,6 @@ export default function VIPInvitationPage() {
 
         <section style={sectionStyle}>
           <h2 style={{ color: '#e5cf91', fontSize: 16, margin: '0 0 16px' }}>3. ΠΡΟΤΙΜΗΣΕΙΣ ΠΑΙΧΝΙΔΙΟΥ</h2>
-          <div style={fieldStyle}><label style={labelStyle}>ΠΟΙΟ ΕΙΔΟΣ ΔΟΚΙΜΑΣΙΩΝ ΠΡΟΤΙΜΑΣ;</label><select value={answers.preferredTestType || ''} onChange={(e) => setAnswer('preferredTestType', e.target.value)} style={inputStyle}><option value="">Επίλεξε…</option>{GAME_MODES.map((mode) => <option key={mode.id} value={mode.name}>{mode.name}</option>)}</select></div>
           <div style={fieldStyle}><label style={labelStyle}>ΠΡΟΤΙΜΑΣ… (ΜΠΟΡΕΙΣ ΝΑ ΕΠΙΛΕΞΕΙΣ ΠΕΡΙΣΣΟΤΕΡΑ)</label>{[['questions','ΕΡΩΤΗΣΕΙΣ'],['missions','ΑΠΟΣΤΟΛΕΣ'],['surprises','ΕΚΠΛΗΞΕΙΣ'],['roleplay','ROLE-PLAY'],['puzzles','ΓΡΙΦΟΙ']].map(([key,label]) => <label key={key} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0', color: '#f4e8c5' }}><input type="checkbox" checked={answers.activityPreferences?.[key] === 'yes'} onChange={(e) => setActivity(key, e.target.checked)} style={{ accentColor: '#E8C26B', width: 17, height: 17 }} />{label}</label>)}</div>
           <div style={fieldStyle}><label style={labelStyle}>ΘΑ ΕΠΕΛΕΓΕΣ ΜΙΑ ΑΠΡΟΒΛΕΠΤΗ ΠΡΟΚΛΗΣΗ;</label>{yesNo('unexpectedChallenge')}</div>
         </section>
