@@ -13,7 +13,6 @@ const GAME_LINKS = [
 
 const GUEST_LINKS = [
   { id: 'public-forms', label: '📝 ΕΝΙΑΙΑ ΦΟΡΜΑ ΣΥΜΜΕΤΟΧΗΣ', path: '/forms', desc: 'Ο μοναδικός δημόσιος σύνδεσμος για επιλογή ενός Mode και υποβολή συμμετοχής.' },
-  { id: 'vip-access', label: '🔐 VIP ACCESS & DIGITAL VAULT', path: '/vip-access', desc: 'Η ξεχωριστή VIP πρόσβαση και οι VIP φόρμες.' },
 ];
 
 const ADMIN_LINK = { id: 'admin', label: '🔧 ΠΙΝΑΚΑΣ ΔΙΑΧΕΙΡΙΣΗΣ', path: '/admin', desc: 'Το πάνελ σου — δεν το στέλνεις ποτέ σε καλεσμένη.' };
@@ -114,7 +113,7 @@ export default function AdminLinks({ sessions = [], selectedSession }) {
       <div className="space-y-3">
         <div className="border-b-2 border-border pb-1">
           <div className="font-heading text-lg text-primary">💌 ΣΤΕΛΝΕΙΣ ΣΤΙΣ ΚΑΛΕΣΜΕΝΕΣ</div>
-          <div className="text-xs text-foreground/60">Σταθεροί σύνδεσμοι, χωρίς κωδικό.</div>
+          <div className="text-xs text-foreground/60">Οι προσωπικές VIP προσκλήσεις και τα QR δημιουργούνται από την ενότητα Ψηφιακές προσκλήσεις.</div>
         </div>
         {GUEST_LINKS.map((def) => (
           <LinkRow key={def.id} def={def} sessionCode={sessionCode} locked={false} />

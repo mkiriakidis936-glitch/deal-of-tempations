@@ -14,7 +14,6 @@ const TVScreen = lazy(() => import('@/pages/TV'));
 const Play = lazy(() => import('@/pages/Play'));
 const Admin = lazy(() => import('@/pages/Admin'));
 const VIPInvitationPage = lazy(() => import('@/pages/VIPInvitationPage'));
-const VIPEventPage = lazy(() => import('@/pages/VIPEventPage'));
 const Promo = lazy(() => import('@/pages/Promo'));
 const GiftUnlock = lazy(() => import('@/pages/GiftUnlock'));
 const Site = lazy(() => import('@/pages/Site'));
@@ -24,7 +23,6 @@ const Register = lazy(() => import('@/pages/Register'));
 const ForgotPassword = lazy(() => import('@/pages/ForgotPassword'));
 const ResetPassword = lazy(() => import('@/pages/ResetPassword'));
 const PublicForms = lazy(() => import('@/pages/PublicForms'));
-const VIPAccess = lazy(() => import('@/pages/VIPAccess'));
 
 // Game-master screens (tablet + admin) need an admin account.
 const RequireAdmin = ({ children }) => {
@@ -63,9 +61,7 @@ const AuthenticatedApp = () => {
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password" element={<ResetPassword />} />
       <Route path="/promo" element={<Promo />} />
-      <Route path="/vip" element={<VIPEventPage />} />
       <Route path="/vip/:token" element={<VIPInvitationPage />} />
-      <Route path="/vip-access" element={<VIPAccess />} />
       <Route path="/forms" element={<PublicForms />} />
       <Route path="/gift-unlock" element={<GiftUnlock />} />
       <Route path="/site" element={<Site />} />

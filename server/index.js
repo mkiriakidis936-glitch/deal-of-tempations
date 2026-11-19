@@ -30,36 +30,6 @@ app.use(attachUser);
 
 app.get('/api/health', (_req, res) => res.json({ ok: true }));
 
-// Δημόσια προβολή VIP ανά Event. Επιστρέφονται μόνο τα πεδία που χρειάζεται η σελίδα,
-// χωρίς λίστα καλεσμένων, στοιχεία επικοινωνίας ή δεδομένα παρτίδας.
-app.get('/api/public/vip/:sessionCode', async (req, res) => {
-  const sessionCode = String(req.params.sessionCode || '').trim().toUpperCase();
-  if (!/^[A-Z0-9_-]{3,40}$/.test(sessionCode)) {
-    return res.status(400).json({ error: 'Μη έγκυρος σύνδεσμος VIP.' });
-  }
-  try {
-    const { rows } = await pool.query(
-      "SELECT data FROM records WHERE entity = 'GameSession' AND data->>'sessionCode' = $1 ORDER BY updated_date DESC LIMIT 1",
-      [sessionCode]
-    );
-    const record = rows[0]?.data;
-    if (!record) return res.status(404).json({ error: 'Η εκδήλωση δεν βρέθηκε.' });
-    const event = record.event || {};
-    return res.json({
-      event: {
-        sessionCode,
-        mode: String(record.mode || ''),
-        title: String(event.title || ''),
-        scheduledAt: String(event.scheduledAt || ''),
-        venue: String(event.venue || ''),
-        eventNotes: String(event.eventNotes || ''),
-      },
-    });
-  } catch (error) {
-    console.error('Public VIP event lookup failed:', error);
-    return res.status(500).json({ error: 'Δεν ήταν δυνατή η φόρτωση της σελίδας VIP.' });
-  }
-});
 app.get('/api/production/privacy', async (req, res) => {
   const sessionCode = String(req.query.event || '').trim().toUpperCase();
   if (!sessionCode || sessionCode.length > 40) return res.status(400).json({ error: 'Μη έγκυρος κωδικός διοργάνωσης.' });
@@ -104,8 +74,6 @@ if (fs.existsSync(dist)) {
     '/pajama-form': { title: 'DEAL OF TEMPTATIONS — Φόρμα Pajama', desc: 'Συμπλήρωσε τη φόρμα σου για το Pajama Pedi-Glam.' },
     '/modes-form': { title: 'DEAL OF TEMPTATIONS — Φόρμα συμμετοχής', desc: 'Διάλεξε mode και συμπλήρωσε τη φόρμα συμμετοχής σου.' },
     '/gift-unlock': { title: 'DEAL OF TEMPTATIONS — Ξεκλείδωσε το δώρο σου', desc: 'Βάλε τον κωδικό σου και ξεκλείδωσε το δώρο.' },
-    '/vip': { title: 'DEAL OF TEMPTATIONS — VIP Event', desc: 'Η προσωπική σελίδα της συγκεκριμένης εκδήλωσης.' },
-    '/vip-access': { title: 'DEAL OF TEMPTATIONS — VIP Access / Digital Vault', desc: 'Ιδιωτική VIP πρόσβαση και ψηφιακό Vault.' },
     '/forms': { title: 'DEAL OF TEMPTATIONS — Δημόσιες φόρμες', desc: 'Αίτηση συμμετοχής, αίτημα εκδήλωσης και feedback.' },
   };
   const esc = (v) => String(v).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');

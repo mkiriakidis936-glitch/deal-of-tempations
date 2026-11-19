@@ -7,6 +7,7 @@ const MODE_IDS = { extended: 'pedi_extended', lockdown: 'lockdown', beachbar: 'b
 export default function SiteVideo({ c, eventId }) {
   const modeId = MODE_IDS[eventId];
   const trailer = modeId ? MODE_MEDIA[modeId]?.trailer : '';
+  const siteTrailer = !modeId ? FILM.siteTrailer : '';
   const isModeDetail = !!modeId;
   const kicker = c?.videoKicker || 'Το τρέιλερ';
   const title = c?.videoTitle || 'ΒΙΝΤΕΟ & ΤΡΕΙΛΕΡ';
@@ -18,9 +19,9 @@ export default function SiteVideo({ c, eventId }) {
           <div className="text-[10px] sm:text-xs tracking-[0.42em] text-tarot-gold/65 uppercase mb-3">Βίντεο & Τρέιλερ</div>
           <h2 className="font-display text-3xl sm:text-4xl text-tarot-gold tracking-[0.08em]">{title}</h2>
         </div>
-        {trailer ? (
+        {trailer || siteTrailer ? (
           <div className="overflow-hidden rounded-2xl border border-tarot-gold/25 bg-black shadow-[0_24px_70px_rgba(0,0,0,.35)]">
-            <video src={trailer} controls playsInline preload="metadata" className="w-full aspect-video object-contain bg-black" />
+            <video src={trailer || siteTrailer} controls playsInline preload="metadata" className="w-full aspect-video object-contain bg-black" />
           </div>
         ) : (
           <div className="relative overflow-hidden rounded-2xl border border-tarot-gold/25 bg-black shadow-[0_24px_70px_rgba(0,0,0,.35)]">

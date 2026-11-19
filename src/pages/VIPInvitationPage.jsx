@@ -18,12 +18,16 @@ export default function VIPInvitationPage() {
   const [answers, setAnswers] = useState({
     personality: 'bold',
     competitiveness: '3',
-    activityPreferences: { questions: 'no', missions: 'no', surprises: 'no' },
+    activityPreferences: { questions: 'no', missions: 'no', surprises: 'no', roleplay: 'no', puzzles: 'no' },
+    safetyBoundaries: [],
+    safeWord: '',
+    intensity: '3',
     unexpectedChallenge: 'no',
     activeParticipation: 'yes',
     stayAtVilla: 'no',
   });
   const [adultConfirmed, setAdultConfirmed] = useState(false);
+  const [consentConfirmed, setConsentConfirmed] = useState(false);
   const [saving, setSaving] = useState(false);
   const [done, setDone] = useState(false);
   const [customAnswers, setCustomAnswers] = useState({});
@@ -44,7 +48,11 @@ export default function VIPInvitationPage() {
     ...current,
     activityPreferences: { ...current.activityPreferences, [key]: checked ? 'yes' : 'no' },
   }));
-  const valid = name.trim().length > 0 && adultConfirmed && customQuestionsValid && !saving;
+  const setSafetyBoundary = (key, checked) => setAnswers((current) => ({
+    ...current,
+    safetyBoundaries: checked ? [...(current.safetyBoundaries || []), key] : (current.safetyBoundaries || []).filter((item) => item !== key),
+  }));
+  const valid = name.trim().length > 0 && adultConfirmed && consentConfirmed && String(answers.safeWord || '').trim().length >= 2 && customQuestionsValid && !saving;
   const gameName = GAME_MODES.find((mode) => mode.id === invitation?.gameMode)?.name || invitation?.gameMode || '—';
 
   async function submit(event) {
@@ -54,7 +62,7 @@ export default function VIPInvitationPage() {
     setError('');
     try {
       await request('POST', `/api/entities/vip-invitations/${encodeURIComponent(token)}/submit`, {
-        submissionId, name: name.trim(), avatar, answers, customAnswers, adultConfirmed,
+        submissionId, name: name.trim(), avatar, answers, customAnswers, adultConfirmed, consentConfirmed,
       });
       setDone(true);
     } catch (e) { setError(e.message || 'Δεν αποθηκεύτηκε η συμμετοχή.'); }
@@ -114,15 +122,17 @@ export default function VIPInvitationPage() {
 
         <section style={sectionStyle}>
           <h2 style={{ color: '#e5cf91', fontSize: 16, margin: '0 0 16px' }}>3. ΠΡΟΤΙΜΗΣΕΙΣ ΠΑΙΧΝΙΔΙΟΥ</h2>
-          <div style={fieldStyle}><label style={labelStyle}>ΠΟΙΟ ΕΙΔΟΣ ΔΟΚΙΜΑΣΙΩΝ ΠΡΟΤΙΜΑΣ;</label><select value={answers.preferredTestType || ''} onChange={(e) => setAnswer('preferredTestType', e.target.value)} style={inputStyle}><option value="">Επίλεξε…</option>{GAME_MODES.map((mode) => <option key={mode.id} value={mode.name}>{mode.name}</option>)}</select></div>
-          <div style={fieldStyle}><label style={labelStyle}>ΠΡΟΤΙΜΑΣ… (ΜΠΟΡΕΙΣ ΝΑ ΕΠΙΛΕΞΕΙΣ ΠΕΡΙΣΣΟΤΕΡΑ)</label>{[['questions','ΕΡΩΤΗΣΕΙΣ'],['missions','ΑΠΟΣΤΟΛΕΣ'],['surprises','ΕΚΠΛΗΞΕΙΣ']].map(([key,label]) => <label key={key} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0', color: '#f4e8c5' }}><input type="checkbox" checked={answers.activityPreferences?.[key] === 'yes'} onChange={(e) => setActivity(key, e.target.checked)} style={{ accentColor: '#E8C26B', width: 17, height: 17 }} />{label}</label>)}</div>
+          <div style={fieldStyle}><label style={labelStyle}>ΠΡΟΤΙΜΑΣ… (ΜΠΟΡΕΙΣ ΝΑ ΕΠΙΛΕΞΕΙΣ ΠΕΡΙΣΣΟΤΕΡΑ)</label>{[['questions','ΕΡΩΤΗΣΕΙΣ'],['missions','ΑΠΟΣΤΟΛΕΣ'],['surprises','ΕΚΠΛΗΞΕΙΣ'],['roleplay','ROLE-PLAY'],['puzzles','ΓΡΙΦΟΙ']].map(([key,label]) => <label key={key} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0', color: '#f4e8c5' }}><input type="checkbox" checked={answers.activityPreferences?.[key] === 'yes'} onChange={(e) => setActivity(key, e.target.checked)} style={{ accentColor: '#E8C26B', width: 17, height: 17 }} />{label}</label>)}</div>
           <div style={fieldStyle}><label style={labelStyle}>ΘΑ ΕΠΕΛΕΓΕΣ ΜΙΑ ΑΠΡΟΒΛΕΠΤΗ ΠΡΟΚΛΗΣΗ;</label>{yesNo('unexpectedChallenge')}</div>
         </section>
 
         <section style={sectionStyle}>
           <h2 style={{ color: '#e5cf91', fontSize: 16, margin: '0 0 16px' }}>4. ΣΥΜΜΕΤΟΧΗ ΚΑΙ ΟΡΙΑ</h2>
           <div style={fieldStyle}><label style={labelStyle}>ΘΕΛΕΙΣ ΝΑ ΣΥΜΜΕΤΕΧΕΙΣ ΕΝΕΡΓΑ;</label>{yesNo('activeParticipation')}</div>
-          <div style={fieldStyle}><label style={labelStyle}>ΥΠΑΡΧΕΙ ΚΑΤΙ ΠΟΥ ΔΕΝ ΕΠΙΘΥΜΕΙΣ ΝΑ ΠΕΡΙΛΑΜΒΑΝΕΙ ΤΟ ΠΑΙΧΝΙΔΙ;</label><textarea rows={3} value={answers.boundaries || ''} onChange={(e) => setAnswer('boundaries', e.target.value)} maxLength={2000} style={inputStyle} placeholder="Προαιρετικά γράψε ό,τι θέλεις να γνωρίζει ο διοργανωτής." /></div>
+          <div style={fieldStyle}><label style={labelStyle}>ΠΡΟΣΩΠΙΚΗ ΛΕΞΗ STOP / SAFE WORD *</label><input value={answers.safeWord || ''} onChange={(e) => setAnswer('safeWord', e.target.value)} maxLength={40} required style={inputStyle} placeholder="Η προσωπική σου λέξη STOP" /></div>
+          <div style={fieldStyle}><label style={labelStyle}>ΕΝΤΑΣΗ ΔΟΚΙΜΑΣΙΩΝ: {answers.intensity || '3'}/5</label><input type="range" min="1" max="5" step="1" value={answers.intensity || '3'} onChange={(e) => setAnswer('intensity', e.target.value)} style={{ width: '100%', accentColor: '#E8C26B' }} /><div style={{ display: 'flex', justifyContent: 'space-between', color: '#9e906d', fontSize: 11 }}><span>1 · Ήπια</span><span>5 · Έντονη</span></div></div>
+          <div style={fieldStyle}><label style={labelStyle}>ΟΡΙΑ / ΔΕΝ ΕΠΙΘΥΜΩ</label>{[['touch','Σωματική επαφή'],['restraints','Δεσίματα / περιορισμοί'],['blindfolds','Κάλυψη ματιών'],['alcohol','Αλκοόλ'],['personal-disclosure','Προσωπικές αποκαλύψεις']].map(([key,label]) => <label key={key} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '7px 0', color: '#f4e8c5' }}><input type="checkbox" checked={(answers.safetyBoundaries || []).includes(key)} onChange={(e) => setSafetyBoundary(key, e.target.checked)} style={{ accentColor: '#E8C26B', width: 17, height: 17 }} />{label}</label>)}</div>
+          <div style={fieldStyle}><label style={labelStyle}>ΥΠΑΡΧΕΙ ΚΑΤΙ ΑΛΛΟ ΠΟΥ ΔΕΝ ΕΠΙΘΥΜΕΙΣ ΝΑ ΠΕΡΙΛΑΜΒΑΝΕΙ ΤΟ ΠΑΙΧΝΙΔΙ;</label><textarea rows={3} value={answers.boundaries || ''} onChange={(e) => setAnswer('boundaries', e.target.value)} maxLength={2000} style={inputStyle} placeholder="Προαιρετικά γράψε ό,τι άλλο θέλεις να γνωρίζει ο διοργανωτής." /></div>
         </section>
 
         <section style={sectionStyle}>
@@ -150,7 +160,8 @@ export default function VIPInvitationPage() {
           />
         </section>}
 
-        <label style={{ display: 'flex', alignItems: 'flex-start', gap: 10, color: '#f4e8c5', fontSize: 13, margin: '18px 0' }}><input type="checkbox" checked={adultConfirmed} onChange={(e) => setAdultConfirmed(e.target.checked)} style={{ accentColor: '#E8C26B', marginTop: 3 }} /><span>Επιβεβαιώνω ότι είμαι 18 ετών ή μεγαλύτερη. *</span></label>
+        <label style={{ display: 'flex', alignItems: 'flex-start', gap: 10, color: '#f4e8c5', fontSize: 13, margin: '18px 0 8px' }}><input type="checkbox" checked={adultConfirmed} onChange={(e) => setAdultConfirmed(e.target.checked)} style={{ accentColor: '#E8C26B', marginTop: 3 }} /><span>Επιβεβαιώνω ότι είμαι 18 ετών ή μεγαλύτερη. *</span></label>
+        <label style={{ display: 'flex', alignItems: 'flex-start', gap: 10, color: '#f4e8c5', fontSize: 13, margin: '8px 0 18px' }}><input type="checkbox" checked={consentConfirmed} onChange={(e) => setConsentConfirmed(e.target.checked)} style={{ accentColor: '#E8C26B', marginTop: 3 }} /><span>Επιβεβαιώνω ότι συμμετέχω εθελοντικά, έχω δηλώσει τα όριά μου και μπορώ να σταματήσω οποιαδήποτε στιγμή. *</span></label>
         {error && <p role="alert" style={{ color: '#f1a0a0', fontSize: 13, marginBottom: 14 }}>{error}</p>}
         <button type="submit" disabled={!valid} style={{ width: '100%', borderRadius: 10, padding: '14px 16px', border: '1px solid #e0c36b', background: !valid ? '#4a4025' : 'linear-gradient(110deg,#8b6a24,#d9bd68,#8b6a24)', color: '#100e09', fontWeight: 800, letterSpacing: '.12em', opacity: !valid ? .65 : 1 }}>
           {saving ? 'ΑΠΟΘΗΚΕΥΣΗ…' : 'ΕΠΙΒΕΒΑΙΩΣΗ ΣΥΜΜΕΤΟΧΗΣ'}

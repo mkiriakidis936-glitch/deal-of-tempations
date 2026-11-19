@@ -9,7 +9,7 @@ export const ENTITIES = [
   'Achievement', 'AppSetting', 'BacheloretteIntake', 'BlackmailVault', 'Chronicle', 'GameContent',
   'GameSession', 'GameSessionSnapshot', 'Haunting', 'InvitationRSVP', 'Memorial', 'PajamaContent', 'PajamaIntake',
   'PlayerIntake', 'PlayerProfile', 'SessionArchive', 'VIPInvitation', 'VIPInvitationSubmission',
-  'PublicFormSubmission', 'VIPAccessProfile', 'VIPAccessSession', 'VIPVaultCertificate', 'ShowProduction', 'ProductionConsent', 'ProductionCue',
+  'PublicFormSubmission', 'ShowProduction', 'ProductionConsent', 'ProductionCue',
 ];
 
 // Who may do what. Default for every operation is "public" (the phones/TV
@@ -25,9 +25,6 @@ const rules = {
   VIPInvitation: { read: ADMIN, create: ADMIN, update: ADMIN, delete: ADMIN },
   VIPInvitationSubmission: { read: ADMIN, update: ADMIN, delete: ADMIN },
   PublicFormSubmission: { read: ADMIN, update: ADMIN, delete: ADMIN },
-  VIPAccessProfile: { read: ADMIN, update: ADMIN, delete: ADMIN },
-  VIPAccessSession: { read: ADMIN, update: ADMIN, delete: ADMIN },
-  VIPVaultCertificate: { read: ADMIN, create: ADMIN, update: ADMIN, delete: ADMIN },
   // Reality-show production plans are private and editable only by administrators.
   ShowProduction: { read: ADMIN, create: ADMIN, update: ADMIN, delete: ADMIN },
   ProductionConsent: { read: ADMIN, update: ADMIN, delete: ADMIN },
@@ -513,126 +510,6 @@ export function entityRoutes() {
     } catch (error) { return next(error); }
   });
 
-  // VIP lock: the access phrase is read only from Railway's server environment.
-  const vipTokenHash = (value) => crypto.createHash('sha256').update(String(value || '')).digest('hex');
-  const requireVipSession = async (req, res, next) => {
-    try {
-      const token = String(req.headers.authorization || '').replace(/^Bearer\s+/i, '');
-      if (!token || token.length < 32) return res.status(401).json({ error: 'Απαιτείται VIP πρόσβαση.' });
-      const { rows } = await query(
-        "SELECT id, data FROM records WHERE entity = 'VIPAccessSession' AND data->>'tokenHash' = $1 AND data->>'active' = 'true' LIMIT 1",
-        [vipTokenHash(token)],
-      );
-      const session = rows[0];
-      if (!session || !session.data.expiresAt || Date.parse(session.data.expiresAt) <= Date.now()) {
-        return res.status(401).json({ error: 'Η VIP πρόσβαση έληξε. Ξεκλείδωσε ξανά.' });
-      }
-      req.vipSession = { id: session.id, data: session.data };
-      return next();
-    } catch (error) { return next(error); }
-  };
-  // Brute-force protection: max 8 wrong codes per IP in 15 minutes.
-  const vipFails = new Map();
-  const vipLocked = (ip) => { const b = vipFails.get(ip); return !!b && Date.now() - b.startedAt < 15 * 60_000 && b.count >= 8; };
-  const vipFail = (ip) => {
-    const now = Date.now(); let b = vipFails.get(ip);
-    if (!b || now - b.startedAt >= 15 * 60_000) { b = { startedAt: now, count: 0 }; vipFails.set(ip, b); }
-    b.count += 1;
-    if (vipFails.size > 5000) for (const [k, v] of vipFails) if (now - v.startedAt >= 15 * 60_000) vipFails.delete(k);
-  };
-  r.post('/vip-access/unlock', async (req, res) => {
-    const ip = req.ip || req.socket.remoteAddress || 'unknown';
-    if (vipLocked(ip)) return res.status(429).json({ error: 'Πολλές αποτυχημένες προσπάθειες. Δοκίμασε ξανά σε 15 λεπτά.' });
-    const expected = process.env.VIP_ACCESS_CODE || '';
-    const supplied = String(req.body?.code || '');
-    const a = Buffer.from(supplied);
-    const b = Buffer.from(expected);
-    if (!expected || !a.length || a.length !== b.length || !crypto.timingSafeEqual(a, b)) {
-      vipFail(ip);
-      return res.status(401).json({ error: 'Ο κωδικός VIP δεν είναι σωστός.' });
-    }
-    const token = crypto.randomBytes(32).toString('base64url');
-    const expiresAt = new Date(Date.now() + 12 * 60 * 60 * 1000).toISOString();
-    await query(
-      "INSERT INTO records (id, entity, data) VALUES ($1, 'VIPAccessSession', $2)",
-      [crypto.randomUUID(), JSON.stringify({ tokenHash: vipTokenHash(token), active: true, expiresAt, createdAt: new Date().toISOString() })],
-    );
-    return res.json({ token, expiresAt });
-  });
-  r.get('/vip-access/vault', requireVipSession, async (req, res, next) => {
-    try {
-      const [{ rows: profiles }, { rows: archives }, { rows: certificates }, { rows: contentRows }] = await Promise.all([
-        query("SELECT id, data FROM records WHERE entity = 'VIPAccessProfile' ORDER BY updated_date DESC LIMIT 200"),
-        query("SELECT id, data FROM records WHERE entity = 'SessionArchive' ORDER BY created_date DESC LIMIT 50"),
-        query("SELECT id, data FROM records WHERE entity = 'VIPVaultCertificate' ORDER BY created_date DESC LIMIT 50"),
-        query("SELECT data FROM records WHERE entity = 'AppSetting' AND data->>'key' = $1 ORDER BY updated_date DESC LIMIT 1", ['vip_unrated_content']),
-      ]);
-      const vipContent = contentRows[0]?.data?.value || {};
-      return res.json({
-        profile: profiles.find((row) => row.data?.sessionId === req.vipSession.id)
-          ? { id: profiles.find((row) => row.data?.sessionId === req.vipSession.id).id, ...profiles.find((row) => row.data?.sessionId === req.vipSession.id).data }
-          : null,
-        profiles: profiles.filter((row) => row.data?.sessionId === req.vipSession.id).map((row) => ({
-          id: row.id,
-          displayName: row.data?.displayName || '',
-          intensity: row.data?.intensity || 3,
-          preferences: row.data?.preferences || [],
-          boundaries: row.data?.boundaries || [],
-          adultConfirmed: !!row.data?.adultConfirmed,
-          consentConfirmed: !!row.data?.consentConfirmed,
-        })),
-        certificates: certificates.map((row) => ({ id: row.id, ...row.data })),
-        archives: archives.map((row) => ({
-          id: row.id, mode: row.data.mode || '', winner: row.data.winner || '',
-          eventDate: row.data.eventDate || '', playerCount: (row.data.playerNames || []).length,
-          stats: row.data.stats || {}, highlights: row.data.highlights || [],
-        })),
-        hiddenModes: Array.isArray(vipContent.modes) ? vipContent.modes.filter((mode) => mode.active !== false) : [
-          { id: 'midnight-interrogation', name: 'Midnight Interrogation Room', description: 'Ψηφιακή ανάκριση με ερωτήσεις, μυστικά και επιλογές PASS.' },
-          { id: 'vip-vault-sabotage', name: 'VIP Vault Sabotage / Inside Mole', description: 'Κρυφός ρόλος, ψηφοφορίες και αποστολές σαμποτάζ μέσα στο παιχνίδι.' },
-          { id: 'barefoot-maze', name: 'Barefoot Maze', description: 'Ψηφιακός γρίφος διαδρομής και επιλογών — χωρίς δεμένα μάτια ή φυσική μετακίνηση.' },
-        ],
-        unratedDeck: Array.isArray(vipContent.deck)
-          ? vipContent.deck.filter((card) => card.active !== false).map((card) => card.title)
-          : [
-            'Wheel of Temptation','Blind Touch (consent-based digital choice)','Police Escort (role-play prompt)',
-            'Ice Pass (optional object-choice prompt)','Confession or Lockdown','Role Reversal',
-            'Whisper Challenge','Triple Cuff Chain (digital chain puzzle)','Barefoot Tango (music / choice challenge)',
-            'Blackmail Auction (fictional secret bidding)','Decibel Scream Test (optional sound meter)',
-            'Ultimate Lockdown Trigger',
-          ],
-      });
-    } catch (error) { return next(error); }
-  });
-  r.post('/vip-access/profile', requireVipSession, async (req, res, next) => {
-    try {
-      const body = req.body || {};
-      const text = (v, max = 500) => typeof v === 'string' ? v.trim().slice(0, max) : '';
-      const preferences = Array.isArray(body.preferences) ? body.preferences.filter((v) => ['questions','missions','surprises','roleplay','puzzles'].includes(v)).slice(0, 5) : [];
-      const boundaries = Array.isArray(body.boundaries) ? body.boundaries.filter((v) => ['touch','restraints','blindfolds','alcohol','personal-disclosure'].includes(v)).slice(0, 5) : [];
-      if (!text(body.displayName, 80) || body.adultConfirmed !== true || body.consentConfirmed !== true || text(body.safeWord, 40).length < 2) {
-        return res.status(400).json({ error: 'Απαιτείται όνομα, επιβεβαίωση 18+, συναίνεση και προσωπική λέξη STOP.' });
-      }
-      const profile = {
-        sessionId: req.vipSession.id, displayName: text(body.displayName, 80),
-        safeWord: text(body.safeWord, 40), intensity: Math.min(5, Math.max(1, Number(body.intensity) || 3)),
-        preferences, boundaries, updatedAt: new Date().toISOString(),
-        adultConfirmed: true, consentConfirmed: true,
-      };
-      const { rows: existing } = await query("SELECT id FROM records WHERE entity = 'VIPAccessProfile' AND data->>'sessionId' = $1 LIMIT 1", [req.vipSession.id]);
-      let saved;
-      if (existing[0]) {
-        const { rows } = await query("UPDATE records SET data = $1::jsonb, updated_date = now() WHERE id = $2 RETURNING *", [JSON.stringify(profile), existing[0].id]);
-        saved = rows[0];
-      } else {
-        const { rows } = await query("INSERT INTO records (id, entity, data) VALUES ($1, 'VIPAccessProfile', $2) RETURNING *", [crypto.randomUUID(), JSON.stringify(profile)]);
-        saved = rows[0];
-      }
-      return res.json({ success: true, profile: { id: saved.id, ...saved.data } });
-    } catch (error) { return next(error); }
-  });
-
-
   r.param('entity', (req, res, next, name) => {
     if (!ENTITIES.includes(name)) return res.status(404).json({ error: `Unknown entity ${name}` });
     req.entity = name;
@@ -813,7 +690,7 @@ export function entityRoutes() {
     return formLimit(req, res, async () => {
       const body = req.body || {};
       const submissionId = typeof body.submissionId === 'string' ? body.submissionId.trim() : '';
-      if (body.adultConfirmed !== true || !/^[A-Za-z0-9_-]{16,100}$/.test(submissionId) ||
+      if (body.adultConfirmed !== true || body.consentConfirmed !== true || !/^[A-Za-z0-9_-]{16,100}$/.test(submissionId) ||
           typeof body.name !== 'string' || !body.name.trim() || body.name.trim().length > 80 ||
           typeof body.avatar !== 'string' || body.avatar.length > 32 ||
           !isObject(body.answers || {})) {
@@ -840,21 +717,27 @@ export function entityRoutes() {
         return res.status(400).json({ error: 'Έλεγξε τις πρόσθετες ερωτήσεις της VIP φόρμας και δοκίμασε ξανά.' });
       }
       const allowedKeys = new Set([
-        'displayName', 'personality', 'competitiveness', 'preferredTestType',
-        'activityPreferences', 'unexpectedChallenge', 'activeParticipation',
-        'boundaries', 'surpriseWish', 'shoeSize', 'plannedOutfit', 'shoesToWear',
+        'displayName', 'personality', 'competitiveness', 'activityPreferences',
+        'unexpectedChallenge', 'activeParticipation', 'boundaries', 'safetyBoundaries',
+        'safeWord', 'intensity', 'surpriseWish', 'shoeSize', 'plannedOutfit', 'shoesToWear',
         'nailColor', 'slipperType', 'pajamaType', 'stayAtVilla', 'favoriteDrink',
       ]);
-      const scalarValues = Object.entries(answers).filter(([key]) => key !== 'activityPreferences').map(([, value]) => value);
+      const scalarValues = Object.entries(answers).filter(([key]) => !['activityPreferences', 'safetyBoundaries'].includes(key)).map(([, value]) => value);
+      const allowedPreferences = ['questions', 'missions', 'surprises', 'roleplay', 'puzzles'];
+      const allowedBoundaries = ['touch', 'restraints', 'blindfolds', 'alcohol', 'personal-disclosure'];
       if (Object.keys(answers).some((key) => !allowedKeys.has(key)) ||
           scalarValues.some((value) => typeof value !== 'string' || value.length > 2000) ||
           !['bold', 'reserved', ''].includes(answers.personality || '') ||
           !['yes', 'no', ''].includes(answers.unexpectedChallenge || '') ||
           !['yes', 'no', ''].includes(answers.activeParticipation || '') ||
           !['yes', 'no', ''].includes(answers.stayAtVilla || '') ||
-          !['questions', 'missions', 'surprises'].every((key) => ['yes', 'no'].includes(answers.activityPreferences?.[key] || 'no')) ||
-          !['competitiveness'].every((key) => answers[key] === undefined || answers[key] === '' || /^[1-5]$/.test(String(answers[key]))) ||
-          (answers.activityPreferences !== undefined && (!isObject(answers.activityPreferences) || Object.keys(answers.activityPreferences).some((key) => !['questions', 'missions', 'surprises'].includes(key))))) {
+          !Array.isArray(answers.safetyBoundaries) || answers.safetyBoundaries.length > allowedBoundaries.length ||
+          answers.safetyBoundaries.some((key) => !allowedBoundaries.includes(key)) ||
+          typeof answers.safeWord !== 'string' || answers.safeWord.trim().length < 2 || answers.safeWord.trim().length > 40 ||
+          !['competitiveness', 'intensity'].every((key) => /^[1-5]$/.test(String(answers[key] || ''))) ||
+          !isObject(answers.activityPreferences) ||
+          Object.keys(answers.activityPreferences).some((key) => !allowedPreferences.includes(key)) ||
+          !allowedPreferences.every((key) => ['yes', 'no'].includes(answers.activityPreferences[key] || 'no'))) {
         return res.status(400).json({ error: 'Έλεγξε τις απαντήσεις της VIP φόρμας και δοκίμασε ξανά.' });
       }
       const gameMode = invitations[0].data.gameMode || 'classic';
@@ -862,8 +745,10 @@ export function entityRoutes() {
         'Πώς θέλεις να σε αποκαλούν στο παιχνίδι;': answers.displayName || '',
         'Προσωπικότητα': answers.personality === 'bold' ? 'Τολμηρός/ή' : answers.personality === 'reserved' ? 'Συγκρατημένος/η' : '',
         'Ανταγωνιστικότητα': answers.competitiveness || '',
-        'Προτιμώμενο είδος δοκιμασιών': answers.preferredTestType || '',
-        'Προτιμήσεις δραστηριοτήτων': Object.entries(answers.activityPreferences || {}).filter(([, value]) => value === 'yes').map(([key]) => ({ questions: 'Ερωτήσεις', missions: 'Αποστολές', surprises: 'Εκπλήξεις' }[key])).join(', '),
+        'Ένταση δοκιμασιών': answers.intensity || '',
+        'Προσωπική λέξη STOP / Safe Word': answers.safeWord || '',
+        'Προτιμήσεις δραστηριοτήτων': Object.entries(answers.activityPreferences || {}).filter(([, value]) => value === 'yes').map(([key]) => ({ questions: 'Ερωτήσεις', missions: 'Αποστολές', surprises: 'Εκπλήξεις', roleplay: 'Role-play', puzzles: 'Γρίφοι' }[key])).join(', '),
+        'Όρια / Δεν επιθυμώ': (answers.safetyBoundaries || []).map((key) => ({ touch: 'Σωματική επαφή', restraints: 'Δεσίματα / περιορισμοί', blindfolds: 'Κάλυψη ματιών', alcohol: 'Αλκοόλ', 'personal-disclosure': 'Προσωπικές αποκαλύψεις' }[key])).join(', '),
         'Απρόβλεπτη πρόκληση': answers.unexpectedChallenge === 'yes' ? 'ΝΑΙ' : answers.unexpectedChallenge === 'no' ? 'ΟΧΙ' : '',
         'Ενεργή συμμετοχή': answers.activeParticipation === 'yes' ? 'ΝΑΙ' : answers.activeParticipation === 'no' ? 'ΟΧΙ' : '',
         'Τι δεν επιθυμείς να περιλαμβάνει το παιχνίδι': answers.boundaries || '',
@@ -884,6 +769,7 @@ export function entityRoutes() {
       const customAnswerLabels = Object.fromEntries(configuredQuestions.map((question) => [question.id, question.label]));
       const data = {
         invitationId: invitations[0].id,
+        consentConfirmed: true,
         ...(invitations[0].data?.sessionCode ? { sessionCode: invitations[0].data.sessionCode } : {}),
         submissionId,
         gameMode,
@@ -1389,7 +1275,7 @@ export function entityRoutes() {
           vipGameMode: sourceRecord.gameMode || invitations[0].data.gameMode || 'classic',
           vipInvitationId: sourceRecord.invitationId,
           vipSubmissionId: sourceRecord.submissionId,
-          vipProfile: { displayName: answers.displayName || '', avatar: sourceRecord.avatar || '', answers: { ...answers, customAnswers: sourceRecord.customAnswers || {}, customAnswerLabels: sourceRecord.customAnswerLabels || {} }, answerLabels: sourceRecord.answerLabels || {} },
+          vipProfile: { displayName: answers.displayName || '', avatar: sourceRecord.avatar || '', consentConfirmed: sourceRecord.consentConfirmed === true, answers: { ...answers, customAnswers: sourceRecord.customAnswers || {}, customAnswerLabels: sourceRecord.customAnswerLabels || {} }, answerLabels: sourceRecord.answerLabels || {} },
           shoeSize: answers.shoeSize || '',
           nailColor: answers.nailColor || '',
           slipperType: answers.slipperType || '',
