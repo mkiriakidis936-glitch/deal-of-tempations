@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { base44, request } from '@/api/base44Client';
-import PajamaRSVP from '@/components/pajama/PajamaRSVP';
 import { Image } from '@/components/ui/image';
 import { ART, PHOTO, FILM, PAJAMA_PHOTOS } from '@/data/brandArt';
 import MediaSpot from '@/components/shared/MediaSpot';
@@ -121,7 +120,7 @@ export default function PajamaInvite() {
         )}
 
         <div className="space-y-3">
-          <button className="cinv-btn w-full" onClick={() => navigate(`/pajama-form${eventCode ? `?event=${encodeURIComponent(eventCode)}` : ''}`)}>
+          <button className="cinv-btn w-full" onClick={() => navigate(`/forms?mode=pajama${eventCode ? `&event=${encodeURIComponent(eventCode)}` : ''}`)}>
             ΚΛΕΙΣΕ ΘΕΣΗ
           </button>
           <p className="text-xs text-foreground/40 tracking-[0.2em] uppercase">
@@ -130,11 +129,6 @@ export default function PajamaInvite() {
         </div>
 
         <MoodGallery photos={PAJAMA_PHOTOS} title="Η ατμόσφαιρα" />
-
-        <div className="pt-4 border-t border-tarot-gold/20">
-          <div className="text-[11px] tracking-[0.4em] text-tarot-gold/60 uppercase mb-4">Ποιος έρχεται</div>
-          <PajamaRSVP />
-        </div>
 
         <div className="pt-6 text-[11px] tracking-[0.4em] text-tarot-gold/40 uppercase">
           Λίστα καλεσμένων: κλειστή · 18+
