@@ -30,7 +30,7 @@ const AdminFormsBuilder = lazy(() => import('@/components/admin/AdminFormsBuilde
 const AdminNotifications = lazy(() => import('@/components/admin/AdminNotifications'));
 const AdminVisits = lazy(() => import('@/components/admin/AdminVisits'));
 const AdminDigitalInvitations = lazy(() => import('@/components/admin/AdminDigitalInvitations'));
-const AdminSecretVault = lazy(() => import('@/components/admin/AdminSecretVault'));
+const AdminPublicSubmissions = lazy(() => import('@/components/admin/AdminPublicSubmissions'));
 const AdminProduction = lazy(() => import('@/components/admin/AdminProduction'));
 import { setActiveSessionCode } from '@/lib/activeSession';
 import { createInitialState } from '@/lib/gameLogic';
@@ -92,7 +92,6 @@ const NAV_GROUPS = [
     tabs: [
       { id: 'invitations', label: '✉️ Ψηφιακές προσκλήσεις' },
       { id: 'forms', label: '📝 Φόρμες & δηλώσεις συμμετοχής' },
-      { id: 'secret-vault', label: '🔐 VIP Vault & αιτήσεις' },
       { id: 'links', label: '🔗 Σύνδεσμοι & QR' },
     ],
   },
@@ -267,8 +266,6 @@ export default function Admin() {
         return <AdminMedia />;
       case 'invitations':
         return <AdminDigitalInvitations />;
-      case 'secret-vault':
-        return <AdminSecretVault />;
       case 'notifications':
         return <AdminNotifications />;
       case 'forms':
@@ -277,6 +274,7 @@ export default function Admin() {
             <AdminFormsBuilder />
             <AdminIntakes />
             <AdminRSVP />
+            <AdminPublicSubmissions />
           </div>
         );
       case 'statistics':
