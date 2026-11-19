@@ -37,7 +37,7 @@ export default function AdminDigitalInvitations() {
   const [sessionCode, setSessionCode] = useState('');
 
   useEffect(() => {
-    base44.entities.AppSetting.filter({ key: KEY }, { limit: 1 }).then(({ items: rows }) => {
+    base44.entities.AppSetting.filter({ key: KEY }, { limit: 1 }).then(async ({ items: rows }) => {
       const rec = rows?.[0] || null;
       setRecord(rec);
       const savedItems = Array.isArray(rec?.value?.items) ? rec.value.items : [];
