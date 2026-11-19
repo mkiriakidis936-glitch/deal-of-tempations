@@ -175,7 +175,6 @@ export default function Tablet() {
 
   async function archiveAndDelete() {
     if (!session || !state) { await deleteSession(); return; }
-    if (state.stage === 0 && state.mode !== 'pajama') { await deleteSession(); return; }
     if (state.testMode) { await deleteSession(); return; }
     if (endingRef.current) return;
     endingRef.current = true;
