@@ -36,7 +36,7 @@ export default function GiftCodeTV({ state }) {
           </div>
           <div>
             <div className="text-sm uppercase tracking-[0.3em] text-pink-300">Μυστικός κωδικός</div>
-            <div className="font-heading text-5xl tracking-[0.15em] text-yellow-300 drop-shadow-[0_0_26px_rgba(255,215,0,0.9)] animate-pulse mt-2">
+            <div className="font-heading text-5xl tracking-[0.15em] text-yellow-300 drop-shadow-[0_0_26px_rgba(232,194,107,0.9)] animate-pulse mt-2">
               {GIFT_CODE}
             </div>
           </div>

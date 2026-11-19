@@ -91,11 +91,11 @@ export const FOOTWEAR_LEVELS = [
 
 // ===== TOENAIL PERKS =====
 export const TOENAIL_PERKS = [
-  { id: 'red', name: 'Red Queen', icon: '🔴', color: '#ef4444', desc: 'Μεταφορά μίας ψηφιακής πρόκλησης σε άλλη παίκτρια, μόνο με τη συγκατάθεσή της.' },
+  { id: 'red', name: 'Red Queen', icon: '🔴', color: '#FF453A', desc: 'Μεταφορά μίας ψηφιακής πρόκλησης σε άλλη παίκτρια, μόνο με τη συγκατάθεσή της.' },
   { id: 'black', name: 'Goth Shield', icon: '🖤', color: '#1e293b', desc: '30 δευτερόλεπτα ασυλία από ψηφιακές προκλήσεις.' },
   { id: 'nude', name: 'Stealth Mode', icon: '🤍', color: '#e2d6c8', desc: 'Ακύρωση μίας ψηφιακής πρόκλησης (Skip).' },
-  { id: 'pink', name: 'Girlboss Override', icon: '🩷', color: '#ec4899', desc: 'Επιλογή της παίκτριας που θα παίξει στη συνέχεια.' },
-  { id: 'glitter', name: 'Glitch Code', icon: '🪩', color: '#a855f7', desc: 'Αλλαγή κάρτας ή ψηφιακής πρόκλησης.' },
+  { id: 'pink', name: 'Girlboss Override', icon: '🩷', color: '#E8C26B', desc: 'Επιλογή της παίκτριας που θα παίξει στη συνέχεια.' },
+  { id: 'glitter', name: 'Glitch Code', icon: '🪩', color: '#E8C26B', desc: 'Αλλαγή κάρτας ή ψηφιακής πρόκλησης.' },
 ];
 
 // ===== HIDDEN ROLES =====

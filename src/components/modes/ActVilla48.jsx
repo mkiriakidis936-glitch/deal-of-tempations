@@ -26,7 +26,7 @@ export default function ActVilla48({ ctx, onDone }) {
   };
   return (
     <div className="space-y-3">
-      <Panel title="VILLA — 48 ΩΡΕΣ" accent="#FFD700">
+      <Panel title="VILLA — 48 ΩΡΕΣ" accent="#E8C26B">
         <div className="text-center space-y-2">
           <div className="text-xs opacity-70">ΥΠΟΛΟΙΠΟΣ ΧΡΟΝΟΣ</div>
           <div className="font-display text-4xl text-amber-300 tabular-nums">{Math.floor(left / 3600)}:{String(Math.floor((left % 3600) / 60)).padStart(2,'0')}:{String(Math.ceil(left % 60)).padStart(2,'0')}</div>

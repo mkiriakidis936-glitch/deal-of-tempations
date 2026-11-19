@@ -25,7 +25,7 @@ export default function ActMidnight({ ctx, onDone }) {
 
   return (
     <div className="space-y-3">
-      <Panel title="🚪 Είσοδος στο Vault" accent="#8B5CF6">
+      <Panel title="🚪 Είσοδος στο Vault" accent="#E8C26B">
         <p className="text-xs opacity-75">Χρειάζονται {GATE_TOKENS} Glam Tokens. Όσες δεν τα κατάφεραν «αγοράζουν» την είσοδο με αστεία αγγαρεία ή με tokens από συμπαίκτριες.</p>
         <div className="flex flex-wrap gap-2">
           {players.map((p) => (
@@ -83,7 +83,7 @@ function BlindTest({ ctx, seat, onDone }) {
   }
 
   return (
-    <Panel title="🙈 The Blind ASMR Test" accent="#8B5CF6">
+    <Panel title="🙈 The Blind ASMR Test" accent="#E8C26B">
       <p className="text-sm opacity-80">Η {seat?.name} φοράει μάσκα ύπνου και κάθεται αναπαυτικά με τα πέλματα ελεύθερα. Οι υπόλοιπες εφαρμόζουν την κρυφή υφή για 20″. Στόχος: να μαντέψει υφή και ποια την αγγίζει.</p>
       {!tex ? (
         <Btn color="bg-violet-700" onClick={() => { if (canAssignVipActivity(ctx, seat, { activityLabel: 'Blind ASMR Test' })) newRound(); }}>🎴 Νέα κρυφή κάρτα υφής</Btn>
@@ -111,7 +111,7 @@ function Whispers({ ctx, seat, onDone }) {
   const [run, setRun] = useState(false);
   const left = useLocalCountdown(15, run, () => { sfx.alarm(); setRun(false); });
   return (
-    <Panel title="🤫 The Midnight Whispers" accent="#8B5CF6">
+    <Panel title="🤫 The Midnight Whispers" accent="#E8C26B">
       <p className="text-sm opacity-80">Η ερώτηση φαίνεται ΜΟΝΟ στο tablet — ψιθυρίζεται, δεν δείχνεται στην τηλεόραση. Όποια γελάσει επιλέγει προαιρετικά ένα σύντομο ψηφιακό quiz 15″ ή PASS.</p>
       {!q ? (
         <Btn color="bg-violet-700" onClick={() => { if (canAssignVipActivity(ctx, seat, { activityType: 'questions', activityLabel: 'ερωτήσεις' })) setQ(pick(WHISPER_QUESTIONS)); }}>🎴 Νέα ερώτηση για {seat?.name}</Btn>
@@ -134,7 +134,7 @@ function Clips() {
   const [show, setShow] = useState(false);
   const clip = ASMR_CLIPS[i];
   return (
-    <Panel title="🎧 ASMR Clues" accent="#8B5CF6">
+    <Panel title="🎧 ASMR Clues" accent="#E8C26B">
       <p className="text-sm opacity-80">Το κινητό παίζει παραμορφωμένο ψίθυρο. Η ομάδα βρίσκει τη λέξη-κλειδί.</p>
       <div className="flex flex-wrap gap-2 items-center">
         <Btn color="bg-violet-700" onClick={() => { whisper(clip.say); setShow(false); }}>▶ Clip #{i + 1} ({clip.hint})</Btn>

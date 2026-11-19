@@ -20,14 +20,14 @@ export default function TutorialTV({ tutorial }) {
   const step = STEPS[Math.max(0, Math.min(STEPS.length - 1, tutorial.step || 0))];
   return (
     <div className="fixed inset-0 z-[120] flex items-center justify-center bg-[#050509]/96 p-6 text-center">
-      <div className="w-full max-w-4xl space-y-7 rounded-3xl border border-[#c9a94e]/70 bg-[#100e0b] p-8 shadow-2xl">
-        <div className="text-xs tracking-[.45em] text-[#c9a94e]">DEAL OF TEMPTATION · QUICK START</div>
-        <div className="font-heading text-5xl sm:text-7xl text-[#f3df9e]">{step.title}</div>
+      <div className="w-full max-w-4xl space-y-7 rounded-3xl border border-[#E8C26B]/70 bg-[#100e0b] p-8 shadow-2xl">
+        <div className="text-xs tracking-[.45em] text-[#E8C26B]">DEAL OF TEMPTATION · QUICK START</div>
+        <div className="font-heading text-5xl sm:text-7xl text-[#F7E3A8]">{step.title}</div>
         <p className="mx-auto max-w-3xl text-2xl sm:text-3xl leading-relaxed text-white">{step.detail}</p>
         <div className="mx-auto h-2 max-w-2xl overflow-hidden rounded-full bg-white/10">
-          <div className="h-full bg-[#c9a94e] transition-all" style={{ width: `${(remaining / 60) * 100}%` }} />
+          <div className="h-full bg-[#E8C26B] transition-all" style={{ width: `${(remaining / 60) * 100}%` }} />
         </div>
-        <div className="font-heading text-4xl tabular-nums text-[#c9a94e]">{remaining}″</div>
+        <div className="font-heading text-4xl tabular-nums text-[#E8C26B]">{remaining}″</div>
       </div>
     </div>
   );

@@ -45,9 +45,10 @@ export const MODE_MEDIA_SECTIONS = {
 export const isNewMode = (id) => NEW_MODES.some((m) => m.id === id);
 export const modeMeta = (id) => NEW_MODES.find((m) => m.id === id);
 
+// iOS 27 · μαύρο & χρυσό. Κάθε mode έχει δική του απόχρωση χρυσού (όχι άλλο χρώμα).
 export const MODE_THEMES = {
-  lockdown: { bg: '#0A0A0A', accent: '#FF003C', accent2: '#FF6B8A' },
-  beach_bar: { bg: '#0D0D11', accent: '#00F2FE', accent2: '#FF3366' },
+  lockdown: { bg: '#000000', accent: '#E8C26B', accent2: '#F7E3A8', danger: '#FF453A' },
+  beach_bar: { bg: '#000000', accent: '#F0B85A', accent2: '#FBE3B0', danger: '#FF453A' },
 };
 
 export const ACT_META = {

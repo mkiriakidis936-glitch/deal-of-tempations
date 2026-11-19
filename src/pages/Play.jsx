@@ -12,7 +12,7 @@ import DecibelMeter from '@/components/comic/DecibelMeter';
 import MobileMiniGame from '@/components/play/MobileMiniGame';
 import QRScanner from '@/components/play/QRScanner';
 import SnitchDoubleDown from '@/components/play/SnitchDoubleDown';
-import MobileTabBar from '@/components/play/MobileTabBar';
+import MobileTabBar, { TabBarSpacer } from '@/components/play/MobileTabBar';
 import JuryVote from '@/components/play/JuryVote';
 import GrandJuryVote from '@/components/play/GrandJuryVote';
 import TimeCapsuleMobile from '@/components/play/TimeCapsuleMobile';
@@ -239,6 +239,7 @@ export default function Play() {
         </div>
 
         <MobileTabBar active={activeTab} onChange={setActiveTab} hasScan={!!state.grandHeist} />
+        <TabBarSpacer />
 
         {activeTab === 'status' && (
           <>

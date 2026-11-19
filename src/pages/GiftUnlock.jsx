@@ -27,7 +27,7 @@ function playChime() {
 }
 
 function celebrate() {
-  const colors = ['#ff4d9d', '#ffd700', '#8b5cf6', '#ffffff'];
+  const colors = ['#F7E3A8', '#E8C26B', '#E8C26B', '#ffffff'];
   confetti({ particleCount: 170, spread: 100, origin: { y: 0.6 }, colors });
   setTimeout(() => {
     confetti({ particleCount: 80, spread: 140, origin: { y: 0.35 }, colors });

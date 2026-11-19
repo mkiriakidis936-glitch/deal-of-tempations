@@ -58,7 +58,7 @@ export default function ActPediGlam({ ctx, onDone }) {
 
   return (
     <div className="space-y-3">
-      <Panel title="💅 Pajama Pedi-Glam — Sensory & Pamper Edition" accent="#FF2A85">
+      <Panel title="💅 Pajama Pedi-Glam — Sensory & Pamper Edition" accent="#F0B85A">
         <div className="flex flex-wrap items-center justify-between gap-2 text-sm">
           <span>Διάρκεια: 90 λεπτά</span>
           <b className="font-display text-2xl text-primary">{Math.floor(left / 60)}:{String(Math.ceil(left % 60)).padStart(2,'0')}</b>

@@ -143,14 +143,14 @@ export default function AdminDigitalInvitations() {
       <div className="font-heading text-xl text-primary">ΙΔΙΩΤΙΚΗ VIP ΠΡΟΣΚΛΗΣΗ</div>
       <p className="text-sm text-foreground/70">Έτοιμη, ιδιωτική πρόσκληση DEAL OF TEMPTATION. Το σύστημα δημιουργεί έναν κοινό σύνδεσμο και QR για όλους τους καλεσμένους. Το κείμενο και ο σχεδιασμός είναι προκαθορισμένα.</p>
       <div className="rounded-xl border border-[#b99a45]/50 bg-black p-4 text-center">
-        <div className="text-xs tracking-[0.35em] text-[#c9a94e]">ΑΠΟΚΛΕΙΣΤΙΚΗ ΠΡΟΣΒΑΣΗ</div>
+        <div className="text-xs tracking-[0.35em] text-[#E8C26B]">ΑΠΟΚΛΕΙΣΤΙΚΗ ΠΡΟΣΒΑΣΗ</div>
         <div className="my-2 font-serif text-2xl tracking-[0.12em] text-[#f4e6bd]">VIP ΠΡΟΣΚΛΗΣΗ</div>
         <div className="text-xs text-[#b99a45]">DEAL OF TEMPTATION</div>
       </div>
       <ComicButton disabled={vipBusy} onClick={createVipInvitation}>＋ ΔΗΜΙΟΥΡΓΙΑ ΕΤΟΙΜΗΣ VIP ΠΡΟΣΚΛΗΣΗΣ</ComicButton>
       {vipMessage && <div className="text-sm font-bold text-foreground">{vipMessage}</div>}
-      <label className="block space-y-1 text-sm font-bold text-[#d8bd72]">ΣΥΝΔΕΣΗ ΜΕ ΠΑΙΧΝΙΔΙ<select value={vipGameMode} onChange={(e) => setVipGameMode(e.target.value)} className="w-full rounded-lg border border-[#b99a45]/50 bg-black px-3 py-3 text-sm text-[#f4e6bd]">{GAME_MODES.map((mode) => <option key={mode.id} value={mode.id}>{mode.name}</option>)}</select></label>
-      <label className="block space-y-1 text-sm font-bold text-[#d8bd72]">ΣΥΝΔΕΣΗ ΜΕ EVENT<select value={sessionCode} onChange={(e) => setSessionCode(e.target.value)} className="w-full rounded-lg border border-[#b99a45]/50 bg-black px-3 py-3 text-sm text-[#f4e6bd]"><option value="">Χωρίς σύνδεση με Event</option>{sessions.map((session) => <option key={session.id} value={session.sessionCode}>{session.event?.title || session.mode} · {session.sessionCode}</option>)}</select></label>
+      <label className="block space-y-1 text-sm font-bold text-[#E8C26B]">ΣΥΝΔΕΣΗ ΜΕ ΠΑΙΧΝΙΔΙ<select value={vipGameMode} onChange={(e) => setVipGameMode(e.target.value)} className="w-full rounded-lg border border-[#b99a45]/50 bg-black px-3 py-3 text-sm text-[#f4e6bd]">{GAME_MODES.map((mode) => <option key={mode.id} value={mode.id}>{mode.name}</option>)}</select></label>
+      <label className="block space-y-1 text-sm font-bold text-[#E8C26B]">ΣΥΝΔΕΣΗ ΜΕ EVENT<select value={sessionCode} onChange={(e) => setSessionCode(e.target.value)} className="w-full rounded-lg border border-[#b99a45]/50 bg-black px-3 py-3 text-sm text-[#f4e6bd]"><option value="">Χωρίς σύνδεση με Event</option>{sessions.map((session) => <option key={session.id} value={session.sessionCode}>{session.event?.title || session.mode} · {session.sessionCode}</option>)}</select></label>
       <p className="text-xs text-foreground/55">Η πρόσκληση και οι απαντήσεις της συνδέονται με το επιλεγμένο Event.</p>
     </ComicPanel>
 
@@ -160,18 +160,18 @@ export default function AdminDigitalInvitations() {
       return <ComicPanel key={invitation.id} className="bg-card space-y-3 border border-[#b99a45]/40">
         <div className="flex items-center justify-between gap-2">
           <div>
-            <div className="font-heading text-lg text-[#c9a94e]">VIP ΠΡΟΣΚΛΗΣΗ</div>
+            <div className="font-heading text-lg text-[#E8C26B]">VIP ΠΡΟΣΚΛΗΣΗ</div>
             <div className="text-xs text-foreground/60">{new Date(invitation.created_date).toLocaleString('el-GR')}</div>
-            <div className="text-xs text-[#d8bd72]">Παιχνίδι: {GAME_MODES.find((mode) => mode.id === invitation.gameMode)?.name || invitation.gameMode || 'ΚΛΑΣΣΙΚΗ'}</div>
+            <div className="text-xs text-[#E8C26B]">Παιχνίδι: {GAME_MODES.find((mode) => mode.id === invitation.gameMode)?.name || invitation.gameMode || 'ΚΛΑΣΣΙΚΗ'}</div>
           </div>
-          <span className={invitation.active ? 'rounded-full border border-[#b99a45] px-3 py-1 text-xs text-[#d8bd72]' : 'rounded-full border border-white/20 px-3 py-1 text-xs text-foreground/50'}>
+          <span className={invitation.active ? 'rounded-full border border-[#b99a45] px-3 py-1 text-xs text-[#E8C26B]' : 'rounded-full border border-white/20 px-3 py-1 text-xs text-foreground/50'}>
             {invitation.active ? 'ΕΝΕΡΓΗ' : 'ΑΝΕΝΕΡΓΗ'}
           </span>
         </div>
         {url && <div className="flex flex-col sm:flex-row items-center gap-4 rounded-xl bg-black p-3">
           <div className="rounded bg-white p-2"><QRCodeSVG value={url} size={132} /></div>
           <div className="min-w-0 flex-1 space-y-2 text-center sm:text-left">
-            <div className="break-all text-xs text-[#d8bd72]">{url}</div>
+            <div className="break-all text-xs text-[#E8C26B]">{url}</div>
             <div className="flex flex-wrap justify-center sm:justify-start gap-2">
               <ComicButton size="sm" onClick={() => navigator.clipboard.writeText(url)}>ΑΝΤΙΓΡΑΦΗ ΣΥΝΔΕΣΜΟΥ</ComicButton>
               <ComicButton size="sm" variant="dark" onClick={() => { if (navigator.share) navigator.share({ title: 'VIP Πρόσκληση — DEAL OF TEMPTATION', url }).catch(() => {}); else navigator.clipboard.writeText(url); }}>ΚΟΙΝΟΠΟΙΗΣΗ</ComicButton>
@@ -184,15 +184,15 @@ export default function AdminDigitalInvitations() {
           <ComicButton size="sm" variant="red" disabled={vipBusy} onClick={() => deleteVipInvitation(invitation)}>ΔΙΑΓΡΑΦΗ VIP ΠΡΟΣΚΛΗΣΗΣ + ΑΠΑΝΤΗΣΕΩΝ</ComicButton>
         </div>
         {responses && <div className="space-y-2 border-t border-[#b99a45]/30 pt-3">
-          <div className="font-heading text-sm text-[#d8bd72]">ΣΥΜΜΕΤΟΧΕΣ: {responses.length}</div>
+          <div className="font-heading text-sm text-[#E8C26B]">ΣΥΜΜΕΤΟΧΕΣ: {responses.length}</div>
           {responses.length === 0 ? <div className="text-sm text-foreground/55">Δεν υπάρχουν ακόμη υποβολές.</div> : responses.map((response) => (
             <div key={response.id} className="rounded-lg border border-[#b99a45]/25 bg-black/40 p-3">
               <div className="font-bold text-[#f4e6bd]">{response.avatar} {response.name}</div>
               <div className="mt-2 space-y-1 text-xs text-foreground/70">
-                {Object.entries(response.answerLabels || response.answers || {}).map(([label, answer]) => <div key={label}><span className="text-[#c9a94e]">{label}:</span> {String(answer)}</div>)}
+                {Object.entries(response.answerLabels || response.answers || {}).map(([label, answer]) => <div key={label}><span className="text-[#E8C26B]">{label}:</span> {String(answer)}</div>)}
               </div>
               <details className="mt-2 rounded-lg border border-[#b99a45]/25 p-2 text-xs">
-                <summary className="cursor-pointer font-bold text-[#d8bd72]">ΟΛΑ ΤΑ ΑΠΟΘΗΚΕΥΜΕΝΑ ΠΕΔΙΑ ΚΑΙ ΑΠΑΝΤΗΣΕΙΣ</summary>
+                <summary className="cursor-pointer font-bold text-[#E8C26B]">ΟΛΑ ΤΑ ΑΠΟΘΗΚΕΥΜΕΝΑ ΠΕΔΙΑ ΚΑΙ ΑΠΑΝΤΗΣΕΙΣ</summary>
                 <pre className="mt-2 whitespace-pre-wrap break-words text-foreground/70">{JSON.stringify({ answers: response.answers || {}, customAnswers: response.customAnswers || {}, customAnswerLabels: response.customAnswerLabels || {} }, null, 2)}</pre>
               </details>
               <div className="mt-2 flex flex-wrap items-center justify-between gap-2">

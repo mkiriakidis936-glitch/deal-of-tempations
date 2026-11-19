@@ -24,7 +24,7 @@ export default function Promo() {
     >
       <div
         className="fixed top-3 left-1/2 -translate-x-1/2 z-50 flex gap-1 p-1 rounded-full"
-        style={{ background: 'rgba(10,10,10,.8)', border: '1px solid #8b0000', backdropFilter: 'blur(8px)' }}
+        style={{ background: 'rgba(10,10,10,.8)', border: '1px solid #7A1A15', backdropFilter: 'blur(8px)' }}
       >
         {PROMO_MODES.map((m) => {
           const active = m.key === mode;
@@ -38,8 +38,8 @@ export default function Promo() {
                 fontSize: '.7rem',
                 letterSpacing: '.22em',
                 background: active ? 'linear-gradient(180deg,#a00000,#5c0000)' : 'transparent',
-                color: active ? '#ffd700' : 'rgba(241,230,200,.5)',
-                border: active ? '1px solid #ffd700' : '1px solid transparent',
+                color: active ? '#E8C26B' : 'rgba(241,230,200,.5)',
+                border: active ? '1px solid #E8C26B' : '1px solid transparent',
               }}
             >
               {m.label}

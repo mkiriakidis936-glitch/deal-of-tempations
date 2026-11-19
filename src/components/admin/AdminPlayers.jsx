@@ -147,10 +147,10 @@ export default function AdminPlayers({ sessions, selectedSession, onSelect, onUp
               </div>
               {p.vipProfile?.answerLabels && (
                 <details className="mb-3 rounded-lg border border-[#b99a45]/35 bg-black/30 p-3">
-                  <summary className="cursor-pointer text-xs font-bold text-[#d8bd72]">✦ VIP ΠΡΟΦΙΛ ΣΥΜΜΕΤΕΧΟΥΣΑΣ</summary>
+                  <summary className="cursor-pointer text-xs font-bold text-[#E8C26B]">✦ VIP ΠΡΟΦΙΛ ΣΥΜΜΕΤΕΧΟΥΣΑΣ</summary>
                   <div className="mt-2 space-y-1 text-xs text-foreground/75">
                     {Object.entries(p.vipProfile.answerLabels).filter(([, value]) => String(value || '').trim()).map(([label, value]) => (
-                      <div key={label}><span className="text-[#d8bd72]">{label}:</span> {String(value)}</div>
+                      <div key={label}><span className="text-[#E8C26B]">{label}:</span> {String(value)}</div>
                     ))}
                   </div>
                 </details>

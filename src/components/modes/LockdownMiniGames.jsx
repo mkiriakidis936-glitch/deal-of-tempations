@@ -289,7 +289,7 @@ export default function LockdownMiniGames({ onPenalty, onWheel, onClose, safeOnl
   }
 
   return (
-    <Panel title="🎮 Digital Mini-Games" accent="#FF003C">
+    <Panel title="🎮 Digital Mini-Games" accent="#FF453A">
       {!game && (
         <div className="grid sm:grid-cols-2 gap-2">
           {availableGames.map((g) => (

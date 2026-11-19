@@ -12,7 +12,7 @@ export default function WantedPosterDisplay({ player, state }) {
   return (
     <div className="bg-tarot-parchment border-4 border-border p-4 font-body" style={{ backgroundImage: 'radial-gradient(circle, rgba(0,0,0,0.06) 2px, transparent 2px)', backgroundSize: '14px 14px' }}>
       <div className="text-center border-b-4 border-border pb-2 mb-3">
-        <div className="font-heading text-4xl tracking-wider" style={{ WebkitTextStroke: '2px #5C0A1E', color: '#c9a227' }}>
+        <div className="font-heading text-4xl tracking-wider" style={{ WebkitTextStroke: '2px #4A100D', color: '#E8C26B' }}>
           ΚΑΤΑΖΗΤΕΙΤΑΙ
         </div>
         <div className="text-xs font-bold mt-1 text-tarot-dark font-body">ΝΕΚΡΗ Ή ΓΑΡΓΑΛΗΣΤΗ</div>

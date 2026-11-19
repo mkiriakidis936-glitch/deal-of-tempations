@@ -29,7 +29,7 @@ export default function ActMorning({ ctx, onFinish }) {
       setMg({ vaultUnlocked: true, morningSolvedAt: Date.now(), playerAction: null });
       log(`☀️ ${nameOf(action.playerId)} έλυσε τον Coffee Code από το κινητό`);
       sfx.ok();
-      confetti({ particleCount: 160, spread: 90, origin: { y: 0.6 }, colors: ['#FFD700', '#FF2A85', '#ffffff'] });
+      confetti({ particleCount: 160, spread: 90, origin: { y: 0.6 }, colors: ['#E8C26B', '#F0B85A', '#ffffff'] });
     } else {
       setMg({ playerAction: null });
       log(`☀️ ${nameOf(action.playerId)} δοκίμασε λανθασμένο Coffee Code`);
@@ -47,7 +47,7 @@ export default function ActMorning({ ctx, onFinish }) {
       setMg({ vaultUnlocked: true, morningSolvedAt: Date.now() });
       log('☀️ Ο Coffee Code λύθηκε — VIP VAULT UNLOCKED');
       sfx.ok();
-      confetti({ particleCount: 160, spread: 90, origin: { y: 0.6 }, colors: ['#FFD700', '#FF2A85', '#ffffff'] });
+      confetti({ particleCount: 160, spread: 90, origin: { y: 0.6 }, colors: ['#E8C26B', '#F0B85A', '#ffffff'] });
     } else {
       setWrong(true);
       sfx.fail();
@@ -57,9 +57,9 @@ export default function ActMorning({ ctx, onFinish }) {
 
   return (
     <div className="space-y-3">
-      <Panel title="☀️ Extended Morning Escape" accent="#FFD700">
+      <Panel title="☀️ Extended Morning Escape" accent="#E8C26B">
         <p className="text-sm opacity-80">Ο καφές είναι σε κοινή θέα αλλά «κλειδωμένος». Βρείτε τα 4 ψηφία που κρύβονται στο δωμάτιο. Όποια ομάδα καθυστερήσει ή αποτύχει μένει εκτός πρώτου σερβιρίσματος και αναλαμβάνει όλες τις αγγαρείες καθαρισμού.</p>
-        <div className="text-center font-display text-2xl" style={{ color: '#FFD700' }}>“The Coffee Code is Hidden.”</div>
+        <div className="text-center font-display text-2xl" style={{ color: '#E8C26B' }}>“The Coffee Code is Hidden.”</div>
         {!mg.morningTimer && <Btn color="bg-amber-600 text-black" onClick={() => setMg({ morningTimer: Date.now() + MORNING_SECONDS * 1000 })}>▶ Ξεκίνα το κυνήγι (15′)</Btn>}
         {mg.morningTimer && <MorningClock endsAt={mg.morningTimer} />}
 
@@ -85,7 +85,7 @@ export default function ActMorning({ ctx, onFinish }) {
       </Panel>
 
       {!unlocked ? (
-        <Panel title="🔢 Πληκτρολόγιο κωδικού" accent="#FFD700">
+        <Panel title="🔢 Πληκτρολόγιο κωδικού" accent="#E8C26B">
           <div className="flex items-center gap-2">
             <input
               inputMode="numeric"
@@ -99,7 +99,7 @@ export default function ActMorning({ ctx, onFinish }) {
           </div>
         </Panel>
       ) : (
-        <Panel title="👑 VIP VAULT UNLOCKED — The Ultimate Pajama Queens" accent="#FFD700">
+        <Panel title="👑 VIP VAULT UNLOCKED — The Ultimate Pajama Queens" accent="#E8C26B">
           <p className="text-sm opacity-80">Σερβίρεται ο καφές! Παίξτε τις 20 κάρτες του Vault όσο θέλετε.</p>
           {card && <div className="rounded bg-amber-950/60 border border-amber-500 p-3 font-body text-lg">{card}</div>}
           <div className="flex flex-wrap gap-2">

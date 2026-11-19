@@ -41,7 +41,7 @@ export default function InvitationTeaser({ onOpen }) {
           className="absolute inset-0"
           style={{
             background:
-              'radial-gradient(ellipse 38% 60% at 50% 30%, rgba(255,215,0,.10), rgba(10,10,10,.55) 55%, #0a0a0a 85%), linear-gradient(180deg, rgba(10,10,10,.5), rgba(26,10,10,.85))',
+              'radial-gradient(ellipse 38% 60% at 50% 30%, rgba(232,194,107,.10), rgba(10,10,10,.55) 55%, #0a0a0a 85%), linear-gradient(180deg, rgba(10,10,10,.5), rgba(26,10,10,.85))',
           }}
         />
       </div>
@@ -69,7 +69,7 @@ export default function InvitationTeaser({ onOpen }) {
                   opacity: 1,
                   animation: 'none',
                   ...(isLast
-                    ? { color: '#ffd700', fontSize: '2.25rem', fontWeight: 700, textShadow: '0 0 34px rgba(255,215,0,.65), 0 2px 0 #000' }
+                    ? { color: '#E8C26B', fontSize: '2.25rem', fontWeight: 700, textShadow: '0 0 34px rgba(232,194,107,.65), 0 2px 0 #000' }
                     : {}),
                 }}
               >

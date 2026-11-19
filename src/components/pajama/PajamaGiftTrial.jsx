@@ -148,7 +148,7 @@ export default function PajamaGiftTrial({ players, onDone, canAssign, canStart }
             <div className="text-sm text-pink-100">
               Η {sacrificed?.name} ολοκλήρωσε το challenge. Μυστικός κωδικός για το Vault:
             </div>
-            <div className="font-heading text-2xl tracking-[0.25em] text-yellow-300 drop-shadow-[0_0_18px_rgba(255,215,0,0.8)]">
+            <div className="font-heading text-2xl tracking-[0.25em] text-yellow-300 drop-shadow-[0_0_18px_rgba(232,194,107,0.8)]">
               {GIFT_CODE}
             </div>
             <div className="text-xs text-pink-200">Το link για τα κινητά:</div>

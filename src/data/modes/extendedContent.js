@@ -5,9 +5,9 @@ export const EXT_END = 35;
 export const EXT_PORTAL = 33;
 export const EXT_BRANCHES = [5, 12, 19, 26];
 export const EXT_ZONES = [
-  { id: 'warm', name: 'Warm-Up', from: 0, to: 11, color: '#FF2A85' },
-  { id: 'chaos', name: 'Chaos Zone', from: 12, to: 23, color: '#FF003C' },
-  { id: 'portal', name: 'Lockdown Portal', from: 24, to: 35, color: '#FFD700' },
+  { id: 'warm', name: 'Warm-Up', from: 0, to: 11, color: '#F0B85A' },
+  { id: 'chaos', name: 'Chaos Zone', from: 12, to: 23, color: '#FF453A' },
+  { id: 'portal', name: 'Lockdown Portal', from: 24, to: 35, color: '#E8C26B' },
 ];
 
 export function squareType(i) {
@@ -20,8 +20,8 @@ export function squareType(i) {
 export const zoneOf = (i) => EXT_ZONES.find((z) => i >= z.from && i <= z.to) || EXT_ZONES[0];
 
 export const ROUTES = {
-  glam: { id: 'glam', name: 'The Glam Route', icon: '💗', color: '#FF2A85', desc: 'Ασφαλής δρόμος: ερωτήσεις, μυστικά, foot-spa. 1 Token ανά επιτυχία.', reward: 1, steps: 3 },
-  chaos: { id: 'chaos', name: 'The Chaos & Trap Route', icon: '🔥', color: '#FF003C', desc: 'Παγίδες, δεσίματα, σαμποτάζ. 2 Tokens ανά επιτυχία, διπλοί πόντοι στον τερματισμό — αλλά ρίσκο ποινής.', reward: 2, steps: 3 },
+  glam: { id: 'glam', name: 'The Glam Route', icon: '💗', color: '#F0B85A', desc: 'Ασφαλής δρόμος: ερωτήσεις, μυστικά, foot-spa. 1 Token ανά επιτυχία.', reward: 1, steps: 3 },
+  chaos: { id: 'chaos', name: 'The Chaos & Trap Route', icon: '🔥', color: '#FF453A', desc: 'Παγίδες, δεσίματα, σαμποτάζ. 2 Tokens ανά επιτυχία, διπλοί πόντοι στον τερματισμό — αλλά ρίσκο ποινής.', reward: 2, steps: 3 },
 };
 
 export const GLAM_CARDS = [

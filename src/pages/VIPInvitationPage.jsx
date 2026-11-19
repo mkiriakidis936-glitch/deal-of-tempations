@@ -73,19 +73,19 @@ export default function VIPInvitationPage() {
   );
   const yesNo = (key) => <div style={{ display: 'flex', gap: 8 }}>{choice(key, 'yes', 'ΝΑΙ')}{choice(key, 'no', 'ΟΧΙ')}</div>;
   const textInput = (key, placeholder = '') => <input value={answers[key] || ''} onChange={(e) => setAnswer(key, e.target.value)} maxLength={2000} style={inputStyle} placeholder={placeholder} />;
-  const range = (key) => <div><input type="range" min="1" max="5" step="1" value={answers[key] || '3'} onChange={(e) => setAnswer(key, e.target.value)} style={{ width: '100%', accentColor: '#c9a94e' }} /><div style={{ display: 'flex', justifyContent: 'space-between', color: '#9e906d', fontSize: 11 }}><span>1 · Χαμηλά</span><strong style={{ color: '#e5cf91' }}>{answers[key] || 3} / 5</strong><span>5 · Πολύ</span></div></div>;
+  const range = (key) => <div><input type="range" min="1" max="5" step="1" value={answers[key] || '3'} onChange={(e) => setAnswer(key, e.target.value)} style={{ width: '100%', accentColor: '#E8C26B' }} /><div style={{ display: 'flex', justifyContent: 'space-between', color: '#9e906d', fontSize: 11 }}><span>1 · Χαμηλά</span><strong style={{ color: '#e5cf91' }}>{answers[key] || 3} / 5</strong><span>5 · Πολύ</span></div></div>;
 
   return <main style={{ minHeight: '100dvh', background: 'radial-gradient(ellipse at top, #29200f 0%, #090909 52%, #050505 100%)', color: '#f4e8c5', padding: '28px 14px', fontFamily: 'Georgia,serif' }}>
     <div style={{ maxWidth: 620, margin: '0 auto' }}>
       <header style={{ textAlign: 'center', border: '1px solid rgba(207,174,91,.65)', borderRadius: 18, padding: '25px 18px', background: 'linear-gradient(145deg,rgba(31,25,13,.96),rgba(8,8,8,.98))', boxShadow: '0 18px 70px rgba(0,0,0,.55)' }}>
-        <div style={{ color: '#c9a94e', letterSpacing: '.42em', fontSize: 11 }}>EXCLUSIVE ACCESS</div>
-        <div style={{ color: '#f3df9e', fontSize: 'clamp(30px,8vw,44px)', letterSpacing: '.12em', margin: '14px 0' }}>VIP INVITATION</div>
-        <div style={{ height: 1, maxWidth: 180, margin: '0 auto 14px', background: 'linear-gradient(90deg,transparent,#c9a94e,transparent)' }} />
+        <div style={{ color: '#E8C26B', letterSpacing: '.42em', fontSize: 11 }}>EXCLUSIVE ACCESS</div>
+        <div style={{ color: '#F7E3A8', fontSize: 'clamp(30px,8vw,44px)', letterSpacing: '.12em', margin: '14px 0' }}>VIP INVITATION</div>
+        <div style={{ height: 1, maxWidth: 180, margin: '0 auto 14px', background: 'linear-gradient(90deg,transparent,#E8C26B,transparent)' }} />
         <div style={{ color: '#d6c28c', fontSize: 12, letterSpacing: '.24em' }}>DEAL OF TEMPTATION</div>
         {invitation && <div style={{ color: '#e5cf91', fontSize: 12, marginTop: 14 }}>ΣΥΝΔΕΔΕΜΕΝΟ ΠΑΙΧΝΙΔΙ: {gameName}</div>}
       </header>
 
-      {loading ? <div style={{ textAlign: 'center', padding: 40, color: '#c9a94e' }}>Φόρτωση πρόσκλησης…</div> :
+      {loading ? <div style={{ textAlign: 'center', padding: 40, color: '#E8C26B' }}>Φόρτωση πρόσκλησης…</div> :
       error && !invitation ? <section style={{ textAlign: 'center', padding: 36, border: '1px solid #654747', borderRadius: 14, marginTop: 20 }}>{error}</section> :
       done ? <section style={{ textAlign: 'center', padding: 38, border: '1px solid rgba(207,174,91,.6)', borderRadius: 16, marginTop: 20, background: '#100f0c' }}>
         <div style={{ fontSize: 38, color: '#d7bd78' }}>✦</div>
@@ -115,7 +115,7 @@ export default function VIPInvitationPage() {
         <section style={sectionStyle}>
           <h2 style={{ color: '#e5cf91', fontSize: 16, margin: '0 0 16px' }}>3. ΠΡΟΤΙΜΗΣΕΙΣ ΠΑΙΧΝΙΔΙΟΥ</h2>
           <div style={fieldStyle}><label style={labelStyle}>ΠΟΙΟ ΕΙΔΟΣ ΔΟΚΙΜΑΣΙΩΝ ΠΡΟΤΙΜΑΣ;</label><select value={answers.preferredTestType || ''} onChange={(e) => setAnswer('preferredTestType', e.target.value)} style={inputStyle}><option value="">Επίλεξε…</option>{GAME_MODES.map((mode) => <option key={mode.id} value={mode.name}>{mode.name}</option>)}</select></div>
-          <div style={fieldStyle}><label style={labelStyle}>ΠΡΟΤΙΜΑΣ… (ΜΠΟΡΕΙΣ ΝΑ ΕΠΙΛΕΞΕΙΣ ΠΕΡΙΣΣΟΤΕΡΑ)</label>{[['questions','ΕΡΩΤΗΣΕΙΣ'],['missions','ΑΠΟΣΤΟΛΕΣ'],['surprises','ΕΚΠΛΗΞΕΙΣ']].map(([key,label]) => <label key={key} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0', color: '#f4e8c5' }}><input type="checkbox" checked={answers.activityPreferences?.[key] === 'yes'} onChange={(e) => setActivity(key, e.target.checked)} style={{ accentColor: '#c9a94e', width: 17, height: 17 }} />{label}</label>)}</div>
+          <div style={fieldStyle}><label style={labelStyle}>ΠΡΟΤΙΜΑΣ… (ΜΠΟΡΕΙΣ ΝΑ ΕΠΙΛΕΞΕΙΣ ΠΕΡΙΣΣΟΤΕΡΑ)</label>{[['questions','ΕΡΩΤΗΣΕΙΣ'],['missions','ΑΠΟΣΤΟΛΕΣ'],['surprises','ΕΚΠΛΗΞΕΙΣ']].map(([key,label]) => <label key={key} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0', color: '#f4e8c5' }}><input type="checkbox" checked={answers.activityPreferences?.[key] === 'yes'} onChange={(e) => setActivity(key, e.target.checked)} style={{ accentColor: '#E8C26B', width: 17, height: 17 }} />{label}</label>)}</div>
           <div style={fieldStyle}><label style={labelStyle}>ΘΑ ΕΠΕΛΕΓΕΣ ΜΙΑ ΑΠΡΟΒΛΕΠΤΗ ΠΡΟΚΛΗΣΗ;</label>{yesNo('unexpectedChallenge')}</div>
         </section>
 
@@ -150,7 +150,7 @@ export default function VIPInvitationPage() {
           />
         </section>}
 
-        <label style={{ display: 'flex', alignItems: 'flex-start', gap: 10, color: '#f4e8c5', fontSize: 13, margin: '18px 0' }}><input type="checkbox" checked={adultConfirmed} onChange={(e) => setAdultConfirmed(e.target.checked)} style={{ accentColor: '#c9a94e', marginTop: 3 }} /><span>Επιβεβαιώνω ότι είμαι 18 ετών ή μεγαλύτερη. *</span></label>
+        <label style={{ display: 'flex', alignItems: 'flex-start', gap: 10, color: '#f4e8c5', fontSize: 13, margin: '18px 0' }}><input type="checkbox" checked={adultConfirmed} onChange={(e) => setAdultConfirmed(e.target.checked)} style={{ accentColor: '#E8C26B', marginTop: 3 }} /><span>Επιβεβαιώνω ότι είμαι 18 ετών ή μεγαλύτερη. *</span></label>
         {error && <p role="alert" style={{ color: '#f1a0a0', fontSize: 13, marginBottom: 14 }}>{error}</p>}
         <button type="submit" disabled={!valid} style={{ width: '100%', borderRadius: 10, padding: '14px 16px', border: '1px solid #e0c36b', background: !valid ? '#4a4025' : 'linear-gradient(110deg,#8b6a24,#d9bd68,#8b6a24)', color: '#100e09', fontWeight: 800, letterSpacing: '.12em', opacity: !valid ? .65 : 1 }}>
           {saving ? 'ΑΠΟΘΗΚΕΥΣΗ…' : 'ΕΠΙΒΕΒΑΙΩΣΗ ΣΥΜΜΕΤΟΧΗΣ'}

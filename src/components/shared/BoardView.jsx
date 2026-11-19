@@ -3,9 +3,9 @@ import { cn } from '@/lib/utils';
 import { CLASSIC_BOARD, SQUARE_TYPES } from '@/data/gameConfig';
 
 const PLAYER_COLORS = [
-  '#ef4444', '#3b82f6', '#22c55e', '#a855f7',
-  '#f59e0b', '#ec4899', '#06b6d4', '#84cc16',
-  '#f97316', '#6366f1',
+  '#FF453A', '#E8C26B', '#E8C26B', '#E8C26B',
+  '#F0B85A', '#E8C26B', '#06b6d4', '#E8C26B',
+  '#F0B85A', '#E8C26B',
 ];
 
 export function getPlayerColor(playerId) {

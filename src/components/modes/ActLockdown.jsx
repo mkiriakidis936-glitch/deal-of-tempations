@@ -12,7 +12,7 @@ import { pick, shuffle, sfx, whisper, timerStart, timerAdd, timerLeft, useTick, 
 import { canAssignVipActivity } from '@/lib/playerIntelligence';
 
 const norm = (s) => String(s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().toLowerCase();
-const RED = '#FF003C';
+const RED = '#FF453A';
 
 // Act 3 — Pajama Lockdown (18+ Escape Room)
 export default function ActLockdown({ ctx, onDone, standalone }) {
@@ -31,7 +31,7 @@ export default function ActLockdown({ ctx, onDone, standalone }) {
       setMg({ playerAction: null, ld: { ...ld, stage: 'won' } });
       log('🎆 EXIT CODE σωστός — ΞΕΚΛΕΙΔΩΘΗΚΕ ΑΠΟ ΚΙΝΗΤΟ!');
       sfx.ok();
-      confetti({ particleCount: 220, spread: 120, origin: { y: 0.55 }, colors: ['#FF003C', '#FF2A85', '#FFD700', '#00F2FE'] });
+      confetti({ particleCount: 220, spread: 120, origin: { y: 0.55 }, colors: ['#FF453A', '#F0B85A', '#E8C26B', '#E8C26B'] });
     } else {
       setMg({ playerAction: null });
       log('🔐 Λανθασμένος κωδικός από κινητό — δοκίμασε ξανά');
@@ -91,7 +91,7 @@ export default function ActLockdown({ ctx, onDone, standalone }) {
   if (ld.stage === 'won') {
     return (
       <div className="space-y-3">
-        <Panel title="👑 THE FINAL ESCAPE — VIP VAULT UNLOCKED" accent="#FFD700">
+        <Panel title="👑 THE FINAL ESCAPE — VIP VAULT UNLOCKED" accent="#E8C26B">
           <p className="font-body">Ο Exit Code ({EXIT_CODE}) λύθηκε πριν μηδενιστεί το ρολόι. Το Lockdown ξεκλειδώθηκε!</p>
           {vaultCard && <div className="rounded bg-amber-950/60 border border-amber-500 p-3 font-body text-lg">{vaultCard}</div>}
           <div className="flex flex-wrap gap-2">
@@ -111,7 +111,7 @@ export default function ActLockdown({ ctx, onDone, standalone }) {
     <div className="space-y-3">
       {ld.surge && !ld.surgeDone && <Surge onDone={() => setLd({ surgeDone: true })} />}
 
-      <div className="rounded-lg p-3 text-center font-body text-sm" style={{ border: `1px solid ${RED}`, background: '#1a0006', color: '#ffb3c1' }}>
+      <div className="rounded-lg p-3 text-center font-body text-sm" style={{ border: `1px solid ${RED}`, background: '#0B0B0C', color: '#FFB9B3' }}>
         {LOCKDOWN_MESSAGE}
       </div>
 
@@ -127,7 +127,7 @@ export default function ActLockdown({ ctx, onDone, standalone }) {
         setLd({ stage: 'won' });
         log('🎆 EXIT CODE σωστός — ΞΕΚΛΕΙΔΩΘΗΚΕ!');
         sfx.ok();
-        confetti({ particleCount: 220, spread: 120, origin: { y: 0.55 }, colors: ['#FF003C', '#FF2A85', '#FFD700', '#00F2FE'] });
+        confetti({ particleCount: 220, spread: 120, origin: { y: 0.55 }, colors: ['#FF453A', '#F0B85A', '#E8C26B', '#E8C26B'] });
       }} />}
 
       <Panel title="⚙️ Chaos Mechanics" accent={RED}>
@@ -161,7 +161,7 @@ function Init({ onStart, durationLabel }) {
   return (
     <div className="rounded-xl p-6 text-center space-y-5" style={{ background: '#000', border: `2px solid ${RED}`, boxShadow: `0 0 40px ${RED}66` }}>
       <div className="font-display text-4xl sm:text-6xl comic-pulse" style={{ color: RED, textShadow: `0 0 20px ${RED}` }}>LOCKDOWN</div>
-      <p className="font-body text-base sm:text-xl max-w-xl mx-auto" style={{ color: '#ffb3c1' }}>{LOCKDOWN_MESSAGE}</p>
+      <p className="font-body text-base sm:text-xl max-w-xl mx-auto" style={{ color: '#FFB9B3' }}>{LOCKDOWN_MESSAGE}</p>
       <div className="max-w-sm mx-auto space-y-1">
         <input
           type="range" min="0" max="100" value={v}
@@ -180,7 +180,7 @@ function DigitBar({ revealed }) {
     <div className="flex justify-center gap-3">
       {EXIT_CODE.split('').map((d, i) => (
         <div key={i} className="w-14 h-16 rounded-lg flex items-center justify-center font-display text-4xl"
-          style={{ background: '#000', border: `2px solid ${revealed[i] ? '#FFD700' : RED}`, color: revealed[i] ? '#FFD700' : '#5a0012' }}>
+          style={{ background: '#000', border: `2px solid ${revealed[i] ? '#E8C26B' : RED}`, color: revealed[i] ? '#E8C26B' : '#4A100D' }}>
           {revealed[i] ? d : '🔒'}
         </div>
       ))}
@@ -224,7 +224,7 @@ function Level1({ ctx, ld, setLd, hostage, penalty, onPass }) {
         </select>
       </div>
       <RestraintNote />
-      <div className="rounded p-3 text-lg font-body" style={{ background: '#1a0006', border: `1px solid ${RED}` }}>{q}</div>
+      <div className="rounded p-3 text-lg font-body" style={{ background: '#0B0B0C', border: `1px solid ${RED}` }}>{q}</div>
       <div className="flex flex-wrap gap-2 items-center">
         <Btn color="bg-emerald-700" onClick={() => answer(true)}>✅ Σωστά</Btn>
         <Btn color="bg-red-800" onClick={() => answer(false)}>❌ Λάθος (+2′)</Btn>
@@ -376,7 +376,7 @@ function Exit({ onSolved }) {
     else { setWrong(true); sfx.fail(); sfx.buzz(400); setCode(''); setTimeout(() => setWrong(false), 700); }
   }
   return (
-    <Panel title="🔢 The Exit Code" accent="#FFD700">
+    <Panel title="🔢 The Exit Code" accent="#E8C26B">
       <div className={`text-center font-display text-5xl tracking-[0.4em] ${wrong ? 'text-red-500' : ''}`}>{code.padEnd(4, '•')}</div>
       <div className="grid grid-cols-3 gap-2 max-w-xs mx-auto">
         {['1', '2', '3', '4', '5', '6', '7', '8', '9', '⌫', '0', '✔'].map((k) => (
@@ -413,7 +413,7 @@ function SpicyWheel({ onClose, log }) {
     }, 110);
   }
   return (
-    <Panel title="🎡 The Spicy Truth Wheel" accent={phase === 'penalty' ? '#ff0000' : RED}>
+    <Panel title="🎡 The Spicy Truth Wheel" accent={phase === 'penalty' ? '#FF453A' : RED}>
       <div className={`rounded p-3 min-h-[5rem] font-body text-lg ${phase === 'penalty' ? 'bg-red-900/80' : 'bg-black/60'}`}>{q || 'Γύρνα τον τροχό για να εμφανιστεί η ερώτηση.'}</div>
       {phase === 'decide' && (
         <div className="flex items-center gap-3">

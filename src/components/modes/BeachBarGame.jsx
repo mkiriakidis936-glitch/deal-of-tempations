@@ -8,8 +8,8 @@ import {
 import { pick, sfx, startBeat, drinkText, useLocalCountdown, isGameStopActive } from '@/lib/modeKit';
 import { canAssignVipActivity } from '@/lib/playerIntelligence';
 
-const TURQ = '#00F2FE';
-const CORAL = '#FF3366';
+const TURQ = '#E8C26B';
+const CORAL = '#F0B85A';
 
 export default function BeachBarGame({ ctx, onEnd }) {
   const { players, mg, setMg, log, nameOf } = ctx;
@@ -52,7 +52,7 @@ export default function BeachBarGame({ ctx, onEnd }) {
             key={p.id}
             onClick={() => setBb({ phase: p.id })}
             className="comic-boom px-3 py-2 font-heading text-sm"
-            style={{ background: bb.phase === p.id ? TURQ : '#1a1a22', color: bb.phase === p.id ? '#000' : '#fff' }}
+            style={{ background: bb.phase === p.id ? TURQ : '#141416', color: bb.phase === p.id ? '#000' : '#fff' }}
           >{p.label}</button>
         ))}
       </div>
@@ -177,7 +177,7 @@ function Dance({ ctx, bb, setBb, T, addDrink, flopOn }) {
       </div>
 
       {bb.freeze && (
-        <div className="rounded-lg p-4 text-center space-y-3" style={{ background: '#2a0010', border: `2px solid ${CORAL}` }}>
+        <div className="rounded-lg p-4 text-center space-y-3" style={{ background: '#141416', border: `2px solid ${CORAL}` }}>
           <div className="font-display text-3xl comic-pulse" style={{ color: CORAL }}>📯 ΕΝΤΟΛΗ!</div>
           <div className="font-body text-xl">{bb.freeze.cmd}</div>
           <div className="text-sm opacity-75">Ποια ήταν τελευταία;</div>
@@ -258,7 +258,7 @@ function Wheel({ ctx, bb, setBb, T, flopOn }) {
         ))}
       </div>
       {card && !spinning && (
-        <div className="rounded-lg p-4 space-y-2" style={{ background: '#1a0010', border: `2px solid ${meta?.color || CORAL}` }}>
+        <div className="rounded-lg p-4 space-y-2" style={{ background: '#0B0B0C', border: `2px solid ${meta?.color || CORAL}` }}>
           <div className="text-xs opacity-70">{nameOf(bb.wheel.pid)} · {meta?.icon} {meta?.name}</div>
           <div className="font-heading text-2xl">{card.title}</div>
           <p className="font-body text-lg">{T(card.text)}</p>
@@ -314,7 +314,7 @@ function Truth({ ctx, bb, setBb, T, addDrink }) {
         }}>🎴 Νέα ερώτηση 18+</Btn>
       </div>
       {q && (
-        <div className="rounded-lg p-4 space-y-3" style={{ background: '#1a0010', border: `2px solid ${CORAL}` }}>
+        <div className="rounded-lg p-4 space-y-3" style={{ background: '#0B0B0C', border: `2px solid ${CORAL}` }}>
           <div className="text-xs opacity-70">{nameOf(who)}</div>
           <div className="font-body text-xl">{q}</div>
           {state === 'decide' && (
@@ -345,7 +345,7 @@ function Finale({ ctx, bb, setBb, flopOn, onEnd }) {
   const left = useLocalCountdown(BEACH_FINALE_SECONDS, run, () => { sfx.horn(); setRun(false); });
   const queen = bb.queen;
   return (
-    <Panel title="👑 The Last Queen Standing" accent="#FFD700">
+    <Panel title="👑 The Last Queen Standing" accent="#E8C26B">
       <p className="text-sm opacity-80">Όσες έχουν χάσει τις σαγιονάρες τους (κλοπές ή ποινές) μπαίνουν στον τελικό γύρο: 3λεπτο προαιρετικό Dance & Freeze challenge με ψηφιακές εντολές, χωρίς περιορισμό κίνησης ή σωματική επαφή. Η νικήτρια γίνεται Beach Queen και διαλέγει την τελική ομαδική δοκιμασία.</p>
       <div className="flex flex-wrap gap-2 text-sm">
         Φιναλίστ: {field.map((p) => <b key={p.id} className="px-2 py-0.5 rounded bg-background/60">{p.name}</b>)}
@@ -364,8 +364,8 @@ function Finale({ ctx, bb, setBb, flopOn, onEnd }) {
           ))}
         </div>
       ) : (
-        <div className="rounded-lg p-4 text-center space-y-3" style={{ background: '#2a2000', border: '2px solid #FFD700' }}>
-          <div className="font-display text-4xl" style={{ color: '#FFD700' }}>👑 BEACH QUEEN: {nameOf(queen)}</div>
+        <div className="rounded-lg p-4 text-center space-y-3" style={{ background: '#1A1405', border: '2px solid #E8C26B' }}>
+          <div className="font-display text-4xl" style={{ color: '#E8C26B' }}>👑 BEACH QUEEN: {nameOf(queen)}</div>
           {!bb.finalChallenge?.card ? (
             <>
               <div className="font-body">Η Beach Queen ξεκινά την τελική ομαδική δοκιμασία.</div>

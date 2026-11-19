@@ -31,7 +31,7 @@ export default function PajamaDashboard({ players, pj, act, categories, currentP
             style={
               pj.lastResult.delta >= 0
                 ? { background: 'rgba(16,90,60,.5)', color: '#c9ffe1', border: '1px solid rgba(120,255,190,.35)' }
-                : { background: 'rgba(120,20,40,.5)', color: '#ffd9df', border: '1px solid rgba(255,140,150,.35)' }
+                : { background: 'rgba(120,20,40,.5)', color: '#FFDEDB', border: '1px solid rgba(255,140,150,.35)' }
             }
           >
             {pj.lastResult.name}: {pj.lastResult.delta > 0 ? `+${pj.lastResult.delta}` : pj.lastResult.delta} πόντοι

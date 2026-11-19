@@ -122,7 +122,7 @@ function Results({ ctx, theme, onEnd }) {
   const queen = mg.bb?.queen && players.find((p) => p.id === mg.bb.queen);
   return (
     <Panel title="🏆 Τίτλοι & Απονομή" accent={theme.accent2}>
-      {queen && <div className="font-display text-2xl text-center" style={{ color: '#FFD700' }}>👑 Beach Queen: {queen.name}</div>}
+      {queen && <div className="font-display text-2xl text-center" style={{ color: '#E8C26B' }}>👑 Beach Queen: {queen.name}</div>}
       {mg.lockdownResult && <div className="text-center text-sm opacity-80">Lockdown: {mg.lockdownResult === 'won' ? '✅ απόδραση!' : '💀 αποτυχία'}</div>}
       <div className="space-y-1">
         {ranking.map((p, i) => (

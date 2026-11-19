@@ -105,7 +105,7 @@ export default function PajamaFinale({ players, pj, onEnd, onRematch }) {
           ) : (
             <button
               onClick={() => setVerdictStarted(true)}
-              className="w-full py-3 rounded-lg font-heading text-lg bg-yellow-400 text-slate-900 shadow-[0_0_35px_rgba(255,215,0,0.6)]"
+              className="w-full py-3 rounded-lg font-heading text-lg bg-yellow-400 text-slate-900 shadow-[0_0_35px_rgba(232,194,107,0.6)]"
             >
               👑 Η {winner?.name} ΠΑΤΑΕΙ ΤΟ ΚΟΥΜΠΙ ΤΗΣ ΠΟΙΝΗΣ
             </button>

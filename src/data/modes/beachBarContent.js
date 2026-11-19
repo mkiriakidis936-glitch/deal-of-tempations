@@ -10,10 +10,10 @@ export const FREEZE_COMMANDS = [
 ];
 
 export const WHEEL_CATEGORIES = [
-  { id: 'dance', icon: '🍹', name: 'Χορός, Ποτό & Σαγιονάρες', color: '#00F2FE' },
-  { id: 'tie', icon: '🎀', name: 'Δέσιμο Χεριών & Ποδιών', color: '#FF3366' },
-  { id: 'hogtie', icon: '🔥', name: 'Hogtie & Tickle', color: '#FF003C' },
-  { id: 'deal', icon: '🎲', name: 'Διλήμματα & Σαμποτάζ', color: '#FFD700' },
+  { id: 'dance', icon: '🍹', name: 'Χορός, Ποτό & Σαγιονάρες', color: '#E8C26B' },
+  { id: 'tie', icon: '🎀', name: 'Δέσιμο Χεριών & Ποδιών', color: '#F0B85A' },
+  { id: 'hogtie', icon: '🔥', name: 'Hogtie & Tickle', color: '#FF453A' },
+  { id: 'deal', icon: '🎲', name: 'Διλήμματα & Σαμποτάζ', color: '#E8C26B' },
 ];
 
 // secs = ενεργοποιεί αυτόματα χρονόμετρο ασφαλείας. restraint = δέσιμο (εμφανίζεται υπενθύμιση ασφάλειας).

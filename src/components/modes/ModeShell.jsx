@@ -16,23 +16,20 @@ export default function ModeShell({ modeId, ctx, state, act, children, onQR, onE
   const danger = mg.timer && left <= 60;
 
   return (
-    <div className="min-h-screen p-3 pb-28 text-foreground" style={{ background: theme.bg }}>
+    <div className="mode-shell min-h-screen p-3 pb-28 text-foreground" style={{ background: theme.bg }}>
       <GameDurationClock state={state} />
       <div className="max-w-5xl mx-auto space-y-3">
         <header className="flex items-center justify-between gap-3 pr-28">
           <div className="min-w-0">
-            <div
-              className="font-display text-xl sm:text-3xl tracking-wide truncate"
-              style={{ color: theme.accent, textShadow: `0 0 14px ${theme.accent}88` }}
-            >
-              {meta?.icon} {meta?.name}
+            <div className="flex items-center gap-2 text-2xl sm:text-4xl min-w-0">
+              {meta?.icon && <span className="shrink-0">{meta.icon}</span>}
+              <span className="mode-large-title truncate">{meta?.name}</span>
             </div>
             {act && <div className="text-xs sm:text-sm opacity-70 font-body">{actTitle}</div>}
           </div>
           {showTimer && mg.timer && (
             <div
-              className={`font-display text-3xl sm:text-5xl tabular-nums ${danger ? 'comic-pulse' : ''}`}
-              style={{ color: danger ? '#FF003C' : theme.accent2, textShadow: `0 0 16px ${(danger ? '#FF003C' : theme.accent2)}88` }}
+              className={`mode-timer text-3xl sm:text-5xl ${danger ? 'is-danger comic-pulse' : ''}`}
             >
               {fmt(left)}
             </div>
@@ -65,7 +62,7 @@ export default function ModeShell({ modeId, ctx, state, act, children, onQR, onE
       </div>
 
       {stopped && (
-        <div className="fixed inset-0 z-[60] flex flex-col items-center justify-center gap-4 p-6 text-center" style={{ background: 'rgba(120,0,20,.92)' }}>
+        <div className="mode-stop-overlay fixed inset-0 z-[60] flex flex-col items-center justify-center gap-4 p-6 text-center">
           <div className="font-display text-5xl sm:text-7xl text-white comic-pulse">⏸ ΣΤΟΠ</div>
           <p className="text-lg sm:text-2xl font-body text-white max-w-xl">
             Όλα σταματούν αμέσως. Όλες επιβεβαιώνουν ότι είναι καλά και συνεχίζετε μόνο όταν όλες συμφωνούν.

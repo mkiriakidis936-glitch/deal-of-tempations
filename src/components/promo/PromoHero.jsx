@@ -14,7 +14,7 @@ export default function PromoHero({ content }) {
           className="absolute inset-0"
           style={{
             background:
-              'radial-gradient(ellipse 55% 65% at 50% 40%, rgba(255,215,0,.10), rgba(10,10,10,.75) 60%, #0a0a0a 90%), linear-gradient(180deg, rgba(10,10,10,.85), rgba(26,10,10,.55) 45%, #0a0a0a 100%)',
+              'radial-gradient(ellipse 55% 65% at 50% 40%, rgba(232,194,107,.10), rgba(10,10,10,.75) 60%, #0a0a0a 90%), linear-gradient(180deg, rgba(10,10,10,.85), rgba(26,10,10,.55) 45%, #0a0a0a 100%)',
           }}
         />
         {[12, 26, 38, 52, 64, 78, 88].map((left, i) => (
@@ -25,8 +25,8 @@ export default function PromoHero({ content }) {
               left: `${left}%`,
               width: i % 2 ? 4 : 2.5,
               height: i % 2 ? 4 : 2.5,
-              background: '#ffd700',
-              boxShadow: '0 0 12px rgba(255,215,0,.9)',
+              background: '#E8C26B',
+              boxShadow: '0 0 12px rgba(232,194,107,.9)',
               animationDelay: `${i * 1.4}s`,
               animationDuration: `${9 + i}s`,
             }}
@@ -35,7 +35,7 @@ export default function PromoHero({ content }) {
       </div>
 
       <div className="relative z-10 w-full max-w-3xl mx-auto px-5 text-center pt-28 pb-24 flex flex-col items-center gap-5">
-        <div className="text-[11px] sm:text-xs tracking-[0.42em] font-bold" style={{ color: '#c9a227' }}>
+        <div className="text-[11px] sm:text-xs tracking-[0.42em] font-bold" style={{ color: '#E8C26B' }}>
           {content.overline}
         </div>
 
@@ -45,7 +45,7 @@ export default function PromoHero({ content }) {
             fontSize: 'clamp(2.1rem, 8vw, 4rem)',
             lineHeight: 1.02,
             letterSpacing: '.04em',
-            color: '#ffd700',
+            color: '#E8C26B',
             textShadow: '0 2px 0 #000, 0 0 40px rgba(139,0,0,.85)',
             fontWeight: 700,
           }}
@@ -65,7 +65,7 @@ export default function PromoHero({ content }) {
         <div className="text-lg sm:text-2xl" style={{ color: '#e8d9b0', lineHeight: 1.45 }}>
           {content.subtitleTop}
           <br />
-          {content.subtitle} <span style={{ color: '#ffd700' }}>{content.subtitleAccent}</span>.
+          {content.subtitle} <span style={{ color: '#E8C26B' }}>{content.subtitleAccent}</span>.
         </div>
 
         <div className="text-sm sm:text-base italic max-w-md" style={{ color: 'rgba(241,230,200,.6)', lineHeight: 1.6 }}>

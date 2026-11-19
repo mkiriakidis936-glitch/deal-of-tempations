@@ -7,7 +7,7 @@ export default function PromoCTA({ content }) {
   return (
     <section className="relative px-5 py-20 text-center" style={{ background: 'linear-gradient(180deg,#0a0a0a,#1a0508)' }}>
       <div className="max-w-2xl mx-auto flex flex-col items-center gap-6">
-        <div style={{ fontSize: 'clamp(1.5rem,4vw,2.2rem)', color: '#ffd700', fontWeight: 700, lineHeight: 1.25 }}>
+        <div style={{ fontSize: 'clamp(1.5rem,4vw,2.2rem)', color: '#E8C26B', fontWeight: 700, lineHeight: 1.25 }}>
           {content.ctaTitle[0]}
           <br />
           {content.ctaTitle[1]}

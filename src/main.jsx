@@ -4,6 +4,7 @@ import '@/index.css'
 import '@/responsive.css'
 import '@/cinematic-tv.css'
 import '@/visual-overhaul.css'
+import '@/ios27.css' // iOS 27 · black & gold — πρέπει να είναι τελευταίο
 import '@/lib/push' // πιάνει νωρίς το «Εγκατάσταση εφαρμογής» του browser
 import { loadMedia } from '@/lib/media'
 

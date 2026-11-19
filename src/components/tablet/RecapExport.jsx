@@ -19,7 +19,7 @@ export default function RecapExport({ state }) {
     if (!cardRef.current) return;
     setBusy(true);
     try {
-      const canvas = await html2canvas(cardRef.current, { backgroundColor: '#1a050a', scale: 2 });
+      const canvas = await html2canvas(cardRef.current, { backgroundColor: '#0B0B0C', scale: 2 });
       const width = canvas.width / 2;
       const height = canvas.height / 2;
       const pdf = new jsPDF({ orientation: 'portrait', unit: 'px', format: [width, height] });

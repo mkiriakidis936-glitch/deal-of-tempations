@@ -63,7 +63,7 @@ export default function PediPassport({ pj = {}, players = [], me }) {
           <span className="rounded-full px-2 py-0.5" style={{ background: 'rgba(255,255,255,.06)', color: atmo.dim }}>🩴 {me.slipperType}</span>
         )}
         {binding && (
-          <span className="rounded-full px-2 py-0.5" style={{ background: 'rgba(120,20,40,.5)', color: '#ffd9df' }}>🎀 Δεμένη</span>
+          <span className="rounded-full px-2 py-0.5" style={{ background: 'rgba(120,20,40,.5)', color: '#FFDEDB' }}>🎀 Δεμένη</span>
         )}
       </div>
 

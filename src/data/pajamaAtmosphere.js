@@ -67,7 +67,7 @@ export const PAJAMA_ATMOSPHERE = {
   }),
   act7: atmosphere({
     label: 'ΧΡΥΣΟ ΔΩΡΟ',
-    accent: '#ffd700',
+    accent: '#E8C26B',
     base: '#0d0713',
     curtain: 'rgba(52,22,74,.92)',
     curtainDark: 'rgba(20,8,28,.96)',

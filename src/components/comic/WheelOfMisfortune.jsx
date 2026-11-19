@@ -2,7 +2,7 @@ import { useState } from 'react';
 import ComicButton from '@/components/comic/ComicButton';
 import { WHEEL_BINDING_MATERIALS, WHEEL_TICKLE_TOOLS } from '@/data/gameConfig';
 
-const SEG_COLORS = ['#c9a227', '#5C0A1E', '#2D5A3D', '#1B4B5A'];
+const SEG_COLORS = ['#E8C26B', '#4A100D', '#2D5A3D', '#1B4B5A'];
 
 export default function WheelOfMisfortune({ onResult }) {
   const [spinning, setSpinning] = useState(false);

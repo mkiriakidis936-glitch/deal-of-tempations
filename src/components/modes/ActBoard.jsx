@@ -180,7 +180,7 @@ export default function ActBoard({ ctx, onDone }) {
                 <span className="opacity-70">{ICON[squareType(i)]}</span>
                 <span className="flex flex-wrap justify-center leading-none">
                   {here.map((p) => (
-                    <b key={p.id} className="px-[2px] rounded-sm" style={{ background: p.id === cur?.id ? '#FFD700' : '#fff', color: '#000' }}>
+                    <b key={p.id} className="px-[2px] rounded-sm" style={{ background: p.id === cur?.id ? '#E8C26B' : '#fff', color: '#000' }}>
                       {(p.name || '?')[0]}
                     </b>
                   ))}
@@ -196,7 +196,7 @@ export default function ActBoard({ ctx, onDone }) {
       </Panel>
 
       {mg.branch && (
-        <Panel title={`🔀 ${nameOf(mg.branch)}: διάλεξε δρόμο για τα επόμενα 3 τετράγωνα`} accent="#FFD700">
+        <Panel title={`🔀 ${nameOf(mg.branch)}: διάλεξε δρόμο για τα επόμενα 3 τετράγωνα`} accent="#E8C26B">
           <div className="grid sm:grid-cols-2 gap-2">
             {Object.values(ROUTES).map((r) => (
               <button
