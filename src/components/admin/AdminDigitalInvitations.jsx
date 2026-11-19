@@ -7,14 +7,18 @@ import { GAME_MODES } from '@/data/gameConfig';
 
 const KEY = 'digital_invitations';
 const TARGETS = [
-  { path: '/invitation', label: 'Heist Night — Πρόσκληση' },
-  { path: '/pajama-invite', label: 'Pajama Pedi-Glam — Πρόσκληση' },
-  { path: '/modes-form', label: 'Επιλογή λειτουργιών παιχνιδιού' },
-  { path: '/modes-form?mode=lockdown', label: 'Lockdown' },
-  { path: '/modes-form?mode=beach_bar', label: 'Beach Bar' },
-  { path: '/forms', label: 'Δημόσιες Φόρμες — Join the Heist / Event Request / Feedback' },
-  { path: '/vip-access', label: 'VIP Access / Digital Vault — VIP φόρμα προφίλ & ορίων' },
+  { path: '/forms', label: 'Ενιαία Φόρμα Συμμετοχής — όλα τα Modes' },
+  { path: '/vip-access', label: 'VIP Access / Digital Vault — VIP φόρμα' },
 ];
+
+function isAllowedInvitationPath(value) {
+  try {
+    const pathname = new URL(value, window.location.origin).pathname;
+    return pathname === '/forms' || pathname === '/vip-access' || pathname === '/vip' || pathname.startsWith('/vip/');
+  } catch {
+    return false;
+  }
+}
 const makeId = () => globalThis.crypto?.randomUUID?.() || `${Date.now().toString(36)}${Math.random().toString(36).slice(2)}`;
 
 export default function AdminDigitalInvitations() {
@@ -36,7 +40,13 @@ export default function AdminDigitalInvitations() {
     base44.entities.AppSetting.filter({ key: KEY }, { limit: 1 }).then(({ items: rows }) => {
       const rec = rows?.[0] || null;
       setRecord(rec);
-      setItems(Array.isArray(rec?.value?.items) ? rec.value.items : []);
+      const savedItems = Array.isArray(rec?.value?.items) ? rec.value.items : [];
+      const currentItems = savedItems.filter((item) => item?.path && isAllowedInvitationPath(item.path));
+      setItems(currentItems);
+      if (rec?.id && currentItems.length !== savedItems.length) {
+        await base44.entities.AppSetting.update(rec.id, { value: { items: currentItems } });
+        setMessage('Οι παλιοί σύνδεσμοι καταργήθηκαν. Διατηρήθηκαν μόνο οι σύνδεσμοι της ενιαίας φόρμας και του VIP.');
+      }
     }).catch((e) => setMessage(e.message));
     loadVipInvitations();
     base44.entities.GameSession.filter({}, { sort: '-created_date', limit: 100 }).then(({ items: rows }) => setSessions(rows || [])).catch((e) => setVipMessage(e.message || 'Δεν φορτώθηκαν τα Events.'));
@@ -207,7 +217,7 @@ export default function AdminDigitalInvitations() {
 
     <ComicPanel className="bg-card space-y-3">
       <div className="font-heading text-xl text-primary">ΨΗΦΙΑΚΕΣ ΠΡΟΣΚΛΗΣΕΙΣ</div>
-      <p className="text-xs text-foreground/65">Δημιουργία QR προσκλήσεων που οδηγούν στις ήδη υπάρχουσες φόρμες και εμπειρίες.</p>
+      <p className="text-xs text-foreground/65">Δημιουργία QR μόνο για την ενιαία φόρμα συμμετοχής ή τις VIP φόρμες.</p>
       <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Τίτλος πρόσκλησης" className="w-full rounded-lg border-2 border-border bg-background px-3 py-2 text-sm" />
       <select value={target} onChange={(e) => setTarget(e.target.value)} className="w-full rounded-lg border-2 border-border bg-background px-3 py-2 text-sm">
         {TARGETS.map((item) => <option key={item.path} value={item.path}>{item.label}</option>)}
