@@ -723,15 +723,21 @@ export function entityRoutes() {
         'nailColor', 'slipperType', 'pajamaType', 'stayAtVilla', 'favoriteDrink',
       ]);
       const scalarValues = Object.entries(answers).filter(([key]) => !['activityPreferences', 'safetyBoundaries'].includes(key)).map(([, value]) => value);
+      const allowedPreferences = ['questions', 'missions', 'surprises', 'roleplay', 'puzzles'];
+      const allowedBoundaries = ['touch', 'restraints', 'blindfolds', 'alcohol', 'personal-disclosure'];
       if (Object.keys(answers).some((key) => !allowedKeys.has(key)) ||
           scalarValues.some((value) => typeof value !== 'string' || value.length > 2000) ||
           !['bold', 'reserved', ''].includes(answers.personality || '') ||
           !['yes', 'no', ''].includes(answers.unexpectedChallenge || '') ||
           !['yes', 'no', ''].includes(answers.activeParticipation || '') ||
           !['yes', 'no', ''].includes(answers.stayAtVilla || '') ||
-          !['questions', 'missions', 'surprises'].every((key) => ['yes', 'no'].includes(answers.activityPreferences?.[key] || 'no')) ||
-          !['competitiveness'].every((key) => answers[key] === undefined || answers[key] === '' || /^[1-5]$/.test(String(answers[key]))) ||
-          (answers.activityPreferences !== undefined && (!isObject(answers.activityPreferences) || Object.keys(answers.activityPreferences).some((key) => !['questions', 'missions', 'surprises'].includes(key))))) {
+          !Array.isArray(answers.safetyBoundaries) || answers.safetyBoundaries.length > allowedBoundaries.length ||
+          answers.safetyBoundaries.some((key) => !allowedBoundaries.includes(key)) ||
+          typeof answers.safeWord !== 'string' || answers.safeWord.trim().length < 2 || answers.safeWord.trim().length > 40 ||
+          !['competitiveness', 'intensity'].every((key) => /^[1-5]$/.test(String(answers[key] || ''))) ||
+          !isObject(answers.activityPreferences) ||
+          Object.keys(answers.activityPreferences).some((key) => !allowedPreferences.includes(key)) ||
+          !allowedPreferences.every((key) => ['yes', 'no'].includes(answers.activityPreferences[key] || 'no'))) {
         return res.status(400).json({ error: 'Έλεγξε τις απαντήσεις της VIP φόρμας και δοκίμασε ξανά.' });
       }
       const gameMode = invitations[0].data.gameMode || 'classic';
