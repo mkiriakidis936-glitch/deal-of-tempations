@@ -20,7 +20,7 @@ export default function ModeForm() {
   const sessionCode = params.get('event') || params.get('sessionCode') || params.get('code') || '';
   const [form, setForm] = useState({
     name: '',
-    modes: NEW_MODES.some((m) => m.id === first) ? [first] : [],
+    mode: NEW_MODES.some((m) => m.id === first) ? first : '',
     adult: false,
     pajamaStyle: '',
     nailColor: 'Pink',
@@ -36,18 +36,18 @@ export default function ModeForm() {
     safeWordConfirmed: false,
     customAnswers: {},
   });
-  const [step, setStep] = useState(0);
+  const [step, setStep] = useState(first && NEW_MODES.some((m) => m.id === first) ? 1 : 0);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState('');
   const [customQuestionsValid, setCustomQuestionsValid] = useState(true);
 
   const set = (k, v) => setForm((f) => ({ ...f, [k]: v }));
-  const toggleMode = (id) => set('modes', form.modes.includes(id) ? form.modes.filter((m) => m !== id) : [...form.modes, id]);
-  const has = (...ids) => form.modes.some((m) => ids.includes(m));
+  const selectMode = (id) => set('mode', id);
+  const has = (...ids) => ids.includes(form.mode);
   const pajamaish = has('lockdown');
   const beachish = has('beach_bar');
-  const canSend = form.name.trim() && form.modes.length > 0 && form.adult && form.safeWordConfirmed && customQuestionsValid && !saving;
+  const canSend = form.name.trim() && NEW_MODES.some((m) => m.id === form.mode) && form.adult && form.safeWordConfirmed && customQuestionsValid && !saving;
 
   async function submit() {
     if (!canSend) return;
@@ -58,7 +58,7 @@ export default function ModeForm() {
         formType: 'modes',
         ...(sessionCode ? { sessionCode: sessionCode.trim().toUpperCase() } : {}),
         name: form.name.trim(),
-        preferredModes: form.modes,
+        preferredModes: [form.mode],
         adultConfirmed: true,
         pajamaStyle: form.pajamaStyle,
         nailColor: form.nailColor,
@@ -90,7 +90,7 @@ export default function ModeForm() {
           <div className="text-6xl">✨</div>
           <div className="font-heading text-2xl text-foreground">Ευχαριστώ, {form.name}!</div>
           <div className="text-sm text-muted-foreground">
-            Καταχωρήθηκες για: {form.modes.map((id) => NEW_MODES.find((m) => m.id === id)?.name).join(' · ')}
+            Καταχωρήθηκες για: {NEW_MODES.find((m) => m.id === form.mode)?.name || form.mode}
           </div>
           <div className="text-xs text-muted-foreground">Θα μπεις στο παιχνίδι μόλις η διοργανώτρια εγκρίνει τη φόρμα σου.</div>
         </div>
@@ -115,21 +115,21 @@ export default function ModeForm() {
         <div className="text-center pt-4 rounded-2xl border border-primary/30 bg-black/30 p-5 shadow-2xl">
           <div className="text-5xl">🎮🩴💅🍹</div>
           <h1 className="font-heading text-2xl sm:text-3xl text-foreground drop-shadow-[0_0_18px_rgba(255,105,180,0.85)] mt-2">Deal of Temptation · 18+</h1>
-          <p className="text-sm text-muted-foreground mt-2">Φόρμα συμμετοχής — επίλεξε τις λειτουργίες και συμπλήρωσε τα στοιχεία σου.</p>
+          <p className="text-sm text-muted-foreground mt-2">Φόρμα συμμετοχής — ένα Mode ανά υποβολή.</p>
           <div className="mt-5 flex items-center justify-between text-xs text-foreground/80"><span>ΒΗΜΑ {step + 1} ΑΠΟ 2</span><span>{progress}%</span></div>
           <div className="mt-2 h-2 rounded-full bg-surface-3 overflow-hidden"><div className="h-full rounded-full bg-primary transition-all" style={{ width: `${progress}%` }} /></div>
         </div>
 
         {step === 0 && <div className="rounded-xl border border-primary/40 bg-surface-2 p-3 space-y-2">
-          <div className="text-sm text-foreground/80">Ποια λειτουργία θέλεις; * <span className="opacity-60">(μπορείς να επιλέξεις περισσότερες από μία)</span></div>
+          <div className="text-sm text-foreground/80">Ποιο Mode θέλεις; * Επίλεξε ακριβώς ένα.</div>
           <div className="grid gap-2">
             {NEW_MODES.map((m) => {
-              const on = form.modes.includes(m.id);
+              const on = form.mode === m.id;
               return (
                 <button
                   key={m.id}
                   type="button"
-                  onClick={() => toggleMode(m.id)}
+                  onClick={() => selectMode(m.id)}
                   className={`text-left rounded-lg border p-3 ${on ? 'bg-primary/25 border-primary' : 'bg-input border-primary/40'}`}
                 >
                   <div className="flex items-start gap-3">
@@ -226,7 +226,7 @@ export default function ModeForm() {
         </div>}
 
         {error && <div className="text-sm text-red-300 text-center">{error}</div>}
-        {step === 0 ? <button type="button" onClick={() => setStep(1)} disabled={!form.modes.length} className="w-full py-3 rounded-xl font-heading text-xl bg-primary text-primary-foreground hover:bg-primary/90  disabled:opacity-40">ΣΥΝΕΧΕΙΑ ΣΤΑ ΣΤΟΙΧΕΙΑ →</button> : <div className="flex gap-2"><button type="button" onClick={() => setStep(0)} className="px-5 py-3 rounded-xl font-bold border border-primary/40 text-foreground">← ΠΙΣΩ</button><button onClick={submit} disabled={!canSend} className="w-full py-3 rounded-xl font-heading text-xl bg-primary text-primary-foreground hover:bg-primary/90  disabled:opacity-40">
+        {step === 0 ? <button type="button" onClick={() => setStep(1)} disabled={!form.mode} className="w-full py-3 rounded-xl font-heading text-xl bg-primary text-primary-foreground hover:bg-primary/90  disabled:opacity-40">ΣΥΝΕΧΕΙΑ ΣΤΑ ΣΤΟΙΧΕΙΑ →</button> : <div className="flex gap-2"><button type="button" onClick={() => setStep(0)} className="px-5 py-3 rounded-xl font-bold border border-primary/40 text-foreground">← ΠΙΣΩ</button><button onClick={submit} disabled={!canSend} className="w-full py-3 rounded-xl font-heading text-xl bg-primary text-primary-foreground hover:bg-primary/90  disabled:opacity-40">
           {saving ? 'ΑΠΟΣΤΟΛΗ...' : 'ΑΠΟΣΤΟΛΗ'}
         </button></div>}
       </div>

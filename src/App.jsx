@@ -12,19 +12,13 @@ import GlobalDesignProvider from '@/components/GlobalDesignProvider';
 const Tablet = lazy(() => import('@/pages/Tablet'));
 const TVScreen = lazy(() => import('@/pages/TV'));
 const Play = lazy(() => import('@/pages/Play'));
-const Intake = lazy(() => import('@/pages/Intake'));
 const Admin = lazy(() => import('@/pages/Admin'));
-const Invitation = lazy(() => import('@/pages/Invitation'));
 const VIPInvitationPage = lazy(() => import('@/pages/VIPInvitationPage'));
 const VIPEventPage = lazy(() => import('@/pages/VIPEventPage'));
 const Promo = lazy(() => import('@/pages/Promo'));
 const GiftUnlock = lazy(() => import('@/pages/GiftUnlock'));
-const PajamaForm = lazy(() => import('@/pages/PajamaForm'));
-const ModeForm = lazy(() => import('@/pages/ModeForm'));
-const PajamaInvite = lazy(() => import('@/pages/PajamaInvite'));
 const Site = lazy(() => import('@/pages/Site'));
 const ProductionConsent = lazy(() => import('@/pages/ProductionConsent'));
-const EventPortal = lazy(() => import('@/pages/EventPortal'));
 const Login = lazy(() => import('@/pages/Login'));
 const Register = lazy(() => import('@/pages/Register'));
 const ForgotPassword = lazy(() => import('@/pages/ForgotPassword'));
@@ -63,26 +57,19 @@ const AuthenticatedApp = () => {
       <Route path="/" element={<RequireAdmin><Tablet /></RequireAdmin>} />
       <Route path="/tv" element={<TVScreen />} />
       <Route path="/play" element={<Play />} />
-      <Route path="/intake" element={<Intake />} />
       <Route path="/admin" element={<RequireAdmin><Admin /></RequireAdmin>} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password" element={<ResetPassword />} />
       <Route path="/promo" element={<Promo />} />
-      <Route path="/invitation" element={<Invitation />} />
       <Route path="/vip" element={<VIPEventPage />} />
       <Route path="/vip/:token" element={<VIPInvitationPage />} />
       <Route path="/vip-access" element={<VIPAccess />} />
       <Route path="/forms" element={<PublicForms />} />
-      <Route path="/welcome" element={<Navigate to="/invitation" replace />} />
-      <Route path="/pajama-form" element={<PajamaForm />} />
-      <Route path="/modes-form" element={<ModeForm />} />
       <Route path="/gift-unlock" element={<GiftUnlock />} />
-      <Route path="/pajama-invite" element={<PajamaInvite />} />
       <Route path="/site" element={<Site />} />
       <Route path="/production-consent" element={<ProductionConsent />} />
-      <Route path="/portal" element={<EventPortal />} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
     </Suspense>

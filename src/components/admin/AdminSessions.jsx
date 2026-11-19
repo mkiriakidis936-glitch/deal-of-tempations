@@ -16,11 +16,12 @@ export default function AdminSessions({ sessions, loading, onSelect, onDelete, o
     onRestart && onRestart(s);
   }
 
-  function handleDeleteCurrent() {
+  async function handleDeleteCurrent() {
     if (sessions.length === 0) return;
     const current = sessions[0];
     if (!confirm(`Διαγραφή ΤΡΕΧΟΥΣΑΣ συνεδρίας ${current.sessionCode}; Αμετάκλητο.`)) return;
-    onDelete(current.id);
+    try { await onDelete(current.id); }
+    catch (error) { window.alert(error.message || 'Η διαγραφή της συνεδρίας απέτυχε.'); }
   }
 
   if (loading) {
@@ -124,7 +125,7 @@ export default function AdminSessions({ sessions, loading, onSelect, onDelete, o
                     variant="red"
                     size="sm"
                     onClick={() => {
-                      if (confirm(`Διαγραφή συνεδρίας ${s.sessionCode};`)) onDelete(s.id);
+                      if (confirm(`Διαγραφή συνεδρίας ${s.sessionCode};`)) Promise.resolve(onDelete(s.id)).catch((error) => window.alert(error.message || 'Η διαγραφή της συνεδρίας απέτυχε.'));
                     }}
                   >
                     🗑️ ΔΙΑΓΡΑΦΗ
