@@ -188,7 +188,10 @@ export default function Admin() {
       await base44.entities.GameSession.update(id, { state: newState });
       setSessions((prev) => prev.map((s) => s.id === id ? { ...s, state: newState } : s));
       setPickedSession((prev) => (prev?.id === id ? { ...prev, state: newState } : prev));
-    } catch (e) { console.error('Update error', e); }
+    } catch (e) {
+      console.error('Update error', e);
+      window.alert('Η αποθήκευση της συνεδρίας απέτυχε. Οι αλλαγές δεν καταχωρήθηκαν.');
+    }
   }
 
   async function handleDeleteSession(id) {
@@ -198,7 +201,10 @@ export default function Admin() {
       await request('DELETE', `/api/entities/game-events/${encodeURIComponent(target.sessionCode)}`);
       setSessions((prev) => prev.filter((s) => s.id !== id));
       setPickedSession((prev) => (prev?.id === id ? null : prev));
-    } catch (e) { console.error('Delete error', e); throw e; }
+    } catch (e) {
+      console.error('Delete error', e);
+      window.alert(e.message || 'Η διαγραφή της συνεδρίας απέτυχε.');
+    }
   }
 
   async function handleRestartSession(session) {
