@@ -2,7 +2,6 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { base44, request } from '@/api/base44Client';
 import ComicPanel from '@/components/comic/ComicPanel';
 import ComicButton from '@/components/comic/ComicButton';
-import { isIntakeEnabled, setIntakeEnabled } from '@/lib/intakeFlag';
 import { GAME_MODES } from '@/data/gameConfig';
 import PajamaIntakeList from '@/components/admin/PajamaIntakeList';
 
@@ -18,20 +17,17 @@ export default function AdminIntakes() {
   const [bachIntakes, setBachIntakes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [subtab, setSubtab] = useState('players');
-  const [bachEnabled, setBachEnabled] = useState(null);
   const [msg, setMsg] = useState(null);
 
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const [playerRes, bachRes, enabled] = await Promise.all([
+      const [playerRes, bachRes] = await Promise.all([
         base44.entities.PlayerIntake.filter({}, { sort: '-created_date', limit: 100 }),
         base44.entities.BacheloretteIntake.filter({}, { sort: '-created_date', limit: 50 }),
-        isIntakeEnabled(),
       ]);
       setIntakes(playerRes.items || []);
       setBachIntakes(bachRes.items || []);
-      setBachEnabled(enabled);
     } catch (e) {
       console.error('Intake load error', e);
       setMsg({ ok: false, text: e.message || 'Δεν φορτώθηκαν τα ερωτηματολόγια.' });
@@ -41,18 +37,6 @@ export default function AdminIntakes() {
   }, []);
 
   useEffect(() => { load(); }, [load]);
-
-  async function toggleBach() {
-    const next = !bachEnabled;
-    setBachEnabled(next);
-    try {
-      await setIntakeEnabled(next);
-      setMsg({ ok: true, text: next ? 'Η φόρμα ενεργοποιήθηκε.' : 'Η φόρμα απενεργοποιήθηκε.' });
-    } catch (e) {
-      setBachEnabled(!next);
-      setMsg({ ok: false, text: e.message || 'Δεν άλλαξε η κατάσταση της φόρμας.' });
-    }
-  }
 
   async function handleApprove(item) {
     try {
@@ -103,14 +87,6 @@ export default function AdminIntakes() {
           <div className="font-heading text-lg">📝 {intakes.length} παίκτριες · {bachIntakes.length} intake</div>
           <ComicButton variant="dark" size="sm" onClick={load}>🔄 ΑΝΑΝΕΩΣΗ</ComicButton>
         </div>
-        <button
-          onClick={toggleBach}
-          disabled={bachEnabled === null}
-          className={`comic-panel-sm w-full mt-2 p-2 flex items-center justify-between transition-all ${bachEnabled ? 'bg-tarot-forest' : 'bg-secondary'} disabled:opacity-50`}
-        >
-          <span className="font-heading text-sm">📝 ΦΟΡΜΑ ΣΥΜΜΕΤΟΧΗΣ A&H</span>
-          <span className="font-bold text-sm">{bachEnabled === null ? '…' : bachEnabled ? '🟢 ΕΝΕΡΓΟΠΟΙΗΜΕΝΟ' : '🔴 ΑΠΕΝΕΡΓΟΠΟΙΗΜΕΝΟ'}</span>
-        </button>
         {intakes.length > 0 && (
           <div className="flex flex-wrap gap-x-4 gap-y-1 mt-2 text-xs font-bold">
             <span>👟 Παπούτσια: {Object.entries(shoeCounts).map(([k, v]) => `${SHOE_LABELS[k]?.split(' ')[0] || k}×${v}`).join(' ')}</span>
