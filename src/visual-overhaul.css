@@ -1,642 +1,208 @@
-/* DEAL OF TEMPTATIONS — iOS-inspired dark visual system
-   Visual layer only. Preserves React state, game rules, copy, routes and handlers. */
-
+/* DEAL OF TEMPTATION — unified visual experience layer
+   Visual-only overrides. No application state, rules, content or interactions. */
 :root, .dark {
-  color-scheme: dark;
-  --background: 225 12% 6%;
-  --foreground: 220 14% 94%;
-  --card: 225 11% 10%;
-  --card-foreground: 220 14% 94%;
-  --popover: 225 12% 9%;
-  --popover-foreground: 220 14% 94%;
-  --primary: 211 100% 58%;
-  --primary-foreground: 0 0% 100%;
-  --secondary: 225 9% 15%;
-  --secondary-foreground: 220 14% 92%;
-  --muted: 225 8% 17%;
-  --muted-foreground: 220 7% 64%;
-  --accent: 211 35% 20%;
-  --accent-foreground: 210 30% 96%;
-  --destructive: 0 72% 55%;
+  --background: 270 28% 5%;
+  --foreground: 42 34% 93%;
+  --card: 268 22% 9%;
+  --card-foreground: 42 34% 93%;
+  --popover: 268 24% 8%;
+  --popover-foreground: 42 34% 93%;
+  --primary: 43 72% 61%;
+  --primary-foreground: 265 35% 7%;
+  --secondary: 268 18% 13%;
+  --secondary-foreground: 42 28% 90%;
+  --muted: 267 14% 17%;
+  --muted-foreground: 38 14% 66%;
+  --accent: 276 42% 28%;
+  --accent-foreground: 42 35% 95%;
+  --destructive: 354 58% 48%;
   --destructive-foreground: 0 0% 100%;
-  --border: 220 8% 23%;
-  --input: 225 9% 13%;
-  --ring: 211 100% 62%;
-  --surface-1: 225 11% 9%;
-  --surface-2: 225 10% 12%;
-  --surface-3: 225 8% 17%;
-  --hairline: 220 14% 94%;
-  --shadow-color: 225 35% 2%;
-  --radius: 1rem;
-  --font-ui: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", sans-serif;
-  --font-heading: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif;
-  --font-body: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", sans-serif;
-  --font-display: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif;
-}
-
-html {
-  background: #0b0d11;
+  --border: 42 28% 24%;
+  --input: 268 18% 12%;
+  --ring: 43 78% 65%;
+  --surface-1: 268 24% 7%;
+  --surface-2: 268 20% 11%;
+  --surface-3: 270 16% 17%;
+  --hairline: 42 38% 88%;
+  --shadow-color: 270 70% 2%;
+  --radius: .9rem;
   color-scheme: dark;
-  scroll-behavior: auto;
 }
+html { background: #09070d; }
 body {
-  color: #eef1f6;
-  background: #0b0d11 !important;
-  background-image: none !important;
-  background-attachment: initial !important;
-  font-family: var(--font-ui) !important;
-  font-size: 15px;
-  line-height: 1.5;
-  letter-spacing: -.012em;
-}
-h1, h2, h3, h4, h5, .font-heading, .font-display, .ds-title,
-.comic-text-stroke, .comic-text-stroke-thin {
-  color: #f5f7fa;
-  font-family: var(--font-ui) !important;
-  font-weight: 650 !important;
-  letter-spacing: -.035em !important;
-  line-height: 1.12;
-  text-shadow: none !important;
-  -webkit-text-stroke: 0 !important;
-  text-wrap: balance;
-}
-p, label, input, textarea, select, button {
+  color: #f4eddf;
+  background:
+    radial-gradient(ellipse at 50% -18%, rgba(123, 63, 173, .20), transparent 48%),
+    radial-gradient(ellipse at 4% 48%, rgba(93, 47, 135, .10), transparent 36%),
+    radial-gradient(ellipse at 100% 100%, rgba(174, 132, 49, .075), transparent 34%),
+    #09070d !important;
+  background-attachment: fixed;
   font-family: var(--font-ui);
 }
-::selection { background: rgba(10,132,255,.32); color: #fff; }
-* { scrollbar-color: #343a45 transparent; }
-*,
-*::before,
-*::after {
-  animation: none !important;
-  transition: none !important;
-  scroll-behavior: auto !important;
-}
-:focus-visible {
-  outline: 2px solid #0a84ff !important;
-  outline-offset: 3px !important;
-}
+h1, h2, h3, h4, h5 { text-wrap: balance; }
+::selection { background: rgba(218, 178, 91, .34); color: #fff8e9; }
 
-/* Neutral graphite surfaces replace the former decorative purple/gold panels. */
+/* Shared luxury surfaces */
 .comic-dots, .comic-dots-dark {
-  background: #0b0d11 !important;
-  background-image: none !important;
+  background-color: #09070d;
+  background-image:
+    radial-gradient(ellipse at 50% 0%, rgba(128, 74, 175, .17), transparent 58%),
+    radial-gradient(circle, rgba(230, 205, 150, .045) 1px, transparent 1px);
+  background-size: auto, 34px 34px;
 }
-.comic-panel, .comic-panel-sm, .ds-surface,
-.admin-root .comic-panel, .admin-root .comic-panel-sm {
-  border: 1px solid rgba(255,255,255,.085) !important;
-  border-radius: 18px !important;
-  background: #15181e !important;
-  background-image: none !important;
-  box-shadow: 0 8px 28px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.035) !important;
-  backdrop-filter: none !important;
+.comic-panel, .comic-panel-sm, .ds-surface {
+  position: relative;
+  border: 1px solid rgba(213, 178, 105, .19) !important;
+  border-radius: 17px !important;
+  background:
+    linear-gradient(145deg, rgba(255,255,255,.045), transparent 42%),
+    linear-gradient(160deg, rgba(34, 25, 43, .96), rgba(15, 12, 20, .98)) !important;
+  box-shadow:
+    0 22px 58px rgba(0,0,0,.34),
+    0 1px 0 rgba(255,255,255,.045) inset,
+    0 0 28px rgba(111,65,151,.055) !important;
 }
-.comic-panel { padding: clamp(16px, 2vw, 24px); }
-.comic-panel-sm { border-radius: 14px !important; }
+.comic-panel { padding: clamp(14px, 2vw, 22px); }
+.comic-panel-sm { border-radius: 13px !important; }
+.comic-panel:hover, .comic-panel-sm:hover {
+  border-color: rgba(220, 185, 108, .34) !important;
+}
 .ds-rule {
-  height: 1px;
-  background: rgba(255,255,255,.10) !important;
-  box-shadow: none !important;
+  background: linear-gradient(90deg, transparent, rgba(218,181,103,.72), transparent) !important;
+  box-shadow: 0 0 12px rgba(218,181,103,.18);
 }
-.ds-eyebrow, .ds-label {
-  color: #9ba3af !important;
-  font-family: var(--font-ui) !important;
-  font-size: 11px !important;
-  font-weight: 650 !important;
-  letter-spacing: .075em !important;
+.ds-eyebrow, .ds-label { letter-spacing: .22em; }
+.ds-title, .comic-text-stroke, .comic-text-stroke-thin {
+  text-shadow: 0 0 28px rgba(202,160,82,.16), 0 2px 18px rgba(0,0,0,.55);
 }
-.ds-lede { color: #b8c0cc !important; font-family: var(--font-ui) !important; }
-.ds-value { color: #f5f7fa !important; font-family: var(--font-ui) !important; }
-.text-tarot-gold, .text-yellow-300, .text-yellow-400, .text-amber-300,
-.text-amber-400 { color: #69aaff !important; }
 
-/* App controls: consistent native-feeling geometry and high-contrast states. */
-button, [role="button"], a, input, select, textarea {
+/* Buttons: consistent metal / glass finish while preserving their handlers */
+button, [role="button"] {
   -webkit-tap-highlight-color: transparent;
 }
-button, [role="button"] {
-  border-radius: 12px;
-}
 .comic-boom, button.comic-boom {
-  min-height: 42px;
-  border: 1px solid rgba(255,255,255,.10) !important;
+  border: 1px solid rgba(218,181,103,.36) !important;
   border-radius: 12px !important;
-  color: #f7f9fc !important;
-  background: #252a33 !important;
-  background-image: none !important;
-  box-shadow: none !important;
-  text-shadow: none !important;
-  font-family: var(--font-ui) !important;
-  font-weight: 600 !important;
-  letter-spacing: -.01em !important;
-  text-transform: none !important;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.09), transparent 52%),
+    linear-gradient(135deg, #3a2b47, #1b1524 72%) !important;
+  color: #f4e8ce !important;
+  box-shadow: 0 9px 24px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,255,255,.10) !important;
 }
-button[class*="bg-blue"], button[class*="bg-sky"],
-button[class*="bg-primary"], .comic-boom[class*="bg-primary"] {
-  background: #0a84ff !important;
-  color: white !important;
-  border-color: #0a84ff !important;
+.comic-boom:hover {
+  border-color: rgba(235,199,121,.78) !important;
+  box-shadow: 0 0 0 1px rgba(218,181,103,.12), 0 12px 30px rgba(0,0,0,.36), 0 0 24px rgba(202,160,82,.10) !important;
 }
-button:disabled { opacity: .42; filter: none !important; }
-button:hover, [role="button"]:hover,
-.comic-panel:hover, .comic-panel-sm:hover {
-  transform: none !important;
-  filter: none !important;
-  box-shadow: inherit;
+button:focus-visible, [role="button"]:focus-visible {
+  outline: 2px solid #e7c77d !important;
+  outline-offset: 3px !important;
 }
+button:disabled { filter: saturate(.55); }
 
-/* Inputs, selectors and editable fields. */
+/* Forms and selectors */
 input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
 select, textarea {
-  min-height: 42px;
-  border: 1px solid rgba(255,255,255,.11) !important;
+  border-color: rgba(210,181,127,.22) !important;
   border-radius: 11px !important;
-  background: #101319 !important;
-  color: #f2f4f8 !important;
-  box-shadow: none !important;
-  font-family: var(--font-ui) !important;
+  background: rgba(10,8,15,.78) !important;
+  color: #f5eddf !important;
+  box-shadow: inset 0 1px 4px rgba(0,0,0,.24);
 }
-input::placeholder, textarea::placeholder { color: #737d8b !important; }
+input::placeholder, textarea::placeholder { color: rgba(226,213,190,.42) !important; }
 input:focus, select:focus, textarea:focus {
-  border-color: #0a84ff !important;
-  box-shadow: 0 0 0 3px rgba(10,132,255,.16) !important;
+  border-color: rgba(225,190,112,.72) !important;
+  box-shadow: 0 0 0 3px rgba(218,181,103,.10), 0 0 20px rgba(218,181,103,.07) !important;
 }
-input[type="checkbox"], input[type="radio"] { accent-color: #0a84ff; }
 
-/* Admin, host, player and public views share the same restrained foundation. */
-.admin-root, .admin-root > div {
-  color: #eef1f6;
-  background: #0b0d11 !important;
-  background-image: none !important;
-}
-.admin-root nav button, .admin-root [role="tab"] {
-  min-height: 40px;
-  border: 1px solid transparent;
-  border-radius: 11px !important;
-  color: #aeb6c2;
-  background: transparent;
-  font-family: var(--font-ui) !important;
-  letter-spacing: -.01em !important;
-}
-.admin-root nav button[aria-selected="true"],
-.admin-root [role="tab"][aria-selected="true"] {
-  color: #fff;
-  background: #202631 !important;
-  border-color: rgba(255,255,255,.08) !important;
-}
-.admin-root table { border-collapse: separate; border-spacing: 0; }
-.admin-root th {
-  color: #aeb8c6 !important;
-  font: 650 11px/1.3 var(--font-ui) !important;
-  letter-spacing: .055em !important;
-  text-transform: uppercase;
-}
-.admin-root td, .admin-root th { border-color: rgba(255,255,255,.075) !important; }
-
-/* Game boards and selectable tiles: clear states, no bounce, glow or decorative motion. */
-[class*="grid"] > button, [class*="grid"] > [role="button"],
-.game-board button, .game-board [role="button"], [data-game-board] button,
-[data-box], .game-square, .box-card, .vault-box, .case-box, .briefcase {
-  border-radius: 14px !important;
-  box-shadow: none !important;
-  transition: none !important;
-  transform: none !important;
+/* Game setup, mode tiles and the 24-space board: dimensional presentation */
+[class*="grid"] > button,
+[class*="grid"] > [role="button"],
+.game-board button, .game-board [role="button"],
+[data-game-board] button, [data-box], .game-square,
+.box-card, .vault-box, .case-box, .briefcase {
+  border-radius: 14px;
+  transition: border-color .22s ease, box-shadow .22s ease, filter .22s ease, transform .22s ease;
 }
 .game-board button, [data-game-board] button, [data-box],
 .game-square, .box-card, .vault-box, .case-box, .briefcase {
-  border: 1px solid rgba(255,255,255,.14) !important;
+  border: 1px solid rgba(219,183,106,.34);
+  box-shadow: 0 10px 24px rgba(0,0,0,.30), inset 0 1px 0 rgba(255,255,255,.09);
 }
 .game-board button:hover, [data-game-board] button:hover, [data-box]:hover,
-.game-square:hover, .box-card:hover, .vault-box:hover, .case-box:hover, .briefcase:hover,
+.game-square:hover, .box-card:hover, .vault-box:hover, .case-box:hover, .briefcase:hover {
+  filter: brightness(1.12);
+  box-shadow: 0 14px 30px rgba(0,0,0,.38), 0 0 22px rgba(218,181,103,.13), inset 0 1px 0 rgba(255,255,255,.13);
+}
 [class*="grid"] > button:hover, [class*="grid"] > [role="button"]:hover {
-  filter: none !important;
-  transform: none !important;
-  box-shadow: none !important;
-  border-color: rgba(10,132,255,.58) !important;
+  border-color: rgba(225,190,112,.52);
 }
 
-/* TV presentation keeps its full-screen layout, but removes atmosphere effects. */
-.dot-tv-shell, .dot-tv-shell .dot-tv-atmosphere {
-  background: #080a0e !important;
-  background-image: none !important;
+/* Tablet / Host control room */
+.admin-root {
+  background:
+    radial-gradient(ellipse at 50% -12%, rgba(118,69,158,.18), transparent 54%),
+    #09070d !important;
 }
-.dot-tv-orb, .dot-tv-grain, .dot-tv-stage-marker,
-.dot-tv-moment, .dot-tv-hud, .dot-tv-stage { animation: none !important; }
+.admin-root .comic-panel, .admin-root .comic-panel-sm {
+  backdrop-filter: blur(12px);
+}
+.admin-root nav button, .admin-root [role="tab"] {
+  border-radius: 11px;
+  transition: background .2s ease, color .2s ease, border-color .2s ease;
+}
+.admin-root nav button:hover, .admin-root [role="tab"]:hover {
+  background: rgba(196,157,88,.10);
+}
+.admin-root table { border-collapse: separate; border-spacing: 0; }
+.admin-root th {
+  color: #d9bd83;
+  font-family: var(--font-ui);
+  font-size: .72rem;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+.admin-root td, .admin-root th { border-color: rgba(210,181,127,.13) !important; }
+
+/* TV / stage — richer depth, cleaner overlays */
+.dot-tv-shell {
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(128,70,175,.22), transparent 48%),
+    radial-gradient(ellipse at 50% 100%, rgba(206,164,82,.13), transparent 50%),
+    #07060a !important;
+}
 .dot-tv-shell .comic-panel, .dot-tv-shell .comic-panel-sm {
-  background: #15181e !important;
-  border-color: rgba(255,255,255,.10) !important;
-  box-shadow: none !important;
-  backdrop-filter: none !important;
+  border-color: rgba(224,190,119,.26) !important;
+  background: linear-gradient(145deg, rgba(38,27,49,.94), rgba(12,10,16,.97)) !important;
+  backdrop-filter: blur(14px);
 }
-.dot-tv-brand-mark, .dot-tv-fullscreen-button {
-  color: #dceaff !important;
-  border-color: rgba(10,132,255,.42) !important;
-  box-shadow: none !important;
+.dot-tv-moment {
+  border-color: rgba(231,197,125,.72);
+  box-shadow: 0 30px 100px rgba(0,0,0,.68), 0 0 90px rgba(139,92,246,.22), 0 0 38px rgba(218,181,103,.12), inset 0 1px 0 rgba(255,255,255,.10);
 }
 
-/* Mobile: safe touch targets and edge-to-edge dark surfaces. */
+/* Mobile controller and touch surfaces */
 body.dot-mobile-experience {
-  background: #0b0d11 !important;
-  background-image: none !important;
-}
-body.dot-mobile-experience button,
-body.dot-mobile-experience [role="button"] {
-  min-height: 44px;
-  transform: none !important;
-  filter: none !important;
-  box-shadow: none;
+  background:
+    radial-gradient(ellipse at 50% -10%, rgba(118,69,158,.20), transparent 50%),
+    #09070d !important;
 }
 body.dot-mobile-experience .comic-panel,
-body.dot-mobile-experience .comic-panel-sm { border-radius: 16px !important; }
+body.dot-mobile-experience .comic-panel-sm {
+  border-radius: 15px !important;
+}
+body.dot-mobile-experience button, body.dot-mobile-experience [role="button"] {
+  min-height: 42px;
+}
 @media (max-width: 760px) {
-  .comic-panel { padding: 15px; }
-  .dot-tv-shell { min-height: 100dvh; }
-  .dot-tv-shell .dot-tv-hud { backdrop-filter: none !important; }
-  .admin-root nav { gap: 6px; }
+  .comic-panel { padding: 14px; }
+  .dot-tv-shell .dot-tv-hud { backdrop-filter: blur(10px); }
 }
 @media (min-width: 1200px) {
-  .admin-root > div { max-width: 1480px; }
+  .admin-root > div { max-width: 1440px; }
 }
-
-
-/* Complete application coverage: public website, every route, all forms and dialogs. */
-:root {
-  color-scheme: dark;
-}
-#root, #root > *, #root main, #root form {
-  color: #eef1f6;
-}
-main, article, aside, section, header, footer, nav {
-  scroll-margin-top: 1rem;
-}
-hr, .border-t, .border-b, .border-border, .border-white\/10 {
-  border-color: rgba(255,255,255,.09) !important;
-}
-
-/* All form experiences: registration, intake, invitations, VIP, event and admin builders. */
-form {
-  color: #eef1f6;
-}
-form label, label {
-  color: #c5ccd6;
-  font-family: var(--font-ui) !important;
-  font-size: 13px;
-  font-weight: 550;
-  letter-spacing: -.005em !important;
-}
-form fieldset, form [role="group"],
-form .comic-panel, form .comic-panel-sm,
-main:has(form) form > div,
-main:has(form) form section,
-main:has(form) form fieldset {
-  border-color: rgba(255,255,255,.10) !important;
-  border-radius: 14px !important;
-  background-color: #15181e !important;
-  background-image: none !important;
-  box-shadow: none !important;
-}
-form input, form select, form textarea,
-main:has(form) input, main:has(form) select, main:has(form) textarea {
-  width: 100%;
-  max-width: 100%;
-  min-height: 44px;
-  border: 1px solid rgba(255,255,255,.13) !important;
-  border-radius: 11px !important;
-  padding: 10px 13px;
-  background: #0e1117 !important;
-  color: #f3f5f8 !important;
-  box-shadow: none !important;
-  font: 400 15px/1.4 var(--font-ui) !important;
-}
-form textarea, main:has(form) textarea { min-height: 104px; }
-form input[type="checkbox"], form input[type="radio"],
-main:has(form) input[type="checkbox"], main:has(form) input[type="radio"] {
-  width: 18px;
-  min-width: 18px;
-  height: 18px;
-  min-height: 18px;
-  accent-color: #0a84ff;
-}
-form input[type="range"], main:has(form) input[type="range"] {
-  accent-color: #0a84ff !important;
-}
-form button, main:has(form) form button {
-  min-height: 42px;
-  border-radius: 11px !important;
-  font-family: var(--font-ui) !important;
-}
-form button[aria-pressed="true"], form [aria-checked="true"],
-main:has(form) form button[aria-pressed="true"] {
-  border-color: #0a84ff !important;
-  background: rgba(10,132,255,.16) !important;
-  color: #eaf4ff !important;
-}
-form button[aria-pressed="false"] {
-  border-color: rgba(255,255,255,.13) !important;
-  background: #20252d !important;
-  color: #d2d8e1 !important;
-}
-
-/* Public website /site — all content sections, navigation, program cards and contact forms. */
-#root > div.min-h-screen.overflow-x-clip,
-#root > div.min-h-screen.overflow-x-clip.bg-background {
-  background: #0b0d11 !important;
-  background-image: none !important;
-  color: #eef1f6 !important;
-}
-#root > div.min-h-screen.overflow-x-clip > footer {
-  background: #0e1117 !important;
-  border-color: rgba(255,255,255,.10) !important;
-}
-#root > div.min-h-screen.overflow-x-clip nav {
-  color: #eef1f6;
-  border-color: rgba(255,255,255,.09) !important;
-  background: rgba(14,17,23,.96) !important;
-  background-image: none !important;
-  box-shadow: 0 6px 24px rgba(0,0,0,.24) !important;
-  backdrop-filter: blur(18px);
-}
-#root > div.min-h-screen.overflow-x-clip nav a,
-#root > div.min-h-screen.overflow-x-clip nav button {
-  color: #c8d0dc !important;
-  font-family: var(--font-ui) !important;
-  font-weight: 550;
-  letter-spacing: -.015em !important;
-  text-transform: none;
-}
-#root > div.min-h-screen.overflow-x-clip nav a[aria-current="page"],
-#root > div.min-h-screen.overflow-x-clip nav button[aria-pressed="true"] {
-  color: #75b4ff !important;
-}
-#root > div.min-h-screen.overflow-x-clip section:not(#top),
-#root > div.min-h-screen.overflow-x-clip section:not(#top) > div {
-  border-color: rgba(255,255,255,.09);
-}
-#root > div.min-h-screen.overflow-x-clip section:not(#top) [class*="rounded"] {
-  border-radius: 16px;
-}
-#root > div.min-h-screen.overflow-x-clip section:not(#top) [class*="bg-white"],
-#root > div.min-h-screen.overflow-x-clip section:not(#top) [class*="bg-black/"],
-#root > div.min-h-screen.overflow-x-clip section:not(#top) [class*="bg-card"],
-#root > div.min-h-screen.overflow-x-clip section:not(#top) [class*="bg-secondary"] {
-  background-color: #15181e !important;
-  background-image: none !important;
-}
-#root > div.min-h-screen.overflow-x-clip section:not(#top) [class*="border-"] {
-  border-color: rgba(255,255,255,.10) !important;
-}
-#root > div.min-h-screen.overflow-x-clip section:not(#top) [class*="text-amber"],
-#root > div.min-h-screen.overflow-x-clip section:not(#top) [class*="text-yellow"],
-#root > div.min-h-screen.overflow-x-clip section:not(#top) [class*="text-tarot-gold"] {
-  color: #78b7ff !important;
-}
-#root > div.min-h-screen.overflow-x-clip section:not(#top) button,
-#root > div.min-h-screen.overflow-x-clip section:not(#top) a[class*="button"] {
-  border-radius: 12px !important;
-  font-family: var(--font-ui) !important;
-  letter-spacing: -.01em !important;
-}
-#root > div.min-h-screen.overflow-x-clip #top {
-  background-color: #0b0d11;
-}
-#root > div.min-h-screen.overflow-x-clip #top h1 {
-  font-family: var(--font-ui) !important;
-  font-weight: 750 !important;
-  letter-spacing: -.055em !important;
-  text-shadow: none !important;
-}
-#root > div.min-h-screen.overflow-x-clip #top .cinv-count {
-  border: 1px solid rgba(255,255,255,.12) !important;
-  border-radius: 18px !important;
-  background: rgba(15,18,24,.92) !important;
-  box-shadow: none !important;
-}
-#root > div.min-h-screen.overflow-x-clip #top .cinv-btn {
-  border: 1px solid #0a84ff !important;
-  border-radius: 12px !important;
-  background: #0a84ff !important;
-  color: #fff !important;
-  box-shadow: none !important;
-  text-shadow: none !important;
-  animation: none !important;
-}
-
-/* Standalone event pages and VIP pages, including their inline-authored themes. */
-main[style*="radial-gradient"],
-main[style*="Georgia"],
-main[style*="#090909"],
-main[style*="#101014"] {
-  color: #eef1f6 !important;
-  background: #0b0d11 !important;
-  background-image: none !important;
-  font-family: var(--font-ui) !important;
-}
-main[style*="radial-gradient"] header,
-main[style*="Georgia"] header,
-main[style*="#090909"] header {
-  border: 1px solid rgba(255,255,255,.10) !important;
-  border-radius: 20px !important;
-  background: #15181e !important;
-  background-image: none !important;
-  box-shadow: none !important;
-}
-main[style*="Georgia"] header *,
-main[style*="radial-gradient"] header *,
-main[style*="#090909"] header * {
-  color: #eef1f6 !important;
-  text-shadow: none !important;
-}
-main[style*="Georgia"] section,
-main[style*="radial-gradient"] section,
-main[style*="#090909"] section,
-main[style*="#101014"] section,
-main[style*="Georgia"] article,
-main[style*="radial-gradient"] article {
-  border-color: rgba(255,255,255,.11) !important;
-  border-radius: 16px !important;
-  background: #15181e !important;
-  background-image: none !important;
-  box-shadow: none !important;
-  color: #eef1f6 !important;
-}
-main[style*="Georgia"] section *,
-main[style*="radial-gradient"] section *,
-main[style*="#090909"] section *,
-main[style*="#101014"] section *,
-main[style*="Georgia"] article *,
-main[style*="radial-gradient"] article * {
-  text-shadow: none !important;
-}
-main[style*="Georgia"] [style*="color:"],
-main[style*="radial-gradient"] [style*="color:"],
-main[style*="#090909"] [style*="color:"] {
-  color: #dce3ed !important;
-}
-main[style*="Georgia"] [style*="border:"],
-main[style*="radial-gradient"] [style*="border:"] {
-  border-color: rgba(255,255,255,.12) !important;
-}
-main[style*="Georgia"] button,
-main[style*="radial-gradient"] button,
-main[style*="#090909"] button {
-  min-height: 42px;
-  border: 1px solid rgba(255,255,255,.14) !important;
-  border-radius: 11px !important;
-  background: #252b35 !important;
-  color: #f3f6fa !important;
-  box-shadow: none !important;
-  text-shadow: none !important;
-  font-family: var(--font-ui) !important;
-}
-main[style*="Georgia"] button[aria-pressed="true"],
-main[style*="radial-gradient"] button[aria-pressed="true"] {
-  border-color: #0a84ff !important;
-  background: rgba(10,132,255,.18) !important;
-}
-main[style*="Georgia"] input,
-main[style*="radial-gradient"] input,
-main[style*="#090909"] input,
-main[style*="Georgia"] textarea,
-main[style*="radial-gradient"] textarea {
-  border-color: rgba(255,255,255,.14) !important;
-  border-radius: 11px !important;
-  background: #0e1117 !important;
-  color: #f3f6fa !important;
-  font-family: var(--font-ui) !important;
-}
-
-/* Dialogs, dropdowns, popovers, toasts, menus and overlays throughout the app. */
-[role="dialog"], [role="alertdialog"], [data-radix-popper-content-wrapper] > *,
-[data-state="open"][data-side], [data-radix-portal] [role="menu"],
-[role="listbox"], [role="menu"], [data-sonner-toaster] [data-sonner-toast] {
-  border-color: rgba(255,255,255,.12) !important;
-  border-radius: 15px !important;
-  background-color: #171b22 !important;
-  color: #eef1f6 !important;
-  box-shadow: 0 18px 50px rgba(0,0,0,.42) !important;
-}
-[role="dialog"] input, [role="dialog"] select, [role="dialog"] textarea {
-  background: #0e1117 !important;
-  color: #f3f6fa !important;
-}
-[role="menuitem"], [role="option"] {
-  color: #e2e7ef !important;
-  border-radius: 9px;
-}
-[role="menuitem"]:focus, [role="option"][aria-selected="true"] {
-  background: rgba(10,132,255,.16) !important;
-  color: #fff !important;
-}
-
-/* Tables, data grids, empty states and long admin lists. */
-table { color: #e8edf4; border-color: rgba(255,255,255,.09) !important; }
-thead, th { color: #aeb8c6; }
-tbody tr { border-color: rgba(255,255,255,.075) !important; }
-tbody tr:nth-child(even) { background: rgba(255,255,255,.018); }
-code, pre, kbd {
-  border-color: rgba(255,255,255,.10) !important;
-  border-radius: 8px;
-  background: #10141b !important;
-  color: #dbe8fa !important;
-}
-
-/* Mobile and desktop consistency across every route. */
-@media (max-width: 767px) {
-  body { font-size: 15px; }
-  main, #root { min-width: 0; }
-  form { min-width: 0; }
-  form > *, form section > *, main:has(form) form > * { min-width: 0; }
-  input, select, textarea { max-width: 100%; }
-  [role="dialog"] { max-width: calc(100vw - 24px) !important; }
-  #root > div.min-h-screen.overflow-x-clip nav {
-    padding-left: max(12px, env(safe-area-inset-left));
-    padding-right: max(12px, env(safe-area-inset-right));
+@media (prefers-reduced-motion: reduce) {
+  .comic-panel, .comic-panel-sm, .comic-boom,
+  [class*="grid"] > button, [data-box], .game-square {
+    transition: none !important;
   }
 }
-@media (min-width: 768px) {
-  form { color: #eef1f6; }
-}
-
-
-/* Root-level normalization for every routed screen (tablet, TV, player, auth, site, portal). */
-#root > main, #root > div, #root > section {
-  color: #eef1f6 !important;
-  background-color: #0b0d11 !important;
-  background-image: none !important;
-}
-#root > main > header, #root > div > header {
-  color: #eef1f6;
-}
-#root > main [class*="bg-tarot-"],
-#root > div [class*="bg-tarot-"] {
-  background-color: #20252d !important;
-  background-image: none !important;
-}
-#root > main [class*="bg-[#0"],
-#root > main [class*="bg-[#1"],
-#root > main [class*="bg-[#2"],
-#root > div [class*="bg-[#0"],
-#root > div [class*="bg-[#1"],
-#root > div [class*="bg-[#2"] {
-  background-color: #15181e !important;
-  background-image: none !important;
-}
-#root > main [class*="text-[#"],
-#root > div [class*="text-[#"] {
-  color: #dce3ed !important;
-}
-#root > main [class*="border-[#"],
-#root > div [class*="border-[#"] {
-  border-color: rgba(255,255,255,.12) !important;
-}
-
-/* Legacy invitation, promo and cinematic styles become static, restrained components. */
-.cinv-beam, .cinv-mote, .cinv-sealwrap, .cinv-sealglow,
-.cinv-seal, .cinv-line, .cinv-btn, .promo-zoom, .promo-mote,
-.promo-glow, .film-slide, .film-progress, .tv-marquee {
-  animation: none !important;
-  transition: none !important;
-  transform: none !important;
-}
-.cinv-count {
-  border: 1px solid rgba(255,255,255,.12) !important;
-  border-radius: 16px !important;
-  background: #15181e !important;
-  box-shadow: none !important;
-}
-.cinv-cl, .cinv-line { color: #dce3ed !important; text-shadow: none !important; }
-.cinv-btn {
-  border: 1px solid #0a84ff !important;
-  border-radius: 12px !important;
-  background: #0a84ff !important;
-  color: #fff !important;
-  box-shadow: none !important;
-  text-shadow: none !important;
-}
-.cinp {
-  border: 1px solid rgba(255,255,255,.14) !important;
-  border-radius: 11px !important;
-  background: #0e1117 !important;
-  color: #f3f6fa !important;
-  box-shadow: none !important;
-}
-.film-frame { background: #0b0d11 !important; }
-.promo-glow { text-shadow: none !important; }
-
-/* Common Tailwind utility variants used by legacy game and site screens. */
-.bg-tarot-wine, .bg-tarot-crimson, .bg-tarot-teal,
-.bg-tarot-forest, .bg-tarot-royal, .bg-tarot-sienna,
-.bg-tarot-wine\/30, .bg-tarot-crimson\/30, .bg-tarot-teal\/30,
-.bg-tarot-forest\/30, .bg-tarot-royal\/30, .bg-tarot-sienna\/30 {
-  background-color: #20252d !important;
-  background-image: none !important;
-}
-.border-tarot-gold, .border-primary\/20, .border-primary\/30,
-.border-primary\/40, .border-primary\/50 {
-  border-color: rgba(255,255,255,.12) !important;
-}
-.text-tarot-gold, .text-primary { color: #78b7ff !important; }
-.bg-primary { background-color: #0a84ff !important; }
-.bg-secondary { background-color: #20252d !important; }
-.bg-card { background-color: #15181e !important; }
-.bg-background { background-color: #0b0d11 !important; }
