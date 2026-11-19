@@ -3,6 +3,7 @@ import { base44, request } from '@/api/base44Client';
 import ComicPanel from '@/components/comic/ComicPanel';
 import ComicButton from '@/components/comic/ComicButton';
 import { isIntakeEnabled, setIntakeEnabled } from '@/lib/intakeFlag';
+import { GAME_MODES } from '@/data/gameConfig';
 import PajamaIntakeList from '@/components/admin/PajamaIntakeList';
 
 const SHOE_LABELS = { boots: '👢 Μπότες', sneakers: '👟 Sneakers', sandals: '👡 Πέδιλα', barefoot: '🦶 Ξυπόλυτη' };
@@ -10,6 +11,7 @@ const INTENSITY_LABELS = { soft: '🟢 Soft', medium: '🟡 Medium', hardcore: '
 const NAIL_LABELS = { red: '🔴 Κόκκινο', pink: '🩷 Ροζ', white: '⚪ Άσπρο', black: '⚫ Μαύρο', nude: '🤎 Nude', french: '💅 Γαλλικό', blue: '🔵 Γαλάζιο', purple: '🟣 Μωβ', green: '🟢 Πράσινο', orange: '🟠 Πορτοκαλί', gold: '✨ Χρυσό', silver: '🤍 Ασημί', none: '⭕ Χωρίς' };
 const COMFORT_LABELS = { comfortTruth: '💬 Αλήθειες', comfortDare: '🔥 Θάρρη', comfortTickle: '🍃 Αύρα', comfortBondage: '🌙 Σκοτάδι', comfortDrinking: '🍹 Ποτό' };
 const ACCOMMODATION_LABELS = { house: '🏠 Μένει', oneday: '🕐 Μία μέρα' };
+const MODE_NAMES = Object.fromEntries(GAME_MODES.map((mode) => [mode.id, mode.name]));
 
 export default function AdminIntakes() {
   const [intakes, setIntakes] = useState([]);
@@ -151,6 +153,7 @@ export default function AdminIntakes() {
                   <div className="flex-1 space-y-1">
                     <div className="flex items-center gap-2 flex-wrap">
                       <span className="font-heading text-lg">{i.name}</span>
+                      {(i.gameMode || i.vipGameMode) && <span className="text-xs bg-primary/20 border border-primary/40 px-2 py-0.5 rounded font-bold">{MODE_NAMES[i.gameMode || i.vipGameMode] || i.gameMode || i.vipGameMode}</span>}
                       <span className="text-xs bg-background text-primary px-2 py-0.5 rounded font-bold">{SHOE_LABELS[i.shoeType]}</span>
                       {i.shoeSize && <span className="text-xs bg-tarot-teal/30 px-2 py-0.5 rounded font-bold">🔢 {i.shoeSize}</span>}
                       {i.nailColor && <span className="text-xs bg-tarot-wine/40 px-2 py-0.5 rounded font-bold">💅 {NAIL_LABELS[i.nailColor]}</span>}
