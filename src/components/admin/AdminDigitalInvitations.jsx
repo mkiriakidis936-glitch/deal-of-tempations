@@ -8,13 +8,12 @@ import { GAME_MODES } from '@/data/gameConfig';
 const KEY = 'digital_invitations';
 const TARGETS = [
   { path: '/forms', label: 'Ενιαία Φόρμα Συμμετοχής — όλα τα Modes' },
-  { path: '/vip-access', label: 'VIP Access / Digital Vault — VIP φόρμα' },
 ];
 
 function isAllowedInvitationPath(value) {
   try {
     const pathname = new URL(value, window.location.origin).pathname;
-    return pathname === '/forms' || pathname === '/vip-access' || pathname === '/vip' || pathname.startsWith('/vip/');
+    return pathname === '/forms' || pathname.startsWith('/vip/');
   } catch {
     return false;
   }
