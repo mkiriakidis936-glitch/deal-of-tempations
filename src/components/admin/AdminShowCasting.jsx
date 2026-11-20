@@ -95,7 +95,7 @@ export default function AdminShowCasting() {
       previous.preferredModes = [...new Set([...previous.preferredModes, ...modes])];
       byName.set(key, previous);
     };
-    playerIntakes.forEach((item) => add(item, 'player'));
+    playerIntakes.filter((item) => item.approved === true || item.approvalStatus === 'approved').forEach((item) => add(item, 'player'));
     pajamaIntakes.forEach((item) => add(item, 'pajama'));
     return [...byName.values()].sort((a, b) => a.name.localeCompare(b.name, 'el'));
   }, [mode, playerIntakes, pajamaIntakes]);
@@ -110,7 +110,7 @@ export default function AdminShowCasting() {
         counts.get(modeId).add(key);
       });
     };
-    playerIntakes.forEach((item) => add(item, 'player'));
+    playerIntakes.filter((item) => item.approved === true || item.approvalStatus === 'approved').forEach((item) => add(item, 'player'));
     pajamaIntakes.forEach((item) => add(item, 'pajama'));
     return GAME_MODES.map((item) => ({ ...item, count: counts.get(item.id)?.size || 0 }));
   }, [playerIntakes, pajamaIntakes]);
@@ -175,7 +175,7 @@ export default function AdminShowCasting() {
       <ComicPanel className="bg-card space-y-3">
         <div>
           <div className="font-heading text-xl text-primary">ΕΠΙΛΟΓΗ ΣΥΜΜΕΤΕΧΟΥΣΩΝ · ΕΠΙΛΟΓΗ ΕΠΕΙΣΟΔΙΟΥ</div>
-          <p className="text-sm text-foreground/65">Οι υπάρχουσες φόρμες συγκεντρώνονται εδώ. Επίλεξε το λειτουργία που θα πραγματοποιηθεί και τις παίκτριες του συγκεκριμένου επεισοδίου.</p>
+          <p className="text-sm text-foreground/65">Οι εγκεκριμένες συμμετοχές συγκεντρώνονται εδώ. Επίλεξε τη λειτουργία που θα πραγματοποιηθεί και τις παίκτριες του συγκεκριμένου επεισοδίου.</p>
         </div>
         <div className="space-y-2">
           <div className="text-xs font-bold text-foreground/60">ΕΠΙΛΟΓΕΣ ΠΑΙΚΤΡΙΩΝ ΑΝΑ MODE</div>
@@ -205,7 +205,7 @@ export default function AdminShowCasting() {
           <span>Επιλεγμένες: <strong>{selectedCandidates.length}/{limits.max}</strong> · Ελάχιστο: {limits.min}</span>
         </div>
         {candidates.length === 0 ? (
-          <div className="rounded-lg border border-border/60 bg-secondary p-4 text-sm text-foreground/65">Δεν βρέθηκαν συμμετοχές για αυτό το λειτουργία στις υπάρχουσες φόρμες.</div>
+          <div className="rounded-lg border border-border/60 bg-secondary p-4 text-sm text-foreground/65">Δεν βρέθηκαν εγκεκριμένες συμμετοχές για αυτή τη λειτουργία στις υπάρχουσες φόρμες.</div>
         ) : (
           <div className="space-y-2">
             {candidates.map((item) => {
