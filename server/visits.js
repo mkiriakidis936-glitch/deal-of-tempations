@@ -2,7 +2,7 @@ import express from 'express';
 import { query } from './db.js';
 import { requireAdmin } from './auth.js';
 
-const TRACKED = new Set(['/site']);
+const isTrackedPath = (value) => typeof value === 'string' && /^\/site(?:\/[a-z0-9_-]+)?$/.test(value);
 const BOT = /bot|crawl|spider|slurp|preview|facebookexternalhit|headless|lighthouse|pingdom|uptime|monitor|curl|wget/i;
 const hits = new Map(); // ip -> { n, reset }  (απλό rate limit)
 setInterval(() => hits.clear(), 60_000).unref();
@@ -22,8 +22,8 @@ export function visitRoutes() {
     hits.set(ip, h + 1);
     if (h > 60 || BOT.test(ua) || !ua) return res.status(204).end();
     if (typeof visitor !== 'string' || !/^[A-Za-z0-9-]{8,64}$/.test(visitor)) return res.status(400).json({ error: 'bad visitor' });
-    const normalizedPath = typeof path === 'string' && path.split('?')[0].split('#')[0] === '/site' ? '/site' : '';
-    if (!normalizedPath || !TRACKED.has(normalizedPath)) return res.status(204).end();
+    const normalizedPath = typeof path === 'string' ? path.split('?')[0].split('#')[0].toLowerCase() : '';
+    if (!isTrackedPath(normalizedPath)) return res.status(204).end();
 
     // ίδιος επισκέπτης στην ίδια σελίδα μέσα σε 30 λεπτά = 1 επίσκεψη
     const dup = await query(
@@ -40,7 +40,7 @@ export function visitRoutes() {
 
   // GET /api/visits/stats?path=/site — μόνο admin
   r.get('/stats', requireAdmin, async (req, res) => {
-    const path = TRACKED.has(String(req.query.path)) ? String(req.query.path) : '/site';
+    const path = isTrackedPath(String(req.query.path || '')) ? String(req.query.path) : '/site';
     const tz = 'Europe/Athens';
     const [totals] = (await query(
       `SELECT
@@ -63,7 +63,15 @@ export function visitRoutes() {
     const refs = (await query(
       `SELECT ref, count(*)::int AS views FROM page_views WHERE path = $1 AND ref IS NOT NULL GROUP BY ref ORDER BY views DESC LIMIT 6`, [path],
     )).rows;
-    res.json({ path, ...totals, days, refs });
+    const pages = (await query(
+      `SELECT path, count(*)::int AS views, count(DISTINCT visitor)::int AS visitors
+       FROM page_views
+       WHERE path LIKE '/site%'
+       GROUP BY path
+       ORDER BY views DESC
+       LIMIT 25`,
+    )).rows;
+    res.json({ path, ...totals, days, refs, pages });
   });
 
   return r;
