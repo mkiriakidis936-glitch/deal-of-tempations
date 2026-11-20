@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import ComicPanel from '@/components/comic/ComicPanel';
 import ComicButton from '@/components/comic/ComicButton';
@@ -28,19 +28,52 @@ const removeUrl = (value, url) => {
 };
 const mb = (n) => (n >= 1048576 ? `${(n / 1048576).toFixed(1)} MB` : `${Math.max(1, Math.round(n / 1024))} KB`);
 
+let activeVideoThumb = null;
+const videoThumbListeners = new Set();
+const setActiveVideoThumb = (id) => {
+  activeVideoThumb = id;
+  videoThumbListeners.forEach((listener) => listener());
+};
+
+function VideoThumb({ src, className = '', objectPosition = '50% 50%', onLoad, onError }) {
+  const id = useId();
+  const [active, setActive] = useState(false);
+  useEffect(() => {
+    const sync = () => setActive(activeVideoThumb === id);
+    videoThumbListeners.add(sync);
+    sync();
+    return () => {
+      videoThumbListeners.delete(sync);
+      if (activeVideoThumb === id) setActiveVideoThumb(null);
+    };
+  }, [id]);
+  if (!active) return (
+    <button type="button" onClick={() => setActiveVideoThumb(id)} aria-label="Άνοιγμα προεπισκόπησης βίντεο"
+      className={`relative flex items-center justify-center overflow-hidden bg-black/70 ${className}`}>
+      <span className="rounded-full border border-white/40 bg-black/70 px-4 py-2 text-xs font-bold text-white">▶ ΠΡΟΕΠΙΣΚΟΠΗΣΗ</span>
+    </button>
+  );
+  return (
+    <div className={`relative overflow-hidden bg-black ${className}`}>
+      <video src={src} controls muted playsInline preload="none" onLoadedData={onLoad} onError={onError}
+        style={{ objectPosition }} className="h-full w-full object-contain" />
+      <button type="button" onClick={() => setActiveVideoThumb(null)}
+        className="absolute right-1 top-1 rounded bg-black/80 px-2 py-1 text-[10px] text-white">Κλείσιμο</button>
+    </div>
+  );
+}
+
 function Thumb({ src, video, audio, className = '', objectPosition = '50% 50%', onLoad, onError }) {
   if (!src) return <div className={`bg-black/40 ${className}`} />;
-  if (audio) return <div className={`bg-black/30 flex items-center justify-center p-2 ${className}`}><audio src={src} controls preload="metadata" onCanPlay={onLoad} onError={onError} className="w-full" /></div>;
-  return video
-    ? <video src={src} controls muted playsInline preload="metadata" onLoadedData={onLoad} onError={onError} style={{ objectPosition }} className={`bg-black object-cover ${className}`} />
-    : <img src={src} alt="" loading="lazy" onLoad={onLoad} onError={onError} style={{ objectPosition }} className={`object-contain ${className}`} />;
+  if (audio) return <div className={`bg-black/30 flex items-center justify-center p-2 ${className}`}><audio src={src} controls preload="none" onCanPlay={onLoad} onError={onError} className="w-full" /></div>;
+  if (video) return <VideoThumb src={src} className={className} objectPosition={objectPosition} onLoad={onLoad} onError={onError} />;
+  return <img src={src} alt="" loading="lazy" decoding="async" onLoad={onLoad} onError={onError} style={{ objectPosition }} className={`object-contain ${className}`} />;
 }
 
 export default function AdminMedia() {
   const [rec, setRec] = useState(null);
   const [ov, setOv] = useState({});
   const [library, setLibrary] = useState([]);
-  const [mediaRevision, setMediaRevision] = useState(0);
   const [libraryFilter, setLibraryFilter] = useState('all');
   const [libraryKindFilter, setLibraryKindFilter] = useState('all');
   const [librarySearch, setLibrarySearch] = useState('');
@@ -65,7 +98,7 @@ export default function AdminMedia() {
   const directInputs = useRef({});
 
   const refreshLibrary = useCallback(async () => {
-    try { setLibrary(await listMedia()); setMediaRevision((revision) => revision + 1); } catch (e) { setMsg({ ok: false, text: e.message }); }
+    try { setLibrary(await listMedia({ force: true })); } catch (e) { setMsg({ ok: false, text: e.message }); }
   }, []);
 
   useEffect(() => {
@@ -383,7 +416,7 @@ export default function AdminMedia() {
 
   return (
     <div className="space-y-3">
-      <AVControlRoom refreshKey={mediaRevision} />
+      <AVControlRoom mediaFiles={library} onRefreshMedia={refreshLibrary} />
       <input ref={libraryOne} type="file" accept={MEDIA_ACCEPT} hidden onChange={onFiles} />
 
       <ComicPanel className="bg-card">
@@ -666,7 +699,7 @@ export default function AdminMedia() {
         {!library.length && <div className="text-xs text-foreground/60">Δεν έχεις ανεβάσει ακόμα αρχεία.</div>}
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2">
           {library.filter((f) => (libraryKindFilter === 'all' || f.kind === libraryKindFilter || (libraryKindFilter === 'image' && f.kind === 'graphic')) && (libraryFilter === 'all' || categoryOf(f.url) === libraryFilter) && (surfaceFilter === 'all' || getFileSurfaces(f.url).includes(surfaceFilter)) && (libraryStatusFilter === 'all' || (libraryStatusFilter === 'unused' && !isUsed(f.url)) || (libraryStatusFilter === 'broken' && fileLoadStatus[f.url] === 'error')) && f.name.toLowerCase().includes(librarySearch.toLowerCase())).map((f) => (
-            <div key={f.name} className="border-2 border-border/40 rounded overflow-hidden bg-secondary/40">
+            <div key={f.name} className="admin-media-library-card border-2 border-border/40 rounded overflow-hidden bg-secondary/40">
               <Thumb video={f.kind === 'video'} audio={f.kind === 'audio'} src={f.url} objectPosition={ov.libraryFocalPoints?.[f.url] || '50% 50%'} onLoad={() => setFileLoadStatus((v) => ({ ...v, [f.url]: 'ok' }))} onError={() => setFileLoadStatus((v) => ({ ...v, [f.url]: 'error' }))} className="w-full aspect-square" />
               <div className="p-1 text-[10px] leading-tight break-all">{f.name.replace(/^[a-z0-9]+-[a-f0-9]{6}-/, '')}<br />{mb(f.size)}<br />Κατάσταση: {fileLoadStatus[f.url] === 'error' ? '⚠ Σφάλμα φόρτωσης' : fileLoadStatus[f.url] === 'ok' ? (isUsed(f.url) ? `Σε χρήση · ${getFileSurfaces(f.url).map((id) => SURFACES.find((s) => s.id === id)?.label || id).join(', ') || 'Εντοπισμένη αντιστοίχιση'}` : 'Δεν χρησιμοποιείται') : 'Έλεγχος φόρτωσης…'}</div>
               {<div className="p-1 space-y-1">
