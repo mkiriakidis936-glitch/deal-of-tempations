@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { publishProductionCue, commandProductionCue, stopProductionCue } from '@/lib/productionCue';
 import ComicPanel from '@/components/comic/ComicPanel';
