@@ -46,7 +46,27 @@ export default function AdminGlobalDesign() {
     }
   }
 
-  function reset() { setValue(GLOBAL_DESIGN_DEFAULTS); }
+  async function reset() {
+    if (busy) return;
+    const payload = { ...GLOBAL_DESIGN_DEFAULTS };
+    setBusy(true);
+    setMessage('');
+    setValue(payload);
+    try {
+      if (record?.id) await saveAdminSettingVersion(GLOBAL_DESIGN_KEY, record.value || GLOBAL_DESIGN_DEFAULTS);
+      const saved = record?.id
+        ? await base44.entities.AppSetting.update(record.id, { value: payload })
+        : await base44.entities.AppSetting.create({ key: GLOBAL_DESIGN_KEY, value: payload });
+      if (saved?.id) setRecord(saved);
+      applySavedGlobalDesign(payload);
+      window.dispatchEvent(new CustomEvent('admin-global-design-updated', { detail: payload }));
+      setMessage('Οι προεπιλεγμένες ρυθμίσεις σχεδίασης αποθηκεύτηκαν.');
+    } catch (error) {
+      setMessage(error.message || 'Δεν αποθηκεύτηκε η επαναφορά.');
+    } finally {
+      setBusy(false);
+    }
+  }
 
   return (
     <div className="space-y-3">
