@@ -113,7 +113,7 @@ export default function TVProductionOutput({ sessionCode }) {
     src: cue.source,
     autoPlay: false,
     playsInline: true,
-    preload: 'auto',
+    preload: 'metadata',
     onCanPlay: () => acknowledge(cue, 'ready'),
     onPlaying: () => acknowledge(cue, 'playing'),
     onEnded: () => acknowledge(cue, 'ended'),
@@ -125,7 +125,7 @@ export default function TVProductionOutput({ sessionCode }) {
       <div className="absolute inset-0 flex items-center justify-center p-4">
         {cue.kind === 'video' && <video key={cue.id + cue.source} ref={videoRef} {...mediaProps} controls className="max-h-full max-w-full object-contain" />}
         {cue.kind === 'audio' && <div className="w-full max-w-xl space-y-6 text-center"><div className="text-6xl">♫</div><h2 className="text-2xl font-bold">{cue.label}</h2><audio key={cue.id + cue.source} ref={audioRef} {...mediaProps} controls className="w-full" /></div>}
-        {cue.kind === 'image' && <img src={cue.source} alt={cue.label || 'Production media'} onLoad={() => acknowledge(cue, 'ready')} onError={() => acknowledge(cue, 'error', 'Η TV δεν μπόρεσε να φορτώσει την εικόνα.')} className="max-h-full max-w-full object-contain" />}
+        {cue.kind === 'image' && <img src={cue.source} alt={cue.label || 'Production media'} decoding="async" onLoad={() => acknowledge(cue, 'ready')} onError={() => acknowledge(cue, 'error', 'Η TV δεν μπόρεσε να φορτώσει την εικόνα.')} className="max-h-full max-w-full object-contain" />}
         {!isMedia && cue.kind !== 'image' && <div className="max-w-5xl text-center space-y-4"><p className="text-sm tracking-[0.3em] text-white/60">DEAL OF TEMPTATIONS · LIVE</p><h1 className="text-5xl md:text-7xl font-bold">{cue.label}</h1>{cue.winnerName && <p className="text-3xl">{cue.winnerName}</p>}{cue.winnerNotes && <p className="text-xl text-white/75">{cue.winnerNotes}</p>}</div>}
       </div>
       <div className="absolute left-4 top-4 rounded-full bg-black/70 px-3 py-2 text-xs" role="status">{error || cue.playbackError || cue.playbackStatus || 'LIVE OUTPUT'}</div>
