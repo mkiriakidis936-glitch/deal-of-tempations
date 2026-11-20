@@ -1,47 +1,57 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import ComicPanel from '@/components/comic/ComicPanel';
 import { Image } from '@/components/ui/image';
 import { GAME_MODES, INTENSITY_LEVELS } from '@/data/gameConfig';
 import { ART } from '@/data/brandArt';
+import { request } from '@/api/base44Client';
 
+export default function AdminDashboard() {
+  const [stats, setStats] = useState(null);
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(true);
 
-export default function AdminDashboard({ sessions, loading }) {
+  useEffect(() => {
+    let mounted = true;
+    request('GET', '/api/visits/session-stats')
+      .then((data) => { if (mounted) setStats(data); })
+      .catch((e) => { if (mounted) setError(e.message || 'Δεν φορτώθηκαν τα στατιστικά.'); })
+      .finally(() => { if (mounted) setLoading(false); });
+    return () => { mounted = false; };
+  }, []);
+
   if (loading) {
     return <ComicPanel className="bg-card text-center py-8"><div className="font-heading text-2xl comic-pulse">ΦΟΡΤΩΣΗ...</div></ComicPanel>;
   }
+  if (error || !stats) {
+    return <ComicPanel className="bg-card text-center py-8 text-red-400">{error || 'Δεν υπάρχουν διαθέσιμα στατιστικά.'}</ComicPanel>;
+  }
 
-  const total = sessions.length;
-  const active = sessions.filter((s) => (s.state?.stage || 0) < 3).length;
-  const finished = sessions.filter((s) => (s.state?.stage || 0) >= 3).length;
-  const totalPlayers = sessions.reduce((sum, s) => sum + (s.state?.players?.length || 0), 0);
-
-  const byMode = GAME_MODES.map((m) => ({
-    ...m,
-    count: sessions.filter((s) => s.state?.mode === m.id || s.mode === m.id).length,
+  const total = Number(stats.total || 0);
+  const byMode = GAME_MODES.map((mode) => ({
+    ...mode,
+    count: Number(stats.byMode?.find((item) => item.id === mode.id)?.count || 0),
   }));
-
-  const byIntensity = INTENSITY_LEVELS.map((i) => ({
-    ...i,
-    count: sessions.filter((s) => s.state?.intensity === i.id || s.intensity === i.id).length,
+  const byIntensity = INTENSITY_LEVELS.map((intensity) => ({
+    ...intensity,
+    count: Number(stats.byIntensity?.find((item) => item.id === intensity.id)?.count || 0),
   }));
-
   const stageNames = { 0: 'Στάδιο 0 (Προετοιμασία)', 1: 'Στάδιο 1 (Περιπολία)', 2: 'Στάδιο 2 (Ανάκριση)', 3: 'Στάδιο 3 (Φινάλε)' };
-  const byStage = [0, 1, 2, 3].map((st) => ({
-    stage: st,
-    name: stageNames[st],
-    count: sessions.filter((s) => (s.state?.stage || 0) === st).length,
+  const byStage = [0, 1, 2, 3].map((stage) => ({
+    stage,
+    name: stageNames[stage],
+    count: Number(stats.byStage?.find((item) => Number(item.stage) === stage)?.count || 0),
   }));
-
-  const stats = [
+  const cards = [
     { label: 'Σύνολο Συνεδριών', value: total, icon: '🎮', color: 'bg-primary' },
-    { label: 'Ενεργές', value: active, icon: '▶️', color: 'bg-tarot-forest' },
-    { label: 'Ολοκληρωμένες', value: finished, icon: '🏆', color: 'bg-tarot-royal/60' },
-    { label: 'Σύνολο Παικτριών', value: totalPlayers, icon: '👥', color: 'bg-tarot-wine/60' },
+    { label: 'Ενεργές · 24 ώρες', value: stats.active, icon: '▶️', color: 'bg-tarot-forest' },
+    { label: 'Ολοκληρωμένες', value: stats.completed, icon: '🏆', color: 'bg-tarot-royal/60' },
+    { label: 'Αδρανείς · άνω 24 ωρών', value: stats.abandoned, icon: '⏸', color: 'bg-secondary' },
+    { label: 'Συμμετοχές Παικτριών', value: stats.player_participations, icon: '👥', color: 'bg-tarot-wine/60' },
+    { label: 'Μοναδικές Παίκτριες', value: '—', icon: '🧍', color: 'bg-secondary' },
   ];
 
   return (
     <div className="space-y-4">
-      {/* Brand banner */}
       <div className="relative h-32 rounded-xl overflow-hidden border-2 border-border" style={{ boxShadow: '0 0 20px rgba(201,162,39,.15)' }}>
         <Image src={ART.banner} fittingType="fill" className="w-full h-full" />
         <div className="absolute inset-0" style={{ background: 'linear-gradient(90deg, rgba(10,10,10,.7), transparent 60%, rgba(10,10,10,.7))' }} />
@@ -50,75 +60,71 @@ export default function AdminDashboard({ sessions, loading }) {
         </div>
       </div>
 
-      {/* Stat cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        {stats.map((s) => (
-          <ComicPanel key={s.label} className={`${s.color} text-center`}>
-            <div className="text-3xl">{s.icon}</div>
-            <div className="font-heading text-3xl">{s.value}</div>
-            <div className="text-xs font-bold">{s.label}</div>
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+        {cards.map((card) => (
+          <ComicPanel key={card.label} className={`${card.color} text-center`}>
+            <div className="text-3xl">{card.icon}</div>
+            <div className="font-heading text-3xl">{card.value ?? 0}</div>
+            <div className="text-xs font-bold">{card.label}</div>
           </ComicPanel>
         ))}
       </div>
+      <p className="text-xs text-foreground/60">Οι ενεργές συνεδρίες έχουν ενημερωθεί τις τελευταίες 24 ώρες. Οι αδρανείς δεν θεωρούνται ολοκληρωμένες. Οι μοναδικές παίκτριες δεν μπορούν να υπολογιστούν αξιόπιστα στα παλιά δεδομένα, επειδή δεν αποθηκεύεται σταθερό αναγνωριστικό συμμετέχουσας μεταξύ συνεδριών.</p>
 
-      {/* By mode */}
       <ComicPanel className="bg-card">
         <div className="font-heading text-xl mb-2">🎲 Ανά Λειτουργία</div>
         <div className="space-y-2">
-          {byMode.map((m) => (
-            <div key={m.id} className="flex items-center justify-between">
-              <span className="text-sm font-bold">{m.icon} {m.name}</span>
+          {byMode.map((mode) => (
+            <div key={mode.id} className="flex items-center justify-between">
+              <span className="text-sm font-bold">{mode.icon} {mode.name}</span>
               <div className="flex items-center gap-2 flex-1 mx-3">
                 <div className="flex-1 h-4 bg-background/10 rounded-full border-2 border-border overflow-hidden">
-                  <div className="h-full bg-tarot-wine" style={{ width: `${total > 0 ? (m.count / total) * 100 : 0}%` }} />
+                  <div className="h-full bg-tarot-wine" style={{ width: `${total > 0 ? (mode.count / total) * 100 : 0}%` }} />
                 </div>
               </div>
-              <span className="font-heading text-lg">{m.count}</span>
+              <span className="font-heading text-lg">{mode.count}</span>
             </div>
           ))}
         </div>
       </ComicPanel>
 
-      {/* By intensity */}
       <ComicPanel className="bg-card">
         <div className="font-heading text-xl mb-2">🔥 Ανά Ένταση</div>
         <div className="grid grid-cols-3 gap-2">
-          {byIntensity.map((i) => (
-            <div key={i.id} className="comic-panel-sm p-2 text-center bg-destructive/20">
-              <div className="text-2xl">{i.icon}</div>
-              <div className="text-xs font-bold">{i.name}</div>
-              <div className="font-heading text-2xl">{i.count}</div>
+          {byIntensity.map((intensity) => (
+            <div key={intensity.id} className="comic-panel-sm p-2 text-center bg-destructive/20">
+              <div className="text-2xl">{intensity.icon}</div>
+              <div className="text-xs font-bold">{intensity.name}</div>
+              <div className="font-heading text-2xl">{intensity.count}</div>
             </div>
           ))}
         </div>
       </ComicPanel>
 
-      {/* By stage */}
       <ComicPanel className="bg-card">
         <div className="font-heading text-xl mb-2">📍 Ανά Στάδιο</div>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-          {byStage.map((s) => (
-            <div key={s.stage} className="comic-panel-sm p-2 text-center bg-secondary">
-              <div className="text-xs font-bold">{s.name}</div>
-              <div className="font-heading text-2xl">{s.count}</div>
+          {byStage.map((stage) => (
+            <div key={stage.stage} className="comic-panel-sm p-2 text-center bg-secondary">
+              <div className="text-xs font-bold">{stage.name}</div>
+              <div className="font-heading text-2xl">{stage.count}</div>
             </div>
           ))}
         </div>
       </ComicPanel>
 
-      {/* Recent sessions */}
       <ComicPanel className="bg-card">
         <div className="font-heading text-xl mb-2">🕐 Πρόσφατες Συνεδρίες</div>
         <div className="space-y-1 max-h-48 overflow-y-auto">
-          {sessions.slice(0, 10).map((s) => (
-            <div key={s.id} className="flex items-center justify-between text-xs border-b border-border/10 py-1">
-              <span className="font-bold">{s.sessionCode}</span>
-              <span>{s.state?.mode || s.mode || '—'}</span>
-              <span>Στάδιο {s.state?.stage ?? '—'}</span>
-              <span>{s.state?.players?.length || 0} παίκτριες</span>
+          {(stats.recent || []).map((session) => (
+            <div key={session.id} className="flex items-center justify-between text-xs border-b border-border/10 py-1 gap-2">
+              <span className="font-bold">{session.sessionCode || '—'}</span>
+              <span>{session.mode || '—'}</span>
+              <span>Στάδιο {session.stage}</span>
+              <span>{session.players} παίκτριες</span>
             </div>
           ))}
-          {sessions.length === 0 && <div className="text-center text-foreground/40 py-4">Δεν υπάρχουν συνεδρίες</div>}
+          {!stats.recent?.length && <div className="text-center text-foreground/40 py-4">Δεν υπάρχουν συνεδρίες</div>}
         </div>
       </ComicPanel>
     </div>
