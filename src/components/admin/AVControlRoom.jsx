@@ -104,7 +104,6 @@ export default function AVControlRoom({ mediaFiles = [], onRefreshMedia }) {
   const [cueRecord, setCueRecord] = useState(null);
   const [message, setMessage] = useState('');
   const [busy, setBusy] = useState(false);
-  const [showDetails, setShowDetails] = useState(false);
   const [volume, setVolume] = useState(0.8);
 
   const load = useCallback(async () => {
@@ -275,7 +274,6 @@ export default function AVControlRoom({ mediaFiles = [], onRefreshMedia }) {
 
   function preview(file) {
     setSelected(file.url);
-    setShowDetails(true);
   }
 
   const mediaUrl = (url) => url?.startsWith('http') ? url : url;
