@@ -10,12 +10,16 @@ export function useGameSession({ autoLoad = true } = {}) {
   const sessionRef = useRef(null);
   const [connectionEpoch, setConnectionEpoch] = useState(0);
   const recoveryBusyRef = useRef(false);
+  const operationRef = useRef(0);
 
   useEffect(() => {
     if (!autoLoad) { setLoading(false); return; }
+    const operation = ++operationRef.current;
+    let alive = true;
     (async () => {
       try {
         const { items } = await base44.entities.GameSession.filter({}, { sort: '-created_date', limit: 1 });
+        if (!alive || operation !== operationRef.current) return;
         if (items && items.length > 0) {
           sessionRef.current = items[0];
           stateRef.current = items[0].state || {};
@@ -23,11 +27,12 @@ export function useGameSession({ autoLoad = true } = {}) {
           setState(items[0].state || {});
         }
       } catch (e) {
-        console.error('Failed to load session', e);
+        if (alive && operation === operationRef.current) console.error('Failed to load session', e);
       } finally {
-        setLoading(false);
+        if (alive && operation === operationRef.current) setLoading(false);
       }
     })();
+    return () => { alive = false; };
   }, [autoLoad]);
 
   useEffect(() => {
@@ -52,6 +57,7 @@ export function useGameSession({ autoLoad = true } = {}) {
 
   const updateState = useCallback(async (newState, { playerId } = {}) => {
     if (!sessionRef.current) return;
+    const targetSessionId = sessionRef.current.id;
     const previousState = stateRef.current;
     const merged = { ...previousState, ...newState };
     stateRef.current = merged;
@@ -63,22 +69,26 @@ export function useGameSession({ autoLoad = true } = {}) {
     }
     try {
       const updated = await base44.entities.GameSession.update(sessionRef.current.id, payload);
-      if (updated?.state) {
+      if (updated?.state && sessionRef.current?.id === targetSessionId) {
         sessionRef.current = updated;
         stateRef.current = updated.state;
         setSession(updated);
         setState(updated.state);
       }
     } catch (e) {
-      stateRef.current = sessionRef.current?.state || previousState || {};
-      setState(stateRef.current);
+      if (sessionRef.current?.id === targetSessionId) {
+        stateRef.current = sessionRef.current?.state || previousState || {};
+        setState(stateRef.current);
+      }
       console.error('Failed to update state; local state was reverted', e);
       return false;
     }
   }, []);
 
   const createSession = useCallback(async (sessionData) => {
+    const operation = ++operationRef.current;
     const created = await base44.entities.GameSession.create(sessionData);
+    if (operation !== operationRef.current) return created;
     sessionRef.current = created;
     stateRef.current = created.state || {};
     setSession(created);
@@ -87,6 +97,7 @@ export function useGameSession({ autoLoad = true } = {}) {
   }, []);
 
   const deleteSession = useCallback(async () => {
+    ++operationRef.current;
     const id = sessionRef.current?.id;
     if (id) await base44.entities.GameSession.delete(id);
     sessionRef.current = null;
@@ -100,9 +111,12 @@ export function useGameSession({ autoLoad = true } = {}) {
     if (recoveryBusyRef.current) return;
     recoveryBusyRef.current = true;
     try {
+      const operation = operationRef.current;
       const currentCode = sessionRef.current?.sessionCode;
+      const currentId = sessionRef.current?.id;
       const query = currentCode ? { sessionCode: currentCode } : {};
       const { items } = await base44.entities.GameSession.filter(query, { sort: '-created_date', limit: 1 });
+      if (operation !== operationRef.current || currentId !== sessionRef.current?.id) return;
       if (items && items.length > 0 && (!currentCode || items[0].sessionCode === currentCode)) {
         sessionRef.current = items[0];
         stateRef.current = items[0].state || {};
@@ -133,11 +147,13 @@ export function useGameSession({ autoLoad = true } = {}) {
   }, [refresh]);
 
   const joinByCode = useCallback(async (code, playerId = null) => {
+    const operation = ++operationRef.current;
     setLoading(true);
     setViewerPlayerId(playerId || null);
     try {
       const query = { sessionCode: code, ...(playerId ? { playerId } : {}) };
       const { items } = await base44.entities.GameSession.filter(query, { sort: '-created_date', limit: 1 });
+      if (operation !== operationRef.current) return false;
       if (items && items.length > 0) {
         sessionRef.current = items[0];
         stateRef.current = items[0].state || {};
@@ -145,12 +161,16 @@ export function useGameSession({ autoLoad = true } = {}) {
         setState(items[0].state || {});
         return true;
       }
+      sessionRef.current = null;
+      stateRef.current = null;
+      setSession(null);
+      setState(null);
       return false;
     } catch (e) {
-      console.error('Failed to join session', e);
+      if (operation === operationRef.current) console.error('Failed to join session', e);
       return false;
     } finally {
-      setLoading(false);
+      if (operation === operationRef.current) setLoading(false);
     }
   }, []);
 
