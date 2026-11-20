@@ -129,3 +129,12 @@ test('active session writes are serialized and session deletion clears subscribe
   assert.match(activeSession, /event\.type === 'delete'.*onCode\(''\)/s);
   assert.match(activeSession, /toUpperCase\(\)/);
 });
+
+
+test('approved preferences populate Classic, Marathon, Arrest & Heist and Pajama modes', () => {
+  const setup = read('../src/components/tablet/SetupScreen.jsx');
+  assert.match(setup, /item\.preferredModes\?\.includes\('classic'\)/);
+  assert.match(setup, /item\.preferredModes\?\.includes\('marathon'\)/);
+  assert.match(setup, /item\.preferredModes\?\.includes\('arrest_heist'\)/);
+  assert.match(setup, /item\.preferredModes\?\.includes\('pajama'\)/);
+});
