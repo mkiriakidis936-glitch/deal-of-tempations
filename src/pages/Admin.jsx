@@ -45,7 +45,7 @@ const NAV_GROUPS = [
     tabs: [
       { id: 'dashboard', label: 'Επισκόπηση', icon: LayoutDashboard },
       { id: 'inbox', label: 'Εισερχόμενα', icon: Inbox },
-      { id: 'events', label: 'Events & καλεσμένοι', icon: Ticket },
+      { id: 'events', label: 'Διοργανώσεις & καλεσμένοι', icon: Ticket },
       { id: 'statistics', label: 'Στατιστικά & επισκέψεις', icon: BarChart3 },
     ],
   },
@@ -60,9 +60,9 @@ const NAV_GROUPS = [
   },
   {
     id: 'production',
-    label: '03 · Reality show production',
+    label: '03 · Παραγωγή εκπομπής',
     tabs: [
-      { id: 'production', label: 'Production room', icon: Video },
+      { id: 'production', label: 'Χώρος παραγωγής', icon: Video },
     ],
   },
   {
