@@ -87,6 +87,9 @@ export default function TVProductionOutput({ sessionCode }) {
         try { media.currentTime = 0; } catch {}
       }
       acknowledge(targetCue, 'stopped');
+    } else if (command === 'close') {
+      if (media) media.pause();
+      acknowledge(targetCue, 'closed');
     } else if (command === 'volume') {
       if (media && Number.isFinite(cue.volume)) media.volume = Math.max(0, Math.min(1, cue.volume));
       acknowledge(targetCue, 'ready');
