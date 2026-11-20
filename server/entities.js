@@ -666,16 +666,20 @@ export function entityRoutes() {
       const token = crypto.randomBytes(32).toString('base64url');
       const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
       const gameMode = String(req.body?.gameMode || 'classic');
-      const sessionCode = String(req.body?.sessionCode || '').trim().toUpperCase();
-      if (sessionCode) {
-        const { rows: sessions } = await query("SELECT id FROM records WHERE entity = 'GameSession' AND data->>'sessionCode' = $1 LIMIT 1", [sessionCode]);
-        if (!sessions[0]) return res.status(400).json({ error: 'Το επιλεγμένο Event δεν βρέθηκε.' });
-      }
-      const allowedGameModes = ['classic', 'marathon', 'arrest_heist', 'pajama', 'lockdown', 'beach_bar'];
+      const dotEventId = String(req.body?.dotEventId || '').trim();
+      if (!dotEventId) return res.status(400).json({ error: 'Επίλεξε πρώτα ένα Event.' });
+      const { rows: eventRows } = await query("SELECT * FROM records WHERE entity = 'DotEvent' AND id = $1 LIMIT 1", [dotEventId]);
+      if (!eventRows[0]) return res.status(400).json({ error: 'Το επιλεγμένο Event δεν βρέθηκε.' });
+      const linkedEvent = toRecord(eventRows[0]);
+      if (['closing', 'completed'].includes(linkedEvent.status)) return res.status(409).json({ error: 'Το Event έχει κλείσει και δεν δέχεται νέες προσκλήσεις.' });
+      const allowedGameModes = ['classic', 'marathon', 'arrest_heist', 'pajama', 'pedi_glam', 'pedi_extended', 'lockdown', 'beach_bar', 'marathon_4h'];
       if (!allowedGameModes.includes(gameMode)) return res.status(400).json({ error: 'Επίλεξε έγκυρο παιχνίδι.' });
       const data = {
         gameMode,
-        ...(sessionCode ? { sessionCode } : {}),
+        dotEventId: linkedEvent.id,
+        roomCode: linkedEvent.room_code,
+        eventTitle: linkedEvent.title,
+        eventType: linkedEvent.type,
         title: 'VIP INVITATION',
         gameTitle: 'DEAL OF TEMPTATION',
         intro: 'Έχεις λάβει μια προσωπική πρόσκληση σε μια ξεχωριστή εμπειρία. Επιβεβαίωσε τη συμμετοχή σου και συμπλήρωσε το προσωπικό σου προφίλ.',
@@ -771,6 +775,10 @@ export function entityRoutes() {
         title: rows[0].data.title || 'VIP INVITATION',
         gameTitle: rows[0].data.gameTitle || 'DEAL OF TEMPTATION',
         gameMode: rows[0].data.gameMode || 'classic',
+        dotEventId: rows[0].data.dotEventId || '',
+        roomCode: rows[0].data.roomCode || '',
+        eventTitle: rows[0].data.eventTitle || '',
+        eventType: rows[0].data.eventType || '',
         intro: rows[0].data.intro || '',
         questions: Array.isArray(questions) ? questions : [],
       });
@@ -870,7 +878,10 @@ export function entityRoutes() {
       const data = {
         invitationId: invitations[0].id,
         consentConfirmed: true,
-        ...(invitations[0].data?.sessionCode ? { sessionCode: invitations[0].data.sessionCode } : {}),
+        dotEventId: invitations[0].data.dotEventId || '',
+        roomCode: invitations[0].data.roomCode || '',
+        eventTitle: invitations[0].data.eventTitle || '',
+        eventType: invitations[0].data.eventType || '',
         submissionId,
         gameMode,
         name: body.name.trim(),
@@ -1456,7 +1467,10 @@ export function entityRoutes() {
         profile = {
           name: String(answers.displayName || sourceRecord.name || '').trim(),
           legalName: sourceRecord.name,
-          sessionCode: sourceRecord.sessionCode || invitations[0].data.sessionCode || '',
+          dotEventId: sourceRecord.dotEventId || invitations[0].data.dotEventId || '',
+          roomCode: sourceRecord.roomCode || invitations[0].data.roomCode || '',
+          eventTitle: sourceRecord.eventTitle || invitations[0].data.eventTitle || '',
+          eventType: sourceRecord.eventType || invitations[0].data.eventType || '',
           vipGameMode: sourceRecord.gameMode || invitations[0].data.gameMode || 'classic',
           vipInvitationId: sourceRecord.invitationId,
           vipSubmissionId: sourceRecord.submissionId,
