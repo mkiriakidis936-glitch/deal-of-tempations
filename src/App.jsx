@@ -24,6 +24,12 @@ const Register = lazy(() => import('@/pages/Register'));
 const ForgotPassword = lazy(() => import('@/pages/ForgotPassword'));
 const ResetPassword = lazy(() => import('@/pages/ResetPassword'));
 const PublicForms = lazy(() => import('@/pages/PublicForms'));
+const Invitation = lazy(() => import('@/pages/Invitation'));
+const PajamaForm = lazy(() => import('@/pages/PajamaForm'));
+const PajamaInvite = lazy(() => import('@/pages/PajamaInvite'));
+const ModeForm = lazy(() => import('@/pages/ModeForm'));
+const Intake = lazy(() => import('@/pages/Intake'));
+const EventPortal = lazy(() => import('@/pages/EventPortal'));
 
 // Game-master screens (tablet + admin) need an admin account.
 const RequireAdmin = ({ children }) => {
@@ -81,6 +87,13 @@ const AuthenticatedApp = () => {
       <Route path="/promo" element={<Promo />} />
       <Route path="/vip/:token" element={<VIPInvitationPage />} />
       <Route path="/forms" element={<PublicForms />} />
+      <Route path="/invitation" element={<Invitation />} />
+      <Route path="/welcome" element={<Invitation />} />
+      <Route path="/pajama-form" element={<PajamaForm />} />
+      <Route path="/pajama-invite" element={<PajamaInvite />} />
+      <Route path="/modes-form" element={<ModeForm />} />
+      <Route path="/intake" element={<Intake />} />
+      <Route path="/portal" element={<EventPortal />} />
       <Route path="/gift-unlock" element={<GiftUnlock />} />
       <Route path="/site" element={<Site />} />
       <Route path="/production-consent" element={<ProductionConsent />} />
