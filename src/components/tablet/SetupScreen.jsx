@@ -78,7 +78,7 @@ export default function SetupScreen({ onStart }) {
         ? item.dotEventId === selectedDotEventId || item.roomCode === selectedEvent?.room_code || item.sessionCode === selectedEvent?.room_code
         : eventCode ? item.sessionCode === eventCode || item.roomCode === eventCode : !item.sessionCode && !item.roomCode && !item.dotEventId);
       const allClassic = scopeToEvent(classicRes.items).filter((item) => item.approved === true);
-      const classic = allClassic.filter((item) => item.gameMode === 'classic' || item.vipGameMode === 'classic' || (!item.gameMode && !item.vipGameMode && !['pajama', 'modes'].includes(item.formType) && !Array.isArray(item.preferredModes)));
+      const classic = allClassic.filter((item) => item.gameMode === 'classic' || item.vipGameMode === 'classic' || item.preferredModes?.includes('classic') || (!item.gameMode && !item.vipGameMode && !['pajama', 'modes'].includes(item.formType) && !Array.isArray(item.preferredModes)));
       const allPajama = scopeToEvent(pajamaRes.items);
       const approved = allPajama.filter((i) => i.approved === true && i.name);
       const legacyPajama = approved.filter((i) => (i.formType || 'pajama') !== 'modes');
@@ -145,9 +145,9 @@ export default function SetupScreen({ onStart }) {
         const currentMode = modeRef.current;
         let names = [];
         if (currentMode === 'classic') names = classic.map((item) => item.name?.trim()).filter(Boolean);
-        else if (currentMode === 'marathon') names = allClassic.filter((item) => item.gameMode === 'marathon').map((item) => item.name?.trim()).filter(Boolean);
-        else if (currentMode === 'arrest_heist') names = [...scopeToEvent(heistRes.items), ...allClassic.filter((item) => item.gameMode === 'arrest_heist')].flatMap((item) => [item.name, item.leaderName, item.opponentName]).map((name) => String(name || '').trim()).filter(Boolean);
-        else if (currentMode === 'pajama') names = legacyPajama.map((item) => item.name?.trim()).filter(Boolean);
+        else if (currentMode === 'marathon') names = allClassic.filter((item) => item.gameMode === 'marathon' || item.preferredModes?.includes('marathon')).map((item) => item.name?.trim()).filter(Boolean);
+        else if (currentMode === 'arrest_heist') names = [...scopeToEvent(heistRes.items), ...allClassic.filter((item) => item.gameMode === 'arrest_heist' || item.preferredModes?.includes('arrest_heist'))].flatMap((item) => [item.name, item.leaderName, item.opponentName]).map((name) => String(name || '').trim()).filter(Boolean);
+        else if (currentMode === 'pajama') names = [...legacyPajama, ...approved.filter((item) => item.formType === 'modes' && item.preferredModes?.includes('pajama'))].map((item) => item.name?.trim()).filter(Boolean);
         else if (isNewMode(currentMode)) names = [...approved.filter((item) => item.preferredModes?.includes(currentMode)).map((item) => item.name?.trim()), ...allClassic.filter((item) => item.preferredModes?.includes(currentMode) || item.vipGameMode === currentMode).map((item) => item.name?.trim())].filter(Boolean);
         const vipByName = Object.fromEntries(allClassic.map((item) => [item.name?.trim(), item]).filter(([name]) => name));
         applyNames([...new Set(names)], shoeByName, pjByName, vipByName);
@@ -220,19 +220,19 @@ export default function SetupScreen({ onStart }) {
     const selectedModeMeta = isNewMode(m.id) ? modeMeta(m.id) : null;
     const selectedModeMax = selectedModeMeta ? selectedModeMeta.max : (m.id === 'marathon' || m.id === 'arrest_heist' ? 10 : 6);
     if (m.id === 'marathon') {
-      const names = [...new Set(intakes.filter((item) => item.gameMode === 'marathon').map((item) => (item.name || '').trim()).filter(Boolean))].slice(0, 10);
+      const names = [...new Set(intakes.filter((item) => item.gameMode === 'marathon' || item.preferredModes?.includes('marathon')).map((item) => (item.name || '').trim()).filter(Boolean))].slice(0, 10);
       const seeded = names.map((name, i) => ({ name, footwearLevel: 2, toenailPerk: TOENAIL_PERKS[i % TOENAIL_PERKS.length].id }));
       setPlayers([...seeded, ...Array.from({ length: Math.max(0, 8 - seeded.length) }, (_, i) => ({ name: '', footwearLevel: 2, toenailPerk: TOENAIL_PERKS[(seeded.length + i) % TOENAIL_PERKS.length].id }))]);
     } else if (m.id === 'arrest_heist') {
-      const names = [...new Set(heistIntakes.flatMap((item) => [item.name, item.leaderName, item.opponentName]).map((name) => (name || '').trim()).filter(Boolean))].slice(0, 10);
+      const names = [...new Set([...heistIntakes, ...intakes.filter((item) => item.gameMode === 'arrest_heist' || item.preferredModes?.includes('arrest_heist'))].flatMap((item) => [item.name, item.leaderName, item.opponentName]).map((name) => (name || '').trim()).filter(Boolean))].slice(0, 10);
       const seeded = names.map((name, i) => ({ name, footwearLevel: 2, toenailPerk: TOENAIL_PERKS[i % TOENAIL_PERKS.length].id }));
       setPlayers([...seeded, ...Array.from({ length: Math.max(0, 4 - seeded.length) }, (_, i) => ({ name: '', footwearLevel: 2, toenailPerk: TOENAIL_PERKS[(seeded.length + i) % TOENAIL_PERKS.length].id }))]);
     } else if (m.id === 'pajama') {
-      const names = [...new Set(pajamaApproved.filter((item) => (item.formType || 'pajama') !== 'modes').map((item) => (item.name || '').trim()).filter(Boolean))].slice(0, 6);
+      const names = [...new Set(pajamaApproved.filter((item) => (item.formType || 'pajama') !== 'modes' || item.preferredModes?.includes('pajama')).map((item) => (item.name || '').trim()).filter(Boolean))].slice(0, 6);
       const seeded = names.map((name, i) => ({ name, footwearLevel: 2, toenailPerk: TOENAIL_PERKS[i % TOENAIL_PERKS.length].id }));
       setPlayers([...seeded, ...Array.from({ length: Math.max(0, 2 - seeded.length) }, (_, i) => ({ name: '', footwearLevel: 2, toenailPerk: TOENAIL_PERKS[(seeded.length + i) % TOENAIL_PERKS.length].id }))]);
     } else if (m.id === 'classic') {
-      const names = [...new Set(intakes.filter((item) => item.gameMode === 'classic' || (!item.gameMode && !item.vipGameMode && !['pajama', 'modes'].includes(item.formType) && !Array.isArray(item.preferredModes))).map((item) => (item.name || '').trim()).filter(Boolean))].slice(0, 6);
+      const names = [...new Set(intakes.filter((item) => item.gameMode === 'classic' || item.vipGameMode === 'classic' || item.preferredModes?.includes('classic') || (!item.gameMode && !item.vipGameMode && !['pajama', 'modes'].includes(item.formType) && !Array.isArray(item.preferredModes))).map((item) => (item.name || '').trim()).filter(Boolean))].slice(0, 6);
       const seeded = names.map((name, i) => ({ name, footwearLevel: 2, toenailPerk: TOENAIL_PERKS[i % TOENAIL_PERKS.length].id }));
       setPlayers([...seeded, ...Array.from({ length: Math.max(0, 2 - seeded.length) }, (_, i) => ({ name: '', footwearLevel: 2, toenailPerk: TOENAIL_PERKS[(seeded.length + i) % TOENAIL_PERKS.length].id }))]);
     } else if (isNewMode(m.id)) {
