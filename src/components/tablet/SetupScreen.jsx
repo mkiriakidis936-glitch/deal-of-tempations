@@ -16,6 +16,8 @@ const NAIL_COLORS = ['Red', 'Pink', 'White', 'Black', 'Nude', 'French', 'Blue', 
 export default function SetupScreen({ onStart }) {
   const eventCode = (new URLSearchParams(window.location.search).get('event') || new URLSearchParams(window.location.search).get('sessionCode') || new URLSearchParams(window.location.search).get('code') || '').trim().toUpperCase();
   const [mode, setMode] = useState('classic');
+  const [dotEvents, setDotEvents] = useState([]);
+  const [selectedDotEventId, setSelectedDotEventId] = useState('');
   const modeRef = useRef(mode);
   useEffect(() => { modeRef.current = mode; }, [mode]);
   const [intensity, setIntensity] = useState('standard');
@@ -61,13 +63,19 @@ export default function SetupScreen({ onStart }) {
 
   const loadIntakes = async () => {
     try {
-      const [classicRes, pajamaRes, heistRes, castingRes] = await Promise.all([
-        base44.entities.PlayerIntake.filter(eventCode ? { sessionCode: eventCode } : {}, { sort: '-created_date', limit: 500 }),
+      const [classicRes, pajamaRes, heistRes, castingRes, eventRes] = await Promise.all([
+        base44.entities.PlayerIntake.filter({}, { sort: '-created_date', limit: 500 }),
         base44.entities.PajamaIntake.filter(eventCode ? { sessionCode: eventCode } : {}, { sort: '-created_date', limit: 500 }),
         base44.entities.BacheloretteIntake.filter(eventCode ? { sessionCode: eventCode } : {}, { sort: '-created_date', limit: 500 }),
         base44.entities.AppSetting.filter({ key: 'show_casting_plan' }, { limit: 1 }),
+        base44.entities.DotEvent.filter({}, { sort: '-created_date', limit: 200 }),
       ]);
-      const scopeToEvent = (items) => (items || []).filter((item) => eventCode ? item.sessionCode === eventCode : !item.sessionCode);
+      const loadedEvents = eventRes.items || [];
+      setDotEvents(loadedEvents);
+      const selectedEvent = loadedEvents.find((item) => item.id === selectedDotEventId);
+      const scopeToEvent = (items) => (items || []).filter((item) => selectedDotEventId
+        ? item.dotEventId === selectedDotEventId || item.roomCode === selectedEvent?.room_code
+        : eventCode ? item.sessionCode === eventCode : !item.sessionCode && !item.dotEventId);
       const allClassic = scopeToEvent(classicRes.items).filter((item) => item.approved === true);
       const classic = allClassic.filter((item) => item.gameMode === 'classic' || item.vipGameMode === 'classic' || (!item.gameMode && !item.vipGameMode && !['pajama', 'modes'].includes(item.formType) && !Array.isArray(item.preferredModes)));
       const allPajama = scopeToEvent(pajamaRes.items);
@@ -125,10 +133,14 @@ export default function SetupScreen({ onStart }) {
 
   useEffect(() => {
     loadIntakes();
+  }, [selectedDotEventId]);
+
+  useEffect(() => {
     const refresh = () => loadIntakes();
     const offPlayers = base44.entities.PlayerIntake.subscribe(refresh);
     const offPajama = base44.entities.PajamaIntake.subscribe(refresh);
-    return () => { offPlayers?.(); offPajama?.(); };
+    const offEvents = base44.entities.DotEvent.subscribe(refresh);
+    return () => { offPlayers?.(); offPajama?.(); offEvents?.(); };
   }, []);
 
   useEffect(() => {
@@ -257,6 +269,7 @@ export default function SetupScreen({ onStart }) {
     }
     await onStart({
       sessionCode: generateSessionCode(),
+      dotEventId: selectedDotEventId,
       mode,
       duration: selectedDuration.id,
       intensity: selectedIntensity,
@@ -339,6 +352,17 @@ export default function SetupScreen({ onStart }) {
             <input type="checkbox" checked={safeWordConfirmed} onChange={(event) => setSafeWordConfirmed(event.target.checked)} className="mt-1" />
             <span>Η παρέα συμφώνησε στη λέξη ασφαλείας και γνωρίζει ότι οποιαδήποτε παίκτρια μπορεί να σταματήσει το παιχνίδι οποιαδήποτε στιγμή.</span>
           </label>
+        </ComicPanel>
+
+        <ComicPanel className="space-y-3">
+          <h2 className="font-heading text-2xl text-primary">ΕΠΙΛΟΓΗ EVENT</h2>
+          <select value={selectedDotEventId} onChange={(event) => setSelectedDotEventId(event.target.value)} className="w-full rounded-lg border border-border bg-background px-3 py-3 text-foreground">
+            <option value="">Χωρίς σύνδεση με Event</option>
+            {dotEvents.filter((event) => !['closing', 'completed'].includes(event.status)).map((event) => (
+              <option key={event.id} value={event.id}>{event.title} · {event.room_code}</option>
+            ))}
+          </select>
+          {selectedDotEventId && <p className="text-xs text-foreground/65">Οι εγκεκριμένες συμμετοχές και τα Modes της συγκεκριμένης διοργάνωσης θα φορτωθούν αυτόματα.</p>}
         </ComicPanel>
 
         <ComicPanel>
