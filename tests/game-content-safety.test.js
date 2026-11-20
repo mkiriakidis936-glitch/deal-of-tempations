@@ -41,9 +41,9 @@ test('all shipped game content exposes no restraint, blindfold, ice, touch, tick
   assert.deepEqual(found, []);
 });
 
-test('Standalone Pajama Lockdown has a five-hour duration; its Marathon act remains a 60-minute chapter', () => {
-  assert.equal(lockdownContent.LOCKDOWN_SECONDS, 5 * 60 * 60);
-  assert.equal(lockdownContent.MARATHON_LOCKDOWN_SECONDS, 75 * 60);
+test('Standalone Pajama Lockdown and its Marathon act both last 60 minutes', () => {
+  assert.equal(lockdownContent.LOCKDOWN_SECONDS, 60 * 60);
+  assert.equal(lockdownContent.MARATHON_LOCKDOWN_SECONDS, 60 * 60);
 });
 
 test('Pajama Pedi-Glam seven-act program totals exactly five hours including breaks', () => {
