@@ -38,36 +38,57 @@ export function visitRoutes() {
     res.status(204).end();
   });
 
-  // Συγκεντρωτικά στατιστικά συνεδριών απευθείας στη βάση — χωρίς φόρτωση όλων των sessions στο browser.
+  // Συγκεντρωτικά στατιστικά συνεδριών με ένα scan της βάσης — χωρίς φόρτωση όλων των sessions στο browser.
   r.get('/session-stats', requireAdmin, async (_req, res) => {
-    const base = `FROM records
-      WHERE entity = 'GameSession'`;
-    const [summary, modes, intensities, stages, recent] = await Promise.all([
-      query(`SELECT
-        count(*)::int AS total,
-        count(*) FILTER (WHERE COALESCE(NULLIF(data->'state'->>'stage', '')::int, 0) >= 3)::int AS completed,
-        count(*) FILTER (WHERE COALESCE(NULLIF(data->'state'->>'stage', '')::int, 0) < 3 AND updated_date >= now() - interval '24 hours')::int AS active,
-        count(*) FILTER (WHERE COALESCE(NULLIF(data->'state'->>'stage', '')::int, 0) < 3 AND updated_date < now() - interval '24 hours')::int AS inactive,
-        COALESCE(sum(jsonb_array_length(CASE WHEN jsonb_typeof(data->'state'->'players') = 'array' THEN data->'state'->'players' ELSE '[]'::jsonb END)), 0)::int AS player_participations
-        ${base}`),
-      query(`SELECT COALESCE(data->'state'->>'mode', data->>'mode', 'unknown') AS id, count(*)::int AS count ${base} GROUP BY 1`),
-      query(`SELECT COALESCE(data->'state'->>'intensity', data->>'intensity', 'unknown') AS id, count(*)::int AS count ${base} GROUP BY 1`),
-      query(`SELECT COALESCE(NULLIF(data->'state'->>'stage', '')::int, 0) AS stage, count(*)::int AS count ${base} GROUP BY 1`),
-      query(`SELECT id, data->>'sessionCode' AS "sessionCode",
-        COALESCE(data->'state'->>'mode', data->>'mode') AS mode,
-        COALESCE(NULLIF(data->'state'->>'stage', '')::int, 0) AS stage,
-        jsonb_array_length(CASE WHEN jsonb_typeof(data->'state'->'players') = 'array' THEN data->'state'->'players' ELSE '[]'::jsonb END)::int AS players,
-        updated_date
-        ${base} ORDER BY updated_date DESC LIMIT 10`),
-    ]);
-    res.json({
-      ...summary.rows[0],
-      byMode: modes.rows,
-      byIntensity: intensities.rows,
-      byStage: stages.rows,
-      recent: recent.rows,
-      activeWindowHours: 24,
-    });
+    const { rows } = await query(`
+      WITH sessions AS MATERIALIZED (
+        SELECT
+          id,
+          data,
+          updated_date,
+          COALESCE(NULLIF(data->'state'->>'stage', '')::int, 0) AS stage,
+          COALESCE(data->'state'->>'mode', data->>'mode', 'unknown') AS mode,
+          COALESCE(data->'state'->>'intensity', data->>'intensity', 'unknown') AS intensity,
+          jsonb_array_length(
+            CASE WHEN jsonb_typeof(data->'state'->'players') = 'array'
+              THEN data->'state'->'players' ELSE '[]'::jsonb END
+          )::int AS players
+        FROM records
+        WHERE entity = 'GameSession'
+      ),
+      summary AS (
+        SELECT
+          count(*)::int AS total,
+          count(*) FILTER (WHERE stage >= 3)::int AS completed,
+          count(*) FILTER (WHERE stage < 3 AND updated_date >= now() - interval '24 hours')::int AS active,
+          count(*) FILTER (WHERE stage < 3 AND updated_date < now() - interval '24 hours')::int AS inactive,
+          COALESCE(sum(players), 0)::int AS player_participations
+        FROM sessions
+      ),
+      by_mode AS (
+        SELECT COALESCE(json_agg(json_build_object('id', id, 'count', n)), '[]'::json) AS value
+        FROM (SELECT mode AS id, count(*)::int AS n FROM sessions GROUP BY mode) grouped
+      ),
+      by_intensity AS (
+        SELECT COALESCE(json_agg(json_build_object('id', id, 'count', n)), '[]'::json) AS value
+        FROM (SELECT intensity AS id, count(*)::int AS n FROM sessions GROUP BY intensity) grouped
+      ),
+      by_stage AS (
+        SELECT COALESCE(json_agg(json_build_object('stage', stage, 'count', n)), '[]'::json) AS value
+        FROM (SELECT stage, count(*)::int AS n FROM sessions GROUP BY stage) grouped
+      ),
+      recent AS (
+        SELECT COALESCE(json_agg(row_to_json(item)), '[]'::json) AS value
+        FROM (
+          SELECT id, data->>'sessionCode' AS "sessionCode", mode, stage, players, updated_date
+          FROM sessions ORDER BY updated_date DESC LIMIT 10
+        ) item
+      )
+      SELECT summary.*, by_mode.value AS "byMode", by_intensity.value AS "byIntensity",
+        by_stage.value AS "byStage", recent.value AS recent, 24 AS "activeWindowHours"
+      FROM summary CROSS JOIN by_mode CROSS JOIN by_intensity CROSS JOIN by_stage CROSS JOIN recent
+    `);
+    res.json(rows[0]);
   });
 
   // GET /api/visits/stats?path=/site — μόνο admin
