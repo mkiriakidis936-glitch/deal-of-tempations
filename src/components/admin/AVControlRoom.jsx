@@ -10,6 +10,85 @@ const kinds = [{ id: 'all', label: 'Όλα' }, { id: 'video', label: 'Βίντε
 const folders = ['Γενικά', 'Intro & Opening', 'Sound Identity', 'Transitions', 'Commercial Breaks', 'Scenes', 'Highlights', 'Winner Reveal', 'Recap'];
 const uid = () => globalThis.crypto?.randomUUID?.() || String(Date.now() + Math.random());
 
+const AUTO_RULES = [
+  ['Sound Identity', /^(sfx|sound|loop|sting)_/],
+  ['Intro & Opening', /^(opening|logo_reveal)/],
+  ['Transitions', /^transition/],
+  ['Commercial Breaks', /^break/],
+  ['Scenes', /^(scene|mode_intro)/],
+  ['Highlights', /^highlight/],
+  ['Winner Reveal', /^winner/],
+  ['Recap', /^recap/],
+];
+const AUTO_TITLES = {
+ "break_00_bumper": "Διάλειμμα: Επιστρέφουμε σε λίγο",
+ "break_01_champagne": "Διάλειμμα: τοστ",
+ "break_02_slippers": "Διάλειμμα: παντόφλες",
+ "break_03_vault_dial": "Διάλειμμα: καντράν",
+ "break_05_women_whisper": "Διάλειμμα: ψιθυρίζουν",
+ "highlight_big_win": "ΜΕΓΑΛΗ ΝΙΚΗ",
+ "highlight_laughter_montage": "ΤΑ ΚΑΛΥΤΕΡΑ ΓΕΛΙΑ",
+ "highlight_penalty_reaction": "ΠΟΙΝΗ!",
+ "highlight_team_cheer": "ΟΜΑΔΕΣ ALPHA & BETA",
+ "highlight_vault_open": "ΑΝΟΙΓΕΙ ΤΟ ΧΡΗΜΑΤΟΚΙΒΩΤΙΟ",
+ "logo_reveal": "Αποκάλυψη λογοτύπου",
+ "opening_02_vault_awakens": "ΤΟ ΧΡΗΜΑΤΟΚΙΒΩΤΙΟ ΞΥΠΝΑ",
+ "opening_03_the_four_enter": "ΟΙ ΠΑΙΚΤΡΙΕΣ",
+ "opening_04_welcome_toast": "ΚΑΛΩΣΗΡΘΑΤΕ",
+ "opening_05_rules_tease": "ΤΡΑΒΑ ΚΑΡΤΑ",
+ "recap_00_goodbye": "ΕΥΧΑΡΙΣΤΟΥΜΕ ΠΟΥ ΠΑΙΞΑΤΕ",
+ "recap_01_montage_open": "Η ΒΡΑΔΙΑ ΣΕ ΛΙΓΕΣ ΣΤΙΓΜΕΣ",
+ "recap_02_golden_hour": "ΤΕΛΕΙΑ ΒΡΑΔΙΑ",
+ "recap_03_goodnight": "ΚΑΛΗΝΥΧΤΑ",
+ "recap_04_credits_bg": "ΕΥΧΑΡΙΣΤΟΥΜΕ ΠΟΥ ΠΑΙΞΑΤΕ",
+ "mode_intro_arrest_heist": "Εισαγωγή Mode: ARREST & HEIST",
+ "mode_intro_beach_bar": "Εισαγωγή Mode: BEACH BAR HOME LOCKDOWN",
+ "mode_intro_classic": "Εισαγωγή Mode: ΚΛΑΣΣΙΚΗ",
+ "mode_intro_lockdown": "Εισαγωγή Mode: PAJAMA LOCKDOWN",
+ "mode_intro_marathon": "Εισαγωγή Mode: MEGA MARATHON",
+ "mode_intro_pajama": "Εισαγωγή Mode: PAJAMA PEDI-GLAM",
+ "scene_arrest_chase": "ΣΥΛΛΗΨΗ!",
+ "scene_beach_last_queen": "LAST QUEEN",
+ "scene_beach_wheel": "ΤΡΟΧΟΣ ΠΟΙΝΩΝ",
+ "scene_heist_round_start": "ΓΥΡΟΣ ΛΗΣΤΕΙΑΣ",
+ "scene_lockdown_cipher": "LEVEL 2 · SENSORY CIPHER",
+ "scene_lockdown_exit_code": "LEVEL 4 · EXIT CODE",
+ "scene_lockdown_level1": "LEVEL 1 · HOSTAGE SACRIFICE",
+ "scene_pajama_pedicure": "ΒΡΑΔΥ ΠΕΡΙΠΟΙΗΣΗΣ",
+ "transition_00_gold": "Μετάβαση χρυσή (λογότυπο)",
+ "winner_00_reveal": "ΚΑΙ Η ΝΙΚΗΤΡΙΑ ΕΙΝΑΙ... / Η ΝΙΚΗΤΡΙΑ",
+ "winner_01_envelope": "ΤΟ ΑΠΟΤΕΛΕΣΜΑ ΕΙΝΑΙ ΕΤΟΙΜΟ",
+ "winner_02_vault_gold": "ΤΟ ΧΡΥΣΟ ΧΡΗΜΑΤΟΚΙΒΩΤΙΟ",
+ "winner_03_crown_ceremony": "Η ΣΤΕΨΗ",
+ "winner_04_confetti_burst": "ΜΠΡΑΒΟ!",
+ "winner_05_spotlight_trophy": "Ο ΘΡΙΑΜΒΟΣ",
+ "sting_logo": "Ήχος λογοτύπου",
+ "loop_main_theme": "Κεντρικό θέμα (loop)",
+ "loop_suspense_bed": "Υπόβαθρο αγωνίας (loop)",
+ "sfx_vault_open": "Άνοιγμα χρηματοκιβωτίου",
+ "sfx_key_turn": "Στρίψιμο κλειδιού",
+ "sfx_card_deal": "Μοίρασμα καρτών",
+ "sfx_dice_roll": "Ζάρια",
+ "sfx_wheel_spin": "Τροχός ποινών",
+ "sfx_countdown_tick": "Μέτρημα αντίστροφης",
+ "sfx_heartbeat": "Χτύποι καρδιάς",
+ "sfx_whoosh_transition": "Whoosh μετάβασης",
+ "sfx_riser_reveal": "Riser αποκάλυψης",
+ "sfx_win_fanfare": "Φανφάρα νίκης",
+ "sfx_fail_buzzer": "Buzzer αποτυχίας",
+ "sfx_applause_laughter": "Χειροκρότημα και γέλια",
+ "sfx_ding_gold": "Ding πόντου",
+ "sound_opening_theme": "Θέμα έναρξης",
+ "sound_recap_theme": "Θέμα κλεισίματος"
+};
+// Τα αρχεία της βιβλιοθήκης έχουν όνομα «χρόνος-hex-όνομα.ext» (π.χ. lx3k9a-1f2e3d-opening-02-vault-awakens.mp4).
+const normalizeMediaName = (name = '') => String(name).toLowerCase()
+  .replace(/\.[a-z0-9]+$/, '')
+  .replace(/^[a-z0-9]+-[a-f0-9]{6}-/, '')
+  .replace(/[-\s]+/g, '_')
+  .replace(/^\d+_/, '');
+const prettyTitle = (key) => key.replace(/_/g, ' ').replace(/^\w/, (c) => c.toUpperCase());
+
 export default function AVControlRoom({ refreshKey = 0 }) {
   const [files, setFiles] = useState([]);
   const [sessions, setSessions] = useState([]);
@@ -91,6 +170,29 @@ export default function AVControlRoom({ refreshKey = 0 }) {
     setMetadata(next);
     try { await persist(next); setMessage('Οι πληροφορίες του αρχείου αποθηκεύτηκαν.'); }
     catch (error) { setMessage(error.message || 'Δεν αποθηκεύτηκαν οι πληροφορίες.'); }
+  }
+
+  async function autoCategorize() {
+    if (!files.length) return;
+    const next = { ...metadata };
+    let done = 0;
+    let skipped = 0;
+    for (const file of files) {
+      const key = normalizeMediaName(file.name);
+      const rule = AUTO_RULES.find(([, pattern]) => pattern.test(key));
+      const folderName = rule ? rule[0] : (file.kind === 'audio' ? 'Sound Identity' : null);
+      if (!folderName) { skipped += 1; continue; }
+      const current = next[file.url] || {};
+      next[file.url] = {
+        ...current,
+        folder: current.folder && current.folder !== 'Γενικά' ? current.folder : folderName,
+        title: current.title || AUTO_TITLES[key] || prettyTitle(key),
+      };
+      done += 1;
+    }
+    setMetadata(next);
+    try { await persist(next); setMessage(`Αυτόματη κατηγοριοποίηση: ${done} αρχεία οργανώθηκαν σε φακέλους, ${skipped} έμειναν ως έχουν (δεν αναγνωρίστηκε το όνομα).`); }
+    catch (error) { setMessage(error.message || 'Δεν αποθηκεύτηκε η κατηγοριοποίηση.'); }
   }
 
   async function addToQueue(file = selectedFile) {
@@ -207,7 +309,7 @@ export default function AVControlRoom({ refreshKey = 0 }) {
 
     <div className="grid xl:grid-cols-[1.1fr_.9fr] gap-3">
       <ComicPanel className="bg-card space-y-3">
-        <div className="flex flex-wrap items-center justify-between gap-2"><h3 className="font-heading text-lg">ΕΠΙΛΟΓΗ ΑΡΧΕΙΟΥ ΑΠΟ ΤΗΝ ΚΕΝΤΡΙΚΗ ΒΙΒΛΙΟΘΗΚΗ · {files.length}</h3><span className="text-[10px] text-foreground/50">Προβολή και επιλογή — χωρίς ανεβάσματα ή δεύτερο αποθηκευτικό χώρο</span></div>
+        <div className="flex flex-wrap items-center justify-between gap-2"><h3 className="font-heading text-lg">ΕΠΙΛΟΓΗ ΑΡΧΕΙΟΥ ΑΠΟ ΤΗΝ ΚΕΝΤΡΙΚΗ ΒΙΒΛΙΟΘΗΚΗ · {files.length}</h3><span className="text-[10px] text-foreground/50">Προβολή και επιλογή — χωρίς ανεβάσματα ή δεύτερο αποθηκευτικό χώρο</span><ComicButton size="sm" onClick={autoCategorize} disabled={busy || !files.length}>⚡ ΑΥΤΟΜΑΤΗ ΚΑΤΗΓΟΡΙΟΠΟΙΗΣΗ ΑΠΟ ΟΝΟΜΑ ΑΡΧΕΙΟΥ</ComicButton></div>
         <input className={field} type="search" placeholder="Αναζήτηση ονόματος αρχείου…" value={search} onChange={(e) => setSearch(e.target.value)} />
         <div className="flex flex-wrap gap-1">{kinds.map((kind) => <ComicButton key={kind.id} size="sm" variant={filter === kind.id ? 'default' : 'dark'} onClick={() => setFilter(kind.id)}>{kind.label}</ComicButton>)}</div>
         <select className={field} value={folderFilter} onChange={(e) => setFolderFilter(e.target.value)}><option value="all">Όλοι οι φάκελοι</option>{folders.map((folder) => <option key={folder}>{folder}</option>)}</select>
