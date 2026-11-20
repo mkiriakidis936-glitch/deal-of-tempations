@@ -92,7 +92,7 @@ export default function VIPInvitationPage() {
         <div style={{ height: 1, maxWidth: 180, margin: '0 auto 14px', background: 'linear-gradient(90deg,transparent,#E8C26B,transparent)' }} />
         <div style={{ color: '#d6c28c', fontSize: 12, letterSpacing: '.24em' }}>DEAL OF TEMPTATION</div>
         {invitation && <div style={{ color: '#e5cf91', fontSize: 12, marginTop: 14 }}>ΣΥΝΔΕΔΕΜΕΝΟ EVENT: {eventName}</div>}
-        {invitation && <div style={{ color: '#e5cf91', fontSize: 12, marginTop: 6 }}>ΕΠΙΛΕΓΜΕΝΟ MODE: {gameName}</div>
+        {invitation && <div style={{ color: '#e5cf91', fontSize: 12, marginTop: 6 }}>ΕΠΙΛΕΓΜΕΝΟ MODE: {gameName}</div>}
       </header>
 
       {loading ? <div style={{ textAlign: 'center', padding: 40, color: '#E8C26B' }}>Φόρτωση πρόσκλησης…</div> :
