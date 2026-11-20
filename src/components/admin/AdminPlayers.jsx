@@ -1,11 +1,40 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { base44, request } from '@/api/base44Client';
 import ComicPanel from '@/components/comic/ComicPanel';
 import ComicButton from '@/components/comic/ComicButton';
 import { HIDDEN_ROLES, FOOTWEAR_LEVELS, TOENAIL_PERKS, getPenaltyLadder } from '@/data/gameConfig';
 
 export default function AdminPlayers({ sessions, selectedSession, onSelect, onUpdate }) {
   const [edits, setEdits] = useState({});
+  const [presence, setPresence] = useState({});
   const dirtyFields = useRef({});
+
+  useEffect(() => {
+    const sessionCode = selectedSession?.sessionCode;
+    if (!sessionCode) { setPresence({}); return undefined; }
+    let alive = true;
+    const refresh = () => request('GET', `/api/entities/player-presence/${encodeURIComponent(sessionCode)}`)
+      .then((data) => {
+        if (!alive) return;
+        setPresence(Object.fromEntries((data.players || []).map((item) => [item.playerId, item.lastSeenAt])));
+      })
+      .catch(() => {});
+    refresh();
+    const unsubscribe = base44.entities.PlayerPresence.subscribe((event) => {
+      if (!alive || event?.data?.sessionCode !== sessionCode || !event.data.playerId) return;
+      setPresence((current) => ({ ...current, [event.data.playerId]: Number(event.data.lastSeenAt) || Date.now() }));
+    });
+    const expiryTimer = window.setInterval(() => {
+      setPresence((current) => Object.fromEntries(
+        Object.entries(current).filter(([, lastSeenAt]) => Date.now() - Number(lastSeenAt) <= 45000)
+      ));
+    }, 5000);
+    return () => {
+      alive = false;
+      unsubscribe?.();
+      window.clearInterval(expiryTimer);
+    };
+  }, [selectedSession?.sessionCode]);
 
   // Κάθε νεότερο SSE snapshot περνά στο Admin χωρίς να σβήνει τις τοπικές,
   // μη αποθηκευμένες αλλαγές του χρήστη.
@@ -82,7 +111,7 @@ export default function AdminPlayers({ sessions, selectedSession, onSelect, onUp
         <div className="flex items-center justify-between flex-wrap gap-2">
           <div>
             <div className="font-heading text-xl">{selectedSession.sessionCode}</div>
-            <div className="text-xs font-bold">{mode} · Στάδιο {state.stage} · {players.length} παίκτριες</div>
+            <div className="text-xs font-bold">{mode} · Στάδιο {state.stage} · {players.length} δηλωμένες · {players.filter((player) => presence[player.id] && Date.now() - Number(presence[player.id]) <= 45000).length} συνδεδεμένες</div>
           </div>
           <div className="flex gap-2 flex-wrap">
             <ComicButton variant="green" size="sm" onClick={saveAll}>💾 ΑΠΟΘΗΚΕΥΣΗ ΟΛΩΝ</ComicButton>
@@ -99,6 +128,7 @@ export default function AdminPlayers({ sessions, selectedSession, onSelect, onUp
             <ComicPanel key={p.id} className="bg-card">
               <div className="flex items-center gap-2 mb-3">
                 <div className="font-heading text-lg flex-1">{p.name}</div>
+                <span className={`text-[10px] font-bold px-2 py-1 rounded-full ${presence[p.id] && Date.now() - Number(presence[p.id]) <= 45000 ? 'bg-emerald-500/15 text-emerald-300' : 'bg-secondary text-foreground/45'}`}>{presence[p.id] && Date.now() - Number(presence[p.id]) <= 45000 ? '● ΣΥΝΔΕΔΕΜΕΝΗ' : '○ ΕΚΤΟΣ ΣΥΝΔΕΣΗΣ'}</span>
                 {mode === 'classic' && edit.isChief && <span className="bg-tarot-teal text-foreground text-xs px-2 py-0.5 rounded font-bold">🚔 Αστυνόμος</span>}
                 {mode === 'pajama' && state.pajama?.saboteurId === p.id && <span className="bg-destructive/30 text-foreground text-xs px-2 py-0.5 rounded font-bold">🎭 Saboteur</span>}
                 {isArrestHeist && edit.isLeader && <span className="bg-tarot-teal text-foreground text-xs px-2 py-0.5 rounded font-bold">👑 Αρχηγός</span>}
