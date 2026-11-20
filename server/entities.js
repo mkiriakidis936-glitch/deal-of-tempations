@@ -9,7 +9,7 @@ import { isValidConsentEntry } from '../src/lib/consent.js';
 export const ENTITIES = [
   'Achievement', 'AppSetting', 'BacheloretteIntake', 'BlackmailVault', 'Chronicle', 'GameContent',
   'DotEvent', 'GameSession', 'GameSessionSnapshot', 'Haunting', 'Interest', 'InvitationRSVP', 'Memorial', 'Participation', 'PajamaContent', 'PajamaIntake',
-  'PlayerIntake', 'PlayerProfile', 'SessionArchive', 'VIPInvitation', 'VIPInvitationSubmission',
+  'PlayerIntake', 'PlayerPresence', 'PlayerProfile', 'SessionArchive', 'VIPInvitation', 'VIPInvitationSubmission',
   'PublicFormSubmission', 'ShowProduction', 'ProductionConsent', 'ProductionCue',
 ];
 
@@ -23,6 +23,7 @@ const rules = {
   Participation: { read: ADMIN, update: ADMIN, delete: ADMIN },
   // personal answers: anyone can submit the form, only admins can read them
   PlayerIntake:       { read: ADMIN, update: ADMIN, delete: ADMIN },
+  PlayerPresence:     { read: ADMIN, create: ADMIN, update: ADMIN, delete: ADMIN },
   PajamaIntake:       { read: ADMIN, update: ADMIN, delete: ADMIN },
   BacheloretteIntake: { read: ADMIN, update: ADMIN, delete: ADMIN },
   InvitationRSVP:     { read: ADMIN, update: ADMIN, delete: ADMIN },
@@ -466,6 +467,8 @@ function buildWhere(entity, q, params) {
 
 // ---------- realtime ----------
 const streams = new Map(); // entity -> Set<{ res, sessionCode, playerId, isPublic }>
+const playerPresence = new Map(); // sessionCode -> Map<playerId, lastSeenAt>
+const PLAYER_PRESENCE_TTL_MS = 45_000;
 function broadcast(entity, event) {
   const set = streams.get(entity);
   if (!set) return;
@@ -1169,6 +1172,49 @@ export function entityRoutes() {
       return res.json({ success: true, deletedRsvps: rsvps.length, deletedVipSubmissions: vipSubmissions.length });
     } catch (error) { await client.query('ROLLBACK').catch(() => {}); return next(error); }
     finally { client.release(); }
+  });
+
+  // Ephemeral player presence: only a validated player in an existing session can heartbeat.
+  r.post('/player-presence', async (req, res) => {
+    const sessionCode = String(req.body?.sessionCode || '').trim().toUpperCase();
+    const playerId = String(req.body?.playerId || '').trim();
+    if (!/^[A-Z0-9_-]{3,40}$/.test(sessionCode) || !/^[A-Za-z0-9_-]{1,100}$/.test(playerId)) {
+      return res.status(400).json({ error: 'Μη έγκυρη συνεδρία ή παίκτρια.' });
+    }
+    try {
+      const { rows } = await query(
+        "SELECT data FROM records WHERE entity = 'GameSession' AND data->>'sessionCode' = $1 LIMIT 1",
+        [sessionCode],
+      );
+      const state = rows[0]?.data?.state || {};
+      if (!rows[0] || !(state.players || []).some((player) => player.id === playerId)) {
+        return res.status(404).json({ error: 'Η παίκτρια δεν ανήκει σε αυτή τη συνεδρία.' });
+      }
+      const now = Date.now();
+      if (!playerPresence.has(sessionCode)) playerPresence.set(sessionCode, new Map());
+      playerPresence.get(sessionCode).set(playerId, now);
+      broadcast('PlayerPresence', {
+        type: 'update',
+        id: `${sessionCode}:${playerId}`,
+        data: { sessionCode, playerId, lastSeenAt: now, connected: true },
+      });
+      return res.json({ success: true, lastSeenAt: now });
+    } catch {
+      return res.status(500).json({ error: 'Δεν καταχωρήθηκε η σύνδεση της παίκτριας.' });
+    }
+  });
+
+  r.get('/player-presence/:sessionCode', requireAdmin, (req, res) => {
+    const sessionCode = String(req.params.sessionCode || '').trim().toUpperCase();
+    const now = Date.now();
+    const current = playerPresence.get(sessionCode) || new Map();
+    const connected = [];
+    for (const [playerId, lastSeenAt] of current) {
+      if (now - lastSeenAt <= PLAYER_PRESENCE_TTL_MS) connected.push({ playerId, lastSeenAt });
+      else current.delete(playerId);
+    }
+    if (!current.size) playerPresence.delete(sessionCode);
+    res.json({ players: connected });
   });
 
   // --- realtime stream (EventSource can't send headers; admins authenticate with a one-time ?ticket= from POST /api/entities/stream-ticket) ---
