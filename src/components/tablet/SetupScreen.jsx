@@ -144,7 +144,7 @@ export default function SetupScreen({ onStart }) {
     const offEvents = base44.entities.DotEvent.subscribe(refresh);
     const offVip = base44.entities.VIPInvitationSubmission.subscribe(refresh);
     return () => { offPlayers?.(); offPajama?.(); offEvents?.(); offVip?.(); };
-  }, []);
+  }, [selectedDotEventId]);
 
   useEffect(() => {
     let active = true;
