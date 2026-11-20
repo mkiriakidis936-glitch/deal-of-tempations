@@ -109,13 +109,15 @@ const modeFaq = (what, duration) => [
   { q: 'Πόσο διαρκεί;', a: duration },
   { q: 'Πρέπει να έχω κινητό;', a: 'Ναι. Το παιχνίδι είναι 100% ψηφιακό: το tablet το διευθύνει η οικοδέσποινα, η τηλεόραση δείχνει το σκορ και κάθε κινητό δείχνει τις προσωπικές σου αποστολές.' },
   { q: 'Κανόνες & όρια', a: 'Μόνο ενήλικες (18+) που συμφωνούν να παίξουν. Τα όρια δηλώνονται στη φόρμα και γίνονται σεβαστά. Υπάρχει κουμπί ΣΤΟΠ σε κάθε κινητό: όλα σταματούν αμέσως, χωρίς εξηγήσεις.' },
-  { q: 'Μπορώ να διαλέξω mode;', a: 'Ναι. Στη φόρμα διαλέγεις ένα ή περισσότερα modes που θέλεις να παίξεις.' },
+  { q: 'Μπορώ να διαλέξω mode;', a: 'Στη φόρμα επιλέγεις ένα Mode ανά υποβολή.' },
   { q: 'Πώς κλείνω θέση;', a: 'Συμπληρώνεις τη φόρμα σε 3 λεπτά. Η θέση επιβεβαιώνεται και παίρνεις τη διεύθυνση και τις τελευταίες λεπτομέρειες.' },
 ];
 
 SITE_EVENTS.push(
+  { id: 'pedi_extended', label: '💅 PAJAMA PEDI-GLAM EXTENDED' },
   { id: 'lockdown', label: '🚨 PAJAMA LOCKDOWN' },
-  { id: 'beachbar', label: '🍹 BEACH BAR LOCKDOWN' },
+  { id: 'beachbar', label: '🍹 BEACH BAR HOME LOCKDOWN' },
+  { id: 'marathon4h', label: '🏆 PAJAMA MARATHON 4H' },
 );
 
 Object.assign(DEFAULT_SITE, {
@@ -123,17 +125,17 @@ Object.assign(DEFAULT_SITE, {
     tab: 'Pajama Lockdown',
     overline: 'Pajama Lockdown · 18+ Girls-Only Escape Room',
     titleLines: ['PAJAMA', 'LOCKDOWN'],
-    tagline: 'Πέντε ώρες. Ένα κλειδωμένο κινητό. Μόνο οι πιο έξυπνες και τολμηρές απόδρασαν.',
+    tagline: '60 λεπτά. Ένα κλειδωμένο κινητό. Μόνο οι πιο έξυπνες και τολμηρές θα αποδράσουν.',
     date: '',
     cta: { label: 'ΚΛΕΙΣΕ ΘΕΣΗ', path: '/forms?mode=lockdown' },
     scenarioKicker: 'Το παιχνίδι',
     scenarioTitle: 'ΤΙ ΕΙΝΑΙ ΤΟ PAJAMA LOCKDOWN',
     scenario: [
-      'Ένα 100% ψηφιακό escape room, μόνο για γυναίκες 18+. Με το που ανοίγει η εφαρμογή, η οθόνη γίνεται κατάμαυρη με κόκκινα neon, ηχεί συναγερμός και ξεκινά αντίστροφη μέτρηση 5 ωρών.',
+      'Ένα 100% ψηφιακό escape room 60 λεπτών, μόνο για γυναίκες 18+. Με το που ανοίγει η εφαρμογή, η οθόνη γίνεται κατάμαυρη με κόκκινα neon, ηχεί συναγερμός και ξεκινά αντίστροφη μέτρηση.',
       'Σε τρία επίπεδα λύνετε γρίφους, αισθησιακά τεστ υφής, ψιθύρους ASMR και φυσικές δοκιμασίες συνεργασίας. Κάθε λάθος σας κοστίζει χρόνο.',
       'Αν συμπληρώσετε τον 4ψήφιο κωδικό πριν μηδενιστεί το ρολόι, ξεκλειδώνει το VIP Vault. Αν όχι, σας περιμένει η απόλυτη ποινή.',
     ],
-    highlights: ['5 ώρες, 3 επίπεδα', '10 ψηφιακά mini-games', 'Spicy Truth Wheel', 'VIP Vault'],
+    highlights: ['60 λεπτά, 3 επίπεδα', '10 ψηφιακά mini-games', 'Spicy Truth Wheel', 'VIP Vault'],
     videoKicker: 'Το τρέιλερ',
     videoTitle: '30 ΔΕΥΤΕΡΟΛΕΠΤΑ ΑΠΟ ΤΟ LOCKDOWN',
     programKicker: 'Πώς παίζεται',
@@ -146,7 +148,66 @@ Object.assign(DEFAULT_SITE, {
     ],
     info: modeInfo('Πιτζάμες. Μαύρο ή κόκκινο είναι ευπρόσδεκτο.', 'Παράταιρες κάλτσες, μάσκα ύπνου, σατέν κορδέλες και κινητό με φόρτιση.'),
     participation: 'Κλειστή λίστα, 18+, λίγες θέσεις. Στη φόρμα δηλώνεις και τα όριά σου.',
-    faq: modeFaq('Ένα ψηφιακό escape room 18+ με γρίφους, φυσικές δοκιμασίες και χρονόμετρο 5 ωρών.', 'Το Lockdown διαρκεί συνολικά 5 ώρες.'),
+    faq: modeFaq('Ένα ψηφιακό escape room 18+ με γρίφους, φυσικές δοκιμασίες και χρονόμετρο.', 'Το Lockdown διαρκεί 60 λεπτά.'),
+  },
+  pedi_extended: {
+    tab: 'Pedi-Glam Extended',
+    overline: 'Pajama Pedi-Glam Extended · 18+',
+    titleLines: ['PAJAMA PEDI-GLAM', 'EXTENDED'],
+    tagline: '2–2,5 ώρες με διαδοχικές κάρτες, mini-games, χρονόμετρα και κλιμακούμενες προκλήσεις.',
+    date: '',
+    cta: { label: 'ΚΛΕΙΣΕ ΘΕΣΗ', path: '/forms?mode=pedi_extended' },
+    scenarioKicker: 'Το παιχνίδι',
+    scenarioTitle: 'ΤΙ ΕΙΝΑΙ ΤΟ PEDI-GLAM EXTENDED',
+    scenario: [
+      'Η εκτεταμένη εκδοχή του Pedi-Glam διαρκεί 2–2,5 ώρες.',
+      'Οι παίκτριες προχωρούν σε διαδοχικές κάρτες και ψηφιακά mini-games με χρονόμετρα.',
+      'Οι προκλήσεις κλιμακώνονται σταδιακά μέσα από την κοινή ροή του παιχνιδιού.'
+    ],
+    highlights: ['2–2,5 ώρες', 'Διαδοχικές κάρτες', 'Ψηφιακά mini-games', 'Χρονόμετρα & κλιμακούμενες προκλήσεις'],
+    videoKicker: 'Η εμπειρία',
+    videoTitle: 'PEDI-GLAM EXTENDED',
+    programKicker: 'Ροή παιχνιδιού',
+    programTitle: 'ΔΙΑΔΟΧΙΚΕΣ ΠΡΟΚΛΗΣΕΙΣ',
+    programNote: 'Η διάρκεια κυμαίνεται από 2 έως 2,5 ώρες.',
+    program: [
+      { roman: 'I', title: 'Κάρτες', subtitle: '', meta: '', group: '', lines: ['Διαδοχικές κάρτες Pedi-Glam.'] },
+      { roman: 'II', title: 'Mini-games', subtitle: '', meta: '', group: '', lines: ['Ψηφιακά mini-games με χρονόμετρα.'] },
+      { roman: 'III', title: 'Κλιμάκωση', subtitle: '', meta: '', group: '', lines: ['Οι προκλήσεις προχωρούν με αυξανόμενη ένταση.'] }
+    ],
+    info: modeInfo('Πιτζάμες και άνετα ρούχα.', 'Κινητό με φόρτιση.'),
+    participation: 'Κλειστή λίστα, 18+. Στη φόρμα δηλώνεις τα όριά σου.',
+    faq: modeFaq('Εκτεταμένη ψηφιακή εμπειρία Pedi-Glam με κάρτες, mini-games και χρονόμετρα.', '2–2,5 ώρες.')
+  },
+  marathon4h: {
+    tab: 'Pajama Marathon 4H',
+    overline: 'Pajama Marathon 4H · 18+',
+    titleLines: ['PAJAMA', 'MARATHON 4H'],
+    tagline: 'Τέσσερις πράξεις σε μία τετράωρη εμπειρία.',
+    date: '',
+    cta: { label: 'ΚΛΕΙΣΕ ΘΕΣΗ', path: '/forms?mode=marathon_4h' },
+    scenarioKicker: 'Το παιχνίδι',
+    scenarioTitle: 'ΤΙ ΕΙΝΑΙ ΤΟ PAJAMA MARATHON 4H',
+    scenario: [
+      'Μία ενιαία εμπειρία τεσσάρων ωρών με τέσσερις διαδοχικές πράξεις.',
+      'Act 1: Pedi-Glam. Act 2: Midnight ASMR.',
+      'Act 3: Pajama Lockdown 60 λεπτών. Act 4: VIP Vault με Coffee Riddle.'
+    ],
+    highlights: ['4 ώρες', '4 διαδοχικές πράξεις', 'Lockdown 60 λεπτών', 'VIP Vault & Coffee Riddle'],
+    videoKicker: 'Η εμπειρία',
+    videoTitle: 'PAJAMA MARATHON 4H',
+    programKicker: 'Ροή παιχνιδιού',
+    programTitle: 'ΤΕΣΣΕΡΙΣ ΠΡΑΞΕΙΣ',
+    programNote: 'Συνολική διάρκεια 4 ώρες.',
+    program: [
+      { roman: 'I', title: 'Pedi-Glam', subtitle: '', meta: '90′', group: '', lines: ['Act 1 · Pedi-Glam.'] },
+      { roman: 'II', title: 'Midnight ASMR', subtitle: '', meta: '', group: '', lines: ['Act 2 · Midnight ASMR.'] },
+      { roman: 'III', title: 'Pajama Lockdown', subtitle: '', meta: '60′', group: '', lines: ['Act 3 · Escape Room με τετραψήφιο κωδικό.'] },
+      { roman: 'IV', title: 'VIP Vault', subtitle: '', meta: '', group: '', lines: ['Act 4 · VIP Vault και Coffee Riddle.'] }
+    ],
+    info: modeInfo('Πιτζάμες και άνετα ρούχα.', 'Κινητό με φόρτιση.'),
+    participation: 'Κλειστή λίστα, 18+. Στη φόρμα δηλώνεις τα όριά σου.',
+    faq: modeFaq('Τετράωρη εμπειρία τεσσάρων πράξεων: Pedi-Glam, Midnight ASMR, Lockdown και VIP Vault.', '4 ώρες.')
   },
   beachbar: {
     tab: 'Beach Bar Lockdown',
@@ -167,7 +228,7 @@ Object.assign(DEFAULT_SITE, {
     videoTitle: '30 ΔΕΥΤΕΡΟΛΕΠΤΑ ΑΠΟ ΤΟ BEACH BAR',
     programKicker: 'Ροή βραδιάς',
     programTitle: 'ΠΕΝΤΕ ΦΑΣΕΙΣ',
-    programNote: 'Συνολική διάρκεια 5 ώρες. Το αλκοόλ είναι προαιρετικό: υπάρχει και εκδοχή με χυμούς.',
+    programNote: 'Συνολική διάρκεια 2–3 ώρες. Το αλκοόλ είναι προαιρετικό: υπάρχει και εκδοχή χωρίς αλκοόλ.',
     program: [
       { roman: 'I', title: 'Check-in', subtitle: '', meta: '', group: '', lines: ['Φοράτε σαγιονάρες και επιβεβαιώνετε ότι είστε έτοιμες.'] },
       { roman: 'II', title: 'Dance & Freeze', subtitle: '', meta: '', group: '', lines: ['Χορός. Όταν ακούσετε την κόρνα, εκτελείτε την εντολή. Η τελευταία χάνει.'] },
@@ -177,7 +238,7 @@ Object.assign(DEFAULT_SITE, {
     ],
     info: modeInfo('Καλοκαιρινό: σαγιονάρες, άνετα ρούχα, μαγιό ή κάτι δροσερό.', 'Σαγιονάρες (υποχρεωτικές), μεγάλη διάθεση και κινητό με φόρτιση.'),
     participation: 'Κλειστή λίστα, 18+, λίγες θέσεις. Στη φόρμα δηλώνεις αν πίνεις αλκοόλ και τα όριά σου.',
-    faq: modeFaq('Ένα beach bar party game με χορό, ποτό, σαγιονάρες και ποινές. Κλειστή λίστα, 18+.', 'Περίπου 5 ώρες.'),
+    faq: modeFaq('Ένα beach bar party game με χορό, ποτό, σαγιονάρες και ποινές. Κλειστή λίστα, 18+.', 'Διαρκεί 2–3 ώρες.'),
   },
 });
 
