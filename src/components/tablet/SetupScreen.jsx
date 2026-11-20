@@ -143,6 +143,18 @@ export default function SetupScreen({ onStart }) {
   const modeDuration = newMode?.minutes || (mode === 'pajama' ? 90 : 300);
   const maxPlayers = newMode ? newMode.max : mode === 'marathon' ? 10 : mode === 'arrest_heist' ? 10 : 6;
   const minPlayers = newMode ? newMode.min : mode === 'marathon' ? 8 : mode === 'arrest_heist' ? 4 : 2;
+  const modePreferenceRows = GAME_MODES.map((entry) => {
+    const names = new Set();
+    [...intakes, ...pajamaApproved, ...pendingIntakes].forEach((item) => {
+      const name = String(item.name || item.displayName || '').trim().toLocaleLowerCase('el-GR');
+      if (!name) return;
+      const ids = Array.isArray(item.modeIds) ? item.modeIds
+        : Array.isArray(item.preferredModes) && item.preferredModes.length ? item.preferredModes
+          : [item.vipGameMode || item.gameMode || ((item.formType || '') === 'pajama' ? 'pajama' : 'classic')];
+      if (ids.includes(entry.id)) names.add(name);
+    });
+    return { ...entry, count: names.size };
+  }).filter((entry) => entry.count > 0);
 
   function addPlayer() {
     if (players.length < maxPlayers) {
@@ -161,6 +173,7 @@ export default function SetupScreen({ onStart }) {
   }
 
   function handleModeChange(m) {
+    modeRef.current = m.id;
     setMode(m.id);
     const selectedModeMeta = isNewMode(m.id) ? modeMeta(m.id) : null;
     const selectedModeMax = selectedModeMeta ? selectedModeMeta.max : (m.id === 'marathon' || m.id === 'arrest_heist' ? 10 : 6);
@@ -292,6 +305,20 @@ export default function SetupScreen({ onStart }) {
           </ComicPanel>
         )}
 
+        {modePreferenceRows.length > 0 && (
+          <ComicPanel className="bg-secondary space-y-2">
+            <div className="font-heading text-lg text-primary">ΕΠΙΛΟΓΕΣ MODE ΑΠΟ ΤΙΣ ΦΟΡΜΕΣ</div>
+            <p className="text-xs text-foreground/60">Οι εγκεκριμένες και οι εκκρεμείς προτιμήσεις συμμετοχής.</p>
+            <div className="flex flex-wrap gap-2">
+              {modePreferenceRows.map((entry) => (
+                <button key={entry.id} type="button" onClick={() => handleModeChange(entry)} className={`rounded-lg border px-3 py-2 text-xs font-bold ${mode === entry.id ? 'border-primary bg-primary/20 text-primary' : 'border-border bg-background'}`} aria-pressed={mode === entry.id}>
+                  {entry.icon} {entry.name} · {entry.count}
+                </button>
+              ))}
+            </div>
+            <div className="text-xs font-bold text-primary">ΕΠΙΛΕΓΜΕΝΟ MODE: {GAME_MODES.find((entry) => entry.id === mode)?.name || mode}</div>
+          </ComicPanel>
+        )}
         <ComicPanel>
           <h2 className="font-heading text-2xl mb-3 text-primary">ΔΙΑΡΚΕΙΑ ΠΑΙΧΝΙΔΙΟΥ</h2>
           <div className="comic-panel-sm p-3 bg-primary/10 border border-primary/40"><div className="font-heading text-xl text-foreground">⏱ ΔΙΑΡΚΕΙΑ · {modeDuration >= 60 ? `${Math.floor(modeDuration / 60)} ΩΡ${Math.floor(modeDuration / 60) === 1 ? 'Α' : 'ΕΣ'}` : `${modeDuration} ΛΕΠΤΑ`}{modeDuration % 60 ? ` ${modeDuration % 60} ΛΕΠΤΑ` : ''}</div><div className="text-sm text-foreground/70 font-body">Η διάρκεια ακολουθεί το επιλεγμένο Mode.</div></div>
