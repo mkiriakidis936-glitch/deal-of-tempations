@@ -99,7 +99,7 @@ export default function AdminEventManager() {
             <div className="flex flex-wrap items-start justify-between gap-2">
               <div>
                 <div className="text-[10px] tracking-[.25em] text-[#b99a45]">{typeLabel(event.type)}</div>
-                <h3 className="font-heading text-xl text-[#E8C26B]">{event.title}</h3>
+                <input aria-label="Τίτλος Event" defaultValue={event.title} key={`${event.id}-${event.title}`} maxLength={100} className="mt-1 w-full rounded-lg border border-border bg-background px-2 py-1 font-heading text-xl text-[#E8C26B]" onBlur={(e) => { if (e.target.value.trim() && e.target.value.trim() !== event.title) updateEvent(event, { title: e.target.value.trim() }); }} />
                 <div className="text-xs text-foreground/50">{event.created_date ? new Date(event.created_date).toLocaleString('el-GR') : ''}</div>
               </div>
               <span className="rounded-full border border-[#b99a45]/60 px-3 py-1 text-xs">{STATUSES.find(([id]) => id === event.status)?.[1] || event.status}</span>
