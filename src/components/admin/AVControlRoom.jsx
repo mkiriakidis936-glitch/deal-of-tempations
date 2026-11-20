@@ -1,6 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { base44 } from '@/api/base44Client';
-import { listMedia } from '@/lib/media';
 import { publishProductionCue, commandProductionCue, stopProductionCue } from '@/lib/productionCue';
 import ComicPanel from '@/components/comic/ComicPanel';
 import ComicButton from '@/components/comic/ComicButton';
@@ -90,8 +89,8 @@ const normalizeMediaName = (name = '') => String(name).toLowerCase()
   .replace(/^\d+_/, '');
 const prettyTitle = (key) => key.replace(/_/g, ' ').replace(/^\w/, (c) => c.toUpperCase());
 
-export default function AVControlRoom({ refreshKey = 0 }) {
-  const [files, setFiles] = useState([]);
+export default function AVControlRoom({ mediaFiles = [], onRefreshMedia }) {
+  const files = mediaFiles;
   const [sessions, setSessions] = useState([]);
   const [sessionCode, setSessionCode] = useState('');
   const [filter, setFilter] = useState('all');
@@ -107,18 +106,14 @@ export default function AVControlRoom({ refreshKey = 0 }) {
   const [busy, setBusy] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
   const [volume, setVolume] = useState(0.8);
-  const audioRef = useRef(null);
-  const videoRef = useRef(null);
 
   const load = useCallback(async () => {
     setBusy(true);
     try {
-      const [media, sessionResult, settingResult] = await Promise.all([
-        listMedia(),
+      const [sessionResult, settingResult] = await Promise.all([
         base44.entities.GameSession.filter({}, { sort: '-created_date', limit: 100 }),
         base44.entities.AppSetting.filter({ key: SETTINGS_KEY }, { limit: 1 }),
       ]);
-      setFiles(media || []);
       setSessions(sessionResult.items || []);
       const rec = settingResult.items?.[0] || null;
       setSettingsRecord(rec);
@@ -135,7 +130,7 @@ export default function AVControlRoom({ refreshKey = 0 }) {
     }
   }, []);
 
-  useEffect(() => { load(); }, [load, refreshKey]);
+  useEffect(() => { load(); }, [load]);
   useEffect(() => {
     if (!sessionCode) { setCueRecord(null); return undefined; }
     let alive = true;
@@ -289,7 +284,7 @@ export default function AVControlRoom({ refreshKey = 0 }) {
     <ComicPanel className="bg-card space-y-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div><h2 className="font-heading text-2xl text-primary">AV CONTROL ROOM — ΧΕΙΡΙΣΜΟΣ TV</h2><p className="text-xs text-foreground/60">Επιλογή αρχείων από την κεντρική βιβλιοθήκη για δικαιώματα, ουρά και ζωντανή έξοδο TV. Δεν ανεβάζει ούτε διατηρεί δεύτερη βιβλιοθήκη.</p></div>
-        <ComicButton size="sm" variant="dark" onClick={load} disabled={busy}>↻ Ανανέωση Media</ComicButton>
+        <div className="flex gap-2"><ComicButton size="sm" variant="dark" onClick={onRefreshMedia} disabled={busy}>↻ Ανανέωση Βιβλιοθήκης</ComicButton><ComicButton size="sm" variant="dark" onClick={load} disabled={busy}>Ανανέωση Event</ComicButton></div>
       </div>
       <label className="block space-y-1 text-xs font-bold">ΕΝΕΡΓΟ EVENT
         <select className={field} value={sessionCode} onChange={(e) => { setSessionCode(e.target.value); setCueRecord(null); }}>
@@ -316,7 +311,7 @@ export default function AVControlRoom({ refreshKey = 0 }) {
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-[560px] overflow-y-auto">
           {filteredFiles.map((file) => <button key={file.name} type="button" onClick={() => preview(file)} className={`rounded-lg border p-2 text-left ${selected === file.url ? 'border-primary bg-primary/10' : 'border-border bg-secondary/30'}`}>
             <div className="aspect-video rounded bg-black/50 overflow-hidden flex items-center justify-center">
-              {file.kind === 'video' ? <video src={mediaUrl(file.url)} muted preload="metadata" className="w-full h-full object-contain" /> : file.kind === 'audio' ? <span className="text-3xl">♫</span> : <img src={mediaUrl(file.url)} alt="" className="w-full h-full object-contain" />}
+              {file.kind === 'video' ? <span className="text-3xl text-white/80">▶</span> : file.kind === 'audio' ? <span className="text-3xl">♫</span> : <img src={mediaUrl(file.url)} alt="" loading="lazy" decoding="async" className="w-full h-full object-contain" />}
             </div>
             <span className="mt-1 block text-xs font-bold break-all">{metadata[file.url]?.title || file.name}</span>
             <span className="text-[10px] text-foreground/50">{file.kind} · {Math.ceil((file.size || 0) / 1024)} KB</span>
@@ -330,7 +325,7 @@ export default function AVControlRoom({ refreshKey = 0 }) {
           <h3 className="font-heading text-lg">MEDIA PREVIEW & DETAILS</h3>
           {selectedFile ? <>
             <div className="rounded-lg bg-black/70 min-h-40 flex items-center justify-center p-2">
-              {selectedFile.kind === 'video' ? <video ref={videoRef} key={selectedFile.url} src={selectedFile.url} controls playsInline className="max-h-64 max-w-full" /> : selectedFile.kind === 'audio' ? <audio ref={audioRef} key={selectedFile.url} src={selectedFile.url} controls className="w-full" /> : <img src={selectedFile.url} alt="" className="max-h-64 max-w-full object-contain" />}
+              {selectedFile.kind === 'video' ? <video key={selectedFile.url} src={selectedFile.url} controls playsInline preload="none" className="max-h-64 max-w-full" /> : selectedFile.kind === 'audio' ? <audio key={selectedFile.url} src={selectedFile.url} controls preload="none" className="w-full" /> : <img src={selectedFile.url} alt="" className="max-h-64 max-w-full object-contain" />}
             </div>
             <label className="block space-y-1 text-xs font-bold">ΤΙΤΛΟΣ<input className={field} value={selectedMeta.title || ''} onChange={(e) => setMetadata((v) => ({ ...v, [selected]: { ...selectedMeta, title: e.target.value } }))} onBlur={(e) => saveMetadata({ title: e.target.value })} /></label>
             <label className="block space-y-1 text-xs font-bold">ΦΑΚΕΛΟΣ / ΚΑΤΗΓΟΡΙΑ<select className={field} value={selectedMeta.folder || 'Γενικά'} onChange={(e) => saveMetadata({ folder: e.target.value })}>{folders.map((folder) => <option key={folder}>{folder}</option>)}</select></label>
