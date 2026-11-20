@@ -22,8 +22,7 @@ export default function AdminVisits() {
 
   useEffect(() => {
     load();
-    const t = setInterval(load, 30000);
-    return () => clearInterval(t);
+    // Δεν γίνεται polling αυτόματα· τα στατιστικά φορτώνονται στην είσοδο ή με χειροκίνητη ανανέωση.
   }, [load]);
 
   const max = Math.max(1, ...(s?.days || []).map((d) => d.views));
@@ -62,6 +61,18 @@ export default function AdminVisits() {
           <span>{s?.days?.[0]?.day}</span><span>{s?.days?.[s.days.length - 1]?.day}</span>
         </div>
       </ComicPanel>
+
+      {!!s?.pages?.length && (
+        <ComicPanel className="bg-card space-y-2">
+          <div className="font-heading text-lg">ΑΝΑΛΥΣΗ ΑΝΑ ΣΕΛΙΔΑ / EVENT</div>
+          {s.pages.map((page) => (
+            <div key={page.path} className="flex items-center justify-between gap-3 text-sm border-b border-border/20 py-1">
+              <span className="break-all">{page.path}</span>
+              <span className="shrink-0 text-right"><b>{page.views}</b> επισκέψεις · {page.visitors} επισκέπτες</span>
+            </div>
+          ))}
+        </ComicPanel>
+      )}
 
       {!!s?.refs?.length && (
         <ComicPanel className="bg-card space-y-1">
