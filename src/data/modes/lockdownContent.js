@@ -11,6 +11,14 @@ export let LOCKDOWN_MESSAGE =
   'The Pajama Lockdown Has Begun. Only the sharpest minds and most fearless girls will escape. Fail, and face the ultimate tickle penalty.';
 
 export const getLockdownSettings = () => ({ exitCode: EXIT_CODE, message: LOCKDOWN_MESSAGE });
+// Κάθε νέα συνεδρία έχει τυχαίο κωδικό (mg.exitCode). Καλείται από τα components σε κάθε render ώστε
+// το EXIT_CODE να ταιριάζει με την τρέχουσα συνεδρία (tablet, TV, κινητά). Παλιές συνεδρίες κρατούν τον σταθερό κωδικό.
+export function syncExitCode(mg) {
+  if (mg?.exitCode && /^\d{4}$/.test(String(mg.exitCode))) EXIT_CODE = String(mg.exitCode);
+}
+// Οι ενδείξεις που έγραφαν ρητά «6969» δείχνουν πάντα τον κωδικό της τρέχουσας συνεδρίας.
+export const withSessionCode = (clue) => (clue?.keyword === '6969' ? { ...clue, keyword: EXIT_CODE } : clue);
+
 export function applyLockdownSettings(settings = {}) {
   if (typeof settings.exitCode === 'string' && /^\d{4}$/.test(settings.exitCode)) EXIT_CODE = settings.exitCode;
   if (typeof settings.message === 'string' && settings.message.trim()) LOCKDOWN_MESSAGE = settings.message.trim();
@@ -108,7 +116,7 @@ export const TRUE_FALSE = [
   ['Το top coat βάζει λάμψη και προστατεύει το βερνίκι.', true],
   ['Ένα ζευγάρι κάλτσες έχει 3 κάλτσες.', false],
   ['Το Escape Room λύνεται με συνεργασία.', true],
-  ['Το 6969 διαβάζεται ίδιο ανάποδα αν γυρίσεις το κείμενο ανάποδα.', true],
+  ['Ο αριθμός 1881 διαβάζεται ίδιος και ανάποδα.', true],
 ];
 
 

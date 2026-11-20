@@ -81,7 +81,7 @@ export default function SiteHero({ c, ev, eventDate, heroSrc, onCta }) {
           <button type="button" className="cinv-btn w-full sm:w-auto" style={{ animation: 'none' }} onClick={onCta}>
             {c.cta.label}
           </button>
-          <a href="#photos" className="comic-boom px-8 py-4 text-xs tracking-[0.3em] text-tarot-gold inline-flex items-center justify-center">
+          <a href="#photos" className="comic-boom dot-btn-ghost px-8 py-4 text-xs tracking-[0.3em] text-tarot-gold inline-flex items-center justify-center">
             ΔΕΣ ΤΗ ΣΥΛΛΟΓΗ
           </a>
         </div>

@@ -2,7 +2,7 @@ import express from 'express';
 import path from 'node:path';
 import fs from 'node:fs';
 import { migrate, pool } from './db.js';
-import { attachUser, authRoutes } from './auth.js';
+import { attachUser, authRoutes, issueStreamTicket, requireAdmin } from './auth.js';
 import { entityRoutes } from './entities.js';
 import { functionRoutes } from './functions.js';
 import { mediaRoutes, mediaStatic } from './media.js';
@@ -51,6 +51,7 @@ app.get('/api/production/privacy', async (req, res) => {
 });
 
 authRoutes(app);
+app.post('/api/entities/stream-ticket', requireAdmin, (req, res) => res.json({ ticket: issueStreamTicket(req.user.id) }));
 app.use('/api/entities', entityRoutes());
 app.use('/api/functions', functionRoutes());
 app.use('/api/media', mediaRoutes());
@@ -113,6 +114,10 @@ app.use((err, _req, res, _next) => {
 const port = Number(process.env.PORT) || 3000;
 await migrate();
 const server = app.listen(port, '0.0.0.0', () => console.log(`Server listening on :${port}`));
+// Μεγάλα βίντεο από κινητό/αργό δίκτυο: το προεπιλεγμένο requestTimeout του Node (5′) διέκοπτε το ανέβασμα.
+server.requestTimeout = 30 * 60 * 1000;
+server.headersTimeout = 65 * 1000;
+server.keepAliveTimeout = 65 * 1000;
 startAutoBackup();
 
 for (const sig of ['SIGTERM', 'SIGINT']) {

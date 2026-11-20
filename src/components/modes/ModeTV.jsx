@@ -1,12 +1,15 @@
 import React, { useEffect } from 'react';
 import { MODE_THEMES, modeMeta, ACT_META } from '@/data/modes/modeRegistry';
 import { EXT_END, EXT_ZONES, zoneOf, squareType, ROUTES } from '@/data/modes/extendedContent';
-import { EXIT_CODE } from '@/data/modes/lockdownContent';
+import { EXIT_CODE, syncExitCode } from '@/data/modes/lockdownContent';
+import { consentPending } from '@/lib/consent';
+import { ConsentTV } from '@/components/modes/ConsentCheckIn';
 import { fmt, timerLeft, useTick, setGameStopActive } from '@/lib/modeKit';
 
 // Τηλεόραση (/tv) για τα 4 νέα modes. Δεν δείχνει ποτέ κρυφές κάρτες, ερωτήσεις ψιθύρων ή μυστικές αποστολές.
 export default function ModeTV({ state }) {
   const mg = state.mg || {};
+  syncExitCode(mg);
   const meta = modeMeta(state.mode);
   const theme = MODE_THEMES[state.mode];
   const players = state.players || [];
@@ -19,6 +22,8 @@ export default function ModeTV({ state }) {
   const surge = ld.surge && !ld.surgeDone;
   const total = (p) => ((mg.scores || {})[p.id] || 0) + ((mg.tokens || {})[p.id] || 0);
   const ranking = [...players].sort((a, b) => total(b) - total(a));
+
+  if (consentPending(mg)) return <ConsentTV state={state} />;
 
   return (
     <div className="w-full max-w-6xl mx-auto p-4 space-y-4" style={{ color: '#fff' }}>

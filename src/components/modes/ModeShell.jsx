@@ -50,6 +50,14 @@ export default function ModeShell({ modeId, ctx, state, act, children, onQR, onE
 
       <div className="fixed bottom-3 left-3 right-3 z-40 flex justify-center gap-2">
         {onQR && <button onClick={onQR} className="comic-boom font-ui text-xs px-4 py-2 bg-secondary">📱 QR</button>}
+        {ctx.undo && (mg.undo || []).length > 0 && (
+          <button
+            onClick={() => { const e = ctx.undo(); if (e) ctx.log(`↩️ Αναίρεση: ${e.k === 'tokens' ? 'tokens' : 'σκορ'} ${ctx.nameOf(e.pid)} (${e.n > 0 ? '-' : '+'}${Math.abs(e.n)})`); }}
+            className="comic-boom font-ui text-xs px-4 py-2 bg-secondary"
+          >
+            ↩️ Αναίρεση
+          </button>
+        )}
         <button onClick={() => setShowLog(true)} className="comic-boom font-ui text-xs px-4 py-2 bg-secondary">📜 Ιστορικό</button>
         {onEnd && (
           <button

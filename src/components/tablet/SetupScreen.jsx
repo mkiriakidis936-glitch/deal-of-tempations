@@ -485,12 +485,12 @@ export default function SetupScreen({ onStart }) {
           </button>
         </ComicPanel>
 
-        <div className="text-center pb-8 sticky bottom-0">
+        <div className="dot-startbar">
           <ComicButton variant="magenta" size="lg" onClick={handleStart} disabled={!canStart}>
             🎬 ΕΝΑΡΞΗ ΠΑΙΧΝΙΔΙΟΥ
           </ComicButton>
           {!canStart && (
-            <div className="text-sm mt-2 font-bold bg-secondary inline-block px-3 py-1 rounded border-2 border-border text-foreground font-body">
+            <div className="dot-startbar-hint">
               Χρειάζονται τουλάχιστον {minPlayers} παίκτριες με όνομα.
             </div>
           )}

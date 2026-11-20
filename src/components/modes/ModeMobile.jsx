@@ -1,7 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { MODE_THEMES, modeMeta } from '@/data/modes/modeRegistry';
 import { EXTENDED_CHAOS_MARKET_CARDS, GATE_TOKENS } from '@/data/modes/extendedContent';
-import { EXIT_CODE } from '@/data/modes/lockdownContent';
+import { EXIT_CODE, syncExitCode } from '@/data/modes/lockdownContent';
+import { consentPending } from '@/lib/consent';
+import { ConsentMobile } from '@/components/modes/ConsentCheckIn';
 import { MORNING_CLUES } from '@/data/modes/extendedContent';
 import { fmt, sfx, timerLeft, useTick, setGameStopActive } from '@/lib/modeKit';
 import { enablePlayerPush } from '@/lib/push';
@@ -10,6 +12,7 @@ import GameDurationClock from '@/components/shared/GameDurationClock';
 // Οθόνη κινητού (/play) για τα ψηφιακά modes.
 export default function ModeMobile({ state, me, updateState, onChangePlayer, sessionCode }) {
   const mg = state.mg || {};
+  syncExitCode(mg);
   const meta = modeMeta(state.mode);
   const theme = MODE_THEMES[state.mode];
   const players = state.players || [];
@@ -63,6 +66,21 @@ export default function ModeMobile({ state, me, updateState, onChangePlayer, ses
   const isLockdown = act === 'lockdown';
   const left = timerLeft(mg.timer);
   const ranking = [...players].sort((a, b) => ((mg.scores || {})[b.id] || 0) + ((mg.tokens || {})[b.id] || 0) - (((mg.scores || {})[a.id] || 0) + ((mg.tokens || {})[a.id] || 0)));
+
+  // Consent check-in: πριν ξεκινήσει το παιχνίδι κάθε παίκτρια δηλώνει τα όριά της.
+  if (consentPending(mg)) {
+    return (
+      <div className="min-h-screen p-3 pb-24 text-foreground" style={{ background: theme.bg }}>
+        <div className="max-w-md mx-auto space-y-3">
+          <div className="text-center">
+            <div className="font-display text-xl" style={{ color: theme.accent }}>{meta.icon} {meta.name}</div>
+            <div className="text-xs opacity-60">{me.name}</div>
+          </div>
+          <ConsentMobile mg={mg} me={me} updateState={updateState} />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen p-3 pb-24 text-foreground" style={{ background: theme.bg }}>

@@ -6,17 +6,25 @@ import { VIP_VAULT } from '@/data/modes/extendedContent';
 import {
   LOCKDOWN_SECONDS, MARATHON_LOCKDOWN_SECONDS, EXIT_CODE, WRONG_ANSWER_PENALTY, SURGE_BELOW, SURGE_BONUS, LOCKDOWN_MESSAGE,
   BINDING_OPTIONS, HOSTAGE_QUESTIONS, HOSTAGE_NEEDED, CONFESSION_LOCK, SPICY_WHEEL,
-  WHEEL_DECISION_SECONDS, WHEEL_PENALTY_SECONDS, FOOT_ID, WHISPER_CLUES, SOCK_HEIST_SECONDS,
+  WHEEL_DECISION_SECONDS, WHEEL_PENALTY_SECONDS, FOOT_ID, WHISPER_CLUES, SOCK_HEIST_SECONDS, syncExitCode, withSessionCode,
 } from '@/data/modes/lockdownContent';
+import { pickAllowed } from '@/lib/consent';
 import { pick, shuffle, sfx, whisper, timerStart, timerAdd, timerLeft, useTick, useLocalCountdown, isGameStopActive } from '@/lib/modeKit';
 import { canAssignVipActivity } from '@/lib/playerIntelligence';
 
 const norm = (s) => String(s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().toLowerCase();
 const RED = '#FF453A';
 
+// Τα όρια (consent) της παρέας για τις ομαδικές κάρτες· ενημερώνεται σε κάθε render του ActLockdown.
+const consentScope = { mg: null, ids: [] };
+const NO_SAFE_CARD = 'Καμία κατάλληλη κάρτα για τα όρια της παρέας — κάντε PASS ή διαλέξτε άλλο challenge.';
+const pickGroup = (items) => pickAllowed(items, consentScope.mg, consentScope.ids) ?? NO_SAFE_CARD;
+
 // Act 3 — Pajama Lockdown (18+ Escape Room)
 export default function ActLockdown({ ctx, onDone, standalone }) {
   const { players, mg, setMg, log, nameOf } = ctx;
+  syncExitCode(mg); // τυχαίος κωδικός της τρέχουσας συνεδρίας
+  consentScope.mg = mg; consentScope.ids = players.map((p) => p.id);
   const ld = mg.ld || { stage: 'init' };
   const setLd = (p) => setMg((cur) => ({ ld: { ...(cur.ld || { stage: 'init' }), ...p } }));
   const [tray, setTray] = useState(null); // 'mini' | 'wheel'
@@ -278,7 +286,7 @@ function ConfessionLock({ done, onDone }) {
   const [word, setWord] = useState('');
   return (
     <Panel title={`🤫 The Secret Confession Lock ${done ? '✓' : ''}`} accent={RED}>
-      {!done && (!q ? <Btn color="bg-red-900" onClick={() => setQ(pick(CONFESSION_LOCK))}>🎴 Τράβηξε ερώτηση 18+</Btn> : (
+      {!done && (!q ? <Btn color="bg-red-900" onClick={() => setQ(pickGroup(CONFESSION_LOCK))}>🎴 Τράβηξε ερώτηση 18+</Btn> : (
         <div className="space-y-2">
           <div className="rounded p-2 bg-black/60 font-body text-lg">{q}</div>
           <p className="text-xs opacity-70">Συσκεφθείτε και συμφωνήστε ΟΜΟΦΩΝΑ σε μία κοινή λέξη-κλειδί.</p>
@@ -293,7 +301,7 @@ function ConfessionLock({ done, onDone }) {
 }
 
 function WhisperClue({ done, onDone }) {
-  const [clue, setClue] = useState(() => pick(WHISPER_CLUES));
+  const [clue, setClue] = useState(() => withSessionCode(pick(WHISPER_CLUES)));
   const [guess, setGuess] = useState('');
   const [wrong, setWrong] = useState(false);
   return (
@@ -308,7 +316,7 @@ function WhisperClue({ done, onDone }) {
               if (norm(guess) === norm(clue.keyword)) onDone(); else { setWrong(true); sfx.fail(); setTimeout(() => setWrong(false), 700); }
             }}>ΕΛΕΓΧΟΣ</Btn>
             <Btn onClick={() => setGuess(clue.keyword)}>💡 Hint</Btn>
-            <Btn onClick={() => setClue(pick(WHISPER_CLUES))}>Άλλο clip</Btn>
+            <Btn onClick={() => setClue(withSessionCode(pick(WHISPER_CLUES)))}>Άλλο clip</Btn>
           </div>
         </div>
       )}
@@ -406,7 +414,7 @@ function SpicyWheel({ onClose, log }) {
     let n = 0;
     const i = setInterval(() => {
       if (isGameStopActive()) return;
-      setQ(pick(SPICY_WHEEL));
+      setQ(pickGroup(SPICY_WHEEL));
       sfx.click();
       n += 1;
       if (n > 14) { clearInterval(i); setSpin(false); setPhase('decide'); }

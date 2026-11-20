@@ -379,8 +379,8 @@ export default function Admin() {
         <header className="adm-header">
           <div className="adm-mark" aria-hidden="true">D</div>
           <div className="adm-titles">
-            <h1 className="adm-title">Κέντρο ελέγχου</h1>
-            <div className="adm-subtitle">Deal of Temptations — The Private Reality Game Night</div>
+            <h1 className="adm-title">{NAV_GROUPS.flatMap((group) => group.tabs).find((item) => item.id === tab)?.label || 'Κέντρο ελέγχου'}</h1>
+            <div className="adm-subtitle">Deal of Temptations · Admin</div>
           </div>
           <div className="adm-actions">
             <button type="button" className="adm-pill" onClick={() => { setGlobalSearch(''); setSearchOpen(true); }} aria-label="Αναζήτηση">

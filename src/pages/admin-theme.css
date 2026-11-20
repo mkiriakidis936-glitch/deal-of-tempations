@@ -382,6 +382,94 @@
   #admin-root .comic-panel { border-radius: 20px !important; }
 }
 
+/* ---------- 9b · ΚΕΝΤΡΟ ΕΛΕΓΧΟΥ (AdminOverview) & ΚΟΙΝΑ BLOCKS ---------- */
+/* Διπλό πλαίσιο στο sidebar: παλιοί κανόνες `.admin-root nav` έβαζαν δεύτερο πλαίσιο μέσα στο panel */
+#admin-root .adm-sidebar nav, #admin-root .adm-more nav, #admin-root .adm-more section {
+  border: 0 !important; background: transparent !important; box-shadow: none !important;
+  -webkit-backdrop-filter: none !important; backdrop-filter: none !important; padding: 0 !important; border-radius: 0 !important;
+}
+#admin-root .adm-sidebar nav .adm-group { padding-left: 0; padding-right: 0; }
+.adm-group-label { letter-spacing: 0.12em; line-height: 1.35; }
+
+.adm-hero {
+  position: relative; isolation: isolate; overflow: hidden; padding: clamp(20px, 3vw, 32px);
+  border-radius: 28px;
+  background: radial-gradient(120% 140% at 100% 0%, rgba(232, 194, 107, 0.16), transparent 55%), linear-gradient(180deg, rgba(255, 236, 180, 0.06), rgba(255, 236, 180, 0.01)), var(--adm-glass-thick);
+  border: 1px solid var(--adm-line-strong);
+  box-shadow: inset 0 1px 0 var(--adm-hi), 0 30px 70px -40px #000;
+}
+/* διακοσμητικά ομόκεντρα τόξα: ολόκληρα, όχι κομμένος κύκλος */
+.adm-hero-art {
+  position: absolute; z-index: -1; right: clamp(-90px, -4vw, -40px); top: 50%; width: 320px; height: 320px; transform: translateY(-50%);
+  border-radius: 50%; pointer-events: none;
+  background:
+    radial-gradient(circle, transparent 0 38%, rgba(232, 194, 107, 0.22) 38.4% 39.2%, transparent 39.6% 54%, rgba(232, 194, 107, 0.14) 54.4% 55%, transparent 55.4% 70%, rgba(232, 194, 107, 0.08) 70.4% 71%, transparent 71.4%);
+  -webkit-mask-image: linear-gradient(270deg, #000 20%, transparent 95%); mask-image: linear-gradient(270deg, #000 20%, transparent 95%);
+}
+.adm-hero-body { max-width: 42rem; }
+.adm-hero .adm-eyebrow, .adm-hero-body .adm-eyebrow { color: rgba(232, 194, 107, 0.85); }
+.adm-hero-title {
+  margin-top: 8px; font-family: var(--font-display, ui-rounded, -apple-system, 'SF Pro Display', 'Inter', system-ui, sans-serif);
+  font-size: clamp(1.9rem, 4vw, 2.7rem); font-weight: 750; letter-spacing: -0.03em; line-height: 1.08; color: #FFF3CE;
+}
+.adm-hero-text { margin-top: 10px; max-width: 34rem; font-size: 14px; line-height: 1.6; color: rgba(243, 231, 196, 0.72); }
+.adm-hero-actions { margin-top: 20px; display: flex; flex-wrap: wrap; gap: 10px; }
+
+.adm-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 40px; padding: 0 18px; border-radius: 999px;
+  font-size: 12.5px; font-weight: 650; letter-spacing: 0.01em; color: #F3DFA6; cursor: pointer;
+  background: rgba(232, 194, 107, 0.09); border: 1px solid var(--adm-line-strong); box-shadow: inset 0 1px 0 var(--adm-hi);
+  transition: transform 0.35s var(--adm-spring), background-color 0.2s, border-color 0.2s, filter 0.2s;
+}
+.adm-btn:hover { background: rgba(232, 194, 107, 0.18); border-color: var(--adm-gold); }
+.adm-btn:active { transform: scale(0.965); }
+.adm-btn--primary {
+  color: #000; background: linear-gradient(180deg, #F9E7B2 0%, #E8C26B 52%, #C99B2E 100%); border-color: rgba(255, 233, 160, 0.9);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.55), 0 10px 26px -14px rgba(232, 194, 107, 0.7);
+}
+.adm-btn--primary:hover { filter: brightness(1.06); background: linear-gradient(180deg, #F9E7B2 0%, #E8C26B 52%, #C99B2E 100%); }
+
+.adm-card {
+  position: relative; padding: clamp(16px, 2vw, 22px); border-radius: 24px;
+  background: linear-gradient(180deg, rgba(255, 236, 180, 0.06), rgba(255, 236, 180, 0.01) 42%), var(--adm-glass);
+  border: 1px solid var(--adm-line); box-shadow: inset 0 1px 0 var(--adm-hi), 0 26px 60px -40px #000;
+}
+.adm-card-title { font-family: var(--font-display, ui-rounded, -apple-system, 'SF Pro Display', 'Inter', system-ui, sans-serif); font-size: 1.1rem; font-weight: 700; letter-spacing: -0.015em; color: #FFF3CE; }
+.adm-tile {
+  padding: 14px; border-radius: 16px; background: rgba(255, 236, 180, 0.05); border: 1px solid rgba(232, 194, 107, 0.14);
+  box-shadow: inset 0 1px 0 rgba(255, 244, 205, 0.06); transition: border-color 0.2s, background-color 0.2s;
+}
+.adm-tile:hover { border-color: rgba(232, 194, 107, 0.34); background: rgba(255, 236, 180, 0.07); }
+.adm-label { font-size: 10.5px; font-weight: 600; letter-spacing: 0.09em; text-transform: uppercase; color: rgba(232, 194, 107, 0.72); }
+.adm-label--caps { font-weight: 700; letter-spacing: 0.12em; }
+.adm-link { display: inline-block; margin-top: 8px; font-size: 12px; font-weight: 650; color: var(--adm-gold); cursor: pointer; transition: color 0.2s, transform 0.3s var(--adm-spring); }
+.adm-link:hover { color: var(--adm-gold-hi); transform: translateX(2px); }
+.adm-icon { display: grid; place-items: center; flex: none; width: 40px; height: 40px; border-radius: 13px; font-size: 20px; background: rgba(232, 194, 107, 0.1); border: 1px solid rgba(232, 194, 107, 0.2); }
+.adm-icon--sm { width: 34px; height: 34px; border-radius: 11px; font-size: 16px; }
+.adm-icon--lg { width: 44px; height: 44px; border-radius: 14px; font-size: 22px; }
+.adm-metric { overflow: hidden; }
+/* λεπτή χρυσή γραμμή στο πάνω χείλος — μέσα στο ίδιο το panel, χωρίς κομμένες γωνίες */
+.adm-metric-bar { position: absolute; left: 24px; right: 24px; top: 0; height: 2px; border-radius: 0 0 2px 2px; background: linear-gradient(90deg, transparent, var(--adm-gold) 30%, var(--adm-gold-hi) 50%, var(--adm-gold) 70%, transparent); opacity: 0.85; }
+.adm-metric-value { margin-top: 8px; font-size: clamp(1.9rem, 3vw, 2.4rem); font-weight: 750; line-height: 1; letter-spacing: -0.03em; color: #FFF3CE; font-variant-numeric: tabular-nums; }
+.adm-quick {
+  display: flex; align-items: center; gap: 12px; min-height: 76px; padding: 12px 14px; border-radius: 18px; text-align: left;
+  background: rgba(255, 236, 180, 0.04); border: 1px solid rgba(232, 194, 107, 0.2);
+  transition: transform 0.35s var(--adm-spring), border-color 0.2s, background-color 0.2s;
+}
+.adm-quick:hover { transform: translateY(-2px); border-color: var(--adm-line-strong); background: rgba(232, 194, 107, 0.1); }
+.adm-quick:active { transform: scale(0.985); }
+
+/* Ενιαίο «χρυσό» σε όλες τις ενότητες: παλιά components είχαν σκληροκωδικοποιημένο #d4af37 (πιο σκούρο/λαδί) */
+#admin-root [class*="text-[#d4af37]"] { color: var(--adm-gold) !important; }
+#admin-root [class*="text-[#e5c76b]"] { color: rgba(243, 231, 196, 0.86); }
+#admin-root [class*="border-[#d4af37"] { border-color: var(--adm-line) !important; }
+#admin-root [class*="bg-[#d4af37]/"]:not(button) { background-color: rgba(232, 194, 107, 0.1) !important; }
+#admin-root [class*="bg-[#090909]"], #admin-root [class*="bg-[#0b0b0b]"], #admin-root [class*="bg-[#0a0a0a]"] { background-color: rgba(255, 236, 180, 0.035) !important; }
+#admin-root [class*="bg-[#151108]"] { background-color: rgba(255, 236, 180, 0.06) !important; }
+#admin-root button[class*="bg-[#d4af37]"]:not([class*="bg-[#d4af37]/"]) {
+  color: #000 !important; background: linear-gradient(180deg, #F9E7B2, #E8C26B 52%, #C99B2E) !important; border-color: rgba(255, 233, 160, 0.9) !important; border-radius: 999px;
+}
+
 /* ---------- 10 · DIALOGS / POPOVERS (portals) ---------- */
 :root:has(#admin-root) [role="dialog"],
 :root:has(#admin-root) [role="alertdialog"],

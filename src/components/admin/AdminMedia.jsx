@@ -104,6 +104,19 @@ export default function AdminMedia() {
     setOv(clean);
   };
 
+  // Αποθήκευση που εφαρμόζει ΜΟΝΟ ό,τι άλλαξε πάνω στις πιο πρόσφατες ρυθμίσεις (για components που
+  // υπολογίζουν την νέα τιμή από παλιό state μετά από ανέβασμα που κράτησε).
+  const saveChanged = async (next) => {
+    const fresh = (await fetchOverrides())?.value || {};
+    const merged = { ...fresh };
+    for (const k of new Set([...Object.keys(ov), ...Object.keys(next)])) {
+      if (JSON.stringify(next[k]) !== JSON.stringify(ov[k])) {
+        if (next[k] === undefined) delete merged[k]; else merged[k] = next[k];
+      }
+    }
+    await save(merged);
+  };
+
   const run = async (id, fn, okText = 'Αποθηκεύτηκε ✓') => {
     setBusy(id); setMsg(null);
     try { await fn(); setMsg({ ok: true, text: okText }); }
@@ -510,7 +523,7 @@ export default function AdminMedia() {
       <ComicPanel className="bg-card space-y-3">
         <div className="font-heading text-lg">🎮 ΔΙΑΧΕΙΡΙΣΗ ΣΥΝΔΕΣΕΩΝ ΑΝΑ MODE</div>
         <p className="text-xs text-foreground/60">Τα Modes χρησιμοποιούν αρχεία που υπάρχουν ήδη στην κεντρική βιβλιοθήκη. Δεν γίνεται νέο ανέβασμα από αυτή την ενότητα.</p>
-        <GameMediaLibraries value={ov} files={library} onSave={save} onRefresh={refreshLibrary} />
+        <GameMediaLibraries value={ov} files={library} onSave={saveChanged} onRefresh={refreshLibrary} />
         <div className="border-t border-border/60 pt-4">
         <ModeMediaManager
           value={ov.modeMedia || {}}
@@ -521,7 +534,7 @@ export default function AdminMedia() {
             setBusy('mode-media');
             setMsg(null);
             try {
-              await save({ ...ov, modeMedia });
+              await saveChanged({ ...ov, modeMedia });
               setMsg({ ok: true, text: 'Το Πολυμέσα Mode αποθηκεύτηκε ✓' });
             } catch (error) {
               setMsg({ ok: false, text: error.message });

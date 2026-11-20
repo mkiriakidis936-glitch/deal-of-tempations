@@ -40,26 +40,38 @@ const streams = new Map(); // entity -> { es, listeners:Set }
 function subscribeEntity(name, callback, options = {}) {
   let s = streams.get(name);
   if (!s) {
-    const token = getToken();
-    const params = new URLSearchParams();
-    if (token) params.set('token', token);
-    if (options.sessionCode) params.set('sessionCode', options.sessionCode);
-    if (options.playerId) params.set('playerId', options.playerId);
-    const query = params.toString();
-    const url = `${API_URL}/api/entities/${name}/stream${query ? `?${query}` : ''}`;
-    const es = new EventSource(url);
-    s = { es, listeners: new Set() };
-    es.onmessage = (msg) => {
-      let event;
-      try { event = JSON.parse(msg.data); } catch { return; }
-      s.listeners.forEach((fn) => { try { fn(event); } catch (e) { console.error(e); } });
-    };
+    s = { es: null, listeners: new Set(), closed: false };
     streams.set(name, s);
+    const open = async () => {
+      const params = new URLSearchParams();
+      // Admin: εφάπαξ εισιτήριο 60″ αντί για το μόνιμο token στο URL
+      if (getToken()) {
+        try { params.set('ticket', (await request('POST', '/api/entities/stream-ticket')).ticket); } catch { /* ανώνυμη σύνδεση */ }
+      }
+      if (s.closed) return;
+      if (options.sessionCode) params.set('sessionCode', options.sessionCode);
+      if (options.playerId) params.set('playerId', options.playerId);
+      const query = params.toString();
+      const es = new EventSource(`${API_URL}/api/entities/${name}/stream${query ? `?${query}` : ''}`);
+      s.es = es;
+      es.onmessage = (msg) => {
+        let event;
+        try { event = JSON.parse(msg.data); } catch { return; }
+        s.listeners.forEach((fn) => { try { fn(event); } catch (e) { console.error(e); } });
+      };
+      // Το εισιτήριο είναι εφάπαξ: η αυτόματη επανασύνδεση του browser θα το ξαναχρησιμοποιούσε και θα
+      // γινόταν ανώνυμη. Γι' αυτό σε κάθε διακοπή κλείνουμε και ανοίγουμε νέα σύνδεση με νέο εισιτήριο.
+      es.onerror = () => {
+        es.close();
+        if (!s.closed) setTimeout(() => { if (!s.closed) open(); }, 2000);
+      };
+    };
+    open();
   }
   s.listeners.add(callback);
   return () => {
     s.listeners.delete(callback);
-    if (s.listeners.size === 0) { s.es.close(); streams.delete(name); }
+    if (s.listeners.size === 0) { s.closed = true; s.es?.close(); streams.delete(name); }
   };
 }
 

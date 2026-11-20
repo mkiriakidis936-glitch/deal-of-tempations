@@ -20,13 +20,30 @@ const sha256 = (s) => crypto.createHash('sha256').update(s).digest('hex');
 const newId = () => crypto.randomUUID();
 
 // ---------- middleware ----------
+// Το EventSource (realtime) δεν στέλνει headers. Αντί να βάζουμε το μόνιμο JWT στο URL (καταγράφεται σε logs),
+// δίνουμε ένα εφάπαξ «εισιτήριο» που λήγει σε 60″ και ανταλλάσσεται με τον χρήστη.
+const streamTickets = new Map(); // ticket -> { sub, exp }
+export function issueStreamTicket(userId) {
+  const now = Date.now();
+  for (const [k, v] of streamTickets) if (v.exp < now) streamTickets.delete(k);
+  const ticket = crypto.randomBytes(24).toString('hex');
+  streamTickets.set(ticket, { sub: userId, exp: now + 60_000 });
+  return ticket;
+}
+
 export async function attachUser(req, _res, next) {
   req.user = null;
   const header = req.headers.authorization || '';
-  const token = header.startsWith('Bearer ') ? header.slice(7) : req.query.token;
-  if (token) {
+  let sub = null;
+  if (header.startsWith('Bearer ')) {
+    try { sub = jwt.verify(header.slice(7), JWT_SECRET).sub; } catch { /* invalid/expired token -> anonymous */ }
+  } else if (req.query.ticket) {
+    const t = streamTickets.get(String(req.query.ticket));
+    streamTickets.delete(String(req.query.ticket)); // εφάπαξ
+    if (t && t.exp > Date.now()) sub = t.sub;
+  }
+  if (sub) {
     try {
-      const { sub } = jwt.verify(String(token), JWT_SECRET);
       const { rows } = await query('SELECT * FROM users WHERE id = $1', [sub]);
       if (rows[0]) {
         // keep role in sync with ADMIN_EMAILS (promote/demote without touching the DB)
@@ -37,7 +54,7 @@ export async function attachUser(req, _res, next) {
         }
         req.user = rows[0];
       }
-    } catch { /* invalid/expired token -> anonymous */ }
+    } catch { /* DB error -> anonymous */ }
   }
   next();
 }

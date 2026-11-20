@@ -1,5 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { stopAllSounds } from '@/data/soundLibrary';
+import { timerStart, timerLeft, timerAdd, timerPause, timerResume } from '@/lib/modeTimer';
+import { applyDelta, undoLast } from '@/lib/modeUndo';
+import { randomExitCode } from '@/lib/consent';
 
 export const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
 export function shuffle(arr) {
@@ -35,16 +38,8 @@ export function fmt(sec) {
   return `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
 }
 
-// ---------- Συγχρονισμένο χρονόμετρο (ίδιο σε tablet / TV / κινητά) ----------
-export const timerStart = (seconds) => ({ total: seconds, endsAt: Date.now() + seconds * 1000, remaining: seconds });
-export const timerLeft = (t) => (!t ? 0 : t.endsAt ? Math.max(0, (t.endsAt - Date.now()) / 1000) : Math.max(0, t.remaining || 0));
-export const timerAdd = (t, sec) => {
-  if (!t) return t;
-  if (t.endsAt) return { ...t, endsAt: t.endsAt + sec * 1000, total: (t.total || 0) + sec };
-  return { ...t, remaining: (t.remaining || 0) + sec, total: (t.total || 0) + sec };
-};
-export const timerPause = (t) => (t && t.endsAt ? { ...t, remaining: timerLeft(t), endsAt: null } : t);
-export const timerResume = (t) => (t && !t.endsAt ? { ...t, endsAt: Date.now() + (t.remaining || 0) * 1000 } : t);
+// ---------- Συγχρονισμένο χρονόμετρο: βλ. modeTimer.js (καθαρές συναρτήσεις) ----------
+export { timerStart, timerLeft, timerAdd, timerPause, timerResume };
 
 export function useGameStopState() {
   const [paused, setPaused] = useState(gameStopActive);
@@ -193,16 +188,16 @@ export function useModeCtx(state, updateState) {
     return setMg({ log: [{ t: Date.now(), text }, ...prev].slice(0, 40) });
   }, [setMg]);
 
-  const addTokens = useCallback((id, n) => {
-    const tokens = { ...(mgRef.current.tokens || {}) };
-    tokens[id] = Math.max(0, (tokens[id] || 0) + n);
-    return setMg({ tokens });
-  }, [setMg]);
+  const addTokens = useCallback((id, n) => setMg((cur) => applyDelta(cur, 'tokens', id, n)), [setMg]);
 
-  const addScore = useCallback((id, n) => {
-    const scores = { ...(mgRef.current.scores || {}) };
-    scores[id] = (scores[id] || 0) + n;
-    return setMg({ scores });
+  const addScore = useCallback((id, n) => setMg((cur) => applyDelta(cur, 'scores', id, n)), [setMg]);
+
+  // Αναίρεση της τελευταίας αλλαγής tokens/score (για λάθος πάτημα της διοργανώτριας).
+  const undo = useCallback(() => {
+    const result = undoLast(mgRef.current);
+    if (!result) return null;
+    setMg(result.patch);
+    return result.entry;
   }, [setMg]);
 
   const centralStopped = !!state.stopActive;
@@ -263,7 +258,7 @@ export function useModeCtx(state, updateState) {
 
   const nameOf = useCallback((id) => players.find((p) => p.id === id)?.name || '—', [players]);
 
-  return { players, mg, setMg, log, addTokens, addScore, toggleStop, nameOf, centralStopped, stopped: !!mg.stop || centralStopped };
+  return { players, mg, setMg, log, addTokens, addScore, undo, toggleStop, nameOf, centralStopped, stopped: !!mg.stop || centralStopped };
 }
 
 export function initialMg(modeId, extra = {}) {
@@ -279,6 +274,9 @@ export function initialMg(modeId, extra = {}) {
     alcoholFree: !!extra.alcoholFree,
     startedAt: Date.now(),
   };
+  // Ψηφιακά modes: consent check-in πριν ξεκινήσει το παιχνίδι + τυχαίος Exit Code ανά συνεδρία.
+  if (modeId === 'lockdown' || modeId === 'beach_bar') base.consentRequired = true;
+  if (modeId === 'lockdown') base.exitCode = extra.exitCode || randomExitCode();
   return base;
 }
 

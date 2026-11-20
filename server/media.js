@@ -7,6 +7,7 @@ import { pipeline } from 'node:stream/promises';
 import express from 'express';
 import { requireAdmin } from './auth.js';
 import { query } from './db.js';
+import { validateContent } from './upload-validate.js';
 
 // Railway: prefer the mounted Volume path so uploads survive deployments.
 const volumeRoot = process.env.RAILWAY_VOLUME_MOUNT_PATH;
@@ -22,6 +23,10 @@ const KINDS = {
   '.mp3': 'audio', '.wav': 'audio', '.ogg': 'audio', '.m4a': 'audio', '.aac': 'audio',
 };
 fs.mkdirSync(UPLOAD_DIR, { recursive: true });
+// Καθαρισμός ημιτελών ανεβασμάτων (.part) από προηγούμενο crash/restart.
+for (const dir of [UPLOAD_DIR, PRIVATE_UPLOAD_DIR]) {
+  try { for (const n of fs.readdirSync(dir)) if (n.endsWith('.part')) fs.rmSync(path.join(dir, n), { force: true }); } catch { /* ignore */ }
+}
 
 const slugOf = (base) => base.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40) || 'file';
 const kindOf = (name) => KINDS[path.extname(name).toLowerCase()];
@@ -35,6 +40,7 @@ export const mediaStatic = [
     immutable: true,
     setHeaders: (res, file) => {
       res.setHeader('X-Content-Type-Options', 'nosniff');
+      if (/\.svg$/i.test(file)) res.setHeader('Content-Security-Policy', "default-src 'none'; style-src 'unsafe-inline'; img-src data:; sandbox");
       if (path.basename(file).startsWith('published-')) res.setHeader('Cache-Control', 'no-store, max-age=0');
     },
   }),
@@ -107,10 +113,12 @@ export function mediaRoutes() {
     try {
       await pipeline(req, counter, fs.createWriteStream(tmp));
       if (!size) throw new Error('EMPTY');
+      if (!(await validateContent(tmp, ext))) throw new Error('BAD_TYPE');
       await fsp.rename(tmp, path.join(UPLOAD_DIR, name));
     } catch (e) {
       await fsp.rm(tmp, { force: true });
       if (res.headersSent) return;
+      if (e.message === 'BAD_TYPE') return res.status(415).json({ error: `Το «${original}» δεν είναι έγκυρο αρχείο ${ext.slice(1).toUpperCase()} (ή περιέχει μη ασφαλές περιεχόμενο).` });
       if (e.message === 'TOO_BIG') return res.status(413).json({ error: `Το αρχείο ξεπερνά τα ${MAX_MB}MB.` });
       if (e.message === 'EMPTY') return res.status(400).json({ error: 'Κενό αρχείο.' });
       return res.status(400).json({ error: 'Η μεταφόρτωση διακόπηκε. Δοκίμασε ξανά.' });
@@ -161,10 +169,12 @@ export function mediaRoutes() {
     try {
       await pipeline(req, counter, fs.createWriteStream(tmp));
       if (!size) throw new Error('EMPTY');
+      if (!(await validateContent(tmp, ext))) throw new Error('BAD_TYPE');
       await fsp.rename(tmp, path.join(PRIVATE_UPLOAD_DIR, name));
       return res.json({ name, size, kind, private: true });
     } catch (error) {
       await fsp.rm(tmp, { force: true });
+      if (error.message === 'BAD_TYPE') return res.status(415).json({ error: 'Το αρχείο δεν είναι έγκυρο για τον τύπο του.' });
       if (error.message === 'TOO_BIG') return res.status(413).json({ error: `Το αρχείο ξεπερνά τα ${MAX_MB}MB.` });
       if (error.message === 'EMPTY') return res.status(400).json({ error: 'Κενό αρχείο.' });
       return res.status(400).json({ error: 'Η ιδιωτική μεταφόρτωση απέτυχε.' });

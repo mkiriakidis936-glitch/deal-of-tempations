@@ -112,3 +112,28 @@ test('VIP invitation submission requires server-side 18+ confirmation and no dif
   assert.match(source, /body\.adultConfirmed !== true/);
   assert.doesNotMatch(source, /'difficulty',\s*'unexpectedChallenge'/);
 });
+
+test('consent: η παίκτρια γράφει μόνο τη δική της καταχώρηση, μόνο πριν ξεκινήσει το παιχνίδι', () => {
+  const current = { players, mg: { consentRequired: true, consent: { players: {} } } };
+  const entry = { optOuts: ['touch'], confirmed: true, at: 1000 };
+  assert.equal(validatePlayerPatch(current, { mg: { consent: { players: { p1: entry } } } }, 'p1'), true);
+  assert.equal(validatePlayerPatch(current, { mg: { consent: { players: { p0: entry } } } }, 'p1'), false);     // όχι για άλλη
+  assert.equal(validatePlayerPatch(current, { mg: { consent: { players: { p1: { ...entry, optOuts: ['x'] } } } } }, 'p1'), false);
+  assert.equal(validatePlayerPatch(current, { mg: { consent: { done: true, players: { p1: entry } } } }, 'p1'), false); // όχι done
+  assert.equal(validatePlayerPatch(current, { mg: { consent: { players: { p1: entry } }, stop: false } }, 'p1'), false); // μόνο consent
+  const started = { players, mg: { consentRequired: true, consent: { done: true, players: {} } } };
+  assert.equal(validatePlayerPatch(started, { mg: { consent: { players: { p1: entry } } } }, 'p1'), false);      // μετά την έναρξη
+});
+
+test('consent: τα όρια κάθε παίκτριας δεν φαίνονται στις υπόλοιπες ούτε στην TV', () => {
+  const record = { id: 's', state: { players, mg: { consent: { players: {
+    p0: { optOuts: ['touch'], confirmed: true, at: 1 }, p1: { optOuts: ['alcohol'], confirmed: true, at: 2 },
+  } } } } };
+  const forP1 = sanitizePublicSession(record, 'p1').state.mg.consent.players;
+  assert.deepEqual(forP1.p1.optOuts, ['alcohol']);        // τα δικά της τα βλέπει
+  assert.deepEqual(forP1.p0.optOuts, []);                  // της άλλης όχι
+  assert.equal(forP1.p0.confirmed, true);                  // μόνο ότι επιβεβαίωσε
+  const forTv = sanitizePublicSession(record).state.mg.consent.players;
+  assert.deepEqual(forTv.p0.optOuts, []);
+  assert.deepEqual(forTv.p1.optOuts, []);
+});

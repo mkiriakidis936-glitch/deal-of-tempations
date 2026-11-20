@@ -1,3 +1,4 @@
+import ScreenWallpaper from '@/components/shared/ScreenWallpaper';
 import ModeTV from '@/components/modes/ModeTV';
 import TVExperienceLayer from '@/components/tv/TVExperienceLayer';
 import RealityShowOverlay from '@/components/tv/RealityShowOverlay';
@@ -219,7 +220,8 @@ export default function TVScreen() {
   const ahLeaderB = state.players?.find((p) => p.team === 'B' && p.isLeader);
 
   return (
-    <div className={`dot-tv-shell min-h-screen comic-dots-dark text-foreground flex flex-col ${fullscreen ? 'dot-tv-fullscreen' : ''}`} style={ART.wallpaperTv ? { backgroundImage: `url("${ART.wallpaperTv}")`, backgroundSize: "cover", backgroundPosition: "center", backgroundAttachment: "fixed" } : undefined}>
+    <div className={`dot-tv-shell min-h-screen comic-dots-dark text-foreground flex flex-col ${fullscreen ? 'dot-tv-fullscreen' : ''}`}>
+      <ScreenWallpaper src={ART.wallpaperTv} />
       <div className="fixed inset-0 -z-10 pointer-events-none opacity-20">
         <MediaSpot src={PHOTO.tv || FILM.tv} slot="tv" className="w-full h-full object-cover" />
       </div>

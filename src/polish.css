@@ -1,0 +1,88 @@
+/* ==========================================================================
+   POLISH — τελικό γυάλισμα για Site / Tablet / TV / Κινητά (ΟΧΙ Admin: αυτό έχει δικό του θέμα).
+   Φορτώνεται μετά το visual-overhaul.css. Μόνο εμφάνιση.
+   ========================================================================== */
+
+/* 1 · Ζεστό μαύρο αντί για κρύο γκρι: τα panels/κάρτες/inputs ταιριάζουν με το χρυσό */
+:root, .dark {
+  --glass-1: rgba(19, 16, 11, 0.74);
+  --glass-2: rgba(30, 25, 16, 0.62);
+  --glass-thick: rgba(12, 10, 7, 0.86);
+  --glass-stroke: rgba(232, 194, 107, 0.20);
+  --glass-hi: rgba(255, 244, 205, 0.14);
+  --card: 40 14% 7%;
+  --popover: 40 14% 8%;
+  --secondary: 40 10% 12%;
+  --muted: 40 8% 14%;
+  --input: 40 10% 10%;
+  --border: 42 28% 24%;
+  --surface-1: 40 10% 5%;
+  --surface-2: 40 10% 9%;
+  --surface-3: 40 8% 14%;
+}
+.bg-card { background-color: rgba(19, 16, 11, 0.74) !important; }
+.bg-secondary { background-color: rgba(255, 236, 180, 0.06) !important; }
+
+/* Κουμπιά-κάψουλες: ζεστό γυαλί με χρυσό περίγραμμα (τα χρωματιστά/primary παραμένουν όπως ορίζονται) */
+.comic-boom:not([class*="bg-primary"]):not([class*="tarot-"]):not([class*="bg-destructive"]):not([class*="bg-emerald"]):not([class*="bg-red"]):not([class*="bg-amber"]) {
+  background:
+    linear-gradient(180deg, rgba(255, 236, 180, 0.10), rgba(255, 236, 180, 0.03)),
+    rgba(26, 21, 12, 0.72) !important;
+  border-color: rgba(232, 194, 107, 0.32) !important;
+}
+
+/* Απενεργοποιημένα κουμπιά: ευανάγνωστα, όχι «φάντασμα» */
+.comic-boom:disabled, .comic-boom[aria-disabled="true"] {
+  opacity: 1 !important;
+  filter: none !important;
+  color: rgba(243, 231, 196, 0.5) !important;
+  background: rgba(255, 244, 205, 0.05) !important;
+  border-color: rgba(232, 194, 107, 0.2) !important;
+  box-shadow: none !important;
+  cursor: not-allowed;
+}
+
+/* 2 · Μπάρα «ΕΝΑΡΞΗ ΠΑΙΧΝΙΔΙΟΥ» στο tablet: πριν ήταν διάφανη και έπεφτε πάνω στις φωτογραφίες */
+.dot-startbar {
+  position: sticky;
+  bottom: 0;
+  z-index: 30;
+  margin-top: 8px;
+  padding: 28px 16px calc(env(safe-area-inset-bottom, 0px) + 18px);
+  text-align: center;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.9) 34%, #000 100%);
+  pointer-events: none;
+}
+.dot-startbar > * { pointer-events: auto; }
+.dot-startbar-hint {
+  display: inline-block;
+  margin-top: 10px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #F3DFA6;
+  background: rgba(232, 194, 107, 0.1);
+  border: 1px solid rgba(232, 194, 107, 0.35);
+}
+
+/* 3 · Δευτερεύον κουμπί (π.χ. «ΔΕΣ ΤΗ ΣΥΛΛΟΓΗ»): περίγραμμα, όχι γεμάτο χρυσό — ιεραρχία σωστή δίπλα στο κύριο */
+.dot-btn-ghost {
+  min-height: 56px;
+  background: transparent !important;
+  border: 1px solid rgba(232, 194, 107, 0.55) !important;
+  color: #F3DFA6 !important;
+  box-shadow: none !important;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+.dot-btn-ghost:hover { background: rgba(232, 194, 107, 0.12) !important; border-color: #E8C26B !important; }
+.cinv-btn { min-height: 56px; }
+
+/* 4 · Πεδία σύνδεσης (TV / κινητά): ζεστό φόντο και καθαρό focus */
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="color"]), select, textarea {
+  background-color: rgba(255, 244, 205, 0.05);
+}
+
+/* 5 · Checkbox/radio στο χρώμα της εφαρμογής (πριν: μπλε του browser) */
+input[type="checkbox"], input[type="radio"], input[type="range"] { accent-color: #E8C26B; }

@@ -3,6 +3,7 @@ import express from 'express';
 import { query, pool } from './db.js';
 import { requireAdmin } from './auth.js';
 import { notifyNewSubmission, notifyPlayerMission } from './push.js';
+import { isValidConsentEntry } from '../src/lib/consent.js';
 
 // Entities that used to live in base44/entities/*.jsonc
 export const ENTITIES = [
@@ -284,7 +285,12 @@ export function validatePlayerPatch(current, patch, playerId) {
     if (validAction && action.type === 'lockdown_exit_code') validAction = /^\d{4}$/.test(String(action.code || ''));
     if (validAction && action.type === 'morning_clue') validAction = Number.isInteger(action.index) && action.index >= 0 && action.index < 4;
     if (validAction && action.type === 'morning_code') validAction = /^\d{4}$/.test(String(action.code || ''));
-    if (!stopPatch && !validAction) return false;
+    // Consent check-in: κάθε παίκτρια γράφει ΜΟΝΟ τη δική της καταχώρηση, και μόνο πριν ξεκινήσει το παιχνίδι.
+    const consentPlayers = next.consent?.players;
+    const consentPatch = Object.keys(next).length === 1 && isObject(next.consent) && Object.keys(next.consent).length === 1 &&
+      isObject(consentPlayers) && Object.keys(consentPlayers).length === 1 && consentPlayers[playerId] !== undefined &&
+      !old.consent?.done && isValidConsentEntry(consentPlayers[playerId]);
+    if (!stopPatch && !validAction && !consentPatch) return false;
   }
 
   if ('players' in patch) {
@@ -366,6 +372,16 @@ export function sanitizePublicSession(record, playerId = null) {
     const mg = { ...state.mg, missions: ownMap(state.mg.missions), chaosCards: ownMap(state.mg.chaosCards) };
     if (playerId && mg.card && mg.card.playerId !== playerId) mg.card = null;
     if (playerId && mg.branch !== playerId) mg.branch = null;
+    // Τα όρια (consent) κάθε παίκτριας είναι ιδιωτικά: οι υπόλοιπες/η TV βλέπουν μόνο αν επιβεβαίωσε.
+    if (isObject(mg.consent?.players)) {
+      mg.consent = {
+        ...mg.consent,
+        players: Object.fromEntries(Object.entries(mg.consent.players).map(([id, entry]) => [
+          id,
+          playerId && id === playerId ? entry : { confirmed: entry?.confirmed === true, optOuts: [], at: entry?.at },
+        ])),
+      };
+    }
     state.mg = mg;
   }
   if (state.sealedVotes && isObject(state.sealedVotes)) {
@@ -1061,7 +1077,7 @@ export function entityRoutes() {
     finally { client.release(); }
   });
 
-  // --- realtime stream (EventSource can't send headers; the token may come as ?token=) ---
+  // --- realtime stream (EventSource can't send headers; admins authenticate with a one-time ?ticket= from POST /api/entities/stream-ticket) ---
   r.get('/:entity/stream', guard('read'), async (req, res) => {
     let sessionCode = null;
     let playerId = null;

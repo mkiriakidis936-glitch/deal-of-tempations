@@ -5,6 +5,7 @@ import {
   FREEZE_COMMANDS, WHEEL_CATEGORIES, BEACH_WHEEL, FLIPFLOP_MISSIONS, SHOT_TRUTH,
   BEACH_STEP_SECONDS, BEACH_FINALE_SECONDS, BEACH_PHASES,
 } from '@/data/modes/beachBarContent';
+import { pickAllowed, anyOptOut } from '@/lib/consent';
 import { pick, sfx, startBeat, drinkText, useLocalCountdown, isGameStopActive } from '@/lib/modeKit';
 import { canAssignVipActivity } from '@/lib/playerIntelligence';
 
@@ -15,7 +16,9 @@ export default function BeachBarGame({ ctx, onEnd }) {
   const { players, mg, setMg, log, nameOf } = ctx;
   const bb = mg.bb || { phase: 'checkin' };
   const setBb = (p) => setMg((cur) => ({ bb: { ...(cur.bb || { phase: 'checkin' }), ...p } }));
-  const T = (s) => drinkText(s, mg.alcoholFree);
+  // Αλκοόλ μόνο αν κανείς δεν έχει δηλώσει «χωρίς αλκοόλ» στο consent check-in.
+  const T = (s) => drinkText(s, mg.alcoholFree || anyOptOut(mg, 'alcohol', players));
+  const PASS_CARD = { ...BEACH_WHEEL[0], title: 'PASS', text: 'Καμία κατάλληλη πρόκληση για τα όριά της — η παίκτρια κάνει PASS.', loseFlop: false };
   const flopOn = (id) => (bb.flops || {})[id] !== false;
   const drinks = bb.drinks || {};
   const addDrink = (id, n = 1) => setBb({ drinks: { ...drinks, [id]: (drinks[id] || 0) + n } });
@@ -215,7 +218,7 @@ function Wheel({ ctx, bb, setBb, T, flopOn }) {
       n += 1;
       if (n > 16) {
         clearInterval(i);
-        const c = pick(BEACH_WHEEL);
+        const c = pickAllowed(BEACH_WHEEL, mg, requestedPlayerId) || PASS_CARD;
         setCat(c.cat);
         setSpinning(false);
         setBb({ wheel: { card: c, pid: requestedPlayerId, at: Date.now() }, loser: null });
@@ -310,7 +313,7 @@ function Truth({ ctx, bb, setBb, T, addDrink }) {
         <Btn color="bg-rose-600" onClick={() => {
           const selectedPlayer = players.find((player) => player.id === who);
           if (!canAssignVipActivity(ctx, selectedPlayer, { activityType: 'questions', activityLabel: 'ερωτήσεις' })) return;
-          const question = pick(SHOT_TRUTH); setQ(question); setState('decide'); setBb({ truth: { who, at: Date.now(), question, status: 'decide' } });
+          const question = pickAllowed(SHOT_TRUTH, mg, who) || 'Καμία κατάλληλη ερώτηση για τα όριά της — PASS.'; setQ(question); setState('decide'); setBb({ truth: { who, at: Date.now(), question, status: 'decide' } });
         }}>🎴 Νέα ερώτηση 18+</Btn>
       </div>
       {q && (
@@ -370,7 +373,7 @@ function Finale({ ctx, bb, setBb, flopOn, onEnd }) {
             <>
               <div className="font-body">Η Beach Queen ξεκινά την τελική ομαδική δοκιμασία.</div>
               <Btn color="bg-amber-600 text-black" onClick={() => {
-                const card = pick(BEACH_WHEEL);
+                const card = pickAllowed(BEACH_WHEEL, mg, players.map((p) => p.id)) || PASS_CARD;
                 setBb({ finalChallenge: { card, startedAt: Date.now(), responses: {} } });
                 log(`🏖️ Ξεκίνησε το τελικό ομαδικό challenge: ${card.title}`);
               }}>🎴 ΕΝΑΡΞΗ ΤΕΛΙΚΟΥ ΟΜΑΔΙΚΟΥ CHALLENGE</Btn>

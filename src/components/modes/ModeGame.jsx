@@ -10,6 +10,9 @@ import VIPUnratedMode from '@/components/modes/VIPUnratedMode';
 import { modeMeta, ACT_META, MODE_THEMES } from '@/data/modes/modeRegistry';
 import { useModeCtx, useTick, timerStart } from '@/lib/modeKit';
 import { COLLECTIONS, applyScenarioCollections } from '@/lib/modesContentStore';
+import { consentPending } from '@/lib/consent';
+import { ConsentTablet } from '@/components/modes/ConsentCheckIn';
+import ModeRecap from '@/components/modes/ModeRecap';
 
 // Tablet (game master) για τα ψηφιακά modes. Κάθε mode = λίστα από acts.
 export default function ModeGame({ state, updateState, onEnd, onQR, playerProfiles = [], playerProfilesReady = true }) {
@@ -30,11 +33,12 @@ export default function ModeGame({ state, updateState, onEnd, onQR, playerProfil
   const meta = modeMeta(state.mode);
   const configuredDurationMinutes = Number(state.gameDurationMinutes) || meta?.minutes || 0;
   useEffect(() => {
-    if (!configuredDurationMinutes || mg.timerModeId === state.mode) return;
+    // Το χρονόμετρο ξεκινά μετά το consent check-in (το ξεκινά η ConsentTablet), όχι πριν.
+    if (!configuredDurationMinutes || mg.timerModeId === state.mode || consentPending(mg)) return;
     setMg({ timer: timerStart(configuredDurationMinutes * 60), timerModeId: state.mode });
-  }, [state.mode, configuredDurationMinutes, mg.timerModeId, setMg]);
+  }, [state.mode, configuredDurationMinutes, mg.timerModeId, mg.consentRequired, mg.consent?.done, setMg]);
   useEffect(() => {
-    if (!state.gameStartedAt || mg.finishedAll || mg.gameTimeExpired) return undefined;
+    if (!state.gameStartedAt || mg.finishedAll || mg.gameTimeExpired || consentPending(mg)) return undefined;
     const expireIfNeeded = () => {
       if (mg.stop || state.stopActive) return;
       const pausedMs = Math.max(0, Number(state.gamePausedMs || 0));
@@ -47,7 +51,7 @@ export default function ModeGame({ state, updateState, onEnd, onQR, playerProfil
     expireIfNeeded();
     const id = setInterval(expireIfNeeded, 500);
     return () => clearInterval(id);
-  }, [state.gameStartedAt, state.gamePausedMs, state.gamePausedAt, state.stopActive, mg.stop, mg.finishedAll, mg.gameTimeExpired, configuredDurationMinutes, setMg]);
+  }, [state.gameStartedAt, state.gamePausedMs, state.gamePausedAt, state.stopActive, mg.stop, mg.finishedAll, mg.gameTimeExpired, mg.consentRequired, mg.consent?.done, configuredDurationMinutes, setMg]);
   const acts = meta.acts;
   const actIndex = Math.min(mg.actIndex || 0, acts.length - 1);
   const act = acts[actIndex];
@@ -63,12 +67,20 @@ export default function ModeGame({ state, updateState, onEnd, onQR, playerProfil
   }
   const finishAll = () => setMg({ finishedAll: true });
 
+  if (consentPending(mg)) {
+    return (
+      <ModeShell modeId={state.mode} ctx={ctx} state={state} onQR={onQR} onEnd={onEnd} showTimer={false}>
+        <ConsentTablet ctx={ctx} updateState={updateState} minutes={configuredDurationMinutes} />
+      </ModeShell>
+    );
+  }
+
   if (mg.vipUnrated?.active || mg.vipUnrated?.completed || mg.vipUnrated?.stoppedAt) { return <ModeShell modeId={state.mode} ctx={ctx} state={state} onQR={onQR} onEnd={onEnd}><VIPUnratedMode ctx={ctx} /></ModeShell>; }
 
   if (mg.finishedAll) {
     return (
       <ModeShell modeId={state.mode} ctx={ctx} state={state} onQR={onQR} onEnd={onEnd} showTimer={false}>
-        <Results ctx={ctx} theme={theme} onEnd={onEnd} />
+        <Results ctx={ctx} theme={theme} onEnd={onEnd} state={state} />
       </ModeShell>
     );
   }
@@ -114,7 +126,7 @@ export default function ModeGame({ state, updateState, onEnd, onQR, playerProfil
   );
 }
 
-function Results({ ctx, theme, onEnd }) {
+function Results({ ctx, theme, onEnd, state }) {
   const { players, mg } = ctx;
   const total = (p) => (mg.scores || {})[p.id] || 0;
   const tokens = (p) => (mg.tokens || {})[p.id] || 0;
@@ -134,6 +146,7 @@ function Results({ ctx, theme, onEnd }) {
           </div>
         ))}
       </div>
+      <ModeRecap state={state} players={players} mg={mg} ranking={ranking} />
       <div className="text-center"><Btn color="bg-emerald-700" onClick={onEnd}>💾 Αρχειοθέτηση & νέο παιχνίδι</Btn></div>
     </Panel>
   );
