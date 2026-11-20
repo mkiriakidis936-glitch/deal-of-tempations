@@ -17,7 +17,9 @@ const LEVELS = [
 export default function ModeForm() {
   const [params] = useSearchParams();
   const first = params.get('mode');
-  const sessionCode = params.get('event') || params.get('sessionCode') || params.get('code') || '';
+  const sessionCode = params.get('sessionCode') || params.get('code') || params.get('event') || '';
+  const dotEventId = params.get('eventId') || params.get('dotEventId') || '';
+  const roomCode = (params.get('roomCode') || params.get('event') || '').trim().toUpperCase();
   const [form, setForm] = useState({
     name: '',
     mode: NEW_MODES.some((m) => m.id === first) ? first : '',
@@ -57,6 +59,8 @@ export default function ModeForm() {
       await base44.entities.PajamaIntake.create({
         formType: 'modes',
         ...(sessionCode ? { sessionCode: sessionCode.trim().toUpperCase() } : {}),
+        ...(dotEventId ? { dotEventId } : {}),
+        ...(roomCode ? { roomCode } : {}),
         name: form.name.trim(),
         preferredModes: [form.mode],
         adultConfirmed: true,
