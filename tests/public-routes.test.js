@@ -43,4 +43,6 @@ test('Admin exposes the public participation link for a selected Event', () => {
   assert.match(adminInterest, /copyParticipationLink/);
   assert.match(adminInterest, /href="\/deal"/);
   assert.match(adminInterest, /copyInterestLink/);
+  assert.match(adminInterest, /modes-form\?event=/);
+  assert.match(adminInterest, /copyModeFormLink/);
 });
