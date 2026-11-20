@@ -17,6 +17,7 @@ export default function AdminLiveControl({ sessions = [], selectedSession, onSel
   const players = state.players || [];
   const mode = state.mode || selectedSession.mode || '—';
   const stage = Number(state.stage ?? 0);
+  const isPaused = !!(state.stopActive || state.mg?.stop);
 
   async function update(patch) {
     return onUpdate(selectedSession.id, patch);
@@ -28,6 +29,23 @@ export default function AdminLiveControl({ sessions = [], selectedSession, onSel
 
   async function giveAllImmunity() {
     await update({ players: players.map((player) => ({ id: player.id, immunity: true })) });
+  }
+
+  async function togglePause() {
+    const now = Date.now();
+    const pausePatch = isPaused
+      ? {
+          stopActive: false,
+          mg: { stop: false, stopAt: null, stopBy: null },
+          gamePausedMs: Number(state.gamePausedMs || 0) + (state.gamePausedAt ? Math.max(0, now - state.gamePausedAt) : 0),
+          gamePausedAt: null,
+        }
+      : {
+          stopActive: true,
+          mg: { stop: true, stopAt: now, stopBy: 'admin' },
+          gamePausedAt: now,
+        };
+    await update(pausePatch);
   }
 
   return (
@@ -59,14 +77,14 @@ export default function AdminLiveControl({ sessions = [], selectedSession, onSel
           <div className="rounded-lg bg-secondary p-3"><b className="block text-xl">{state.stage ?? 0}</b>Στάδιο</div>
           <div className="rounded-lg bg-secondary p-3"><b className="block text-xl">{state.round ?? 1}</b>Γύρος</div>
           <div className="rounded-lg bg-secondary p-3"><b className="block text-xl">{players.length}</b>Παίκτριες</div>
-          <div className="rounded-lg bg-secondary p-3"><b className="block text-xl">{state.stopActive ? 'Σε παύση' : 'Σε εξέλιξη'}</b>Κατάσταση</div>
+          <div className="rounded-lg bg-secondary p-3"><b className="block text-xl">{isPaused ? 'Σε παύση' : 'Σε εξέλιξη'}</b>Κατάσταση</div>
         </div>
         <div className="flex flex-wrap gap-2">
           <ComicButton
-            variant={state.stopActive ? 'green' : 'red'}
-            onClick={() => update({ stopActive: !state.stopActive })}
+            variant={isPaused ? 'green' : 'red'}
+            onClick={togglePause}
           >
-            {state.stopActive ? '▶️ ΣΥΝΕΧΙΣΗ ΠΑΡΤΙΔΑΣ' : '⏸ ΠΑΥΣΗ ΠΑΡΤΙΔΑΣ'}
+            {isPaused ? '▶️ ΣΥΝΕΧΙΣΗ ΠΑΡΤΙΔΑΣ' : '⏸ ΠΑΥΣΗ ΠΑΡΤΙΔΑΣ'}
           </ComicButton>
           {state.bombEvent && (
             <ComicButton variant="red" onClick={() => update({ bombEvent: null })}>
