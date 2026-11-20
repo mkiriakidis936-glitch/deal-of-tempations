@@ -45,7 +45,7 @@ export default function AdminDashboard() {
     { label: 'Σύνολο Συνεδριών', value: total, icon: '🎮', color: 'bg-primary' },
     { label: 'Ενεργές · 24 ώρες', value: stats.active, icon: '▶️', color: 'bg-tarot-forest' },
     { label: 'Ολοκληρωμένες', value: stats.completed, icon: '🏆', color: 'bg-tarot-royal/60' },
-    { label: 'Αδρανείς · άνω 24 ωρών', value: stats.abandoned, icon: '⏸', color: 'bg-secondary' },
+    { label: 'Αδρανείς · άνω 24 ωρών', value: stats.inactive, icon: '⏸', color: 'bg-secondary' },
     { label: 'Συμμετοχές Παικτριών', value: stats.player_participations, icon: '👥', color: 'bg-tarot-wine/60' },
     { label: 'Μοναδικές Παίκτριες', value: '—', icon: '🧍', color: 'bg-secondary' },
   ];
