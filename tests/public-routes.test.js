@@ -63,3 +63,11 @@ test('approved Arrest & Heist registrations appear in mode preference counts', (
   assert.match(setup, /filter\(\(item\) => item\.approved === true\)\.map\(\(item\) => \(\{ \.\.\.item, modeIds: \['arrest_heist'\] \}\)\)/);
   assert.match(setup, /\.\.\.heistIntakes, \.\.\.pendingIntakes/);
 });
+
+
+test('Admin can approve Arrest & Heist intake directly from its form record', () => {
+  const adminIntakes = read('../src/components/admin/AdminIntakes.jsx');
+  assert.match(adminIntakes, /intake-approvals\/BacheloretteIntake/);
+  assert.match(adminIntakes, /handleApproveBach/);
+  assert.match(adminIntakes, /ΕΓΚΡΙΣΗ & ΠΡΟΣΘΗΚΗ ΣΤΟ TABLET/);
+});
