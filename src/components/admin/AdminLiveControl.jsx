@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import ComicPanel from '@/components/comic/ComicPanel';
 import ComicButton from '@/components/comic/ComicButton';
 
@@ -13,22 +13,39 @@ export default function AdminLiveControl({ sessions = [], selectedSession, onSel
     );
   }
 
+  const [busyAction, setBusyAction] = useState('');
+  const [actionMessage, setActionMessage] = useState('');
   const state = selectedSession.state || {};
   const players = state.players || [];
   const mode = state.mode || selectedSession.mode || '—';
   const stage = Number(state.stage ?? 0);
   const isPaused = !!(state.stopActive || state.mg?.stop);
 
+  async function runAction(label, action) {
+    if (busyAction) return;
+    setBusyAction(label);
+    setActionMessage('');
+    try {
+      const result = await action();
+      if (result === null || result === false) throw new Error('Η ενέργεια δεν αποθηκεύτηκε.');
+      setActionMessage('Η ενέργεια αποθηκεύτηκε.');
+    } catch (error) {
+      setActionMessage(error?.message || 'Η ενέργεια απέτυχε.');
+    } finally {
+      setBusyAction('');
+    }
+  }
+
   async function update(patch) {
     return onUpdate(selectedSession.id, patch);
   }
 
   async function resetAllPenalties() {
-    await update({ players: players.map((player) => ({ id: player.id, penaltyStep: 0, immunity: false })) });
+    return runAction('penalties', () => update({ players: players.map((player) => ({ id: player.id, penaltyStep: 0, immunity: false })) }));
   }
 
   async function giveAllImmunity() {
-    await update({ players: players.map((player) => ({ id: player.id, immunity: true })) });
+    return runAction('immunity', () => update({ players: players.map((player) => ({ id: player.id, immunity: true })) }));
   }
 
   async function togglePause() {
@@ -45,7 +62,7 @@ export default function AdminLiveControl({ sessions = [], selectedSession, onSel
           mg: { stop: true, stopAt: now, stopBy: 'admin' },
           gamePausedAt: now,
         };
-    await update(pausePatch);
+    return runAction('pause', () => update(pausePatch));
   }
 
   return (
@@ -71,6 +88,9 @@ export default function AdminLiveControl({ sessions = [], selectedSession, onSel
         </div>
       </ComicPanel>
 
+      {actionMessage && <div role="status" aria-live="polite" className="rounded-lg border border-border bg-card px-3 py-2 text-sm">{actionMessage}</div>}
+      {busyAction && <div role="status" aria-live="polite" className="text-xs text-foreground/60">Αποθήκευση ενέργειας…</div>}
+
       <ComicPanel className="bg-card space-y-3">
         <div className="font-heading text-lg">Κατάσταση παρτίδας</div>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center text-xs">
@@ -83,11 +103,12 @@ export default function AdminLiveControl({ sessions = [], selectedSession, onSel
           <ComicButton
             variant={isPaused ? 'green' : 'red'}
             onClick={togglePause}
+            disabled={!!busyAction}
           >
             {isPaused ? '▶️ ΣΥΝΕΧΙΣΗ ΠΑΡΤΙΔΑΣ' : '⏸ ΠΑΥΣΗ ΠΑΡΤΙΔΑΣ'}
           </ComicButton>
           {state.bombEvent && (
-            <ComicButton variant="red" onClick={() => update({ bombEvent: null })}>
+            <ComicButton variant="red" disabled={!!busyAction} onClick={() => runAction('bomb', () => update({ bombEvent: null }))}>
               ΑΚΥΡΩΣΗ BOMB
             </ComicButton>
           )}
@@ -101,7 +122,8 @@ export default function AdminLiveControl({ sessions = [], selectedSession, onSel
             <ComicButton
               key={value}
               variant={stage === value ? 'magenta' : 'white'}
-              onClick={() => update({ stage: value })}
+              onClick={() => runAction('stage', () => update({ stage: value }))}
+              disabled={!!busyAction}
             >
               Στάδιο {value}
             </ComicButton>
@@ -112,8 +134,8 @@ export default function AdminLiveControl({ sessions = [], selectedSession, onSel
       <ComicPanel className="bg-card space-y-3">
         <div className="font-heading text-lg">Συνολικές ενέργειες παρτίδας</div>
         <div className="flex flex-wrap gap-2">
-          <ComicButton variant="dark" onClick={resetAllPenalties}>ΜΗΔΕΝΙΣΜΟΣ ΟΛΩΝ ΤΩΝ ΠΟΙΝΩΝ</ComicButton>
-          <ComicButton variant="cyan" onClick={giveAllImmunity}>ΑΣΥΛΙΑ ΣΕ ΟΛΕΣ</ComicButton>
+          <ComicButton variant="dark" disabled={!!busyAction} onClick={resetAllPenalties}>ΜΗΔΕΝΙΣΜΟΣ ΟΛΩΝ ΤΩΝ ΠΟΙΝΩΝ</ComicButton>
+          <ComicButton variant="cyan" disabled={!!busyAction} onClick={giveAllImmunity}>ΑΣΥΛΙΑ ΣΕ ΟΛΕΣ</ComicButton>
         </div>
       </ComicPanel>
     </div>
