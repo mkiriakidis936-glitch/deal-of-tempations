@@ -1,7 +1,6 @@
 import ScreenWallpaper from '@/components/shared/ScreenWallpaper';
 import React from 'react';
 import { useGameSession } from '@/hooks/useGameSession';
-import { base44 } from '@/api/base44Client';
 import { getActiveSessionCode, setActiveSessionCode, subscribeActiveSession } from '@/lib/activeSession';
 const StopButton = React.lazy(() => import('@/components/comic/StopButton'));
 import ComicButton from '@/components/comic/ComicButton';
