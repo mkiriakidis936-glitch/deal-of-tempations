@@ -36,7 +36,6 @@ const AdminVisits = lazy(() => import('@/components/admin/AdminVisits'));
 const AdminDigitalInvitations = lazy(() => import('@/components/admin/AdminDigitalInvitations'));
 const AdminPublicSubmissions = lazy(() => import('@/components/admin/AdminPublicSubmissions'));
 const AdminProduction = lazy(() => import('@/components/admin/AdminProduction'));
-import { setActiveSessionCode } from '@/lib/activeSession';
 import { createInitialState } from '@/lib/gameLogic';
 
 const NAV_GROUPS = [
