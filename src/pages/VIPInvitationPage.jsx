@@ -14,6 +14,7 @@ export default function VIPInvitationPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [name, setName] = useState('');
+  const [selectedGameMode, setSelectedGameMode] = useState('');
   const [avatar, setAvatar] = useState(AVATARS[0]);
   const [answers, setAnswers] = useState({
     personality: 'bold',
@@ -52,8 +53,8 @@ export default function VIPInvitationPage() {
     ...current,
     safetyBoundaries: checked ? [...(current.safetyBoundaries || []), key] : (current.safetyBoundaries || []).filter((item) => item !== key),
   }));
-  const valid = name.trim().length > 0 && adultConfirmed && consentConfirmed && String(answers.safeWord || '').trim().length >= 2 && customQuestionsValid && !saving;
-  const gameName = GAME_MODES.find((mode) => mode.id === invitation?.gameMode)?.name || invitation?.gameMode || '—';
+  const valid = name.trim().length > 0 && !!selectedGameMode && adultConfirmed && consentConfirmed && String(answers.safeWord || '').trim().length >= 2 && customQuestionsValid && !saving;
+  const gameName = GAME_MODES.find((mode) => mode.id === (selectedGameMode || invitation?.gameMode))?.name || selectedGameMode || invitation?.gameMode || 'Δεν έχει επιλεγεί';
   const eventName = invitation?.eventTitle ? `${invitation.eventTitle} · ${invitation.roomCode || ''}` : '—';
 
   async function submit(event) {
@@ -63,7 +64,7 @@ export default function VIPInvitationPage() {
     setError('');
     try {
       await request('POST', `/api/entities/vip-invitations/${encodeURIComponent(token)}/submit`, {
-        submissionId, name: name.trim(), avatar, answers, customAnswers, adultConfirmed, consentConfirmed,
+        submissionId, name: name.trim(), avatar, gameMode: selectedGameMode, answers, customAnswers, adultConfirmed, consentConfirmed,
       });
       setDone(true);
     } catch (e) { setError(e.message || 'Δεν αποθηκεύτηκε η συμμετοχή.'); }
@@ -107,7 +108,18 @@ export default function VIPInvitationPage() {
         <p style={{ color: '#bfb08c', textAlign: 'center', lineHeight: 1.6, fontSize: 13, marginBottom: 20 }}>{invitation.intro}</p>
 
         <section style={sectionStyle}>
-          <h2 style={{ color: '#e5cf91', fontSize: 16, margin: '0 0 16px' }}>1. ΠΡΟΣΩΠΙΚΑ ΣΤΟΙΧΕΙΑ</h2>
+          <h2 style={{ color: '#e5cf91', fontSize: 16, margin: '0 0 16px' }}>1. ΕΠΙΛΟΓΗ ΠΑΙΧΝΙΔΙΟΥ</h2>
+          <div style={fieldStyle}>
+            <label style={labelStyle}>ΕΠΕΛΕΞΕ ΤΟ MODE ΠΟΥ ΘΕΛΕΙΣ *</label>
+            <select required value={selectedGameMode} onChange={(e) => setSelectedGameMode(e.target.value)} style={inputStyle}>
+              <option value="">Επίλεξε Mode</option>
+              {GAME_MODES.map((mode) => <option key={mode.id} value={mode.id}>{mode.name}</option>)}
+            </select>
+            <div style={{ color: '#9e906d', fontSize: 11, marginTop: 6 }}>Η επιλογή σου θα εμφανιστεί στο Admin και στο Tablet μετά την έγκριση.</div>
+          </div>
+        </section>
+        <section style={sectionStyle}>
+          <h2 style={{ color: '#e5cf91', fontSize: 16, margin: '0 0 16px' }}>2. ΠΡΟΣΩΠΙΚΑ ΣΤΟΙΧΕΙΑ</h2>
           <div style={fieldStyle}><label style={labelStyle}>ΟΝΟΜΑΤΕΠΩΝΥΜΟ Ή NICKNAME *</label><input value={name} onChange={(e) => setName(e.target.value)} maxLength={80} required style={inputStyle} placeholder="Το όνομά σου" /></div>
           <div style={fieldStyle}><label style={labelStyle}>ΠΩΣ ΘΕΛΕΙΣ ΝΑ ΣΕ ΑΠΟΚΑΛΟΥΝ ΣΤΟ ΠΑΙΧΝΙΔΙ;</label>{textInput('displayName', 'Όνομα εμφάνισης')}</div>
           <label style={labelStyle}>ΕΠΙΛΟΓΗ AVATAR</label>
