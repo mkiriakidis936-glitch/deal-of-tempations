@@ -67,7 +67,7 @@ test('Admin can approve Arrest & Heist intake directly from its form record', ()
 test('approved invitation intakes are assigned to their submitted mode in Admin casting', () => {
   const casting = read('../src/components/admin/AdminShowCasting.jsx');
   assert.match(casting, /item\.vipGameMode \|\| item\.gameMode \|\| 'classic'/);
-  assert.match(casting, /playerIntakes\.filter\(\(item\) => item\.approved === true \|\| item\.approvalStatus === 'approved'\)/);
+  assert.match(casting, /scopeToEvent\(playerIntakes\)\.filter\(\(item\) => item\.approved === true \|\| item\.approvalStatus === 'approved'\)/);
 });
 
 
