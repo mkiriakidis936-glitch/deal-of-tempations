@@ -69,7 +69,7 @@ export default function TVProductionOutput({ sessionCode }) {
       acknowledge('ready');
     } else if (command === 'play') {
       if (!media) { acknowledge('ready'); return; }
-      media.play().then(() => acknowledge('playing')).catch((err) => {
+      media.play().catch((err) => {
         acknowledge('error', err?.message || 'Ο browser απέρριψε την αναπαραγωγή.');
       });
     }
@@ -91,7 +91,7 @@ export default function TVProductionOutput({ sessionCode }) {
   return (
     <section className="fixed inset-0 z-[120] flex items-center justify-center bg-black text-white" aria-label="Κεντρική έξοδος παραγωγής TV">
       <div className="absolute inset-0 flex items-center justify-center p-4">
-        {cue.kind === 'video' && <video key={cue.id + cue.commandId} ref={videoRef} {...mediaProps} controls className="max-h-full max-w-full object-contain" />}
+        {cue.kind === 'video' && <video key={cue.id + cue.source} ref={videoRef} {...mediaProps} controls className="max-h-full max-w-full object-contain" />}
         {cue.kind === 'audio' && <div className="w-full max-w-xl space-y-6 text-center"><div className="text-6xl">♫</div><h2 className="text-2xl font-bold">{cue.label}</h2><audio key={cue.id + cue.commandId} ref={audioRef} {...mediaProps} controls className="w-full" /></div>}
         {cue.kind === 'image' && <img src={cue.source} alt={cue.label || 'Production media'} className="max-h-full max-w-full object-contain" />}
         {!isMedia && cue.kind !== 'image' && <div className="max-w-5xl text-center space-y-4"><p className="text-sm tracking-[0.3em] text-white/60">DEAL OF TEMPTATIONS · LIVE</p><h1 className="text-5xl md:text-7xl font-bold">{cue.label}</h1>{cue.winnerName && <p className="text-3xl">{cue.winnerName}</p>}{cue.winnerNotes && <p className="text-xl text-white/75">{cue.winnerNotes}</p>}</div>}
