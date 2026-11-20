@@ -13,7 +13,8 @@ function modesForIntake(item, source) {
     if (Array.isArray(item.preferredModes) && item.preferredModes.length) return item.preferredModes;
     return item.formType === 'modes' ? [] : ['pajama'];
   }
-  return [item.vipGameMode || 'classic'];
+  if (Array.isArray(item.preferredModes) && item.preferredModes.length) return item.preferredModes;
+  return [item.vipGameMode || item.gameMode || 'classic'];
 }
 
 function normalizeName(value) {
