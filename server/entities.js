@@ -556,6 +556,12 @@ export function entityRoutes() {
           current.commandId !== commandId || !current.active) {
         return res.status(409).json({ error: 'Η επιβεβαίωση αφορά παλαιότερη εντολή.' });
       }
+      const previousStatus = current.playbackStatus || 'pending';
+      if ((status === 'ready' && ['playing', 'paused', 'ended', 'error', 'closed', 'stopped'].includes(previousStatus)) ||
+          (status === 'playing' && ['ended', 'error', 'closed', 'stopped'].includes(previousStatus)) ||
+          (status === 'ended' && !['pending', 'ready', 'playing'].includes(previousStatus))) {
+        return res.status(409).json({ error: 'Η επιβεβαίωση αναπαραγωγής είναι παλαιότερη από την τρέχουσα κατάσταση.' });
+      }
       const patch = {
         playbackStatus: status,
         playbackStatusAt: new Date().toISOString(),
@@ -586,9 +592,10 @@ export function entityRoutes() {
         }
       }
       const { rows } = await query(
-        "UPDATE records SET data = data || $1::jsonb, updated_date = now() WHERE id = $2 AND entity = 'ProductionCue' RETURNING *",
-        [JSON.stringify(patch), cueId],
+        "UPDATE records SET data = data || $1::jsonb, updated_date = now() WHERE id = $2 AND entity = 'ProductionCue' AND data->>'commandId' = $3 AND upper(data->>'sessionCode') = $4 AND data->>'active' = 'true' RETURNING *",
+        [JSON.stringify(patch), cueId, commandId, sessionCode],
       );
+      if (!rows[0]) return res.status(409).json({ error: 'Η εντολή άλλαξε πριν καταχωριστεί η επιβεβαίωση.' });
       const rec = toRecord(rows[0]);
       broadcast('ProductionCue', { type: 'update', id: rec.id, data: rec });
       return res.json({ success: true, cue: rec });
