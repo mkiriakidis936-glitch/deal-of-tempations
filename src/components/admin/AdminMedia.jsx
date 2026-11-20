@@ -71,18 +71,6 @@ export default function AdminMedia() {
   useEffect(() => {
     (async () => {
       try {
-        const historyKey = `admin_setting_versions_${MEDIA_KEY}`;
-        const history = await base44.entities.AppSetting.filter({ key: historyKey }, { limit: 1 });
-        if (history.items?.[0]?.id) await base44.entities.AppSetting.delete(history.items[0].id);
-      } catch (e) {
-        setMsg({ ok: false, text: 'Δεν διαγράφηκε το παλιό ιστορικό εκδόσεων της Βιβλιοθήκης Πολυμέσων.' });
-      }
-    })();
-  }, []);
-
-  useEffect(() => {
-    (async () => {
-      try {
         const r = await fetchOverrides();
         setRec(r);
         setOv(r?.value || {});
