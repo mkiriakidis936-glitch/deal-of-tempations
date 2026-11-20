@@ -110,3 +110,13 @@ test('session switching ignores stale async responses and binds updates to their
   assert.match(hook, /GameSession\.update\(targetSessionId, payload\)/);
   assert.match(hook, /if \(updated\?\.state && sessionRef\.current\?\.id === targetSessionId\)/);
 });
+
+
+test('Admin live actions prevent duplicate submissions and surface save status', () => {
+  const live = read('../src/components/admin/AdminLiveControl.jsx');
+  assert.match(live, /const \[busyAction, setBusyAction\] = useState\(''\)/);
+  assert.match(live, /if \(busyAction\) return/);
+  assert.match(live, /disabled=\{!!busyAction\}/);
+  assert.match(live, /aria-live="polite"/);
+  assert.match(live, /Η ενέργεια αποθηκεύτηκε/);
+});
