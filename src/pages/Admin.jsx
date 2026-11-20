@@ -2,6 +2,7 @@ import React, { lazy, Suspense, useState, useEffect, useCallback } from 'react';
 import './admin-theme.css';
 import { useSearchParams } from 'react-router-dom';
 import { base44, request } from '@/api/base44Client';
+import { setActiveSessionCode, subscribeActiveSession } from '@/lib/activeSession';
 import {
   LayoutDashboard, Inbox, Ticket, BarChart3, Gamepad2, Radio, Clapperboard, Video, Users, Award, Layers, Drama,
   Images, Globe, Mail, FileText, Link2, History, Film, HardDrive, LifeBuoy, Settings, CalendarDays, Bell, Search, RefreshCw,
@@ -157,15 +158,68 @@ export default function Admin() {
     setLoading(true);
     try {
       const { items } = await base44.entities.GameSession.filter({}, { sort: '-created_date', limit: 50 });
-      setSessions(items || []);
+      const next = items || [];
+      setSessions(next);
+      setPickedSession((current) => current ? (next.find((item) => item.id === current.id) || null) : null);
+      return next;
     } catch (e) {
       console.error('Admin load error', e);
+      return null;
     } finally {
       setLoading(false);
     }
   }, []);
 
-  useEffect(() => { loadSessions(); }, [loadSessions]);
+  // Η λίστα συνεδριών ενημερώνεται από το υπάρχον SSE stream, χωρίς polling.
+  useEffect(() => {
+    let mounted = true;
+    const unsubscribe = base44.entities.GameSession.subscribe((event) => {
+      if (!mounted || !event?.id) return;
+      if (event.type === 'delete') {
+        setSessions((current) => {
+          const next = current.filter((item) => item.id !== event.id);
+          if (current[0]?.id === event.id) {
+            const replacement = next[0];
+            if (replacement?.sessionCode) setActiveSessionCode(replacement.sessionCode);
+          }
+          return next;
+        });
+        setPickedSession((current) => current?.id === event.id ? null : current);
+        return;
+      }
+
+      if (!event.data) return;
+      setSessions((current) => {
+        const exists = current.some((item) => item.id === event.id);
+        const merged = exists
+          ? current.map((item) => item.id === event.id ? { ...item, ...event.data } : item)
+          : [...current, event.data];
+        return merged.sort((a, b) => new Date(b.created_date || 0) - new Date(a.created_date || 0)).slice(0, 50);
+      });
+      setPickedSession((current) => current?.id === event.id ? { ...current, ...event.data } : current);
+      if (event.type === 'create' && event.data.sessionCode) setActiveSessionCode(event.data.sessionCode);
+    });
+
+    loadSessions().then((items) => {
+      if (!mounted || !items?.length) return;
+      // Η πιο πρόσφατη συνεδρία που εμφανίζεται πρώτη στο Admin γίνεται η κοινή ενεργή.
+      setActiveSessionCode(items[0].sessionCode);
+    });
+
+    return () => { mounted = false; unsubscribe(); };
+  }, [loadSessions]);
+
+  // Αλλαγή ενεργής συνεδρίας από άλλο Admin συγχρονίζεται και στην τρέχουσα οθόνη.
+  useEffect(() => subscribeActiveSession((code) => {
+    if (!code) return;
+    setSessions((current) => {
+      const match = current.find((item) => item.sessionCode === code);
+      if (match) setPickedSession(match);
+      return current;
+    });
+    const known = sessions.some((item) => item.sessionCode === code);
+    if (!known) loadSessions();
+  }), [sessions, loadSessions]);
 
   useEffect(() => {
     const onKeyDown = (event) => {
