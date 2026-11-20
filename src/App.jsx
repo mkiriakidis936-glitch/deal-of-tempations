@@ -1,4 +1,4 @@
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, useEffect } from 'react';
 import { Toaster } from "@/components/ui/toaster"
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
@@ -38,7 +38,7 @@ const RequireAdmin = ({ children }) => {
 
 const PublicVisitTracker = () => {
   const location = useLocation();
-  React.useEffect(() => {
+  useEffect(() => {
     const path = location.pathname;
     if (['/', '/tv', '/play', '/admin', '/login', '/register', '/forgot-password', '/reset-password'].includes(path)) return;
     let trackedPath = path;
