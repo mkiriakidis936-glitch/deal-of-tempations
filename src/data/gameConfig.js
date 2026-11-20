@@ -113,7 +113,7 @@ export const INTENSITY_LEVELS = [
 ];
 
 // ===== GAME MODES =====
-// Four legacy modes plus the three digital modes registered below.
+// Four legacy modes plus the five digital modes registered below.
 export const GAME_MODES = [
   { id: 'classic', name: 'ΚΛΑΣΣΙΚΗ', icon: '🎲', desc: '2-6 παίκτριες. Ταμπλό 24 κουτιών, Σκάλα 7 Ποινών, Στάδια 1-3.' },
   { id: 'marathon', name: 'MEGA MARATHON', icon: '🏆', desc: '8-10 παίκτριες. 2 ομάδες (Alpha & Beta), 4 στάδια, $200.000 Loot ή 10 Wanted Stars.' },
