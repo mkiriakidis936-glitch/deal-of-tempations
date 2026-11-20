@@ -115,7 +115,7 @@
     background-image:
       radial-gradient(120% 70% at 50% -12%, hsl(var(--primary) / 0.09), transparent 62%),
       radial-gradient(90% 60% at 50% 110%, hsl(var(--destructive) / 0.10), transparent 60%);
-    background-attachment: fixed;
+    background-attachment: scroll;
   }
 
   h1, h2, h3, h4, h5 {
@@ -884,7 +884,7 @@ input[type="range"] {
 /* Admin: stronger hierarchy, calmer workspace and clearer active section. */
 .admin-root {
   background-color: hsl(var(--background));
-  background-attachment: fixed;
+  background-attachment: scroll;
 }
 
 .admin-root > div {
@@ -1056,4 +1056,11 @@ body:has(.comic-dots-dark) [role="dialog"] {
     scroll-behavior: auto !important;
     transition-duration: 0.01ms !important;
   }
+}
+
+
+/* Keep large Admin media grids cheap to paint while their cards are off-screen. */
+.admin-media-library-card {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 280px;
 }
