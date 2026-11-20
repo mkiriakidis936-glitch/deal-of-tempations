@@ -235,7 +235,12 @@ export default function AVControlRoom({ mediaFiles = [], onRefreshMedia }) {
         source: item.url,
         mediaItemId: item.id || item.url,
         mediaFolder: assetMeta.folder || 'Γενικά',
-        queue: queue[index]?.url === item.url ? queue : [],
+        queue: queue[index]?.url === item.url
+          ? queue.map((entry) => ({
+              ...entry,
+              kind: entry.kind === 'video' ? 'video' : entry.kind === 'audio' ? 'audio' : 'image',
+            }))
+          : [],
         queueIndex: queue[index]?.url === item.url ? index : -1,
         volume,
       };
