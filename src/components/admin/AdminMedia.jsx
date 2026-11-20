@@ -8,7 +8,6 @@ import { NEW_MODES, MODE_MEDIA_SECTIONS } from '@/data/modes/modeRegistry';
 import ModeMediaManager from '@/components/admin/ModeMediaManager';
 import GameMediaLibraries from '@/components/admin/GameMediaLibraries';
 import AdminMediaPreview from '@/components/admin/AdminMediaPreview';
-import AVControlRoom from '@/components/admin/AVControlRoom';
 import { MEDIA_KEY, fetchOverrides, uploadMedia, listMedia, deleteMedia, deleteAllMedia } from '@/lib/media';
 
 const MEDIA_ACCEPT = 'image/*,video/*,audio/*,.jpg,.jpeg,.png,.webp,.gif,.avif,.heic,.svg,.mp4,.webm,.mov,.mp3,.wav,.ogg,.m4a,.aac';
@@ -416,7 +415,6 @@ export default function AdminMedia() {
 
   return (
     <div className="space-y-3">
-      <AVControlRoom mediaFiles={library} onRefreshMedia={refreshLibrary} />
       <input ref={libraryOne} type="file" accept={MEDIA_ACCEPT} hidden onChange={onFiles} />
 
       <ComicPanel className="bg-card">
