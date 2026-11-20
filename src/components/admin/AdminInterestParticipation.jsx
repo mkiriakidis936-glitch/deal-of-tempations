@@ -110,6 +110,17 @@ export default function AdminInterestParticipation() {
     }
   }
 
+  async function copyParticipationLink() {
+    if (!selectedEvent?.room_code) return;
+    const url = `${window.location.origin}/deal/${selectedEvent.room_code}`;
+    try {
+      await navigator.clipboard.writeText(url);
+      setMessage('Ο σύνδεσμος συμμετοχής αντιγράφηκε.');
+    } catch {
+      setMessage('Δεν ήταν δυνατή η αντιγραφή. Χρησιμοποίησε τον σύνδεσμο που εμφανίζεται παρακάτω.');
+    }
+  }
+
   async function updateParticipation(item, choice) {
     setBusy(true);
     try {
@@ -173,6 +184,11 @@ export default function AdminInterestParticipation() {
             <div className="rounded-lg border border-amber-700/40 p-3"><div className="text-[10px] text-foreground/50">ΧΩΡΙΣ ΑΠΑΝΤΗΣΗ</div><div className="font-heading text-2xl">{noResponseCount}</div></div>
           </div>
           <div className="text-xs text-foreground/55">Θετικές επιβεβαιώσεις: {yesCount} / {selectedEvent.expectedCount ?? 0} · Κωδικός Event: {selectedEvent.room_code}</div>
+          <div className="rounded-lg border border-[#b99a45]/40 bg-background/60 p-3 space-y-2">
+            <div className="text-xs font-bold text-primary">ΣΥΝΔΕΣΜΟΣ ΔΗΛΩΣΗΣ ΣΥΜΜΕΤΟΧΗΣ</div>
+            <a className="block break-all text-sm underline underline-offset-2" href={`/deal/${selectedEvent.room_code}`} target="_blank" rel="noreferrer">{window.location.origin}/deal/{selectedEvent.room_code}</a>
+            <ComicButton size="sm" variant="dark" onClick={copyParticipationLink}>ΑΝΤΙΓΡΑΦΗ ΣΥΝΔΕΣΜΟΥ</ComicButton>
+          </div>
           <div className="space-y-2">
             {responses.map((item) => (
               <div key={item.id} className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-border p-3">
