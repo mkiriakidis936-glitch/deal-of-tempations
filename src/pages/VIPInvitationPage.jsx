@@ -54,6 +54,7 @@ export default function VIPInvitationPage() {
   }));
   const valid = name.trim().length > 0 && adultConfirmed && consentConfirmed && String(answers.safeWord || '').trim().length >= 2 && customQuestionsValid && !saving;
   const gameName = GAME_MODES.find((mode) => mode.id === invitation?.gameMode)?.name || invitation?.gameMode || '—';
+  const eventName = invitation?.eventTitle ? `${invitation.eventTitle} · ${invitation.roomCode || ''}` : '—';
 
   async function submit(event) {
     event.preventDefault();
@@ -90,7 +91,8 @@ export default function VIPInvitationPage() {
         <div style={{ color: '#F7E3A8', fontSize: 'clamp(30px,8vw,44px)', letterSpacing: '.12em', margin: '14px 0' }}>VIP INVITATION</div>
         <div style={{ height: 1, maxWidth: 180, margin: '0 auto 14px', background: 'linear-gradient(90deg,transparent,#E8C26B,transparent)' }} />
         <div style={{ color: '#d6c28c', fontSize: 12, letterSpacing: '.24em' }}>DEAL OF TEMPTATION</div>
-        {invitation && <div style={{ color: '#e5cf91', fontSize: 12, marginTop: 14 }}>ΣΥΝΔΕΔΕΜΕΝΟ ΠΑΙΧΝΙΔΙ: {gameName}</div>}
+        {invitation && <div style={{ color: '#e5cf91', fontSize: 12, marginTop: 14 }}>ΣΥΝΔΕΔΕΜΕΝΟ EVENT: {eventName}</div>}
+        {invitation && <div style={{ color: '#e5cf91', fontSize: 12, marginTop: 6 }}>ΕΠΙΛΕΓΜΕΝΟ MODE: {gameName}</div>
       </header>
 
       {loading ? <div style={{ textAlign: 'center', padding: 40, color: '#E8C26B' }}>Φόρτωση πρόσκλησης…</div> :
