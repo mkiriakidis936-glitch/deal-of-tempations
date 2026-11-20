@@ -1,6 +1,17 @@
 // Τα εγκεκριμένα ψηφιακά game modes.
 export const NEW_MODES = [
   {
+    id: 'pedi_glam',
+    name: 'PAJAMA PEDI-GLAM',
+    icon: '💅',
+    desc: 'Ψηφιακή εμπειρία 90 λεπτών με Pedi-Care, ASMR, μάσκες, φτερά, κρέμες, Glam Tokens και εξομολογήσεις.',
+    min: 3,
+    max: 8,
+    acts: ['board', 'midnight'],
+    actDurations: { board: 60, midnight: 30 },
+    minutes: 90,
+  },
+  {
     id: 'pedi_extended',
     name: 'PAJAMA PEDI-GLAM EXTENDED',
     icon: '💅',
@@ -71,6 +82,7 @@ export const modeMeta = (id) => NEW_MODES.find((m) => m.id === id);
 export const MODE_THEMES = {
   lockdown: { bg: '#000000', accent: '#E8C26B', accent2: '#F7E3A8', danger: '#FF453A' },
   beach_bar: { bg: '#000000', accent: '#F0B85A', accent2: '#FBE3B0', danger: '#FF453A' },
+  pedi_glam: { bg: '#000000', accent: '#E8C26B', accent2: '#F7E3A8', danger: '#FF453A' },
   pedi_extended: { bg: '#000000', accent: '#E8C26B', accent2: '#F7E3A8', danger: '#FF453A' },
   marathon_4h: { bg: '#000000', accent: '#D9B45B', accent2: '#F7E3A8', danger: '#FF453A' },
 };
@@ -91,7 +103,5 @@ export const MEDIA_MODES = [
   { id: 'marathon', name: 'MARATHON', icon: '' },
   { id: 'arrest_heist', name: 'ARREST HEIST', icon: '' },
   { id: 'pajama', name: 'PAJAMA', icon: '' },
-  { id: 'pedi_extended', name: 'PAJAMA PEDI-GLAM EXTENDED', icon: '' },
-  { id: 'marathon_4h', name: 'PAJAMA MARATHON 4H', icon: '' },
   ...NEW_MODES.map(({ id, name, icon }) => ({ id, name, icon })),
 ];
