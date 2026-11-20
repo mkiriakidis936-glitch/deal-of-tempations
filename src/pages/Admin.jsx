@@ -14,7 +14,6 @@ const AdminContent = lazy(() => import('@/components/admin/AdminContent'));
 const AdminDashboard = lazy(() => import('@/components/admin/AdminDashboard'));
 const AdminOverview = lazy(() => import('@/components/admin/AdminOverview'));
 const AdminInbox = lazy(() => import('@/components/admin/AdminInbox'));
-const AdminEventCenter = lazy(() => import('@/components/admin/AdminEventCenter'));
 const AdminEventManager = lazy(() => import('@/components/admin/AdminEventManager'));
 const AdminInterestParticipation = lazy(() => import('@/components/admin/AdminInterestParticipation'));
 const AdminSettings = lazy(() => import('@/components/admin/AdminSettings'));
