@@ -125,14 +125,7 @@ export default function AdminSite({ focusScenario = false }) {
         <Field label="Κουμπί κράτησης"><Text value={d.cta.label} onChange={(v) => up({ cta: { ...d.cta, label: v } })} /></Field>
         <Field label="Πού πηγαίνει το κουμπί">
           <select className={inp} value={d.cta.path} onChange={(e) => up({ cta: { ...d.cta, path: e.target.value } })}>
-            <option value="/invitation">/invitation (ερωτηματολόγιο Heist)</option>
-            <option value="/pajama-form">/pajama-form (φόρμα Pajama)</option>
-            <option value="/pajama-invite">/pajama-invite (κράτηση θέσης)</option>
-            <option value="/modes-form">/modes-form (φόρμα επιλογής λειτουργίας)</option>
-            <option value="/modes-form?mode=pedi_extended">/modes-form → Pedi-Glam Extended</option>
-            <option value="/modes-form?mode=lockdown">/modes-form → Pajama Lockdown</option>
-            <option value="/modes-form?mode=beach_bar">/modes-form → Beach Bar Lockdown</option>
-            <option value="/modes-form?mode=marathon_4h">/modes-form → 4H Marathon</option>
+            <option value="/forms">/forms (ενιαία φόρμα συμμετοχής — επιλογή Mode)</option>
           </select>
         </Field>
         <Field label="Ημερομηνία & ώρα αυτής της εκδήλωσης" hint="Αν το αφήσεις κενό, χρησιμοποιείται η γενική ημερομηνία από τα Πρακτικά.">
