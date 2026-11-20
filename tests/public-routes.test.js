@@ -56,3 +56,10 @@ test('Bachelorette intake submissions can be approved and only approved players 
   assert.match(setup, /scopeToEvent\(heistRes\.items\)\.filter\(\(item\) => item\.approved === true\)/);
   assert.match(setup, /BacheloretteIntake\.subscribe\(refresh\)/);
 });
+
+
+test('approved Arrest & Heist registrations appear in mode preference counts', () => {
+  const setup = read('../src/components/tablet/SetupScreen.jsx');
+  assert.match(setup, /filter\(\(item\) => item\.approved === true\)\.map\(\(item\) => \(\{ \.\.\.item, modeIds: \['arrest_heist'\] \}\)\)/);
+  assert.match(setup, /\.\.\.heistIntakes, \.\.\.pendingIntakes/);
+});
