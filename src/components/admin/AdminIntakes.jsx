@@ -55,6 +55,16 @@ export default function AdminIntakes() {
     } catch (e) { console.error('Delete error', e); setMsg({ ok: false, text: e.message || 'Η διαγραφή απέτυχε.' }); }
   }
 
+  async function handleApproveBach(item) {
+    try {
+      await request('POST', '/api/entities/intake-approvals/BacheloretteIntake/' + item.id, {});
+      setBachIntakes((prev) => prev.map((entry) => entry.id === item.id ? { ...entry, approved: true, approvalStatus: 'approved' } : entry));
+      setMsg({ ok: true, text: 'Η συμμετοχή Arrest & Heist εγκρίθηκε και είναι διαθέσιμη στο Tablet.' });
+    } catch (e) {
+      setMsg({ ok: false, text: e.message || 'Η έγκριση Arrest & Heist απέτυχε.' });
+    }
+  }
+
   async function handleDeleteBach(id) {
     if (!window.confirm('Να διαγραφεί οριστικά το Bachelorette intake;')) return;
     try {
@@ -192,6 +202,10 @@ export default function AdminIntakes() {
                     {i.favoriteDrink && <div className="text-xs">🍹 {i.favoriteDrink}</div>}
                     {i.boundaries && <div className="text-xs bg-destructive/30 p-1.5 rounded border border-border/20">🚫 {i.boundaries}</div>}
                     {i.funFact && <div className="text-xs bg-tarot-royal/30 p-1.5 rounded border border-border/20">✨ {i.funFact}</div>}
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-xs font-bold">{i.approved ? '✅ ΕΓΚΕΚΡΙΜΕΝΗ' : '⏳ ΣΕ ΑΝΑΜΟΝΗ ΕΓΚΡΙΣΗΣ'}</span>
+                      {!i.approved && <ComicButton variant="green" size="sm" onClick={() => handleApproveBach(i)}>ΕΓΚΡΙΣΗ & ΠΡΟΣΘΗΚΗ ΣΤΟ TABLET</ComicButton>}
+                    </div>
                   </div>
                   <ComicButton variant="red" size="sm" onClick={() => handleDeleteBach(i.id)}>🗑️</ComicButton>
                 </div>
