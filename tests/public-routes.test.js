@@ -126,6 +126,6 @@ test('active session writes are serialized and session deletion clears subscribe
   const activeSession = read('../src/lib/activeSession.js');
   assert.match(activeSession, /let activeSessionWriteQueue = Promise\.resolve\(\)/);
   assert.match(activeSession, /activeSessionWriteQueue = activeSessionWriteQueue/);
-  assert.match(activeSession, /if \(event\?\.type === 'delete'\) \{ onCode\(''\); return; \}/);
+  assert.match(activeSession, /event\.type === 'delete'.*onCode\(''\)/s);
   assert.match(activeSession, /toUpperCase\(\)/);
 });
