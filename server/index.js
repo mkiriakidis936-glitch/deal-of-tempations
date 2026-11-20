@@ -70,12 +70,8 @@ if (fs.existsSync(dist)) {
     '/site': { title: 'DEAL OF TEMPTATIONS — THE PRIVATE REALITY GAME NIGHT', desc: SITE_DESC, index: true },
     '/portal': { title: 'DEAL OF TEMPTATIONS — Πληροφορίες Event', desc: 'Ημερομηνία, τοποθεσία και πρακτικές πληροφορίες της εκδήλωσης.' },
     '/promo': { title: 'DEAL OF TEMPTATIONS — Trailer', desc: SITE_DESC, index: true },
-    '/invitation': { title: 'DEAL OF TEMPTATIONS — Πρόσκληση Heist Night', desc: 'Έχεις προσκληθεί σε μια νύχτα Heist. Συμπλήρωσε το ερωτηματολόγιο για να κλείσεις τη θέση σου.' },
-    '/pajama-invite': { title: 'DEAL OF TEMPTATIONS — Πρόσκληση Pajama Pedi-Glam', desc: 'Έχεις προσκληθεί σε Pajama Pedi-Glam. Κλείσε τη θέση σου.' },
-    '/pajama-form': { title: 'DEAL OF TEMPTATIONS — Φόρμα Pajama', desc: 'Συμπλήρωσε τη φόρμα σου για το Pajama Pedi-Glam.' },
-    '/modes-form': { title: 'DEAL OF TEMPTATIONS — Φόρμα συμμετοχής', desc: 'Διάλεξε mode και συμπλήρωσε τη φόρμα συμμετοχής σου.' },
     '/gift-unlock': { title: 'DEAL OF TEMPTATIONS — Ξεκλείδωσε το δώρο σου', desc: 'Βάλε τον κωδικό σου και ξεκλείδωσε το δώρο.' },
-    '/forms': { title: 'DEAL OF TEMPTATIONS — Δημόσιες φόρμες', desc: 'Αίτηση συμμετοχής, αίτημα εκδήλωσης και feedback.' },
+    '/forms': { title: 'DEAL OF TEMPTATIONS — Φόρμα συμμετοχής', desc: 'Ενιαία φόρμα επιλογής Mode και υποβολής συμμετοχής.' },
   };
   const esc = (v) => String(v).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
   const renderIndex = (req) => {
