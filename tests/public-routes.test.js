@@ -69,3 +69,16 @@ test('approved invitation intakes are assigned to their submitted mode in Admin 
   assert.match(casting, /item\.vipGameMode \|\| item\.gameMode \|\| 'classic'/);
   assert.match(casting, /playerIntakes\.filter\(\(item\) => item\.approved === true \|\| item\.approvalStatus === 'approved'\)/);
 });
+
+
+test('mobile player heartbeat is validated and visible in live Admin presence', () => {
+  const server = read('../server/entities.js');
+  const play = read('../src/pages/Play.jsx');
+  const adminPlayers = read('../src/components/admin/AdminPlayers.jsx');
+  assert.match(server, /r\.post\('\/player-presence'/);
+  assert.match(server, /PLAYER_PRESENCE_TTL_MS = 45_000/);
+  assert.match(server, /broadcast\('PlayerPresence'/);
+  assert.match(play, /\/api\/entities\/player-presence/);
+  assert.match(adminPlayers, /base44\.entities\.PlayerPresence\.subscribe/);
+  assert.match(adminPlayers, /ΣΥΝΔΕΔΕΜΕΝΗ/);
+});
