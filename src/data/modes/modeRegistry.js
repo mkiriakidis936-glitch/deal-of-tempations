@@ -1,26 +1,48 @@
 // Τα εγκεκριμένα ψηφιακά game modes.
 export const NEW_MODES = [
   {
+    id: 'pedi_extended',
+    name: 'PAJAMA PEDI-GLAM EXTENDED',
+    icon: '💅',
+    desc: 'Εκτεταμένη εμπειρία 2–2,5 ωρών με διαδοχικές κάρτες, mini-games, χρονόμετρα και κλιμακούμενες προκλήσεις.',
+    min: 3,
+    max: 8,
+    acts: ['board', 'midnight'],
+    actDurations: { board: 90, midnight: 60 },
+    minutes: 150,
+  },
+  {
     id: 'lockdown',
     name: 'PAJAMA LOCKDOWN 18+',
     icon: '🚨',
-    desc: 'Ψηφιακό Escape Room 5 ωρών με Team Cipher, Sensory Puzzles, Sabotage Override, mini-games, Exit Code και VIP Vault.',
+    desc: 'Χρονομετρημένο Escape Room 60 λεπτών με Team Cipher, Sensory Puzzles, Sabotage Override, mini-games, Exit Code και VIP Vault.',
     min: 3,
     max: 8,
     acts: ['lockdown'],
     actDurations: { lockdown: 60 },
-    minutes: 300,
+    minutes: 60,
   },
   {
     id: 'beach_bar',
     name: 'BEACH BAR HOME LOCKDOWN',
     icon: '🍹',
-    desc: 'Home beach-bar party 5 ωρών με DJ, flip-flop dress code, Dance & Freeze, Mocktail & Truth Sync, τροχό και Flip-Flop Heist. Τα ποτά είναι πάντα προαιρετικά και αντικαθίστανται με μη αλκοολούχα.',
+    desc: 'Home beach-bar party 2–3 ωρών με DJ, flip-flop dress code, Freeze Dance, Shot & Truth Sync, Penalty Wheel και Flip-Flop Heist. Τα ποτά είναι προαιρετικά.',
     min: 3,
     max: 8,
     acts: ['beach'],
     actDurations: { beach: 150 },
-    minutes: 300,
+    minutes: 150,
+  },
+  {
+    id: 'marathon_4h',
+    name: 'PAJAMA MARATHON 4H',
+    icon: '🏆',
+    desc: 'Τετράωρη εμπειρία τεσσάρων πράξεων: Pedi-Glam, Midnight ASMR, Pajama Lockdown 60 λεπτών και VIP Vault με Coffee Riddle.',
+    min: 3,
+    max: 8,
+    acts: ['board', 'midnight', 'lockdown', 'morning'],
+    actDurations: { board: 90, midnight: 45, lockdown: 60, morning: 45 },
+    minutes: 240,
   },
 
 ];
@@ -49,6 +71,8 @@ export const modeMeta = (id) => NEW_MODES.find((m) => m.id === id);
 export const MODE_THEMES = {
   lockdown: { bg: '#000000', accent: '#E8C26B', accent2: '#F7E3A8', danger: '#FF453A' },
   beach_bar: { bg: '#000000', accent: '#F0B85A', accent2: '#FBE3B0', danger: '#FF453A' },
+  pedi_extended: { bg: '#000000', accent: '#E8C26B', accent2: '#F7E3A8', danger: '#FF453A' },
+  marathon_4h: { bg: '#000000', accent: '#D9B45B', accent2: '#F7E3A8', danger: '#FF453A' },
 };
 
 export const ACT_META = {
@@ -68,5 +92,6 @@ export const MEDIA_MODES = [
   { id: 'arrest_heist', name: 'ARREST HEIST', icon: '' },
   { id: 'pajama', name: 'PAJAMA', icon: '' },
   { id: 'pedi_extended', name: 'PAJAMA PEDI-GLAM EXTENDED', icon: '' },
+  { id: 'marathon_4h', name: 'PAJAMA MARATHON 4H', icon: '' },
   ...NEW_MODES.map(({ id, name, icon }) => ({ id, name, icon })),
 ];
