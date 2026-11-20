@@ -140,7 +140,7 @@ export default function SetupScreen({ onStart }) {
   }, []);
 
   const newMode = isNewMode(mode) ? modeMeta(mode) : null;
-  const modeDuration = newMode?.minutes || (mode === 'pajama' ? 90 : 300);
+  const modeDuration = newMode?.minutes || 300;
   const maxPlayers = newMode ? newMode.max : mode === 'marathon' ? 10 : mode === 'arrest_heist' ? 10 : 6;
   const minPlayers = newMode ? newMode.min : mode === 'marathon' ? 8 : mode === 'arrest_heist' ? 4 : 2;
   const modePreferenceRows = GAME_MODES.map((entry) => {
