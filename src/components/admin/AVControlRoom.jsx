@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { listMedia } from '@/lib/media';
+import { publishProductionCue, commandProductionCue, stopProductionCue } from '@/lib/productionCue';
 import ComicPanel from '@/components/comic/ComicPanel';
 import ComicButton from '@/components/comic/ComicButton';
 
@@ -227,20 +228,17 @@ export default function AVControlRoom({ refreshKey = 0 }) {
     if (assetMeta.permission !== 'cleared') { setMessage('Η προβολή είναι κλειδωμένη μέχρι να καταχωριστεί η απαιτούμενη άδεια ή συγκατάθεση.'); return; }
     setBusy(true);
     try {
-      const existing = cueRecord || (await base44.entities.ProductionCue.filter({ sessionCode }, { limit: 1 })).items?.[0] || null;
       const data = {
-        sessionCode,
-        active: true,
         label: assetMeta.title || item.label || item.name,
         kind: item.kind === 'video' ? 'video' : item.kind === 'audio' ? 'audio' : 'image',
         source: item.url,
-        activatedAt: new Date().toISOString(),
         mediaItemId: item.id || item.url,
         mediaFolder: assetMeta.folder || 'Γενικά',
+        queue,
+        queueIndex: index,
+        volume,
       };
-      const saved = existing?.id
-        ? await base44.entities.ProductionCue.update(existing.id, data)
-        : await base44.entities.ProductionCue.create(data);
+      const saved = await publishProductionCue(sessionCode, data);
       setCueRecord(saved);
       setQueueIndex(index);
       await persist(metadata, queue, index);
@@ -252,11 +250,8 @@ export default function AVControlRoom({ refreshKey = 0 }) {
 
   async function stopOutput() {
     try {
-      const existing = cueRecord || (sessionCode ? (await base44.entities.ProductionCue.filter({ sessionCode }, { limit: 1 })).items?.[0] : null);
-      if (existing?.id) {
-        const saved = await base44.entities.ProductionCue.update(existing.id, { active: false });
-        setCueRecord(saved);
-      }
+      const saved = await stopProductionCue(sessionCode);
+      if (saved) setCueRecord(saved);
       setMessage('Η έξοδος TV σταμάτησε.');
     } catch (error) { setMessage(error.message || 'Δεν ήταν δυνατή η διακοπή της εξόδου.'); }
   }
@@ -264,9 +259,7 @@ export default function AVControlRoom({ refreshKey = 0 }) {
   async function sendPlaybackCommand(playbackCommand, nextVolume = volume) {
     if (!sessionCode) { setMessage('Επίλεξε πρώτα Event.'); return; }
     try {
-      const existing = cueRecord || (await base44.entities.ProductionCue.filter({ sessionCode }, { limit: 1 })).items?.[0];
-      if (!existing?.id || !existing.active) { setMessage('Δεν υπάρχει ενεργό Media στην TV.'); return; }
-      const saved = await base44.entities.ProductionCue.update(existing.id, { playbackCommand, volume: nextVolume, commandAt: Date.now() });
+      const saved = await commandProductionCue(sessionCode, playbackCommand, nextVolume);
       setCueRecord(saved);
       setMessage('Η εντολή χειρισμού στάλθηκε στην TV.');
     } catch (error) { setMessage(error.message || 'Δεν στάλθηκε η εντολή χειρισμού.'); }
