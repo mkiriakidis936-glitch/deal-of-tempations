@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { publishProductionCue, commandProductionCue, stopProductionCue } from '@/lib/productionCue';
+import { getActiveSessionCode, setActiveSessionCode, subscribeActiveSession } from '@/lib/activeSession';
 import ComicPanel from '@/components/comic/ComicPanel';
 import ComicButton from '@/components/comic/ComicButton';
 
@@ -130,6 +131,20 @@ export default function AVControlRoom({ mediaFiles = [], onRefreshMedia }) {
   }, []);
 
   useEffect(() => { load(); }, [load]);
+
+  // Η επιλεγμένη διοργάνωση είναι κοινή με Admin, Tablet και TV.
+  useEffect(() => {
+    let alive = true;
+    getActiveSessionCode().then((code) => { if (alive && code) setSessionCode(code); });
+    const unsubscribe = subscribeActiveSession((code) => { if (code) setSessionCode(code); });
+    return () => { alive = false; unsubscribe?.(); };
+  }, []);
+
+  const selectSession = (code) => {
+    setSessionCode(code);
+    if (code) setActiveSessionCode(code);
+  };
+
   useEffect(() => {
     if (!sessionCode) { setCueRecord(null); return undefined; }
     let alive = true;
@@ -290,7 +305,7 @@ export default function AVControlRoom({ mediaFiles = [], onRefreshMedia }) {
         <div className="flex gap-2"><ComicButton size="sm" variant="dark" onClick={onRefreshMedia} disabled={busy}>↻ Ανανέωση Βιβλιοθήκης</ComicButton><ComicButton size="sm" variant="dark" onClick={load} disabled={busy}>Ανανέωση Event</ComicButton></div>
       </div>
       <label className="block space-y-1 text-xs font-bold">ΕΝΕΡΓΟ EVENT
-        <select className={field} value={sessionCode} onChange={(e) => { setSessionCode(e.target.value); setCueRecord(null); }}>
+        <select className={field} value={sessionCode} onChange={(e) => { selectSession(e.target.value); setCueRecord(null); }}>
           <option value="">Επιλογή Event</option>
           {sessions.map((session) => <option key={session.id} value={session.sessionCode}>{session.event?.title || session.mode || 'Game'} · {session.sessionCode}</option>)}
         </select>
