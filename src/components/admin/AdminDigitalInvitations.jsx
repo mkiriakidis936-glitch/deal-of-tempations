@@ -3,6 +3,7 @@ import { QRCodeSVG } from 'qrcode.react';
 import ComicPanel from '@/components/comic/ComicPanel';
 import ComicButton from '@/components/comic/ComicButton';
 import { base44, request } from '@/api/base44Client';
+import { GAME_MODES } from '@/data/gameConfig';
 
 const KEY = 'digital_invitations';
 const TARGETS = [
@@ -228,6 +229,7 @@ export default function AdminDigitalInvitations() {
           {responses.length === 0 ? <div className="text-sm text-foreground/55">Δεν υπάρχουν ακόμη υποβολές.</div> : responses.map((response) => (
             <div key={response.id} className="rounded-lg border border-[#b99a45]/25 bg-black/40 p-3">
               <div className="font-bold text-[#f4e6bd]">{response.avatar} {response.name}</div>
+              <div className="mt-1 text-xs text-[#E8C26B]">ΕΠΙΛΕΓΜΕΝΟ MODE: {GAME_MODES.find((mode) => mode.id === response.gameMode)?.name || response.gameMode || '—'}</div>
               <div className="mt-2 space-y-1 text-xs text-foreground/70">
                 {Object.entries(response.answerLabels || response.answers || {}).map(([label, answer]) => <div key={label}><span className="text-[#E8C26B]">{label}:</span> {String(answer)}</div>)}
               </div>
