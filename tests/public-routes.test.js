@@ -46,3 +46,13 @@ test('Admin exposes the public participation link for a selected Event', () => {
   assert.match(adminInterest, /modes-form\?event=/);
   assert.match(adminInterest, /copyModeFormLink/);
 });
+
+
+test('Bachelorette intake submissions can be approved and only approved players enter Arrest & Heist', () => {
+  const server = read('../server/entities.js');
+  const setup = read('../src/components/tablet/SetupScreen.jsx');
+  assert.match(server, /'BacheloretteIntake', 'VIPInvitationSubmission'/);
+  assert.match(setup, /sourceEntity: 'BacheloretteIntake', modeIds: \['arrest_heist'\]/);
+  assert.match(setup, /scopeToEvent\(heistRes\.items\)\.filter\(\(item\) => item\.approved === true\)/);
+  assert.match(setup, /BacheloretteIntake\.subscribe\(refresh\)/);
+});
