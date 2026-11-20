@@ -85,10 +85,11 @@ export default function SetupScreen({ onStart }) {
       const pending = [
         ...scopeToEvent(classicRes.items).filter((item) => item.approved !== true).map((item) => ({ ...item, sourceEntity: 'PlayerIntake', modeIds: item.preferredModes?.length ? item.preferredModes : [item.vipGameMode || item.gameMode || 'classic'] })),
         ...allPajama.filter((item) => item.approved !== true).map((item) => ({ ...item, sourceEntity: 'PajamaIntake', modeIds: item.preferredModes?.length ? item.preferredModes : ['pajama'] })),
+        ...scopeToEvent(heistRes.items).filter((item) => item.approved !== true).map((item) => ({ ...item, sourceEntity: 'BacheloretteIntake', modeIds: ['arrest_heist'] })),
         ...scopeToEvent(vipRes.items).filter((item) => item.approved !== true && item.approvalStatus !== 'rejected').map((item) => ({ ...item, sourceEntity: 'VIPInvitationSubmission', modeIds: [item.gameMode || 'classic'] })),
       ].sort((a, b) => new Date(b.created_date || b.submittedAt || 0) - new Date(a.created_date || a.submittedAt || 0));
       setPendingIntakes(pending);
-      setHeistIntakes([...scopeToEvent(heistRes.items), ...allClassic.filter((item) => item.gameMode === 'arrest_heist')]);
+      setHeistIntakes([...scopeToEvent(heistRes.items).filter((item) => item.approved === true), ...allClassic.filter((item) => item.gameMode === 'arrest_heist')]);
       setIntakes(allClassic);
       setPajamaApproved(approved);
 
@@ -142,8 +143,9 @@ export default function SetupScreen({ onStart }) {
     const offPlayers = base44.entities.PlayerIntake.subscribe(refresh);
     const offPajama = base44.entities.PajamaIntake.subscribe(refresh);
     const offEvents = base44.entities.DotEvent.subscribe(refresh);
+    const offHeist = base44.entities.BacheloretteIntake.subscribe(refresh);
     const offVip = base44.entities.VIPInvitationSubmission.subscribe(refresh);
-    return () => { offPlayers?.(); offPajama?.(); offEvents?.(); offVip?.(); };
+    return () => { offPlayers?.(); offPajama?.(); offEvents?.(); offHeist?.(); offVip?.(); };
   }, [selectedDotEventId]);
 
   useEffect(() => {
