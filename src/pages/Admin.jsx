@@ -17,6 +17,7 @@ const AdminInbox = lazy(() => import('@/components/admin/AdminInbox'));
 const AdminEventManager = lazy(() => import('@/components/admin/AdminEventManager'));
 const AdminInterestParticipation = lazy(() => import('@/components/admin/AdminInterestParticipation'));
 const AdminSettings = lazy(() => import('@/components/admin/AdminSettings'));
+const AdminGuide = lazy(() => import('@/components/admin/AdminGuide'));
 const AdminBackup = lazy(() => import('@/components/admin/AdminBackup'));
 const AdminSessions = lazy(() => import('@/components/admin/AdminSessions'));
 const AdminSessionRecovery = lazy(() => import('@/components/admin/AdminSessionRecovery'));
@@ -366,6 +367,8 @@ export default function Admin() {
         );
       case 'settings':
         return <AdminSettings />;
+      case 'guide':
+        return <AdminGuide />;
       case 'backup':
         return <AdminBackup />;
       case 'recovery':
