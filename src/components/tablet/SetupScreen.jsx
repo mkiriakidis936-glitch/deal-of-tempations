@@ -106,7 +106,29 @@ export default function SetupScreen({ onStart }) {
 
       const castingRecord = castingRes.items?.[0] || null;
       const savedCastingPlan = castingRecord?.value;
-      if (savedCastingPlan?.mode && !savedCastingPlan.usedAt && Array.isArray(savedCastingPlan.players) && savedCastingPlan.players.length) {
+      const eligibleModesByName = new Map();
+      const addEligible = (name, modes) => {
+        const key = String(name || '').trim().toLocaleLowerCase('el-GR');
+        if (!key) return;
+        const current = eligibleModesByName.get(key) || new Set();
+        modes.filter(Boolean).forEach((modeId) => current.add(modeId));
+        eligibleModesByName.set(key, current);
+      };
+      allClassic.forEach((item) => addEligible(item.name, item.preferredModes?.length ? item.preferredModes : [item.vipGameMode || item.gameMode || 'classic']));
+      approved.forEach((item) => addEligible(item.name, item.preferredModes?.length ? item.preferredModes : (item.formType === 'modes' ? [] : ['pajama'])));
+      scopeToEvent(heistRes.items).filter((item) => item.approved === true).forEach((item) => {
+        [item.name, item.leaderName, item.opponentName].forEach((name) => addEligible(name, ['arrest_heist']));
+      });
+      const planMatchesEvent = selectedDotEventId
+        ? savedCastingPlan?.dotEventId === selectedDotEventId ||
+          (!!savedCastingPlan?.roomCode && savedCastingPlan.roomCode === selectedEvent?.room_code) ||
+          (!!savedCastingPlan?.sessionCode && savedCastingPlan.sessionCode === selectedEvent?.room_code)
+        : eventCode
+          ? savedCastingPlan?.sessionCode === eventCode || savedCastingPlan?.roomCode === eventCode
+          : !savedCastingPlan?.dotEventId && !savedCastingPlan?.sessionCode && !savedCastingPlan?.roomCode;
+      const planHasOnlyApprovedPlayers = Array.isArray(savedCastingPlan?.players) && savedCastingPlan.players.length > 0 &&
+        savedCastingPlan.players.every((player) => eligibleModesByName.get(String(player.name || '').trim().toLocaleLowerCase('el-GR'))?.has(savedCastingPlan.mode));
+      if (savedCastingPlan?.mode && !savedCastingPlan.usedAt && planMatchesEvent && planHasOnlyApprovedPlayers) {
         const activePlan = { ...savedCastingPlan, settingId: castingRecord.id };
         setCastingPlan(activePlan);
         setMode(activePlan.mode);
@@ -117,6 +139,9 @@ export default function SetupScreen({ onStart }) {
         })));
       } else {
         setCastingPlan(null);
+        if (savedCastingPlan?.players?.length && (!planMatchesEvent || !planHasOnlyApprovedPlayers)) {
+          setApprovalMessage('Η αποθηκευμένη επιλογή δεν αντιστοιχεί στο Event ή περιλαμβάνει συμμετοχή χωρίς ενεργή έγκριση. Φορτώθηκαν μόνο οι εγκεκριμένες συμμετοχές.');
+        }
         const currentMode = modeRef.current;
         let names = [];
         if (currentMode === 'classic') names = classic.map((item) => item.name?.trim()).filter(Boolean);
