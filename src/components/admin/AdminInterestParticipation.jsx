@@ -131,6 +131,18 @@ export default function AdminInterestParticipation() {
     }
   }
 
+  async function copyModeFormLink() {
+    if (!selectedEvent?.id || !selectedEvent?.room_code) return;
+    const params = new URLSearchParams({ event: selectedEvent.room_code, eventId: selectedEvent.id, roomCode: selectedEvent.room_code });
+    const url = `${window.location.origin}/modes-form?${params.toString()}`;
+    try {
+      await navigator.clipboard.writeText(url);
+      setMessage('Ο σύνδεσμος επιλογής Mode αντιγράφηκε.');
+    } catch {
+      setMessage('Χρησιμοποίησε τον σύνδεσμο επιλογής Mode που εμφανίζεται παρακάτω.');
+    }
+  }
+
   async function updateParticipation(item, choice) {
     setBusy(true);
     try {
@@ -205,6 +217,11 @@ export default function AdminInterestParticipation() {
             <div className="text-xs font-bold text-primary">ΣΥΝΔΕΣΜΟΣ ΔΗΛΩΣΗΣ ΣΥΜΜΕΤΟΧΗΣ</div>
             <a className="block break-all text-sm underline underline-offset-2" href={`/deal/${selectedEvent.room_code}`} target="_blank" rel="noreferrer">{window.location.origin}/deal/{selectedEvent.room_code}</a>
             <ComicButton size="sm" variant="dark" onClick={copyParticipationLink}>ΑΝΤΙΓΡΑΦΗ ΣΥΝΔΕΣΜΟΥ</ComicButton>
+          </div>
+          <div className="rounded-lg border border-[#b99a45]/40 bg-background/60 p-3 space-y-2">
+            <div className="text-xs font-bold text-primary">ΣΥΝΔΕΣΜΟΣ ΦΟΡΜΑΣ ΕΠΙΛΟΓΗΣ MODE</div>
+            <a className="block break-all text-sm underline underline-offset-2" href={`/modes-form?event=${selectedEvent.room_code}&eventId=${selectedEvent.id}&roomCode=${selectedEvent.room_code}`} target="_blank" rel="noreferrer">{window.location.origin}/modes-form?event={selectedEvent.room_code}&eventId={selectedEvent.id}&roomCode={selectedEvent.room_code}</a>
+            <ComicButton size="sm" variant="dark" onClick={copyModeFormLink}>ΑΝΤΙΓΡΑΦΗ ΣΥΝΔΕΣΜΟΥ MODE</ComicButton>
           </div>
           <div className="space-y-2">
             {responses.map((item) => (
