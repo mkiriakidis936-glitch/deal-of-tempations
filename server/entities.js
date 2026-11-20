@@ -1594,6 +1594,20 @@ export function entityRoutes() {
         client.release();
       }
     }
+    if (req.entity === 'Participation') {
+      const patch = stripBuiltins(req.body);
+      if (Object.keys(patch).some((key) => !['choice', 'submittedAt'].includes(key)) ||
+          (patch.choice !== undefined && !['yes', 'no'].includes(patch.choice))) {
+        return res.status(400).json({ error: 'Η δήλωση συμμετοχής περιέχει μη επιτρεπόμενη αλλαγή.' });
+      }
+    }
+    if (req.entity === 'Interest') {
+      const patch = stripBuiltins(req.body);
+      if (Object.keys(patch).some((key) => key !== 'dotEventId') ||
+          (patch.dotEventId !== undefined && typeof patch.dotEventId !== 'string')) {
+        return res.status(400).json({ error: 'Η δήλωση ενδιαφέροντος περιέχει μη επιτρεπόμενη αλλαγή.' });
+      }
+    }
     if (req.entity === 'DotEvent') {
       const { rows: found } = await query("SELECT * FROM records WHERE id = $1 AND entity = 'DotEvent'", [req.params.id]);
       if (!found[0]) return res.status(404).json({ error: 'Not found' });
