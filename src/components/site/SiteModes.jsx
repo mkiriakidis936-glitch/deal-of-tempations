@@ -3,6 +3,7 @@ import { SITE_EVENTS, getSiteContent } from '@/data/siteContent';
 import { ART, MODE_COVERS, MODE_MEDIA } from '@/data/brandArt';
 
 const MODE_IDS = {
+  pedi_glam: 'pedi_glam',
   pedi_extended: 'pedi_extended',
   lockdown: 'lockdown',
   beachbar: 'beach_bar',
