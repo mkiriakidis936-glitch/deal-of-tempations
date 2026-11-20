@@ -208,7 +208,8 @@ export default function Admin() {
     loadSessions().then((items) => {
       if (!mounted || !items?.length) return;
       // Η πιο πρόσφατη συνεδρία που εμφανίζεται πρώτη στο Admin γίνεται η κοινή ενεργή.
-      setActiveSessionCode(items[0].sessionCode);
+      const latest = sessionsRef.current[0] || items[0];
+      if (latest?.sessionCode) setActiveSessionCode(latest.sessionCode);
     });
 
     return () => { mounted = false; unsubscribe(); };
