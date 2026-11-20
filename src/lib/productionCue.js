@@ -14,6 +14,8 @@ export async function publishProductionCue(sessionCode, data) {
   const cue = {
     sessionCode,
     active: true,
+    queue: [],
+    queueIndex: -1,
     ...data,
     playbackCommand: 'play',
     commandId: commandId(),
