@@ -2,7 +2,7 @@
 export const NEW_MODES = [
   {
     id: 'pedi_glam',
-    name: 'PAJAMA PEDI-GLAM',
+    name: 'PAJAMA PEDI-GLAM · 90′',
     icon: '💅',
     desc: 'Ψηφιακή εμπειρία 90 λεπτών με Pedi-Care, ASMR, μάσκες, φτερά, κρέμες, Glam Tokens και εξομολογήσεις.',
     min: 3,
