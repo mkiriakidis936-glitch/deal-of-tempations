@@ -63,7 +63,8 @@ export default function AdminPlayers({ sessions, selectedSession, onSelect, onUp
       if (Object.keys(fields).length) updates.push({ id: playerId, ...fields });
     }
     if (!updates.length) return;
-    await onUpdate(selectedSession.id, { players: updates });
+    const saved = await onUpdate(selectedSession.id, { players: updates });
+    if (!saved) return;
     for (const player of updates) delete dirtyFields.current[player.id];
   }
 
@@ -282,25 +283,37 @@ export default function AdminPlayers({ sessions, selectedSession, onSelect, onUp
                 </div>
               )}
 
-              {/* Toggles */}
+              {/* Mode-specific roles and status */}
               <div className="flex gap-2 flex-wrap mt-3">
-                <button
-                  onClick={() => editField(p.id, 'isChief', !edit.isChief)}
-                  className={`text-xs px-2 py-1 rounded border-2 border-border font-bold ${edit.isChief ? 'bg-tarot-teal text-foreground' : 'bg-card'}`}
-                >
-                  🚔 Αστυνόμος
-                </button>
+                {mode === 'classic' && (
+                  <>
+                    <button
+                      onClick={() => editField(p.id, 'isChief', !edit.isChief)}
+                      className={`text-xs px-2 py-1 rounded border-2 border-border font-bold ${edit.isChief ? 'bg-tarot-teal text-foreground' : 'bg-card'}`}
+                    >
+                      🚔 Αστυνόμος
+                    </button>
+                    <button
+                      onClick={() => editField(p.id, 'abilityUsed', !edit.abilityUsed)}
+                      className={`text-xs px-2 py-1 rounded border-2 border-border font-bold ${edit.abilityUsed ? 'bg-secondary text-foreground' : 'bg-card'}`}
+                    >
+                      {edit.abilityUsed ? '✅ Ικανότητα Χρησιμοποιήθηκε' : '⚡ Ικανότητα Διαθέσιμη'}
+                    </button>
+                  </>
+                )}
+                {isArrestHeist && (
+                  <button
+                    onClick={() => editField(p.id, 'isLeader', !edit.isLeader)}
+                    className={`text-xs px-2 py-1 rounded border-2 border-border font-bold ${edit.isLeader ? 'bg-tarot-teal text-foreground' : 'bg-card'}`}
+                  >
+                    👑 Αρχηγός ομάδας
+                  </button>
+                )}
                 <button
                   onClick={() => editField(p.id, 'immunity', !edit.immunity)}
                   className={`text-xs px-2 py-1 rounded border-2 border-border font-bold ${edit.immunity ? 'bg-tarot-forest text-foreground' : 'bg-card'}`}
                 >
                   🛡️ Ασυλία
-                </button>
-                <button
-                  onClick={() => editField(p.id, 'abilityUsed', !edit.abilityUsed)}
-                  className={`text-xs px-2 py-1 rounded border-2 border-border font-bold ${edit.abilityUsed ? 'bg-secondary text-foreground' : 'bg-card'}`}
-                >
-                  {edit.abilityUsed ? '✅ Ικανότητα Χρησιμοποιήθηκε' : '⚡ Ικανότητα Διαθέσιμη'}
                 </button>
                 <ComicButton variant="green" size="sm" onClick={() => savePlayer(p.id)}>💾 ΑΠΟΘΗΚΕΥΣΗ</ComicButton>
               </div>
