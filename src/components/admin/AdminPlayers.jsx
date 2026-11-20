@@ -143,7 +143,9 @@ export default function AdminPlayers({ sessions, selectedSession, onSelect, onUp
             <ComicPanel key={p.id} className="bg-card">
               <div className="flex items-center gap-2 mb-3">
                 <div className="font-heading text-lg flex-1">{p.name}</div>
-                {edit.isChief && <span className="bg-tarot-teal text-foreground text-xs px-2 py-0.5 rounded font-bold">🚔 Αστυνόμος</span>}
+                {mode === 'classic' && edit.isChief && <span className="bg-tarot-teal text-foreground text-xs px-2 py-0.5 rounded font-bold">🚔 Αστυνόμος</span>}
+                {mode === 'pajama' && state.pajama?.saboteurId === p.id && <span className="bg-destructive/30 text-foreground text-xs px-2 py-0.5 rounded font-bold">🎭 Saboteur</span>}
+                {isArrestHeist && edit.isLeader && <span className="bg-tarot-teal text-foreground text-xs px-2 py-0.5 rounded font-bold">👑 Αρχηγός</span>}
                 {edit.immunity && <span className="bg-tarot-forest text-foreground text-xs px-2 py-0.5 rounded font-bold">🛡️ Ασυλία</span>}
                 {edit.team && <span className={`text-xs px-2 py-0.5 rounded font-bold ${edit.team === 'alpha' || edit.team === 'A' ? 'bg-destructive/40' : 'bg-tarot-teal/30'}`}>Ομάδα {edit.team}</span>}
               </div>
