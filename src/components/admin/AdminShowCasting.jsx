@@ -43,7 +43,7 @@ export default function AdminShowCasting() {
   const [message, setMessage] = useState('');
   const [plan, setPlan] = useState(null);
 
-  const load = async () => {
+  const load = useCallback(async () => {
     setLoading(true);
     setMessage('');
     try {
@@ -68,9 +68,23 @@ export default function AdminShowCasting() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => {
+    load();
+    const offPlayers = base44.entities.PlayerIntake.subscribe(load);
+    const offPajama = base44.entities.PajamaIntake.subscribe(load);
+    const offEvents = base44.entities.DotEvent.subscribe(load);
+    const offSettings = base44.entities.AppSetting.subscribe((event) => {
+      if (event?.data?.key === CAST_KEY) load();
+    });
+    return () => {
+      offPlayers?.();
+      offPajama?.();
+      offEvents?.();
+      offSettings?.();
+    };
+  }, [load]);
 
   const selectedEvent = events.find((event) => event.id === selectedEventId) || null;
   const scopeToEvent = useCallback((items) => (items || []).filter((item) => selectedEventId
