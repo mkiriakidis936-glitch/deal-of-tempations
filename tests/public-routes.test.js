@@ -62,3 +62,10 @@ test('Admin can approve Arrest & Heist intake directly from its form record', ()
   assert.match(adminIntakes, /handleApproveBach/);
   assert.match(adminIntakes, /ΕΓΚΡΙΣΗ & ΠΡΟΣΘΗΚΗ ΣΤΟ TABLET/);
 });
+
+
+test('approved invitation intakes are assigned to their submitted mode in Admin casting', () => {
+  const casting = read('../src/components/admin/AdminShowCasting.jsx');
+  assert.match(casting, /item\.vipGameMode \|\| item\.gameMode \|\| 'classic'/);
+  assert.match(casting, /playerIntakes\.filter\(\(item\) => item\.approved === true \|\| item\.approvalStatus === 'approved'\)/);
+});
