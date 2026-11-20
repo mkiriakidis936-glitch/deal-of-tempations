@@ -240,14 +240,19 @@ export default function Admin() {
     if (s?.sessionCode) setActiveSessionCode(s.sessionCode);
   }, []);
 
-  async function handleUpdateSession(id, newState) {
+  async function handleUpdateSession(id, statePatch) {
     try {
-      await base44.entities.GameSession.update(id, { state: newState });
-      setSessions((prev) => prev.map((s) => s.id === id ? { ...s, state: newState } : s));
-      setPickedSession((prev) => (prev?.id === id ? { ...prev, state: newState } : prev));
+      // Περιορισμένο patch: ο server το συγχωνεύει με την πιο πρόσφατη DB κατάσταση
+      // μέσα σε transaction, χωρίς αντικατάσταση ολόκληρου του state.
+      const updated = await request('PATCH', `/api/entities/GameSession/${encodeURIComponent(id)}`, { statePatch });
+      if (updated?.state) {
+        setSessions((prev) => prev.map((session) => session.id === id ? updated : session));
+        setPickedSession((prev) => (prev?.id === id ? updated : prev));
+      }
     } catch (e) {
       console.error('Update error', e);
       window.alert('Η αποθήκευση της συνεδρίας απέτυχε. Οι αλλαγές δεν καταχωρήθηκαν.');
+      throw e;
     }
   }
 
