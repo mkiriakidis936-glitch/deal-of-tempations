@@ -44,7 +44,7 @@ export async function stopProductionCue(sessionCode) {
   const existing = await getProductionCue(sessionCode);
   if (!existing?.id) return null;
   return base44.entities.ProductionCue.update(existing.id, {
-    active: false,
+    active: true,
     playbackCommand: 'stop',
     commandId: commandId(),
     commandAt: Date.now(),
