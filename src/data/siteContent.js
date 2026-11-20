@@ -22,7 +22,7 @@ export const DEFAULT_SITE = {
     titleLines: ['DEAL OF', 'TEMPTATION'],
     tagline: 'Μια βραδιά με κάρτες, ένταση και υποχρεώσεις που δεν διάβασες πριν φτάσεις.',
     date: '',
-    cta: { label: 'ΚΛΕΙΣΕ ΘΕΣΗ', path: '/invitation' },
+    cta: { label: 'ΚΛΕΙΣΕ ΘΕΣΗ', path: '/forms?mode=arrest_heist' },
     scenarioKicker: 'Το παιχνίδι',
     scenarioTitle: 'ΤΙ ΕΙΝΑΙ ΤΟ HEIST NIGHT',
     scenario: [
@@ -63,7 +63,7 @@ export const DEFAULT_SITE = {
     titleLines: ['PAJAMA', 'PEDI-GLAM'],
     tagline: 'Μια βραδιά με πιτζάμες, παντόφλες και υποχρεώσεις που δεν διάβασες πριν φτάσεις.',
     date: '',
-    cta: { label: 'ΚΛΕΙΣΕ ΘΕΣΗ', path: '/pajama-form' },
+    cta: { label: 'ΚΛΕΙΣΕ ΘΕΣΗ', path: '/forms?mode=pajama' },
     scenarioKicker: 'Το παιχνίδι',
     scenarioTitle: 'ΤΙ ΕΙΝΑΙ ΤΟ PAJAMA PEDI-GLAM',
     scenario: [
@@ -125,7 +125,7 @@ Object.assign(DEFAULT_SITE, {
     titleLines: ['PAJAMA', 'LOCKDOWN'],
     tagline: 'Πέντε ώρες. Ένα κλειδωμένο κινητό. Μόνο οι πιο έξυπνες και τολμηρές απόδρασαν.',
     date: '',
-    cta: { label: 'ΚΛΕΙΣΕ ΘΕΣΗ', path: '/modes-form?mode=lockdown' },
+    cta: { label: 'ΚΛΕΙΣΕ ΘΕΣΗ', path: '/forms?mode=lockdown' },
     scenarioKicker: 'Το παιχνίδι',
     scenarioTitle: 'ΤΙ ΕΙΝΑΙ ΤΟ PAJAMA LOCKDOWN',
     scenario: [
@@ -154,7 +154,7 @@ Object.assign(DEFAULT_SITE, {
     titleLines: ['BEACH BAR', 'LOCKDOWN'],
     tagline: 'Σαγιονάρες, χορός, ποτό και ένας τροχός που δεν συγχωρεί.',
     date: '',
-    cta: { label: 'ΚΛΕΙΣΕ ΘΕΣΗ', path: '/modes-form?mode=beach_bar' },
+    cta: { label: 'ΚΛΕΙΣΕ ΘΕΣΗ', path: '/forms?mode=beach_bar' },
     scenarioKicker: 'Το παιχνίδι',
     scenarioTitle: 'ΤΙ ΕΙΝΑΙ ΤΟ BEACH BAR LOCKDOWN',
     scenario: [
