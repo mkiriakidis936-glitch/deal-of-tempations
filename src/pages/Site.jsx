@@ -19,7 +19,8 @@ import { getSiteContent, SITE_EVENTS } from '@/data/siteContent';
 import { ART, PHOTO, MODE_COVERS, MODE_MEDIA } from '@/data/brandArt';
 
 const MODE_IDS = {
-  extended: 'pedi_extended',
+  pedi_glam: 'pedi_glam',
+  pedi_extended: 'pedi_extended',
   lockdown: 'lockdown',
   beachbar: 'beach_bar',
   marathon4h: 'marathon_4h',
