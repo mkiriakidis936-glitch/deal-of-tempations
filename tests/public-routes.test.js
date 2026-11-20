@@ -7,9 +7,11 @@ const app = read('../src/App.jsx');
 const site = read('../src/data/siteContent.js');
 const publicForms = read('../src/pages/PublicForms.jsx');
 
-test('all public form links used by the site have registered routes', () => {
-  for (const path of ['/forms', '/invitation', '/welcome', '/pajama-form', '/pajama-invite', '/modes-form', '/intake', '/portal']) {
-    assert.match(app, new RegExp(`path=["']${path.replaceAll('/', '\\/')}["']`), `Missing route: ${path}`);
+test('the unified public form route is registered and retired form routes stay removed', () => {
+  assert.match(app, /path=["']\\/forms["']/);
+  assert.match(app, /path=["']\\/portal["']/);
+  for (const path of ['/invitation', '/welcome', '/pajama-form', '/pajama-invite', '/modes-form', '/intake']) {
+    assert.doesNotMatch(app, new RegExp(`path=["']${path.replaceAll('/', '\\\\/')}["']`), `Retired route is still registered: ${path}`);
   }
 });
 
