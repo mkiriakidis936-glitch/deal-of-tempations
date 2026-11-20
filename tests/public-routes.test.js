@@ -120,3 +120,12 @@ test('Admin live actions prevent duplicate submissions and surface save status',
   assert.match(live, /aria-live="polite"/);
   assert.match(live, /Η ενέργεια αποθηκεύτηκε/);
 });
+
+
+test('active session writes are serialized and session deletion clears subscribed screens', () => {
+  const activeSession = read('../src/lib/activeSession.js');
+  assert.match(activeSession, /let activeSessionWriteQueue = Promise\.resolve\(\)/);
+  assert.match(activeSession, /activeSessionWriteQueue = activeSessionWriteQueue/);
+  assert.match(activeSession, /if \(event\?\.type === 'delete'\) \{ onCode\(''\); return; \}/);
+  assert.match(activeSession, /toUpperCase\(\)/);
+});
