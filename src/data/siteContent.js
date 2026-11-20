@@ -114,6 +114,7 @@ const modeFaq = (what, duration) => [
 ];
 
 SITE_EVENTS.push(
+  { id: 'pedi_glam', label: '💅 PAJAMA PEDI-GLAM · 90′' },
   { id: 'pedi_extended', label: '💅 PAJAMA PEDI-GLAM EXTENDED' },
   { id: 'lockdown', label: '🚨 PAJAMA LOCKDOWN' },
   { id: 'beachbar', label: '🍹 BEACH BAR HOME LOCKDOWN' },
@@ -149,6 +150,34 @@ Object.assign(DEFAULT_SITE, {
     info: modeInfo('Πιτζάμες. Μαύρο ή κόκκινο είναι ευπρόσδεκτο.', 'Παράταιρες κάλτσες, μάσκα ύπνου, σατέν κορδέλες και κινητό με φόρτιση.'),
     participation: 'Κλειστή λίστα, 18+, λίγες θέσεις. Στη φόρμα δηλώνεις και τα όριά σου.',
     faq: modeFaq('Ένα ψηφιακό escape room 18+ με γρίφους, φυσικές δοκιμασίες και χρονόμετρο.', 'Το Lockdown διαρκεί 60 λεπτά.'),
+  },
+  pedi_glam: {
+    tab: 'Pajama Pedi-Glam',
+    overline: 'Pajama Pedi-Glam · 18+',
+    titleLines: ['PAJAMA', 'PEDI-GLAM'],
+    tagline: '90 λεπτά ψηφιακού Pedi-Care, ASMR, Glam Tokens και εξομολογήσεων.',
+    date: '',
+    cta: { label: 'ΚΛΕΙΣΕ ΘΕΣΗ', path: '/forms?mode=pedi_glam' },
+    scenarioKicker: 'Το παιχνίδι',
+    scenarioTitle: 'ΤΙ ΕΙΝΑΙ ΤΟ PAJAMA PEDI-GLAM',
+    scenario: [
+      'Μία ψηφιακή εμπειρία 90 λεπτών με Pedi-Care και Glam Tokens.',
+      'Η ροή συνδυάζει ASMR, μάσκες, φτερά και κρέμες.',
+      'Οι παίκτριες συμμετέχουν σε ψηφιακές κάρτες και εξομολογήσεις.'
+    ],
+    highlights: ['90 λεπτά', 'Pedi-Care', 'ASMR & αισθητηριακές δοκιμές', 'Glam Tokens & εξομολογήσεις'],
+    videoKicker: 'Η εμπειρία',
+    videoTitle: 'PAJAMA PEDI-GLAM',
+    programKicker: 'Ροή παιχνιδιού',
+    programTitle: 'ΔΥΟ ΠΡΑΞΕΙΣ',
+    programNote: 'Συνολική διάρκεια 90 λεπτά.',
+    program: [
+      { roman: 'I', title: 'Glam & Chaos Board', subtitle: '', meta: '60′', group: '', lines: ['Ψηφιακό ταμπλό, Pedi-Care, κάρτες και Glam Tokens.'] },
+      { roman: 'II', title: 'Midnight ASMR', subtitle: '', meta: '30′', group: '', lines: ['ASMR, αισθητηριακές δοκιμές και εξομολογήσεις.'] }
+    ],
+    info: modeInfo('Πιτζάμες και άνετα ρούχα.', 'Κινητό με φόρτιση.'),
+    participation: 'Κλειστή λίστα, 18+. Στη φόρμα δηλώνεις τα όριά σου.',
+    faq: modeFaq('Ψηφιακή εμπειρία Pedi-Care με ASMR, Glam Tokens και εξομολογήσεις.', '90 λεπτά.')
   },
   pedi_extended: {
     tab: 'Pedi-Glam Extended',
