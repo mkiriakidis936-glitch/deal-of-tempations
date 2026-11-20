@@ -148,7 +148,7 @@ export default function SetupScreen({ onStart }) {
         else if (currentMode === 'marathon') names = allClassic.filter((item) => item.gameMode === 'marathon').map((item) => item.name?.trim()).filter(Boolean);
         else if (currentMode === 'arrest_heist') names = [...scopeToEvent(heistRes.items), ...allClassic.filter((item) => item.gameMode === 'arrest_heist')].flatMap((item) => [item.name, item.leaderName, item.opponentName]).map((name) => String(name || '').trim()).filter(Boolean);
         else if (currentMode === 'pajama') names = legacyPajama.map((item) => item.name?.trim()).filter(Boolean);
-        else if (isNewMode(currentMode)) names = [...approved.filter((item) => item.preferredModes?.includes(currentMode)).map((item) => item.name?.trim()), ...allClassic.filter((item) => item.vipGameMode === currentMode).map((item) => item.name?.trim())].filter(Boolean);
+        else if (isNewMode(currentMode)) names = [...approved.filter((item) => item.preferredModes?.includes(currentMode)).map((item) => item.name?.trim()), ...allClassic.filter((item) => item.preferredModes?.includes(currentMode) || item.vipGameMode === currentMode).map((item) => item.name?.trim())].filter(Boolean);
         const vipByName = Object.fromEntries(allClassic.map((item) => [item.name?.trim(), item]).filter(([name]) => name));
         applyNames([...new Set(names)], shoeByName, pjByName, vipByName);
       }
@@ -237,11 +237,10 @@ export default function SetupScreen({ onStart }) {
       setPlayers([...seeded, ...Array.from({ length: Math.max(0, 2 - seeded.length) }, (_, i) => ({ name: '', footwearLevel: 2, toenailPerk: TOENAIL_PERKS[(seeded.length + i) % TOENAIL_PERKS.length].id }))]);
     } else if (isNewMode(m.id)) {
       const meta = modeMeta(m.id);
-      const vipForMode = intakes.filter((i) => i.vipGameMode === m.id && i.name).map((i) => i.name.trim());
-      const wanted = [...new Set([
-        ...pajamaApproved.filter((i) => Array.isArray(i.preferredModes) && i.preferredModes.includes(m.id)).map((i) => i.name.trim()),
-        ...vipForMode,
-      ])];
+      const approvedForMode = [...intakes, ...pajamaApproved].filter((i) => i.name && (
+        (Array.isArray(i.preferredModes) && i.preferredModes.includes(m.id)) || i.vipGameMode === m.id
+      )).map((i) => i.name.trim());
+      const wanted = [...new Set(approvedForMode)];
       if (wanted.length > 0) {
         const byName = Object.fromEntries([...intakes, ...pajamaApproved].filter((i) => i.name).map((i) => [i.name.trim(), i]));
         const next = [...new Set(wanted)].slice(0, meta.max).map((n, idx) => ({
