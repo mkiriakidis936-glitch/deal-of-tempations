@@ -7,6 +7,7 @@ import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import ScrollToTop from './components/ScrollToTop';
+import { trackVisit } from '@/lib/track';
 import GlobalDesignProvider from '@/components/GlobalDesignProvider';
 // Add page imports here
 const Tablet = lazy(() => import('@/pages/Tablet'));
@@ -33,6 +34,23 @@ const RequireAdmin = ({ children }) => {
   }
   if (user?.role !== 'admin') return <UserNotRegisteredError />;
   return children;
+};
+
+const PublicVisitTracker = () => {
+  const location = useLocation();
+  React.useEffect(() => {
+    const path = location.pathname;
+    if (['/', '/tv', '/play', '/admin', '/login', '/register', '/forgot-password', '/reset-password'].includes(path)) return;
+    let trackedPath = path;
+    if (path === '/site') {
+      const event = new URLSearchParams(location.search).get('event');
+      if (event && /^[a-z0-9_-]+$/i.test(event)) trackedPath = `/site/${event.toLowerCase()}`;
+    } else if (path.startsWith('/vip/')) {
+      trackedPath = '/vip';
+    }
+    trackVisit(trackedPath);
+  }, [location.pathname, location.search]);
+  return null;
 };
 
 const AuthenticatedApp = () => {
@@ -81,6 +99,7 @@ function App() {
         <Router>
           <GlobalDesignProvider />
           <ScrollToTop />
+          <PublicVisitTracker />
           <AuthenticatedApp />
         </Router>
         <Toaster />
