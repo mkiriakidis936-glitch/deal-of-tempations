@@ -1,4 +1,4 @@
-import React, { lazy, Suspense, useState, useEffect, useCallback } from 'react';
+import React, { lazy, Suspense, useState, useEffect, useCallback, useRef } from 'react';
 import './admin-theme.css';
 import { useSearchParams } from 'react-router-dom';
 import { base44, request } from '@/api/base44Client';
@@ -148,6 +148,7 @@ export default function Admin() {
   const setTab = (id) => setParams({ tab: id }, { replace: true });
 
   const [sessions, setSessions] = useState([]);
+  const sessionsRef = useRef([]);
   const [loading, setLoading] = useState(true);
   const [pickedSession, setPickedSession] = useState(null);
   const [searchOpen, setSearchOpen] = useState(false);
@@ -159,6 +160,7 @@ export default function Admin() {
     try {
       const { items } = await base44.entities.GameSession.filter({}, { sort: '-created_date', limit: 50 });
       const next = items || [];
+      sessionsRef.current = next;
       setSessions(next);
       setPickedSession((current) => current ? (next.find((item) => item.id === current.id) || null) : null);
       return next;
@@ -178,6 +180,7 @@ export default function Admin() {
       if (event.type === 'delete') {
         setSessions((current) => {
           const next = current.filter((item) => item.id !== event.id);
+          sessionsRef.current = next;
           if (current[0]?.id === event.id) {
             const replacement = next[0];
             if (replacement?.sessionCode) setActiveSessionCode(replacement.sessionCode);
@@ -194,7 +197,9 @@ export default function Admin() {
         const merged = exists
           ? current.map((item) => item.id === event.id ? { ...item, ...event.data } : item)
           : [...current, event.data];
-        return merged.sort((a, b) => new Date(b.created_date || 0) - new Date(a.created_date || 0)).slice(0, 50);
+        const next = merged.sort((a, b) => new Date(b.created_date || 0) - new Date(a.created_date || 0)).slice(0, 50);
+        sessionsRef.current = next;
+        return next;
       });
       setPickedSession((current) => current?.id === event.id ? { ...current, ...event.data } : current);
       if (event.type === 'create' && event.data.sessionCode) setActiveSessionCode(event.data.sessionCode);
@@ -212,14 +217,10 @@ export default function Admin() {
   // Αλλαγή ενεργής συνεδρίας από άλλο Admin συγχρονίζεται και στην τρέχουσα οθόνη.
   useEffect(() => subscribeActiveSession((code) => {
     if (!code) return;
-    setSessions((current) => {
-      const match = current.find((item) => item.sessionCode === code);
-      if (match) setPickedSession(match);
-      return current;
-    });
-    const known = sessions.some((item) => item.sessionCode === code);
-    if (!known) loadSessions();
-  }), [sessions, loadSessions]);
+    const match = sessionsRef.current.find((item) => item.sessionCode === code);
+    if (match) setPickedSession(match);
+    else loadSessions();
+  }), [loadSessions]);
 
   useEffect(() => {
     const onKeyDown = (event) => {
