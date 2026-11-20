@@ -10,6 +10,7 @@ const HOME_LINKS = [
   { href: '#faq', label: 'ΑΠΟΡΙΕΣ' },
   { href: '#registration', label: 'ΣΥΜΜΕΤΟΧΗ' },
   { href: '#contact', label: 'ΕΠΙΚΟΙΝΩΝΙΑ' },
+  { href: '/deal', label: 'ΔΗΛΩΣΗ ΕΝΔΙΑΦΕΡΟΝΤΟΣ' },
 ];
 const DETAIL_LINKS = [
   { href: '#scenario', label: 'Η ΕΜΠΕΙΡΙΑ' },
@@ -20,6 +21,7 @@ const DETAIL_LINKS = [
   { href: '#faq', label: 'ΑΠΟΡΙΕΣ' },
   { href: '#registration', label: 'ΣΥΜΜΕΤΟΧΗ' },
   { href: '#contact', label: 'ΕΠΙΚΟΙΝΩΝΙΑ' },
+  { href: '/deal', label: 'ΔΗΛΩΣΗ ΕΝΔΙΑΦΕΡΟΝΤΟΣ' },
 ];
 
 export default function SiteNav({ ev, onEvent, isHome = false, onRegister }) {
