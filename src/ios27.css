@@ -81,7 +81,7 @@ body {
   background-image:
     radial-gradient(120% 55% at 50% -12%, rgba(232, 194, 107, 0.10), transparent 62%),
     radial-gradient(80% 40% at 100% 108%, rgba(232, 194, 107, 0.05), transparent 70%) !important;
-  background-attachment: fixed !important;
+  background-attachment: scroll !important;
   color: #F5F1E8;
   font-family: var(--font-ui);
   font-size: 1rem;
@@ -139,8 +139,8 @@ h1 { letter-spacing: -0.03em; }
   background:
     linear-gradient(180deg, rgba(255,255,255,.07) 0%, rgba(255,255,255,.015) 38%, transparent 100%),
     var(--glass-1) !important;
-  -webkit-backdrop-filter: blur(28px) saturate(180%);
-  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(18px) saturate(180%);
+  backdrop-filter: blur(18px) saturate(180%);
   box-shadow:
     inset 0 1px 0 var(--glass-hi),
     inset 0 0 0 0.5px rgba(255,255,255,.04),
@@ -200,16 +200,16 @@ h1 { letter-spacing: -0.03em; }
 
 /* Overlays / sheets */
 .fixed[class*="inset-0"][class*="bg-"]:not([class*="bg-transparent"]) {
-  -webkit-backdrop-filter: blur(22px) saturate(140%);
-  backdrop-filter: blur(22px) saturate(140%);
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
+  backdrop-filter: blur(18px) saturate(140%);
 }
 .fixed[class*="inset-0"][class*="bg-black"] { background-color: rgba(0,0,0,.62) !important; }
 [role="dialog"] {
   border-radius: 32px !important;
   border: 1px solid var(--glass-stroke) !important;
   background: var(--glass-thick) !important;
-  -webkit-backdrop-filter: blur(40px) saturate(180%);
-  backdrop-filter: blur(40px) saturate(180%);
+  -webkit-backdrop-filter: blur(18px) saturate(180%);
+  backdrop-filter: blur(18px) saturate(180%);
   box-shadow: inset 0 1px 0 var(--glass-hi), 0 40px 100px -30px #000 !important;
 }
 
@@ -223,8 +223,8 @@ h1 { letter-spacing: -0.03em; }
   background:
     linear-gradient(180deg, rgba(255,255,255,.12), rgba(255,255,255,.04)),
     rgba(58,58,60,.55) !important;
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
-  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(18px) saturate(180%);
+  backdrop-filter: blur(18px) saturate(180%);
   color: #F5F1E8 !important;
   font-family: var(--font-ui) !important;
   font-weight: 600 !important;
@@ -336,8 +336,8 @@ body.dot-mobile-experience .comic-panel, body.dot-mobile-experience .comic-panel
   border-radius: 999px;
   border: 1px solid var(--glass-stroke);
   background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.03)), rgba(24,24,26,.66);
-  -webkit-backdrop-filter: blur(34px) saturate(190%);
-  backdrop-filter: blur(34px) saturate(190%);
+  -webkit-backdrop-filter: blur(18px) saturate(190%);
+  backdrop-filter: blur(18px) saturate(190%);
   box-shadow: inset 0 1px 0 var(--glass-hi), 0 22px 50px -14px rgba(0,0,0,.9);
 }
 .ios-tab {
@@ -376,19 +376,19 @@ body.dot-mobile-experience .sticky.top-0 {
   padding: .15em .55em; border-radius: 999px;
   border: 1px solid var(--gold-stroke);
   background: linear-gradient(180deg, rgba(232,194,107,.18), rgba(232,194,107,.05)), var(--glass-1);
-  -webkit-backdrop-filter: blur(24px); backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(18px); backdrop-filter: blur(18px);
   box-shadow: inset 0 1px 0 var(--glass-hi);
   color: var(--gold-1) !important;
 }
 .mode-timer.is-danger { border-color: rgba(255,69,58,.6); background: linear-gradient(180deg, rgba(255,69,58,.30), rgba(255,69,58,.10)), var(--glass-1); color: #FF8A82 !important; }
-.mode-stop-overlay { background: rgba(10,0,0,.82) !important; -webkit-backdrop-filter: blur(30px) saturate(140%); backdrop-filter: blur(30px) saturate(140%); }
+.mode-stop-overlay { background: rgba(10,0,0,.82) !important; -webkit-backdrop-filter: blur(18px) saturate(140%); backdrop-filter: blur(18px) saturate(140%); }
 
 /* ---------- 10 · TABLET / GAME MASTER ---------- */
 .admin-root { background: #000 !important; background-image: radial-gradient(110% 40% at 50% -10%, rgba(232,194,107,.10), transparent 62%) !important; }
 .admin-root nav[aria-label="Πλοήγηση διαχείρισης"] {
   border-radius: 26px; padding: .5rem;
   background: var(--glass-1); border: 1px solid var(--glass-stroke);
-  -webkit-backdrop-filter: blur(28px) saturate(180%); backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(18px) saturate(180%); backdrop-filter: blur(18px) saturate(180%);
 }
 .admin-root nav[aria-label="Πλοήγηση διαχείρισης"] > div { border-bottom: 1px solid rgba(255,255,255,.06) !important; }
 .admin-root nav button {
@@ -435,13 +435,13 @@ body.dot-mobile-experience .sticky.top-0 {
   background:
     linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.015) 40%, transparent),
     rgba(22,22,24,.62) !important;
-  -webkit-backdrop-filter: blur(36px) saturate(180%); backdrop-filter: blur(36px) saturate(180%);
+  -webkit-backdrop-filter: blur(18px) saturate(180%); backdrop-filter: blur(18px) saturate(180%);
 }
 .dot-tv-hud {
   padding: 10px 14px; border-radius: 999px;
   border: 1px solid var(--glass-stroke);
   background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.02)), rgba(20,20,22,.6);
-  -webkit-backdrop-filter: blur(30px) saturate(180%); backdrop-filter: blur(30px) saturate(180%);
+  -webkit-backdrop-filter: blur(18px) saturate(180%); backdrop-filter: blur(18px) saturate(180%);
   box-shadow: inset 0 1px 0 var(--glass-hi), 0 20px 50px -20px #000;
 }
 .dot-tv-brand-mark { border-color: var(--gold-stroke) !important; color: var(--gold-2) !important; background: rgba(232,194,107,.08); box-shadow: 0 0 24px rgba(232,194,107,.18) !important; }
@@ -450,7 +450,7 @@ body.dot-mobile-experience .sticky.top-0 {
 .dot-tv-moment {
   border-radius: 40px !important; border: 1px solid rgba(232,194,107,.45) !important;
   background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.02)), rgba(14,14,16,.78) !important;
-  -webkit-backdrop-filter: blur(44px) saturate(190%); backdrop-filter: blur(44px) saturate(190%);
+  -webkit-backdrop-filter: blur(18px) saturate(190%); backdrop-filter: blur(18px) saturate(190%);
   box-shadow: inset 0 1px 0 var(--glass-hi), 0 40px 120px -20px #000, 0 0 90px rgba(232,194,107,.18) !important;
   animation: ios-moment-in .55s var(--ease-spring) both;
 }
@@ -461,7 +461,7 @@ body.dot-mobile-experience .sticky.top-0 {
 .cinv-count {
   border: 1px solid var(--gold-stroke) !important; border-radius: 28px !important;
   background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.02)), rgba(18,18,20,.72) !important;
-  -webkit-backdrop-filter: blur(30px) saturate(180%); backdrop-filter: blur(30px) saturate(180%);
+  -webkit-backdrop-filter: blur(18px) saturate(180%); backdrop-filter: blur(18px) saturate(180%);
   box-shadow: inset 0 1px 0 var(--glass-hi), 0 30px 80px -24px #000 !important;
 }
 .cinv-cl { color: var(--gold-2) !important; letter-spacing: .22em !important; }
@@ -486,7 +486,7 @@ hr, .ds-rule { background: linear-gradient(90deg, transparent, rgba(232,194,107,
 [data-radix-popper-content-wrapper] > * {
   border-radius: 20px !important; border: 1px solid var(--glass-stroke) !important;
   background: var(--glass-thick) !important;
-  -webkit-backdrop-filter: blur(36px) saturate(180%); backdrop-filter: blur(36px) saturate(180%);
+  -webkit-backdrop-filter: blur(18px) saturate(180%); backdrop-filter: blur(18px) saturate(180%);
 }
 img.rounded-full, .rounded-full { border-color: rgba(232,194,107,.35); }
 
