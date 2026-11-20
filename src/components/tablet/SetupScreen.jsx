@@ -364,7 +364,7 @@ export default function SetupScreen({ onStart }) {
                       disabled={!!castingPlan}
                       className={`rounded-md border p-2 text-left transition-all ${on ? 'border-primary bg-primary/15' : 'border-border/60 bg-surface-1 hover:border-primary/50'} ${castingPlan ? 'cursor-not-allowed opacity-75' : ''}`}
                     >
-                      <img src={MODE_COVERS["modeCover_" + v.id] || ""} alt={v.name} className="w-full aspect-[16/9] object-cover rounded-md mb-2 bg-black/30" />
+                      {MODE_COVERS["modeCover_" + v.id] && <img src={MODE_COVERS["modeCover_" + v.id]} alt={v.name} className="w-full aspect-[16/9] object-cover rounded-md mb-2 bg-black/30" />}
                       <div className="font-heading text-base text-foreground leading-tight">{v.icon} {v.name}</div>
                       <div className="ds-label mt-1 text-primary/70">{v.id === 'classic' ? '2-6 παίκτριες' : '8-10 παίκτριες'}</div>
                     </button>
@@ -379,7 +379,7 @@ export default function SetupScreen({ onStart }) {
                 disabled={!!castingPlan}
                 className={`comic-panel-sm p-3 text-left transition-all ${mode === m.id ? 'ring-2 ring-primary bg-primary/10' : 'bg-secondary'} ${castingPlan ? 'cursor-not-allowed opacity-75' : ''}`}
               >
-                <img src={MODE_COVERS["modeCover_" + m.id] || ""} alt={m.name} className="w-full aspect-[16/9] object-cover rounded-md mb-2 bg-black/30" />
+                {MODE_COVERS["modeCover_" + m.id] && <img src={MODE_COVERS["modeCover_" + m.id]} alt={m.name} className="w-full aspect-[16/9] object-cover rounded-md mb-2 bg-black/30" />}
                 <div className="font-heading text-xl text-foreground">{m.icon} {m.name}</div>
                 <div className="text-sm text-foreground/70 font-body">{m.desc}</div>
               </button>
