@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { base44, request } from '@/api/base44Client';
 import ComicPanel from '@/components/comic/ComicPanel';
 import ComicButton from '@/components/comic/ComicButton';
@@ -10,7 +10,7 @@ export default function PajamaIntakeList() {
   const [modeFilter, setModeFilter] = useState('all');
   const [msg, setMsg] = useState('');
 
-  async function load() {
+  const load = useCallback(async () => {
     setLoading(true);
     try {
       const { items: res } = await base44.entities.PajamaIntake.filter({}, { sort: '-created_date', limit: 100 });
@@ -21,13 +21,13 @@ export default function PajamaIntakeList() {
     } finally {
       setLoading(false);
     }
-  }
+  }, []);
 
   useEffect(() => {
     load();
     const unsubscribe = base44.entities.PajamaIntake.subscribe(() => load());
     return () => unsubscribe?.();
-  }, []);
+  }, [load]);
 
   async function toggleApprove(item) {
     const next = !item.approved;
