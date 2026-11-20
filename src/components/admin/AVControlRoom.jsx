@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { publishProductionCue, commandProductionCue, stopProductionCue } from '@/lib/productionCue';
 import { getActiveSessionCode, setActiveSessionCode, subscribeActiveSession } from '@/lib/activeSession';
@@ -268,6 +268,28 @@ export default function AVControlRoom({ mediaFiles = [], onRefreshMedia }) {
       setMessage(error.message || 'Δεν ήταν δυνατή η μετάδοση στην TV.');
     } finally { setBusy(false); }
   }
+
+  const publishRef = useRef(null);
+  const autoAdvancedCommandRef = useRef('');
+
+  useEffect(() => {
+    publishRef.current = publish;
+  });
+
+  // Όταν η TV επιβεβαιώσει ότι τελείωσε ένα στοιχείο, προχωρά αυτόματα στο επόμενο της ίδιας ουράς.
+  useEffect(() => {
+    if (cueRecord?.playbackStatus !== 'ended' || !cueRecord?.active || !cueRecord.commandId) return;
+    if (autoAdvancedCommandRef.current === cueRecord.commandId) return;
+    autoAdvancedCommandRef.current = cueRecord.commandId;
+
+    const activeQueue = Array.isArray(cueRecord.queue) && cueRecord.queue.length ? cueRecord.queue : queue;
+    const currentIndex = Number.isInteger(cueRecord.queueIndex) ? cueRecord.queueIndex : queueIndex;
+    const nextIndex = currentIndex + 1;
+    const nextItem = activeQueue[nextIndex];
+    if (nextItem && publishRef.current) {
+      publishRef.current(nextItem, nextIndex);
+    }
+  }, [cueRecord?.playbackStatus, cueRecord?.active, cueRecord?.commandId, cueRecord?.queue, cueRecord?.queueIndex, queue, queueIndex]);
 
   async function stopOutput() {
     try {
