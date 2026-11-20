@@ -47,9 +47,9 @@ export async function stopProductionCue(sessionCode) {
   if (!existing?.id) return null;
   return base44.entities.ProductionCue.update(existing.id, {
     active: true,
-    playbackCommand: 'stop',
+    playbackCommand: 'close',
     commandId: commandId(),
     commandAt: Date.now(),
-    playbackStatus: 'stopping',
+    playbackStatus: 'closing',
   });
 }
