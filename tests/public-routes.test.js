@@ -82,3 +82,14 @@ test('mobile player heartbeat is validated and visible in live Admin presence', 
   assert.match(adminPlayers, /base44\.entities\.PlayerPresence\.subscribe/);
   assert.match(adminPlayers, /ΣΥΝΔΕΔΕΜΕΝΗ/);
 });
+
+
+test('casting plans are Event-scoped and revoked approvals cannot enter Tablet setup', () => {
+  const casting = read('../src/components/admin/AdminShowCasting.jsx');
+  const setup = read('../src/components/tablet/SetupScreen.jsx');
+  assert.match(casting, /selectedEventId/);
+  assert.match(casting, /dotEventId: selectedEvent\.id/);
+  assert.match(setup, /const planMatchesEvent =/);
+  assert.match(setup, /const planHasOnlyApprovedPlayers =/);
+  assert.match(setup, /eligibleModesByName\.get/);
+});
