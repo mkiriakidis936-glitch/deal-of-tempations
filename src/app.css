@@ -1,0 +1,2711 @@
+/* DEAL OF TEMPTATION — ενιαίο αρχείο σχεδίασης (η σειρά των ενοτήτων ορίζει την προτεραιότητα). */
+
+/* ===== index.css ===== */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 300 18% 7%;
+    --foreground: 38 30% 92%;
+    --card: 300 14% 12%;
+    --card-foreground: 38 30% 92%;
+    --popover: 300 14% 11%;
+    --popover-foreground: 38 30% 92%;
+    --primary: 41 62% 60%;
+    --primary-foreground: 300 32% 8%;
+    --secondary: 300 11% 18%;
+    --secondary-foreground: 38 26% 90%;
+    --muted: 300 10% 21%;
+    --muted-foreground: 36 16% 70%;
+    --accent: 41 45% 40%;
+    --accent-foreground: 38 30% 95%;
+    --destructive: 354 54% 44%;
+    --destructive-foreground: 38 30% 95%;
+    --border: 36 16% 28%;
+    --input: 300 12% 15%;
+    --ring: 41 62% 60%;
+    --chart-1: 41 62% 60%;
+    --chart-2: 354 50% 48%;
+    --chart-3: 187 34% 46%;
+    --chart-4: 145 26% 42%;
+    --chart-5: 268 32% 56%;
+    --radius: 0.75rem;
+
+    /* Design System v2 — surface ramp & depth */
+    --surface-1: 300 15% 10%;
+    --surface-2: 300 13% 15%;
+    --surface-3: 300 10% 22%;
+    --hairline: 38 30% 92%;
+    --shadow-color: 300 45% 2%;
+
+    --font-heading: 'Cinzel', Georgia, 'Times New Roman', serif;
+    --font-body: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
+    --font-display: 'Cinzel Decorative', 'Cinzel', Georgia, 'Times New Roman', serif;
+    --font-ui: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Helvetica Neue', Arial, sans-serif;
+    --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+
+    --sidebar-background: 300 18% 8%;
+    --sidebar-foreground: 38 26% 84%;
+    --sidebar-primary: 41 62% 60%;
+    --sidebar-primary-foreground: 300 32% 8%;
+    --sidebar-accent: 300 11% 17%;
+    --sidebar-accent-foreground: 38 26% 92%;
+    --sidebar-border: 36 16% 28%;
+    --sidebar-ring: 41 62% 60%;
+  }
+
+  .dark {
+    --background: 300 18% 7%;
+    --foreground: 38 30% 92%;
+    --card: 300 14% 12%;
+    --card-foreground: 38 30% 92%;
+    --popover: 300 14% 11%;
+    --popover-foreground: 38 30% 92%;
+    --primary: 41 62% 60%;
+    --primary-foreground: 300 32% 8%;
+    --secondary: 300 11% 18%;
+    --secondary-foreground: 38 26% 90%;
+    --muted: 300 10% 21%;
+    --muted-foreground: 36 16% 70%;
+    --accent: 41 45% 40%;
+    --accent-foreground: 38 30% 95%;
+    --destructive: 354 54% 44%;
+    --destructive-foreground: 38 30% 95%;
+    --border: 36 16% 28%;
+    --input: 300 12% 15%;
+    --ring: 41 62% 60%;
+    --chart-1: 41 62% 60%;
+    --chart-2: 354 50% 48%;
+    --chart-3: 187 34% 46%;
+    --chart-4: 145 26% 42%;
+    --chart-5: 268 32% 56%;
+    --surface-1: 300 15% 10%;
+    --surface-2: 300 13% 15%;
+    --surface-3: 300 10% 22%;
+    --hairline: 38 30% 92%;
+    --shadow-color: 300 45% 2%;
+    --sidebar-background: 300 18% 8%;
+    --sidebar-foreground: 38 26% 84%;
+    --sidebar-primary: 41 62% 60%;
+    --sidebar-primary-foreground: 300 32% 8%;
+    --sidebar-accent: 300 11% 17%;
+    --sidebar-accent-foreground: 38 26% 92%;
+    --sidebar-border: 36 16% 28%;
+    --sidebar-ring: 41 62% 60%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--border) / 0.9) transparent;
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    @apply bg-background text-foreground font-body antialiased;
+    font-size: 1.0625rem;
+    line-height: 1.62;
+    letter-spacing: 0.005em;
+    background-image:
+      radial-gradient(120% 70% at 50% -12%, hsl(var(--primary) / 0.09), transparent 62%),
+      radial-gradient(90% 60% at 50% 110%, hsl(var(--destructive) / 0.10), transparent 60%);
+    background-attachment: scroll;
+  }
+
+  h1, h2, h3, h4, h5 {
+    @apply font-heading text-foreground;
+    letter-spacing: 0.04em;
+    line-height: 1.18;
+  }
+
+  ::selection {
+    background: hsl(var(--primary) / 0.26);
+    color: hsl(var(--foreground));
+  }
+
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: hsl(var(--border) / 0.85);
+    border: 2px solid transparent;
+    border-radius: 9999px;
+    background-clip: content-box;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--primary) / 0.55);
+    background-clip: content-box;
+  }
+
+  :focus-visible {
+    outline: 2px solid hsl(var(--ring) / 0.7);
+    outline-offset: 2px;
+  }
+}
+
+@layer components {
+  .comic-dots {
+    background-color: hsl(var(--surface-2));
+    background-image:
+      radial-gradient(circle at 50% 0%, hsl(var(--primary) / 0.07), transparent 62%),
+      radial-gradient(circle, hsl(var(--hairline) / 0.05) 1px, transparent 1px);
+    background-size: 100% 100%, 34px 34px;
+  }
+  .comic-dots-dark {
+    background-color: hsl(var(--background));
+    background-image:
+      radial-gradient(120% 80% at 50% -10%, hsl(var(--primary) / 0.06), transparent 60%),
+      radial-gradient(circle, hsl(var(--hairline) / 0.035) 1px, transparent 1px);
+    background-size: 100% 100%, 40px 40px;
+  }
+  /* V2 surface — color comes from the caller's bg-* utility, depth from here. */
+  .comic-panel {
+    @apply rounded-lg border;
+    background-color: hsl(var(--surface-2) / 0.86);
+    background-image: linear-gradient(180deg, hsl(var(--hairline) / 0.055), hsl(var(--shadow-color) / 0.30));
+    border-color: hsl(var(--hairline) / 0.10);
+    box-shadow: 0 20px 48px -34px hsl(var(--shadow-color) / 0.95), inset 0 1px 0 hsl(var(--hairline) / 0.06);
+  }
+  .comic-panel-sm {
+    @apply rounded-md border;
+    background-color: hsl(var(--surface-2) / 0.6);
+    background-image: linear-gradient(180deg, hsl(var(--hairline) / 0.04), hsl(var(--shadow-color) / 0.18));
+    border-color: hsl(var(--hairline) / 0.08);
+    box-shadow: 0 10px 24px -20px hsl(var(--shadow-color) / 0.9);
+  }
+  .comic-boom {
+    @apply uppercase transition-all;
+    font-family: var(--font-ui);
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    border: 1px solid hsl(var(--hairline) / 0.18);
+    border-radius: calc(var(--radius) - 2px);
+    background-image: linear-gradient(180deg, hsl(var(--hairline) / 0.10), hsl(var(--shadow-color) / 0.22));
+    box-shadow: 0 14px 30px -22px hsl(var(--shadow-color) / 0.95), inset 0 1px 0 hsl(var(--hairline) / 0.12);
+    transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .comic-boom:hover {
+    border-color: hsl(var(--primary) / 0.5);
+    box-shadow: 0 0 0 1px hsl(var(--primary) / 0.2), 0 16px 32px -20px hsl(var(--primary) / 0.4), inset 0 1px 0 hsl(var(--hairline) / 0.16);
+    transform: translateY(-1px);
+  }
+  .comic-boom:active {
+    transform: translateY(1px);
+    box-shadow: 0 6px 16px -12px hsl(var(--shadow-color) / 0.9), inset 0 2px 6px hsl(var(--shadow-color) / 0.5);
+  }
+
+  /* ===== Design System v2 primitives ===== */
+  .ds-eyebrow {
+    @apply font-ui uppercase text-muted-foreground;
+    font-size: 0.6875rem;
+    font-weight: 500;
+    letter-spacing: 0.32em;
+  }
+  .ds-label {
+    @apply font-ui uppercase text-muted-foreground;
+    font-size: 0.625rem;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+  }
+  .ds-value {
+    @apply font-ui text-foreground;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.02em;
+  }
+  .ds-title {
+    @apply font-display text-foreground;
+    letter-spacing: 0.06em;
+    line-height: 1.1;
+  }
+  .ds-lede {
+    @apply font-body text-foreground/70;
+    font-size: 1.0625rem;
+    line-height: 1.7;
+  }
+  .ds-surface {
+    background-image: linear-gradient(180deg, hsl(var(--surface-2) / 0.85), hsl(var(--surface-1) / 0.95));
+    border: 1px solid hsl(var(--border) / 0.55);
+    border-radius: var(--radius);
+  }
+  .ds-rule {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, hsl(var(--primary) / 0.45), transparent);
+  }
+  .ds-sheen {
+    position: relative;
+    overflow: hidden;
+  }
+  .ds-sheen::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(115deg, transparent 32%, hsl(var(--hairline) / 0.10) 48%, transparent 62%);
+    pointer-events: none;
+  }
+  /* V2 display title — every legacy overlay header inherits this. */
+  .comic-text-stroke {
+    -webkit-text-stroke: 0;
+    font-family: var(--font-display);
+    font-weight: 400;
+    letter-spacing: 0.07em;
+    line-height: 1.12;
+    text-shadow: 0 1px 0 hsl(var(--shadow-color) / 0.5), 0 0 34px hsl(var(--primary) / 0.18);
+  }
+  .comic-text-stroke-thin {
+    -webkit-text-stroke: 0;
+    font-family: var(--font-display);
+    font-weight: 400;
+    letter-spacing: 0.06em;
+    text-shadow: 0 0 20px hsl(var(--primary) / 0.14);
+  }
+  .comic-strobe {
+    animation: comic-strobe 0.15s infinite alternate;
+  }
+  @keyframes comic-strobe {
+    from { background-color: hsl(var(--destructive)); }
+    to { background-color: hsl(var(--primary)); }
+  }
+  .comic-pulse {
+    animation: comic-pulse 0.8s infinite ease-in-out;
+  }
+  @keyframes comic-pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+  }
+  .comic-slide-in {
+    animation: comic-slide-in 0.3s ease-out;
+  }
+  @keyframes comic-slide-in {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+  .comic-pop {
+    animation: comic-pop 0.2s ease-out;
+  }
+  @keyframes comic-pop {
+    0% { transform: scale(0.8); opacity: 0; }
+    60% { transform: scale(1.1); }
+    100% { transform: scale(1); opacity: 1; }
+  }
+  .tv-marquee {
+    animation: tv-marquee 45s linear infinite;
+  }
+  @keyframes tv-marquee {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+
+  /* ===== Cinematic Invitation ===== */
+  .cinv-beam {
+    width: 760px;
+    max-width: 90vw;
+    height: 1200px;
+    margin-left: -380px;
+    background: linear-gradient(180deg, rgba(255,215,0,.30), rgba(255,215,0,.07) 55%, transparent);
+    clip-path: polygon(40% 0, 60% 0, 100% 100%, 0 100%);
+    filter: blur(14px);
+    animation: cinv-flick 6s ease-in-out infinite;
+    pointer-events: none;
+  }
+  @keyframes cinv-flick {
+    0%, 100% { opacity: .85; }
+    35% { opacity: .7; }
+    50% { opacity: 1; }
+  }
+  .cinv-mote {
+    border-radius: 50%;
+    opacity: 0;
+    animation: cinv-float 11s linear infinite;
+    pointer-events: none;
+  }
+  @keyframes cinv-float {
+    0% { transform: translateY(0) translateX(0); opacity: 0; }
+    15% { opacity: .8; }
+    85% { opacity: .6; }
+    100% { transform: translateY(-520px) translateX(40px); opacity: 0; }
+  }
+  .cinv-sealwrap {
+    animation: cinv-zoom 14s ease-out forwards;
+  }
+  @keyframes cinv-zoom {
+    from { transform: scale(.82); }
+    to { transform: scale(1.08); }
+  }
+  .cinv-sealglow {
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(139,0,0,.55), transparent 65%);
+    animation: cinv-throb 2.4s ease-in-out infinite;
+    pointer-events: none;
+  }
+  @keyframes cinv-throb {
+    0%, 100% { transform: scale(.92); opacity: .7; }
+    50% { transform: scale(1.1); opacity: 1; }
+  }
+  .cinv-seal {
+    animation: cinv-beat 2.4s ease-in-out infinite;
+  }
+  @keyframes cinv-beat {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.035); }
+  }
+  .cinv-line {
+    font-size: 1.75rem;
+    line-height: 1.15;
+    letter-spacing: .03em;
+    color: #e8d9b0;
+    text-shadow: 0 2px 0 #000, 0 0 28px rgba(139,0,0,.8);
+    opacity: 0;
+    animation: cinv-ink 1.6s ease-out forwards;
+  }
+  @keyframes cinv-ink {
+    0% { opacity: 0; filter: blur(8px); transform: translateY(10px); }
+    100% { opacity: 1; filter: blur(0); transform: translateY(0); }
+  }
+  .cinv-count {
+    background: linear-gradient(180deg, rgba(26,10,10,.92), rgba(10,10,10,.92));
+    border: 1px solid #8b0000;
+    border-radius: 6px;
+    padding: 24px 28px;
+    box-shadow: 0 0 50px rgba(139,0,0,.45), inset 0 0 0 1px rgba(255,215,0,.25);
+  }
+  .cinv-cl {
+    font-size: 14px;
+    letter-spacing: .35em;
+    color: #c9a227;
+    margin-bottom: 16px;
+    font-weight: 700;
+  }
+  .cinv-btn {
+    cursor: pointer;
+    border: 2px solid #ffd700;
+    border-radius: 4px;
+    padding: 22px 26px;
+    font-family: inherit;
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: .12em;
+    color: #ffd700;
+    background: linear-gradient(180deg, #a00000, #5c0000);
+    box-shadow: 0 0 40px rgba(139,0,0,.8), inset 0 1px 0 rgba(255,215,0,.4);
+    text-shadow: 0 2px 0 #000;
+    transition: box-shadow .25s, color .25s, background .25s;
+    animation: cinv-throb2 2.4s ease-in-out infinite;
+  }
+  .cinv-btn:hover {
+    background: linear-gradient(180deg, #c40000, #700000);
+    color: #fff3b0;
+    box-shadow: 0 0 80px rgba(220,0,0,.95), inset 0 1px 0 rgba(255,215,0,.6);
+  }
+  .cinv-btn:active {
+    background: linear-gradient(180deg, #5c0000, #3a0000);
+  }
+  .cinv-btn:focus-visible {
+    outline: 3px solid #ffd700;
+    outline-offset: 4px;
+  }
+  .cinv-btn:disabled {
+    opacity: .6;
+    cursor: not-allowed;
+  }
+  @keyframes cinv-throb2 {
+    0%, 100% { box-shadow: 0 0 30px rgba(139,0,0,.7), inset 0 1px 0 rgba(255,215,0,.4); }
+    50% { box-shadow: 0 0 70px rgba(200,0,0,.95), inset 0 1px 0 rgba(255,215,0,.4); }
+  }
+  .cinp {
+    background: #1a0a0a;
+    border: 2px solid #8b0000;
+    border-radius: 4px;
+    padding: 14px 18px;
+    color: #f1e6c8;
+    font-family: inherit;
+    font-size: 1.25rem;
+    letter-spacing: .04em;
+    outline: none;
+    transition: border-color .25s, box-shadow .25s;
+  }
+  .cinp:focus {
+    border-color: #ffd700;
+    box-shadow: 0 0 24px rgba(255,215,0,.3);
+  }
+  /* ===== Photo film (8s stills loop) ===== */
+  .film-frame {
+    background: #0a0508;
+  }
+  .film-slide {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    transition: opacity 1.1s ease-in-out;
+  }
+  .film-slide.is-on {
+    opacity: 1;
+  }
+  .film-slide img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .film-slide.is-on img {
+    animation: film-ken 3.4s ease-out forwards;
+  }
+  @keyframes film-ken {
+    from { transform: scale(1.05); }
+    to { transform: scale(1.16); }
+  }
+  .film-progress {
+    width: 0;
+    animation: film-progress linear forwards;
+  }
+  @keyframes film-progress {
+    from { width: 0; }
+    to { width: 100%; }
+  }
+
+  .promo-zoom {
+    animation: promo-zoom 26s ease-in-out infinite alternate;
+  }
+  @keyframes promo-zoom {
+    from { transform: scale(1.02) translateY(0); }
+    to { transform: scale(1.16) translateY(-2%); }
+  }
+  .promo-mote {
+    border-radius: 50%;
+    opacity: 0;
+    animation: promo-mote 11s linear infinite;
+    pointer-events: none;
+  }
+  @keyframes promo-mote {
+    0% { transform: translateY(0) translateX(0); opacity: 0; }
+    18% { opacity: .85; }
+    80% { opacity: .5; }
+    100% { transform: translateY(-85vh) translateX(26px); opacity: 0; }
+  }
+  .promo-glow {
+    animation: promo-glow 5s ease-in-out infinite;
+  }
+  @keyframes promo-glow {
+    0%, 100% { text-shadow: 0 2px 0 #000, 0 0 30px rgba(139,0,0,.7); }
+    50% { text-shadow: 0 2px 0 #000, 0 0 55px rgba(255,215,0,.55); }
+  }
+}
+
+/* ============================================================
+   V2 NORMALIZATION LAYER
+   Unlayered on purpose: these rules sit after Tailwind's layers,
+   so every legacy screen that still asks for the old saturated
+   comic fills, fat tracked-out caps or hard scrims is folded into
+   the V2 surface ramp here — once, for the whole app.
+   ============================================================ */
+
+/* Saturated legacy panel fills → near-surface tints that keep only a hue hint. */
+.bg-tarot-wine { background-color: hsl(340 20% 16%) !important; }
+.bg-tarot-crimson { background-color: hsl(352 22% 17%) !important; }
+.bg-tarot-teal { background-color: hsl(187 18% 16%) !important; }
+.bg-tarot-forest { background-color: hsl(150 14% 16%) !important; }
+.bg-tarot-royal { background-color: hsl(268 16% 18%) !important; }
+.bg-tarot-sienna { background-color: hsl(22 18% 17%) !important; }
+
+/* The /30 tints of the same hues. */
+.bg-tarot-wine\/30, .bg-tarot-crimson\/30, .bg-tarot-teal\/30,
+.bg-tarot-forest\/30, .bg-tarot-royal\/30, .bg-tarot-sienna\/30 {
+  background-color: hsl(var(--surface-2) / 0.55) !important;
+}
+
+/* Legacy uppercase micro-labels: V2 tracking + weight, Inter not Cinzel. */
+.uppercase { letter-spacing: 0.14em; }
+
+/* Every overlay scrim gets the same frosted V2 treatment. */
+[class*="bg-background/70"],
+[class*="bg-background/80"],
+[class*="bg-background/85"],
+[class*="bg-background/90"],
+[class*="bg-background/92"],
+[class*="bg-background/95"] {
+  backdrop-filter: blur(8px);
+}
+
+/* V2 typographic scale: the old hero sizes were one notch too loud everywhere
+   (50 files still ask for them). One scale, applied once, for every screen. */
+.text-8xl { font-size: 4rem; line-height: 1.02; }
+.text-7xl { font-size: 3.25rem; line-height: 1.05; }
+.text-6xl { font-size: 2.75rem; line-height: 1.08; }
+.text-5xl { font-size: 2.25rem; line-height: 1.12; }
+
+/* Display serif is a V2 voice at regular weight — legacy font-bold/black
+   on headings is folded back to the token weight. */
+.font-heading { font-weight: 400; }
+
+/* Legacy gold accent → the single V2 primary token, everywhere. */
+.text-tarot-gold { color: hsl(var(--primary)); }
+
+/* Legacy inner blocks sat on the flat secondary fill; they now sit on the
+   surface ramp like every V2 card. */
+.bg-secondary { background-color: hsl(var(--surface-1) / 0.8); }
+
+/* Legacy bold micro-type: V2 emphasis is medium, never heavy. */
+.font-extrabold, .font-black { font-weight: 600; }
+
+/* Motion: no more comic bouncing. One quiet breath instead. */
+.comic-pulse { animation-duration: 3.2s; }
+@keyframes comic-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.015); }
+}
+.comic-strobe { animation-duration: 0.9s; }
+/* PWA (εγκατεστημένη εφαρμογή): σεβασμός στο notch / μπάρα συστήματος */
+@media (display-mode: standalone) {
+  body {
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+/* ---- Κινητό / iPhone (402×874): χωρίς οριζόντιο σκρολ, χωρίς αυτόματο zoom στα πεδία ---- */
+html, body { max-width: 100%; overflow-x: clip; -webkit-text-size-adjust: 100%; } /* clip: δεν χαλάει τα sticky headers */
+.no-scrollbar { scrollbar-width: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.admin-root { overflow-x: clip; }
+.admin-root img, .admin-root video, .admin-root canvas { max-width: 100%; }
+.admin-root button, .admin-root select { touch-action: manipulation; }
+@media (max-width: 768px) {
+  input:not([type='checkbox']):not([type='radio']):not([type='range']), select, textarea { font-size: 16px !important; }
+}
+@media (max-width: 480px) {
+  .admin-root .comic-panel { padding: 0.75rem; }
+}
+
+
+/* iPhone / touch viewport refinements — keep desktop layout unchanged. */
+#root {
+  min-height: 100vh;
+  min-height: 100svh;
+  overflow-x: clip;
+}
+
+body {
+  min-width: 320px;
+  min-height: 100vh;
+  min-height: 100svh;
+}
+
+@supports (height: 100dvh) {
+  body, #root {
+    min-height: 100dvh;
+  }
+}
+
+@media (max-width: 768px) {
+  html, body, #root {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  body {
+    background-attachment: scroll;
+  }
+
+  .admin-root {
+    min-height: 100svh;
+    padding-left: max(0.625rem, env(safe-area-inset-left));
+    padding-right: max(0.625rem, env(safe-area-inset-right));
+    padding-bottom: max(1.5rem, env(safe-area-inset-bottom));
+  }
+
+  .admin-root [class*="overflow-x-auto"],
+  .admin-root [class*="overflow-auto"] {
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .admin-root img,
+  .admin-root video,
+  .admin-root canvas,
+  .admin-root iframe {
+    max-width: 100%;
+  }
+
+  .admin-root input,
+  .admin-root select,
+  .admin-root textarea {
+    font-size: 16px !important;
+  }
+}
+
+@media (display-mode: standalone) {
+  #root {
+    min-height: calc(100svh - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .admin-root * {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+
+/* ============================================================
+   VISUAL REFINEMENT — Admin, TV and touch layouts
+   Presentation only: no component state, routes or game rules.
+   ============================================================ */
+
+/* Admin workspace */
+.admin-root {
+  background-image:
+    radial-gradient(ellipse at 12% 0%, hsl(var(--primary) / 0.075), transparent 42%),
+    radial-gradient(ellipse at 92% 100%, hsl(var(--destructive) / 0.055), transparent 38%);
+}
+.admin-root .comic-panel {
+  border-color: hsl(var(--primary) / 0.16);
+  box-shadow: 0 14px 36px -28px hsl(var(--shadow-color) / 0.95), inset 0 1px 0 hsl(var(--hairline) / 0.035);
+}
+.admin-root nav[aria-label="Πλοήγηση διαχείρισης"] {
+  max-height: calc(100dvh - 2rem);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 0.2rem;
+}
+.admin-root nav[aria-label="Πλοήγηση διαχείρισης"] > div {
+  padding: 0.35rem 0.25rem 0.55rem;
+  border-bottom: 1px solid hsl(var(--border) / 0.35);
+}
+.admin-root nav[aria-label="Πλοήγηση διαχείρισης"] > div:last-child {
+  border-bottom: 0;
+}
+.admin-root nav[aria-label="Πλοήγηση διαχείρισης"] button {
+  min-height: 2.45rem;
+  line-height: 1.35;
+  letter-spacing: 0.005em;
+  border-color: hsl(var(--border) / 0.42);
+}
+.admin-root nav[aria-label="Πλοήγηση διαχείρισης"] button[aria-current="page"] {
+  box-shadow: 0 5px 18px -12px hsl(var(--primary) / 0.8), inset 3px 0 0 hsl(var(--primary));
+}
+.admin-root input,
+.admin-root select,
+.admin-root textarea {
+  border-color: hsl(var(--border) / 0.75);
+  border-radius: 0.65rem;
+}
+.admin-root input:focus,
+.admin-root select:focus,
+.admin-root textarea:focus {
+  border-color: hsl(var(--primary) / 0.75);
+  box-shadow: 0 0 0 3px hsl(var(--primary) / 0.12);
+}
+.admin-root button {
+  transition: background-color 160ms ease, border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+}
+.admin-root button:active {
+  transform: translateY(1px);
+}
+.admin-root button:focus-visible,
+.admin-root a:focus-visible,
+.admin-root input:focus-visible,
+.admin-root select:focus-visible,
+.admin-root textarea:focus-visible {
+  outline: 2px solid hsl(var(--primary) / 0.85);
+  outline-offset: 2px;
+}
+
+/* TV output: cleaner contrast and consistent panel depth at viewing distance. */
+.dot-tv-shell {
+  background-color: hsl(var(--background));
+  text-rendering: optimizeLegibility;
+}
+.dot-tv-shell .comic-panel,
+.dot-tv-shell .comic-panel-sm {
+  border-color: hsl(var(--primary) / 0.22);
+  box-shadow: 0 18px 42px -30px hsl(var(--shadow-color) / 0.95), inset 0 1px 0 hsl(var(--hairline) / 0.06);
+}
+.dot-tv-shell .comic-text-stroke {
+  text-shadow: 0 2px 3px hsl(var(--shadow-color) / 0.85), 0 0 26px hsl(var(--primary) / 0.16);
+}
+
+/* Touch devices: clearer hit areas without changing the controls or their actions. */
+@media (hover: none) and (pointer: coarse) {
+  .admin-root nav[aria-label="Πλοήγηση διαχείρισης"] button {
+    min-height: 2.75rem;
+  }
+  .admin-root button,
+  .admin-root a,
+  .dot-tv-shell button {
+    -webkit-tap-highlight-color: hsl(var(--primary) / 0.16);
+  }
+}
+
+@media (min-width: 1024px) {
+  .admin-root > div {
+    max-width: 88rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .admin-root .comic-panel {
+    border-radius: 0.9rem;
+  }
+  .admin-root nav[aria-label="Πλοήγηση διαχείρισης"] {
+    max-height: 58dvh;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .admin-root button {
+    transition: none;
+  }
+}
+
+
+/* ============================================================
+   COMPLETE VISUAL PASS — shared UI, game controls and screens
+   CSS-only refinement. No routes, state, copy, game rules or data.
+   ============================================================ */
+
+:root {
+  color-scheme: dark;
+  --ui-focus: hsl(var(--primary) / 0.9);
+  --ui-panel-outline: hsl(var(--primary) / 0.18);
+}
+
+html {
+  scroll-behavior: smooth;
+  scrollbar-gutter: stable;
+}
+
+body,
+button,
+input,
+select,
+textarea {
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+button,
+input,
+select,
+textarea {
+  font-family: var(--font-ui);
+}
+
+button,
+a,
+[role="button"] {
+  -webkit-tap-highlight-color: transparent;
+}
+
+button:focus-visible,
+a:focus-visible,
+[role="button"]:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid var(--ui-focus);
+  outline-offset: 3px;
+}
+
+input,
+select,
+textarea {
+  accent-color: hsl(var(--primary));
+}
+
+::placeholder {
+  color: hsl(var(--muted-foreground) / 0.78);
+  opacity: 1;
+}
+
+/* One consistent surface language across Admin, Tablet and mobile play. */
+.comic-panel,
+.comic-panel-sm,
+.ds-surface {
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.comic-panel {
+  border-color: var(--ui-panel-outline);
+  box-shadow:
+    0 18px 44px -32px hsl(var(--shadow-color) / 0.96),
+    inset 0 1px 0 hsl(var(--hairline) / 0.055);
+}
+
+.comic-panel-sm {
+  border-color: hsl(var(--border) / 0.48);
+  box-shadow:
+    0 10px 24px -20px hsl(var(--shadow-color) / 0.92),
+    inset 0 1px 0 hsl(var(--hairline) / 0.035);
+}
+
+.comic-boom {
+  min-height: 2.65rem;
+  letter-spacing: 0.085em;
+}
+
+.comic-boom:focus-visible {
+  outline: 2px solid var(--ui-focus);
+  outline-offset: 3px;
+}
+
+/* Shared form controls: legibility, contrast and consistent focus states. */
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+select,
+textarea {
+  color: hsl(var(--foreground));
+  background-color: hsl(var(--input) / 0.92);
+  border-color: hsl(var(--border) / 0.72);
+}
+
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):focus,
+select:focus,
+textarea:focus {
+  border-color: hsl(var(--primary) / 0.82);
+  box-shadow: 0 0 0 3px hsl(var(--primary) / 0.13);
+}
+
+input[type="checkbox"],
+input[type="radio"],
+input[type="range"] {
+  accent-color: hsl(var(--primary));
+}
+
+/* Admin: stronger hierarchy, calmer workspace and clearer active section. */
+.admin-root {
+  background-color: hsl(var(--background));
+  background-attachment: scroll;
+}
+
+.admin-root > div {
+  width: 100%;
+}
+
+.admin-root nav[aria-label="Πλοήγηση διαχείρισης"] button {
+  min-height: 2.55rem;
+  font-family: var(--font-ui);
+  font-size: 0.76rem;
+  font-weight: 600;
+}
+
+.admin-root nav[aria-label="Πλοήγηση διαχείρισης"] button[aria-current="page"] {
+  color: hsl(var(--primary-foreground));
+  background-image: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary) / 0.86));
+  border-color: hsl(var(--primary) / 0.9);
+  box-shadow:
+    0 7px 20px -14px hsl(var(--primary) / 0.9),
+    inset 0 1px 0 hsl(var(--hairline) / 0.28);
+}
+
+.admin-root [role="tablist"] button[aria-selected="true"] {
+  box-shadow: inset 0 0 0 1px hsl(var(--hairline) / 0.14);
+}
+
+.admin-root table {
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.admin-root th {
+  color: hsl(var(--primary));
+  font-family: var(--font-ui);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.055em;
+}
+
+.admin-root td {
+  border-color: hsl(var(--border) / 0.38);
+  vertical-align: middle;
+}
+
+.admin-root [role="dialog"],
+.admin-root [data-radix-popper-content-wrapper] > * {
+  border-color: hsl(var(--primary) / 0.22);
+  box-shadow: 0 24px 80px -34px #000;
+}
+
+/* Tablet / host: preserve the control layout while improving touch clarity. */
+body:has(.comic-dots) .comic-panel,
+body:has(.comic-dots-dark) .comic-panel {
+  border-color: hsl(var(--primary) / 0.18);
+}
+
+body:has(.comic-dots) button:not(:disabled):active {
+  filter: brightness(1.08);
+}
+
+body:has(.comic-dots) [role="dialog"],
+body:has(.comic-dots-dark) [role="dialog"] {
+  border-color: hsl(var(--primary) / 0.28);
+  box-shadow: 0 28px 90px -36px #000;
+}
+
+/* Player mobile: stable viewport and readable interactive surfaces. */
+@supports (height: 100dvh) {
+  body:has(.comic-dots) .min-h-screen,
+  body:has(.comic-dots-dark) .min-h-screen {
+    min-height: 100dvh;
+  }
+}
+
+@media (max-width: 767px) {
+  .comic-panel {
+    border-radius: 0.9rem;
+  }
+
+  .comic-panel-sm {
+    border-radius: 0.7rem;
+  }
+
+  .dot-tv-stage {
+    padding-left: max(0.65rem, env(safe-area-inset-left));
+    padding-right: max(0.65rem, env(safe-area-inset-right));
+  }
+
+  .admin-root {
+    padding-top: max(0.65rem, env(safe-area-inset-top));
+  }
+
+  .admin-root > div {
+    gap: 0.7rem;
+  }
+
+  .admin-root [role="tablist"] {
+    padding-bottom: max(0.35rem, env(safe-area-inset-bottom));
+  }
+
+  .admin-root input,
+  .admin-root select,
+  .admin-root textarea,
+  body:has(.comic-dots) input,
+  body:has(.comic-dots) select,
+  body:has(.comic-dots) textarea {
+    font-size: 16px;
+  }
+
+  .comic-boom {
+    min-height: 2.8rem;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  .admin-root > div {
+    max-width: 64rem;
+  }
+
+  .dot-tv-stage {
+    padding-left: 1.25rem;
+    padding-right: 1.25rem;
+  }
+}
+
+/* TV: keep the broadcast stage spacious and the display text crisp. */
+.dot-tv-shell {
+  min-height: 100dvh;
+  isolation: isolate;
+}
+
+.dot-tv-shell .dot-tv-stage {
+  width: 100%;
+}
+
+.dot-tv-shell .comic-panel {
+  background-color: hsl(var(--surface-2) / 0.94);
+}
+
+.dot-tv-shell .comic-panel-sm {
+  background-color: hsl(var(--surface-2) / 0.88);
+}
+
+.dot-tv-shell :where(h1, h2, h3, .font-heading) {
+  text-wrap: balance;
+}
+
+.dot-tv-fullscreen .dot-tv-stage {
+  padding: clamp(0.5rem, 1.5vw, 1.5rem);
+}
+
+@media (min-width: 1400px) {
+  .dot-tv-shell .dot-tv-stage > div {
+    max-width: 92rem;
+  }
+}
+
+/* Avoid layout motion for users who request reduced motion. */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+
+/* Keep large Admin media grids cheap to paint while their cards are off-screen. */
+.admin-media-library-card {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 280px;
+}
+
+/* ===== responsive.css ===== */
+/* ==========================================================================
+   Responsive hardening — κινητό (iPhone/Android) + MacBook.
+   Φορτώνεται ΜΕΤΑ το index.css (δες main.jsx), γι' αυτό υπερισχύει των utilities.
+   ========================================================================== */
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  /* τα anchor links (#faq, #program…) να μη κρύβονται κάτω από το sticky μενού */
+  scroll-padding-top: 7rem;
+  scroll-behavior: smooth;
+}
+html, body { max-width: 100%; overflow-x: clip; }
+
+/* iPhone: σωστό ύψος οθόνης (η μπάρα του Safari δεν κόβει το περιεχόμενο) */
+.min-h-screen { min-height: 100vh; min-height: 100dvh; }
+.h-screen { height: 100vh; height: 100dvh; }
+.max-h-screen { max-height: 100vh; max-height: 100dvh; }
+
+/* Notch / home indicator (εγκατεστημένη εφαρμογή στην αρχική οθόνη, landscape) */
+body {
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-right: env(safe-area-inset-right, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  padding-left: env(safe-area-inset-left, 0px);
+}
+@supports (padding: env(safe-area-inset-top)) {
+  .min-h-screen {
+    min-height: calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+  }
+}
+
+/* Αφή: χωρίς καθυστέρηση 300ms / ζουμ με διπλό tap, χωρίς γκρι αναλαμπή */
+a, button, [role="button"], label, summary, select, input {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Κινητό: τα πεδία ≥16px, αλλιώς το iPhone κάνει ζουμ όταν πατάς σε πεδίο φόρμας */
+@media (max-width: 767px) {
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]),
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+}
+
+/* Κινητό: ελάχιστο μέγεθος κειμένου ώστε να διαβάζεται */
+@media (max-width: 640px) {
+  .text-\[8px\], .text-\[9px\], .text-\[10px\] { font-size: 11px; }
+  .text-\[11px\] { font-size: 12px; }
+}
+
+/* Εικόνες/βίντεο/πίνακες ποτέ πιο πλατιά από την οθόνη */
+img, video, canvas, svg { max-width: 100%; }
+img, video { height: auto; }
+table { max-width: 100%; }
+
+/* MacBook / πληκτρολόγιο: ορατό focus */
+:focus-visible {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: 2px;
+}
+
+/* Μεγάλες οθόνες: λίγο μεγαλύτερο κείμενο, ώστε να μη φαίνεται «μικρό» στο MacBook Pro 16" / εξωτερική οθόνη */
+@media (min-width: 1700px) {
+  html { font-size: 17px; }
+}
+
+/* Όσοι έχουν ενεργή τη «Μείωση κίνησης» στο σύστημα */
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+
+/* Δημόσιες σελίδες — προσαρμογή κινητού, tablet, υπολογιστή και τηλεόρασης */
+#top { min-height: min(92svh, 900px); }
+#top h1 { font-size: clamp(2.25rem, 7vw, 5.25rem); overflow-wrap: anywhere; }
+#top .cinv-count { max-width: 100%; }
+#top .cinv-count > div:last-child { flex-wrap: wrap; }
+#photos img, #photos video { display: block; }
+#registration > div, #contact > div { min-width: 0; }
+#registration button, #contact button { max-width: 100%; white-space: normal; }
+@media (max-width: 767px) {
+  #top { min-height: 78svh; padding-top: 5rem; padding-bottom: 4rem; }
+  #top h1 { letter-spacing: .055em; line-height: 1.08; }
+  #top .cinv-count { width: 100%; padding: 12px 8px; }
+  #top .cinv-count > div:last-child { gap: clamp(8px, 3vw, 16px); }
+  #top .cinv-count .font-display { font-size: clamp(1.35rem, 7vw, 2rem); }
+  #modes .grid { grid-template-columns: minmax(0, 1fr); }
+  #photos .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  #registration > div { grid-template-columns: minmax(0, 1fr); text-align: center; }
+  #registration button, #contact button { width: 100%; }
+  #contact > div { padding: 2rem 1.1rem; border-radius: 1.25rem; }
+  main > div > nav { grid-template-columns: minmax(0, 1fr) !important; }
+  main > div > nav button { min-height: 44px; font-size: 12px !important; }
+  main form { padding: 14px !important; }
+  main form input, main form textarea, main form select { min-width: 0; max-width: 100%; }
+}
+@media (min-width: 768px) and (max-width: 1199px) {
+  #top { min-height: 82svh; }
+  #photos .grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+@media (min-width: 1200px) {
+  #top { min-height: min(92svh, 980px); }
+  #photos .grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+@media (min-width: 1500px) and (orientation: landscape) {
+  .dot-tv-shell { min-height: 100svh; }
+  .dot-tv-stage { max-width: 94vw; margin-inline: auto; }
+}
+@media (max-width: 760px) {
+  .dot-tv-shell { min-height: 100svh; min-height: 100dvh; overflow-x: clip; }
+  .dot-tv-shell .dot-tv-hud { max-width: calc(100vw - 20px); }
+  .dot-tv-shell img, .dot-tv-shell video { max-width: 100%; height: auto; }
+}
+
+/* ===== cinematic-tv.css ===== */
+/* DEAL OF TEMPTATION — Premium TV presentation layer */
+.dot-tv-shell {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(139, 92, 246, .16), transparent 42%),
+    radial-gradient(ellipse at 50% 100%, rgba(212, 175, 55, .10), transparent 48%),
+    #08070b;
+}
+.dot-tv-atmosphere {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+  background:
+    linear-gradient(180deg, rgba(5, 4, 9, .15), rgba(5, 4, 9, .48)),
+    radial-gradient(ellipse at center, transparent 35%, rgba(0, 0, 0, .52) 100%);
+}
+.dot-tv-orb {
+  position: absolute;
+  display: block;
+  width: min(54vw, 760px);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  filter: blur(48px);
+  opacity: .13;
+  animation: dot-tv-drift 18s ease-in-out infinite alternate;
+}
+.dot-tv-orb-one {
+  top: -42%;
+  left: -12%;
+  background: #7c3aed;
+}
+.dot-tv-orb-two {
+  right: -15%;
+  bottom: -55%;
+  background: #c49a35;
+  animation-delay: -8s;
+}
+.dot-tv-grain {
+  position: absolute;
+  inset: 0;
+  opacity: .12;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.92' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.18'/%3E%3C/svg%3E");
+}
+.dot-tv-hud {
+  position: absolute;
+  top: 14px;
+  left: 22px;
+  right: 22px;
+  z-index: 42;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  pointer-events: none;
+  animation: dot-tv-enter .7s cubic-bezier(.2,.8,.2,1) both;
+}
+.dot-tv-hud > * { pointer-events: auto; }
+.dot-tv-brand {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  min-width: 0;
+}
+.dot-tv-brand-mark {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border: 1px solid rgba(220, 185, 102, .68);
+  border-radius: 50%;
+  color: #e7c77b;
+  font-family: var(--font-display);
+  font-size: 19px;
+  box-shadow: 0 0 24px rgba(212, 175, 55, .13), inset 0 0 14px rgba(212, 175, 55, .08);
+}
+.dot-tv-brand strong, .dot-tv-brand small { display: block; }
+.dot-tv-brand strong {
+  color: #f3e8cc;
+  font: 600 11px/1.25 var(--font-ui);
+  letter-spacing: .22em;
+}
+.dot-tv-brand small {
+  margin-top: 4px;
+  color: rgba(222, 204, 164, .65);
+  font: 500 9px/1 var(--font-ui);
+  letter-spacing: .24em;
+}
+.dot-tv-live-meta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(10px, 2vw, 25px);
+  color: rgba(237, 225, 198, .68);
+  font: 500 9px/1 var(--font-ui);
+  letter-spacing: .16em;
+}
+.dot-tv-meta-item b { color: #e8cf91; margin-left: 5px; font-weight: 600; }
+.dot-tv-network { display: inline-flex; align-items: center; gap: 7px; }
+.dot-tv-network i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #62d6a2;
+  box-shadow: 0 0 12px rgba(98, 214, 162, .8);
+}
+.dot-tv-network.is-offline i {
+  background: #f07878;
+  box-shadow: 0 0 12px rgba(240, 120, 120, .8);
+}
+.dot-tv-fullscreen-button {
+  border: 1px solid rgba(220, 185, 102, .4);
+  border-radius: 999px;
+  padding: 9px 14px;
+  color: #ead7a8;
+  background: rgba(13, 10, 18, .72);
+  backdrop-filter: blur(14px);
+  font: 600 9px/1 var(--font-ui);
+  letter-spacing: .14em;
+  transition: border-color .2s ease, background .2s ease, transform .2s ease;
+}
+.dot-tv-fullscreen-button:hover {
+  border-color: rgba(230, 194, 112, .9);
+  background: rgba(80, 56, 26, .42);
+  transform: translateY(-1px);
+}
+.dot-tv-fullscreen-button span { margin-right: 7px; font-size: 14px; }
+.dot-tv-stage-marker {
+  position: absolute;
+  top: 70px;
+  right: 28px;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: rgba(224, 208, 173, .48);
+  font: 500 8px/1 var(--font-ui);
+  letter-spacing: .25em;
+  pointer-events: none;
+}
+.dot-tv-stage-marker span {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #d6b66d;
+  box-shadow: 0 0 10px rgba(214, 182, 109, .8);
+}
+.dot-tv-stage { animation: dot-tv-stage-in .8s cubic-bezier(.2,.8,.2,1) both; }
+.dot-tv-shell .comic-panel {
+  border-color: rgba(220, 185, 102, .2);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, .34), inset 0 1px 0 rgba(255, 255, 255, .045);
+}
+.dot-tv-shell .comic-panel-sm {
+  border-color: rgba(220, 185, 102, .14);
+}
+.dot-tv-shell button:focus-visible {
+  outline: 2px solid #e5c477;
+  outline-offset: 4px;
+}
+.dot-tv-fullscreen .dot-tv-hud { opacity: .55; transition: opacity .25s ease; }
+.dot-tv-fullscreen .dot-tv-hud:hover { opacity: 1; }
+@keyframes dot-tv-drift {
+  from { transform: translate3d(-2%, 0, 0) scale(.94); }
+  to { transform: translate3d(5%, 7%, 0) scale(1.08); }
+}
+@keyframes dot-tv-enter {
+  from { opacity: 0; transform: translateY(-9px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes dot-tv-stage-in {
+  from { opacity: .35; transform: translateY(8px) scale(.995); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+@media (max-width: 760px) {
+  .dot-tv-hud { top: 9px; left: 10px; right: 10px; gap: 8px; flex-wrap: wrap; }
+  .dot-tv-brand-mark { width: 30px; height: 30px; font-size: 15px; }
+  .dot-tv-brand strong { font-size: 9px; letter-spacing: .12em; }
+  .dot-tv-brand small { font-size: 8px; letter-spacing: .12em; }
+  .dot-tv-live-meta { order: 3; width: 100%; justify-content: flex-start; gap: 13px; font-size: 8px; }
+  .dot-tv-fullscreen-button { margin-left: auto; padding: 8px 10px; font-size: 8px; }
+  .dot-tv-stage-marker { top: 83px; right: 13px; font-size: 7px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .dot-tv-orb, .dot-tv-hud, .dot-tv-stage { animation: none !important; }
+}
+
+
+/* Premium mobile controller — safe-area, touch response and readable surfaces */
+body.dot-mobile-experience {
+  background: #09080d;
+  overscroll-behavior-y: none;
+  -webkit-tap-highlight-color: transparent;
+}
+body.dot-mobile-experience button,
+body.dot-mobile-experience [role="button"] {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform .14s ease, filter .14s ease, box-shadow .14s ease;
+}
+body.dot-mobile-experience button:active,
+body.dot-mobile-experience [role="button"]:active {
+  transform: scale(.975);
+  filter: brightness(1.12);
+}
+body.dot-mobile-experience input,
+body.dot-mobile-experience select,
+body.dot-mobile-experience textarea {
+  font-size: max(16px, 1em);
+}
+body.dot-mobile-experience .fixed.bottom-0,
+body.dot-mobile-experience .fixed.inset-x-0 {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+body.dot-mobile-experience .comic-panel,
+body.dot-mobile-experience .comic-panel-sm {
+  border-color: rgba(220, 185, 102, .22);
+  box-shadow: 0 14px 36px rgba(0, 0, 0, .25), inset 0 1px 0 rgba(255,255,255,.035);
+}
+body.dot-mobile-experience :focus-visible {
+  outline: 2px solid #e5c477;
+  outline-offset: 3px;
+}
+@media (prefers-reduced-motion: reduce) {
+  body.dot-mobile-experience *,
+  body.dot-mobile-experience *::before,
+  body.dot-mobile-experience *::after {
+    scroll-behavior: auto !important;
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
+}
+
+.dot-tv-moment {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  z-index: 48;
+  width: min(82vw, 720px);
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: clamp(18px, 3vw, 30px);
+  border: 1px solid rgba(226, 193, 120, .55);
+  border-radius: 18px;
+  background: linear-gradient(145deg, rgba(16, 11, 23, .94), rgba(35, 22, 42, .91));
+  box-shadow: 0 24px 90px rgba(0,0,0,.58), 0 0 70px rgba(139,92,246,.2), inset 0 1px 0 rgba(255,255,255,.08);
+  text-align: center;
+  backdrop-filter: blur(14px);
+  pointer-events: none;
+  animation: dot-tv-moment-in .42s cubic-bezier(.16,1,.3,1) both;
+}
+.dot-tv-moment-kicker {
+  color: #e4c77f;
+  font: 600 9px/1 var(--font-ui);
+  letter-spacing: .32em;
+}
+.dot-tv-moment strong {
+  color: #fff3d7;
+  font: 600 clamp(19px, 3vw, 34px)/1.15 var(--font-display);
+  letter-spacing: .08em;
+  text-shadow: 0 0 28px rgba(212,175,55,.25);
+}
+.dot-tv-moment small {
+  max-width: 100%;
+  color: rgba(241,229,204,.78);
+  font: 500 clamp(10px, 1.25vw, 14px)/1.4 var(--font-ui);
+  letter-spacing: .04em;
+}
+@keyframes dot-tv-moment-in {
+  from { opacity: 0; filter: blur(12px); transform: translate(-50%, -46%) scale(.96); }
+  to { opacity: 1; filter: blur(0); transform: translate(-50%, -50%) scale(1); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .dot-tv-moment { animation: none; }
+}
+
+/* ===== ios27.css ===== */
+/* ==========================================================================
+   DEAL OF TEMPTATION — iOS 27 · BLACK & GOLD
+   Βασικό iOS layer. Το τελικό καθολικό visual layer φορτώνεται μετά από αυτό
+   στο visual-overhaul.css.
+   Μόνο εμφάνιση: καμία αλλαγή σε state, routes, κανόνες παιχνιδιού.
+
+   Γλώσσα σχεδίασης
+   · Αληθινό μαύρο (OLED) + χρυσό. Κόκκινο ΜΟΝΟ για κίνδυνο/ΣΤΟΠ.
+   · Liquid Glass: ημιδιαφανή υλικά, blur + saturation, specular highlight
+     στο πάνω χείλος, λεπτό hairline.
+   · SF Pro (system) τυπογραφία, μεγάλοι τίτλοι, αρνητικό tracking.
+   · Συνεχείς γωνίες (squircle), κάψουλες για κουμπιά.
+   · Spring κίνηση, press-scale, σεβασμός σε reduced-motion/transparency.
+   ========================================================================== */
+
+/* ---------- 1 · TOKENS ---------- */
+:root, .dark {
+  /* shadcn / app tokens (HSL triplets) */
+  --background: 0 0% 0%;
+  --foreground: 40 25% 96%;
+  --card: 0 0% 7%;
+  --card-foreground: 40 25% 96%;
+  --popover: 0 0% 8%;
+  --popover-foreground: 40 25% 96%;
+  --primary: 42 76% 65%;
+  --primary-foreground: 0 0% 0%;
+  --secondary: 0 0% 12%;
+  --secondary-foreground: 40 25% 94%;
+  --muted: 0 0% 14%;
+  --muted-foreground: 40 7% 63%;
+  --accent: 42 55% 24%;
+  --accent-foreground: 40 30% 96%;
+  --destructive: 4 100% 61%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 0 0% 21%;
+  --input: 0 0% 11%;
+  --ring: 42 80% 68%;
+  --surface-1: 0 0% 5%;
+  --surface-2: 0 0% 9%;
+  --surface-3: 0 0% 14%;
+  --hairline: 0 0% 100%;
+  --shadow-color: 0 0% 0%;
+  --radius: 1.25rem;
+  --chart-1: 42 76% 65%;
+  --chart-2: 4 100% 61%;
+  --chart-3: 40 30% 80%;
+  --chart-4: 38 55% 45%;
+  --chart-5: 0 0% 70%;
+
+  /* iOS 27 materials */
+  --gold-1: #F7E3A8;
+  --gold-2: #E8C26B;
+  --gold-3: #C99B2E;
+  --gold-4: #8A6A1E;
+  --gold-grad: linear-gradient(180deg, #F9E7B2 0%, #E8C26B 46%, #C99B2E 100%);
+  --gold-text: linear-gradient(180deg, #FFF1C7 0%, #E8C26B 60%, #C99B2E 100%);
+  --glass-1: rgba(28, 28, 30, 0.58);
+  --glass-2: rgba(44, 44, 46, 0.50);
+  --glass-thick: rgba(20, 20, 22, 0.78);
+  --glass-stroke: rgba(255, 255, 255, 0.10);
+  --glass-hi: rgba(255, 255, 255, 0.16);
+  --gold-stroke: rgba(232, 194, 107, 0.28);
+  --ios-red: #FF453A;
+  --ease-spring: cubic-bezier(0.32, 0.72, 0, 1);
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+
+  /* Typography — SF Pro on Apple devices, Inter everywhere else */
+  --font-ui: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Inter', 'Segoe UI', system-ui, Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-body: var(--font-ui);
+  --font-heading: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', 'Segoe UI', system-ui, Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-display: ui-rounded, 'SF Pro Rounded', -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', system-ui, sans-serif;
+  --font-mono: ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Consolas, monospace;
+
+  color-scheme: dark;
+}
+
+/* ---------- 2 · BASE ---------- */
+html { background: #000; }
+body {
+  background: #000 !important;
+  background-image:
+    radial-gradient(120% 55% at 50% -12%, rgba(232, 194, 107, 0.10), transparent 62%),
+    radial-gradient(80% 40% at 100% 108%, rgba(232, 194, 107, 0.05), transparent 70%) !important;
+  background-attachment: scroll !important;
+  color: #F5F1E8;
+  font-family: var(--font-ui);
+  font-size: 1rem;
+  line-height: 1.5;
+  letter-spacing: -0.011em;
+  -webkit-font-smoothing: antialiased;
+  font-synthesis: none;
+}
+::selection { background: rgba(232, 194, 107, 0.35); color: #fff; }
+* { scrollbar-color: rgba(255,255,255,.22) transparent; }
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,.22); border-radius: 99px; border: 2px solid transparent; background-clip: content-box; }
+::-webkit-scrollbar-thumb:hover { background: rgba(232,194,107,.55); background-clip: content-box; }
+
+/* ---------- 3 · TYPOGRAPHY ---------- */
+h1, h2, h3, h4, h5, .font-heading {
+  font-family: var(--font-heading) !important;
+  font-weight: 700;
+  letter-spacing: -0.022em;
+  line-height: 1.12;
+  text-wrap: balance;
+}
+h1 { letter-spacing: -0.03em; }
+.font-heading { font-weight: 650 !important; }
+.font-body { font-family: var(--font-body) !important; }
+.font-ui { font-family: var(--font-ui) !important; }
+.font-display, .ds-title, .comic-text-stroke, .comic-text-stroke-thin {
+  font-family: var(--font-display) !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.02em !important;
+  text-shadow: none !important;
+}
+.comic-text-stroke, .comic-text-stroke-thin, .ds-title { -webkit-text-stroke: 0; }
+.uppercase { letter-spacing: 0.04em; }
+.tabular-nums, .ds-value, .font-display { font-variant-numeric: tabular-nums; }
+
+/* Large title / caption / label scale (iOS) */
+.ds-eyebrow { font-family: var(--font-ui); font-size: 0.72rem; font-weight: 600; letter-spacing: 0.09em; text-transform: uppercase; color: rgba(232,194,107,.85); }
+.ds-label  { font-family: var(--font-ui); font-size: 0.68rem; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; color: rgba(235,235,245,.55); }
+.ds-value  { font-family: var(--font-ui); font-weight: 600; letter-spacing: -0.01em; }
+.ds-lede   { font-family: var(--font-body); color: rgba(245,241,232,.68); line-height: 1.55; }
+
+/* Gold text helpers */
+.text-tarot-gold { color: var(--gold-2); }
+.text-gradient-gold {
+  background: var(--gold-text);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+
+/* ---------- 4 · LIQUID GLASS SURFACES ---------- */
+.comic-panel, .comic-panel-sm, .ds-surface {
+  position: relative;
+  border: 1px solid var(--glass-stroke) !important;
+  border-radius: 28px !important;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.07) 0%, rgba(255,255,255,.015) 38%, transparent 100%),
+    var(--glass-1) !important;
+  -webkit-backdrop-filter: blur(18px) saturate(180%);
+  backdrop-filter: blur(18px) saturate(180%);
+  box-shadow:
+    inset 0 1px 0 var(--glass-hi),
+    inset 0 0 0 0.5px rgba(255,255,255,.04),
+    0 18px 44px -18px rgba(0,0,0,.85) !important;
+  transition: border-color .3s var(--ease-out), background-color .3s var(--ease-out), transform .35s var(--ease-spring);
+}
+.comic-panel { padding: clamp(14px, 2vw, 22px); }
+.comic-panel-sm { border-radius: 20px !important; background-color: var(--glass-2) !important; }
+.comic-panel:hover, .comic-panel-sm:hover { border-color: rgba(232,194,107,.22) !important; }
+@supports (corner-shape: squircle) {
+  .comic-panel, .ds-surface { corner-shape: squircle; border-radius: 40px !important; }
+  .comic-panel-sm { corner-shape: squircle; border-radius: 28px !important; }
+}
+
+/* Panels που ζητούν χρώμα από το utility τους */
+.comic-panel.bg-primary, .comic-panel-sm.bg-primary {
+  background: var(--gold-grad) !important;
+  border-color: rgba(255,244,205,.55) !important;
+  color: #000 !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.55), 0 18px 50px -16px rgba(232,194,107,.45) !important;
+}
+.comic-panel.bg-primary *, .comic-panel-sm.bg-primary * { color: rgba(0,0,0,.88); text-shadow: none !important; }
+.comic-panel[class*="bg-primary/"], .comic-panel-sm[class*="bg-primary/"] {
+  background:
+    linear-gradient(180deg, rgba(232,194,107,.20), rgba(232,194,107,.07)),
+    var(--glass-1) !important;
+  border-color: var(--gold-stroke) !important;
+}
+.comic-panel.bg-destructive, .comic-panel-sm.bg-destructive,
+.comic-panel[class*="bg-destructive/"], .comic-panel-sm[class*="bg-destructive/"] {
+  background:
+    linear-gradient(180deg, rgba(255,69,58,.28), rgba(255,69,58,.10)),
+    var(--glass-1) !important;
+  border-color: rgba(255,69,58,.45) !important;
+}
+.comic-panel.ring-4, .comic-panel-sm.ring-4, .comic-panel.ring-2, .comic-panel-sm.ring-2 {
+  --tw-ring-color: rgba(232,194,107,.55);
+  --tw-ring-shadow: 0 0 0 1.5px var(--tw-ring-color);
+}
+
+/* Legacy tarot fills → neutral glass (hue hint removed, all black & gold) */
+.bg-tarot-wine, .bg-tarot-crimson, .bg-tarot-teal, .bg-tarot-forest, .bg-tarot-royal, .bg-tarot-sienna,
+.bg-tarot-wine\/30, .bg-tarot-crimson\/30, .bg-tarot-teal\/30, .bg-tarot-forest\/30, .bg-tarot-royal\/30, .bg-tarot-sienna\/30 {
+  background-color: rgba(255,255,255,.06) !important;
+}
+.bg-secondary { background-color: rgba(255,255,255,.07) !important; }
+.bg-card { background-color: rgba(28,28,30,.72) !important; }
+
+/* Backgrounds παλιού «comic» */
+.comic-dots, .comic-dots-dark {
+  background-color: #000 !important;
+  background-image:
+    radial-gradient(120% 50% at 50% -10%, rgba(232,194,107,.11), transparent 62%),
+    radial-gradient(circle, rgba(255,255,255,.035) 1px, transparent 1px) !important;
+  background-size: 100% 100%, 30px 30px !important;
+}
+
+/* Overlays / sheets */
+.fixed[class*="inset-0"][class*="bg-"]:not([class*="bg-transparent"]) {
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
+  backdrop-filter: blur(18px) saturate(140%);
+}
+.fixed[class*="inset-0"][class*="bg-black"] { background-color: rgba(0,0,0,.62) !important; }
+[role="dialog"] {
+  border-radius: 32px !important;
+  border: 1px solid var(--glass-stroke) !important;
+  background: var(--glass-thick) !important;
+  -webkit-backdrop-filter: blur(18px) saturate(180%);
+  backdrop-filter: blur(18px) saturate(180%);
+  box-shadow: inset 0 1px 0 var(--glass-hi), 0 40px 100px -30px #000 !important;
+}
+
+/* ---------- 5 · BUTTONS (capsules) ---------- */
+.comic-boom, button.comic-boom {
+  display: inline-flex; align-items: center; justify-content: center; gap: .5rem;
+  min-height: 46px;
+  padding-inline: 1.15rem;
+  border: 1px solid var(--glass-stroke) !important;
+  border-radius: 999px !important;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.12), rgba(255,255,255,.04)),
+    rgba(58,58,60,.55) !important;
+  -webkit-backdrop-filter: blur(18px) saturate(180%);
+  backdrop-filter: blur(18px) saturate(180%);
+  color: #F5F1E8 !important;
+  font-family: var(--font-ui) !important;
+  font-weight: 600 !important;
+  font-size: .9rem;
+  letter-spacing: -0.005em !important;
+  text-transform: none !important;
+  text-shadow: none !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.16), 0 8px 22px -10px rgba(0,0,0,.8) !important;
+  transition: transform .35s var(--ease-spring), filter .2s ease, box-shadow .3s var(--ease-out), border-color .2s ease !important;
+}
+.comic-boom:hover { transform: none !important; filter: brightness(1.14); border-color: rgba(232,194,107,.45) !important; }
+.comic-boom:active { transform: scale(.965) !important; filter: brightness(1.05); }
+.comic-boom:disabled, .comic-boom[disabled] { opacity: .38; filter: none; transform: none !important; }
+
+/* Primary (gold) */
+.comic-boom.bg-primary, .comic-boom.bg-tarot-gold, .comic-boom[class*="bg-primary"]:not([class*="bg-primary/"]) {
+  background: var(--gold-grad) !important;
+  border-color: rgba(255,244,205,.6) !important;
+  color: #000 !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.6), 0 10px 30px -10px rgba(232,194,107,.55) !important;
+}
+.comic-boom.bg-primary:hover { filter: brightness(1.06); box-shadow: inset 0 1px 0 rgba(255,255,255,.6), 0 14px 38px -10px rgba(232,194,107,.7) !important; }
+.comic-boom.bg-primary *, .comic-boom.bg-tarot-gold * { color: inherit; }
+/* Tinted gold */
+.comic-boom[class*="bg-primary/"] {
+  background: linear-gradient(180deg, rgba(232,194,107,.26), rgba(232,194,107,.12)) !important;
+  border-color: var(--gold-stroke) !important;
+  color: var(--gold-1) !important;
+}
+/* Destructive */
+.comic-boom.bg-destructive, .comic-boom[class*="bg-destructive"]:not([class*="bg-destructive/"]) {
+  background: linear-gradient(180deg, #FF6A60, #FF453A) !important;
+  border-color: rgba(255,160,152,.55) !important;
+  color: #fff !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.35), 0 10px 28px -10px rgba(255,69,58,.55) !important;
+}
+/* «White» (parchment) → iOS plain-light button */
+.comic-boom.bg-tarot-parchment, .comic-boom.bg-white {
+  background: linear-gradient(180deg, #FFFFFF, #E9E5DA) !important;
+  color: #000 !important; border-color: rgba(255,255,255,.7) !important;
+}
+/* Neutral glass variants (dark / wine / teal / forest / royal / crimson / sienna / secondary) */
+.comic-boom.bg-secondary, .comic-boom.bg-tarot-wine, .comic-boom.bg-tarot-teal, .comic-boom.bg-tarot-forest,
+.comic-boom.bg-tarot-royal, .comic-boom.bg-tarot-crimson, .comic-boom.bg-tarot-sienna, .comic-boom.bg-surface-2 {
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.12), rgba(255,255,255,.04)),
+    rgba(58,58,60,.55) !important;
+  color: #F5F1E8 !important;
+}
+/* Παλιό cyan/pink/emerald κουμπί → remapped ήδη σε χρυσό από το tailwind palette */
+
+button:focus-visible, a:focus-visible, [role="button"]:focus-visible,
+input:focus-visible, select:focus-visible, textarea:focus-visible {
+  outline: 2px solid rgba(232,194,107,.9) !important;
+  outline-offset: 3px !important;
+  border-radius: inherit;
+}
+
+/* ---------- 6 · INPUTS ---------- */
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]):not([type="file"]),
+select, textarea {
+  min-height: 46px;
+  border: 1px solid rgba(255,255,255,.09) !important;
+  border-radius: 16px !important;
+  background: rgba(255,255,255,.07) !important;
+  color: #F5F1E8 !important;
+  font-family: var(--font-ui);
+  caret-color: var(--gold-2);
+  box-shadow: inset 0 1px 2px rgba(0,0,0,.35) !important;
+  transition: border-color .2s ease, box-shadow .25s var(--ease-out), background-color .2s ease;
+}
+textarea { border-radius: 18px !important; }
+input::placeholder, textarea::placeholder { color: rgba(235,235,245,.34) !important; }
+input:focus, select:focus, textarea:focus {
+  outline: none !important;
+  border-color: rgba(232,194,107,.7) !important;
+  background: rgba(255,255,255,.09) !important;
+  box-shadow: 0 0 0 4px rgba(232,194,107,.16) !important;
+}
+input[type="checkbox"], input[type="radio"], input[type="range"] { accent-color: #E8C26B; }
+select option { background: #1C1C1E; color: #F5F1E8; }
+
+/* ---------- 7 · MOTION (spring) ---------- */
+.comic-slide-in { animation: ios-rise .5s var(--ease-spring) both; }
+.comic-pop { animation: ios-pop .45s var(--ease-spring) both; }
+.comic-pulse { animation: ios-breathe 3.2s ease-in-out infinite; }
+.comic-strobe { animation: ios-alert 1s ease-in-out infinite alternate; }
+@keyframes ios-rise { from { opacity: 0; transform: translateY(16px) scale(.985); } to { opacity: 1; transform: none; } }
+@keyframes ios-pop { from { opacity: 0; transform: scale(.94); } to { opacity: 1; transform: none; } }
+@keyframes ios-moment-in { from { opacity: 0; transform: translate(-50%, -46%) scale(.94); } to { opacity: 1; transform: translate(-50%, -50%) scale(1); } }
+@keyframes ios-breathe { 0%,100% { transform: scale(1); } 50% { transform: scale(1.018); } }
+@keyframes ios-alert { from { background-color: rgba(255,69,58,.85); } to { background-color: rgba(232,194,107,.85); } }
+
+/* ---------- 8 · PLAY (κινητό = iPhone app) ---------- */
+body.dot-mobile-experience {
+  background: #000 !important;
+  background-image: radial-gradient(120% 45% at 50% -8%, rgba(232,194,107,.13), transparent 60%) !important;
+}
+body.dot-mobile-experience .comic-panel, body.dot-mobile-experience .comic-panel-sm { border-radius: 24px !important; }
+
+/* Floating glass tab bar (MobileTabBar) */
+.ios-tabbar {
+  position: fixed;
+  left: 50%; transform: translateX(-50%);
+  bottom: max(14px, env(safe-area-inset-bottom));
+  z-index: 45;
+  display: flex; gap: 2px; padding: 6px;
+  width: min(calc(100vw - 28px), 440px);
+  border-radius: 999px;
+  border: 1px solid var(--glass-stroke);
+  background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.03)), rgba(24,24,26,.66);
+  -webkit-backdrop-filter: blur(18px) saturate(190%);
+  backdrop-filter: blur(18px) saturate(190%);
+  box-shadow: inset 0 1px 0 var(--glass-hi), 0 22px 50px -14px rgba(0,0,0,.9);
+}
+.ios-tab {
+  position: relative; flex: 1; min-width: 0;
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  padding: 8px 4px 7px; border-radius: 999px;
+  color: rgba(235,235,245,.6);
+  transition: color .25s ease, background-color .3s var(--ease-spring), transform .3s var(--ease-spring);
+}
+.ios-tab .ios-tab-icon { font-size: 1.28rem; line-height: 1; filter: grayscale(.35) opacity(.8); transition: filter .25s ease, transform .35s var(--ease-spring); }
+.ios-tab .ios-tab-label { font-size: .64rem; font-weight: 600; letter-spacing: .02em; }
+.ios-tab:active { transform: scale(.94); }
+.ios-tab[aria-selected="true"] {
+  color: var(--gold-1);
+  background: linear-gradient(180deg, rgba(232,194,107,.26), rgba(232,194,107,.10));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.16), inset 0 0 0 1px rgba(232,194,107,.30);
+}
+.ios-tab[aria-selected="true"] .ios-tab-icon { filter: none; transform: translateY(-1px) scale(1.06); }
+.ios-tab-spacer { height: calc(96px + env(safe-area-inset-bottom)); }
+
+/* Sticky player header = «Dynamic Island» στυλ */
+body.dot-mobile-experience .sticky.top-0 {
+  background: linear-gradient(180deg, #000 60%, rgba(0,0,0,0)) !important;
+  border-bottom: 0 !important;
+}
+
+/* ---------- 9 · MODES (ModeShell) ---------- */
+.mode-shell { background: #000 !important; }
+.mode-large-title {
+  font-family: var(--font-heading); font-weight: 800; letter-spacing: -0.03em;
+  background: var(--gold-text); -webkit-background-clip: text; background-clip: text; color: transparent;
+  text-shadow: none !important;
+}
+.mode-timer {
+  font-family: var(--font-display); font-weight: 700; letter-spacing: -0.03em; font-variant-numeric: tabular-nums;
+  padding: .15em .55em; border-radius: 999px;
+  border: 1px solid var(--gold-stroke);
+  background: linear-gradient(180deg, rgba(232,194,107,.18), rgba(232,194,107,.05)), var(--glass-1);
+  -webkit-backdrop-filter: blur(18px); backdrop-filter: blur(18px);
+  box-shadow: inset 0 1px 0 var(--glass-hi);
+  color: var(--gold-1) !important;
+}
+.mode-timer.is-danger { border-color: rgba(255,69,58,.6); background: linear-gradient(180deg, rgba(255,69,58,.30), rgba(255,69,58,.10)), var(--glass-1); color: #FF8A82 !important; }
+.mode-stop-overlay { background: rgba(10,0,0,.82) !important; -webkit-backdrop-filter: blur(18px) saturate(140%); backdrop-filter: blur(18px) saturate(140%); }
+
+/* ---------- 10 · TABLET / GAME MASTER ---------- */
+.admin-root { background: #000 !important; background-image: radial-gradient(110% 40% at 50% -10%, rgba(232,194,107,.10), transparent 62%) !important; }
+.admin-root nav[aria-label="Πλοήγηση διαχείρισης"] {
+  border-radius: 26px; padding: .5rem;
+  background: var(--glass-1); border: 1px solid var(--glass-stroke);
+  -webkit-backdrop-filter: blur(18px) saturate(180%); backdrop-filter: blur(18px) saturate(180%);
+}
+.admin-root nav[aria-label="Πλοήγηση διαχείρισης"] > div { border-bottom: 1px solid rgba(255,255,255,.06) !important; }
+.admin-root nav button {
+  border-radius: 14px !important; border-color: transparent !important;
+  background: transparent; color: rgba(245,241,232,.78);
+  font-weight: 600; letter-spacing: -0.005em;
+}
+.admin-root nav button:hover { background: rgba(255,255,255,.06) !important; color: #fff; }
+.admin-root nav button[aria-current="page"] {
+  background: var(--gold-grad) !important; color: #000 !important;
+  box-shadow: 0 8px 24px -10px rgba(232,194,107,.6), inset 0 1px 0 rgba(255,255,255,.55) !important;
+}
+.admin-root [role="tablist"] { background: rgba(255,255,255,.06); border-radius: 999px; padding: 4px; gap: 2px; }
+.admin-root [role="tab"] { border-radius: 999px !important; font-weight: 600; }
+.admin-root [role="tab"][aria-selected="true"], .admin-root [role="tablist"] button[aria-selected="true"] {
+  background: rgba(232,194,107,.20) !important; color: var(--gold-1) !important;
+  box-shadow: inset 0 0 0 1px rgba(232,194,107,.32), inset 0 1px 0 rgba(255,255,255,.16);
+}
+.admin-root table { border-collapse: separate; border-spacing: 0; }
+.admin-root th { color: rgba(232,194,107,.9); font-size: .68rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+.admin-root td, .admin-root th { border-color: rgba(255,255,255,.07) !important; }
+.admin-root tr:hover td { background: rgba(255,255,255,.03); }
+
+/* Tablet toolbar & floating GM tools */
+.fixed.bottom-3.left-3 > .ds-surface {
+  border-radius: 28px !important; background: var(--glass-thick) !important;
+  box-shadow: inset 0 1px 0 var(--glass-hi), 0 30px 70px -20px #000 !important;
+}
+.fixed.bottom-3.left-3 .comic-boom { min-height: 42px; font-size: .82rem; }
+
+/* ---------- 11 · TV (μεγάλη οθόνη) ---------- */
+.dot-tv-shell {
+  background:
+    radial-gradient(90% 55% at 50% -10%, rgba(232,194,107,.16), transparent 60%),
+    radial-gradient(70% 45% at 50% 112%, rgba(232,194,107,.09), transparent 65%),
+    #000 !important;
+}
+.dot-tv-orb-one { background: #E8C26B !important; opacity: .09 !important; }
+.dot-tv-orb-two { background: #C99B2E !important; opacity: .08 !important; }
+.dot-tv-grain { opacity: .05 !important; }
+.dot-tv-atmosphere { background: radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,.55) 100%) !important; }
+.dot-tv-shell .comic-panel, .dot-tv-shell .comic-panel-sm {
+  border-color: rgba(255,255,255,.12) !important;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.015) 40%, transparent),
+    rgba(22,22,24,.62) !important;
+  -webkit-backdrop-filter: blur(18px) saturate(180%); backdrop-filter: blur(18px) saturate(180%);
+}
+.dot-tv-hud {
+  padding: 10px 14px; border-radius: 999px;
+  border: 1px solid var(--glass-stroke);
+  background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.02)), rgba(20,20,22,.6);
+  -webkit-backdrop-filter: blur(18px) saturate(180%); backdrop-filter: blur(18px) saturate(180%);
+  box-shadow: inset 0 1px 0 var(--glass-hi), 0 20px 50px -20px #000;
+}
+.dot-tv-brand-mark { border-color: var(--gold-stroke) !important; color: var(--gold-2) !important; background: rgba(232,194,107,.08); box-shadow: 0 0 24px rgba(232,194,107,.18) !important; }
+.dot-tv-brand strong { color: #F5F1E8 !important; letter-spacing: .12em !important; }
+.dot-tv-fullscreen-button { border-radius: 999px; background: rgba(255,255,255,.08) !important; border-color: var(--glass-stroke) !important; color: var(--gold-1) !important; }
+.dot-tv-moment {
+  border-radius: 40px !important; border: 1px solid rgba(232,194,107,.45) !important;
+  background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.02)), rgba(14,14,16,.78) !important;
+  -webkit-backdrop-filter: blur(18px) saturate(190%); backdrop-filter: blur(18px) saturate(190%);
+  box-shadow: inset 0 1px 0 var(--glass-hi), 0 40px 120px -20px #000, 0 0 90px rgba(232,194,107,.18) !important;
+  animation: ios-moment-in .55s var(--ease-spring) both;
+}
+.dot-tv-moment strong { font-family: var(--font-display) !important; font-weight: 800 !important; letter-spacing: -0.02em !important; background: var(--gold-text); -webkit-background-clip: text; background-clip: text; color: transparent !important; text-shadow: none !important; }
+.dot-tv-moment-kicker { color: var(--gold-2) !important; letter-spacing: .2em !important; }
+
+/* ---------- 12 · SITE / INVITATION / PROMO (public) ---------- */
+.cinv-count {
+  border: 1px solid var(--gold-stroke) !important; border-radius: 28px !important;
+  background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.02)), rgba(18,18,20,.72) !important;
+  -webkit-backdrop-filter: blur(18px) saturate(180%); backdrop-filter: blur(18px) saturate(180%);
+  box-shadow: inset 0 1px 0 var(--glass-hi), 0 30px 80px -24px #000 !important;
+}
+.cinv-cl { color: var(--gold-2) !important; letter-spacing: .22em !important; }
+.cinv-btn {
+  border: 1px solid rgba(255,244,205,.6) !important; border-radius: 999px !important;
+  background: var(--gold-grad) !important; color: #000 !important; text-shadow: none !important;
+  font-family: var(--font-ui) !important; font-weight: 700 !important; letter-spacing: -0.005em !important; font-size: 1.15rem !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.6), 0 16px 50px -12px rgba(232,194,107,.6) !important;
+  animation: none !important; transition: transform .35s var(--ease-spring), filter .2s ease !important;
+}
+.cinv-btn:hover { filter: brightness(1.07); }
+.cinv-btn:active { transform: scale(.97); }
+.cinp { background: rgba(255,255,255,.07) !important; border: 1px solid rgba(255,255,255,.1) !important; border-radius: 18px !important; color: #F5F1E8 !important; }
+.cinp:focus { border-color: rgba(232,194,107,.7) !important; box-shadow: 0 0 0 4px rgba(232,194,107,.16) !important; }
+.cinv-sealglow { background: radial-gradient(circle, rgba(232,194,107,.45), transparent 65%) !important; }
+.cinv-line { color: #F5F1E8 !important; text-shadow: 0 0 40px rgba(232,194,107,.35) !important; }
+.promo-glow { animation: none !important; text-shadow: 0 0 40px rgba(232,194,107,.45) !important; }
+.film-frame { background: #000; }
+
+/* ---------- 13 · MISC ---------- */
+hr, .ds-rule { background: linear-gradient(90deg, transparent, rgba(232,194,107,.55), transparent) !important; border: 0 !important; height: 1px; box-shadow: none !important; }
+[data-radix-popper-content-wrapper] > * {
+  border-radius: 20px !important; border: 1px solid var(--glass-stroke) !important;
+  background: var(--glass-thick) !important;
+  -webkit-backdrop-filter: blur(18px) saturate(180%); backdrop-filter: blur(18px) saturate(180%);
+}
+img.rounded-full, .rounded-full { border-color: rgba(232,194,107,.35); }
+
+/* ---------- 14 · ACCESSIBILITY FALLBACKS ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .comic-slide-in, .comic-pop, .comic-pulse, .comic-strobe, .dot-tv-moment { animation: none !important; }
+  .comic-boom, .ios-tab, .comic-panel, .comic-panel-sm { transition: none !important; }
+}
+@media (prefers-reduced-transparency: reduce), (forced-colors: active) {
+  .comic-panel, .comic-panel-sm, .ds-surface, .comic-boom, .ios-tabbar, [role="dialog"], .dot-tv-hud, .dot-tv-moment, .cinv-count {
+    -webkit-backdrop-filter: none !important; backdrop-filter: none !important;
+    background: #141416 !important;
+  }
+}
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .comic-panel, .comic-panel-sm, .ds-surface, .ios-tabbar, [role="dialog"], .dot-tv-hud { background: #141416 !important; }
+}
+@media (max-width: 767px) {
+  .comic-panel { border-radius: 24px !important; padding: 14px; }
+  .comic-panel-sm { border-radius: 18px !important; }
+  .comic-boom { min-height: 48px; }
+}
+
+/* ===== visual-overhaul.css ===== */
+/* DEAL OF TEMPTATION — unified visual experience layer
+   Visual-only overrides. No application state, rules, content or interactions. */
+:root, .dark {
+  --background: 0 0% 0%;
+  --foreground: 42 34% 93%;
+  --card: 0 0% 7%;
+  --card-foreground: 42 34% 93%;
+  --popover: 0 0% 8%;
+  --popover-foreground: 42 34% 93%;
+  --primary: 43 72% 61%;
+  --primary-foreground: 0 0% 0%;
+  --secondary: 0 0% 12%;
+  --secondary-foreground: 42 28% 90%;
+  --muted: 0 0% 14%;
+  --muted-foreground: 38 14% 66%;
+  --accent: 42 55% 24%;
+  --accent-foreground: 42 35% 95%;
+  --destructive: 354 58% 48%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 42 28% 24%;
+  --input: 0 0% 11%;
+  --ring: 43 78% 65%;
+  --surface-1: 0 0% 5%;
+  --surface-2: 0 0% 9%;
+  --surface-3: 0 0% 14%;
+  --hairline: 42 38% 88%;
+  --shadow-color: 0 0% 0%;
+  --radius: .9rem;
+  color-scheme: dark;
+}
+html { background: #000000; }
+body {
+  color: #F5F1E8;
+  background:
+    radial-gradient(ellipse at 50% -18%, rgba(232, 194, 107, .10), transparent 48%),
+    radial-gradient(ellipse at 4% 48%, rgba(232, 194, 107, .05), transparent 36%),
+    radial-gradient(ellipse at 100% 100%, rgba(174, 132, 49, .075), transparent 34%),
+    #000000 !important;
+  background-attachment: scroll;
+  font-family: var(--font-ui);
+}
+h1, h2, h3, h4, h5 { text-wrap: balance; }
+::selection { background: rgba(218, 178, 91, .34); color: #fff8e9; }
+
+/* Shared luxury surfaces */
+.comic-dots, .comic-dots-dark {
+  background-color: #000000;
+  background-image:
+    radial-gradient(ellipse at 50% 0%, rgba(232, 194, 107, .11), transparent 58%),
+    radial-gradient(circle, rgba(230, 205, 150, .045) 1px, transparent 1px);
+  background-size: auto, 34px 34px;
+}
+.comic-panel, .comic-panel-sm, .ds-surface {
+  position: relative;
+  border: 1px solid rgba(213, 178, 105, .19) !important;
+  border-radius: 17px !important;
+  background:
+    linear-gradient(145deg, rgba(255,255,255,.045), transparent 42%),
+    linear-gradient(160deg, rgba(22, 22, 24, .96), rgba(10, 10, 12, .98)) !important;
+  box-shadow:
+    0 22px 58px rgba(0,0,0,.34),
+    0 1px 0 rgba(255,255,255,.045) inset,
+    0 0 28px rgba(232,194,107,.055) !important;
+}
+.comic-panel { padding: clamp(14px, 2vw, 22px); }
+.comic-panel-sm { border-radius: 13px !important; }
+.comic-panel:hover, .comic-panel-sm:hover {
+  border-color: rgba(220, 185, 108, .34) !important;
+}
+.ds-rule {
+  background: linear-gradient(90deg, transparent, rgba(218,181,103,.72), transparent) !important;
+  box-shadow: 0 0 12px rgba(218,181,103,.18);
+}
+.ds-eyebrow, .ds-label { letter-spacing: .22em; }
+.ds-title, .comic-text-stroke, .comic-text-stroke-thin {
+  text-shadow: 0 0 28px rgba(202,160,82,.16), 0 2px 18px rgba(0,0,0,.55);
+}
+
+/* Buttons: consistent metal / glass finish while preserving their handlers */
+button, [role="button"] {
+  -webkit-tap-highlight-color: transparent;
+}
+.comic-boom, button.comic-boom {
+  border: 1px solid rgba(218,181,103,.36) !important;
+  border-radius: 12px !important;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.09), transparent 52%),
+    linear-gradient(135deg, #242426, #141416 72%) !important;
+  color: #f4e8ce !important;
+  box-shadow: 0 9px 24px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,255,255,.10) !important;
+}
+.comic-boom:hover {
+  border-color: rgba(235,199,121,.78) !important;
+  box-shadow: 0 0 0 1px rgba(218,181,103,.12), 0 12px 30px rgba(0,0,0,.36), 0 0 24px rgba(202,160,82,.10) !important;
+}
+button:focus-visible, [role="button"]:focus-visible {
+  outline: 2px solid #e7c77d !important;
+  outline-offset: 3px !important;
+}
+button:disabled { filter: saturate(.55); }
+
+/* Forms and selectors */
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+select, textarea {
+  border-color: rgba(210,181,127,.22) !important;
+  border-radius: 11px !important;
+  background: rgba(10,8,15,.78) !important;
+  color: #f5eddf !important;
+  box-shadow: inset 0 1px 4px rgba(0,0,0,.24);
+}
+input::placeholder, textarea::placeholder { color: rgba(226,213,190,.42) !important; }
+input:focus, select:focus, textarea:focus {
+  border-color: rgba(225,190,112,.72) !important;
+  box-shadow: 0 0 0 3px rgba(218,181,103,.10), 0 0 20px rgba(218,181,103,.07) !important;
+}
+
+/* Game setup, mode tiles and the 24-space board: dimensional presentation */
+[class*="grid"] > button,
+[class*="grid"] > [role="button"],
+.game-board button, .game-board [role="button"],
+[data-game-board] button, [data-box], .game-square,
+.box-card, .vault-box, .case-box, .briefcase {
+  border-radius: 14px;
+  transition: border-color .22s ease, box-shadow .22s ease, filter .22s ease, transform .22s ease;
+}
+.game-board button, [data-game-board] button, [data-box],
+.game-square, .box-card, .vault-box, .case-box, .briefcase {
+  border: 1px solid rgba(219,183,106,.34);
+  box-shadow: 0 10px 24px rgba(0,0,0,.30), inset 0 1px 0 rgba(255,255,255,.09);
+}
+.game-board button:hover, [data-game-board] button:hover, [data-box]:hover,
+.game-square:hover, .box-card:hover, .vault-box:hover, .case-box:hover, .briefcase:hover {
+  filter: brightness(1.12);
+  box-shadow: 0 14px 30px rgba(0,0,0,.38), 0 0 22px rgba(218,181,103,.13), inset 0 1px 0 rgba(255,255,255,.13);
+}
+[class*="grid"] > button:hover, [class*="grid"] > [role="button"]:hover {
+  border-color: rgba(225,190,112,.52);
+}
+
+/* Tablet / Host control room */
+.admin-root {
+  background:
+    radial-gradient(ellipse at 50% -12%, rgba(232,194,107,.10), transparent 54%),
+    #000000 !important;
+}
+.admin-root .comic-panel, .admin-root .comic-panel-sm {
+  backdrop-filter: blur(12px);
+}
+.admin-root nav button, .admin-root [role="tab"] {
+  border-radius: 11px;
+  transition: background .2s ease, color .2s ease, border-color .2s ease;
+}
+.admin-root nav button:hover, .admin-root [role="tab"]:hover {
+  background: rgba(196,157,88,.10);
+}
+.admin-root table { border-collapse: separate; border-spacing: 0; }
+.admin-root th {
+  color: #d9bd83;
+  font-family: var(--font-ui);
+  font-size: .72rem;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+.admin-root td, .admin-root th { border-color: rgba(210,181,127,.13) !important; }
+
+/* TV / stage — richer depth, cleaner overlays */
+.dot-tv-shell {
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(232,194,107,.12), transparent 48%),
+    radial-gradient(ellipse at 50% 100%, rgba(206,164,82,.13), transparent 50%),
+    #000000 !important;
+}
+.dot-tv-shell .comic-panel, .dot-tv-shell .comic-panel-sm {
+  border-color: rgba(224,190,119,.26) !important;
+  background: linear-gradient(145deg, rgba(22,22,24,.94), rgba(10,10,12,.97)) !important;
+  backdrop-filter: blur(12px);
+}
+.dot-tv-moment {
+  border-color: rgba(231,197,125,.72);
+  box-shadow: 0 30px 100px rgba(0,0,0,.68), 0 0 90px rgba(232,194,107,.12), 0 0 38px rgba(218,181,103,.12), inset 0 1px 0 rgba(255,255,255,.10);
+}
+
+/* Mobile controller and touch surfaces */
+body.dot-mobile-experience {
+  background:
+    radial-gradient(ellipse at 50% -10%, rgba(232,194,107,.10), transparent 50%),
+    #000000 !important;
+}
+body.dot-mobile-experience .comic-panel,
+body.dot-mobile-experience .comic-panel-sm {
+  border-radius: 15px !important;
+}
+body.dot-mobile-experience button, body.dot-mobile-experience [role="button"] {
+  min-height: 42px;
+}
+@media (max-width: 760px) {
+  .comic-panel { padding: 14px; }
+  .dot-tv-shell .dot-tv-hud { backdrop-filter: blur(10px); }
+}
+@media (min-width: 1200px) {
+  .admin-root > div { max-width: 1440px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .comic-panel, .comic-panel-sm, .comic-boom,
+  [class*="grid"] > button, [data-box], .game-square {
+    transition: none !important;
+  }
+}
+
+
+/* ==========================================================================
+   iOS 27 DARK — complete visual system
+   Presentation-only layer. Gameplay, state, rules and event handlers untouched.
+   ========================================================================== */
+:root, .dark {
+  --background: 0 0% 0%;
+  --foreground: 40 25% 96%;
+  --card: 0 0% 7%;
+  --card-foreground: 40 25% 96%;
+  --popover: 0 0% 8%;
+  --popover-foreground: 40 25% 96%;
+  --primary: 42 76% 65%;
+  --primary-foreground: 0 0% 0%;
+  --secondary: 0 0% 12%;
+  --secondary-foreground: 40 25% 94%;
+  --muted: 0 0% 14%;
+  --muted-foreground: 40 7% 63%;
+  --accent: 42 55% 24%;
+  --accent-foreground: 40 30% 96%;
+  --destructive: 2 72% 58%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 0 0% 21%;
+  --input: 0 0% 11%;
+  --ring: 42 76% 65%;
+  --surface-1: 0 0% 5%;
+  --surface-2: 0 0% 9%;
+  --surface-3: 0 0% 14%;
+  --hairline: 40 25% 96%;
+  --shadow-color: 0 0% 0%;
+  --radius: 1.15rem;
+  color-scheme: dark;
+}
+html {
+  background: #000000 !important;
+  scroll-behavior: auto !important;
+}
+body, body.dot-mobile-experience {
+  color: #F5F1E8 !important;
+  background: #000000 !important;
+  background-image:
+    radial-gradient(ellipse at 50% -22%, rgba(232, 194, 107, .13), transparent 54%),
+    linear-gradient(180deg, #000000 0%, #000000 58%, #000000 100%) !important;
+  background-attachment: scroll !important;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", Inter, sans-serif !important;
+  font-size: 15px;
+  line-height: 1.5;
+  letter-spacing: -.012em;
+}
+h1, h2, h3, h4, h5 {
+  color: #F5F1E8 !important;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", Inter, sans-serif !important;
+  font-weight: 650 !important;
+  letter-spacing: -.035em !important;
+  line-height: 1.12 !important;
+}
+p, label, small, span { text-wrap: pretty; }
+::selection { background: rgba(232, 194, 107, .32); color: #fff; }
+* { scrollbar-color: #242426 transparent; }
+
+/* All existing surfaces become restrained, layered graphite materials. */
+.comic-dots, .comic-dots-dark {
+  background: transparent !important;
+  background-image: none !important;
+}
+.comic-panel, .comic-panel-sm, .ds-surface,
+.admin-root .comic-panel, .admin-root .comic-panel-sm,
+.dot-tv-shell .comic-panel, .dot-tv-shell .comic-panel-sm {
+  border: 1px solid rgba(255,255,255,.085) !important;
+  border-radius: 20px !important;
+  background: linear-gradient(155deg, rgba(34,34,42,.96), rgba(22,22,28,.98)) !important;
+  box-shadow: 0 12px 34px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.045) !important;
+  backdrop-filter: none !important;
+}
+.comic-panel { padding: clamp(16px, 2.1vw, 24px); }
+.comic-panel-sm { border-radius: 15px !important; }
+.comic-panel:hover, .comic-panel-sm:hover {
+  border-color: rgba(255,255,255,.11) !important;
+}
+.ds-rule {
+  height: 1px;
+  background: rgba(255,255,255,.10) !important;
+  box-shadow: none !important;
+}
+.ds-eyebrow, .ds-label {
+  color: #999999 !important;
+  font-family: -apple-system, BlinkMacSystemFont, Inter, sans-serif !important;
+  font-size: 10px !important;
+  font-weight: 650 !important;
+  letter-spacing: .13em !important;
+}
+.ds-title, .comic-text-stroke, .comic-text-stroke-thin {
+  color: #F5F1E8 !important;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", Inter, sans-serif !important;
+  font-weight: 700 !important;
+  letter-spacing: -.035em !important;
+  text-shadow: none !important;
+  -webkit-text-stroke: 0 !important;
+}
+.ds-lede { color: #B6B6C2 !important; }
+
+/* Native-feeling controls: clear hierarchy, generous touch targets. */
+button, [role="button"], input, select, textarea {
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", Inter, sans-serif !important;
+  -webkit-tap-highlight-color: transparent;
+}
+button, [role="button"] { border-radius: 13px; }
+.comic-boom, button.comic-boom {
+  min-height: 44px;
+  border: 1px solid rgba(232,194,107,.30) !important;
+  border-radius: 13px !important;
+  background: #E8C26B !important;
+  color: #000000 !important;
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  letter-spacing: .015em !important;
+  text-transform: none !important;
+  box-shadow: none !important;
+  background-image: none !important;
+}
+.comic-boom:hover, .comic-boom:active {
+  border-color: rgba(232,194,107,.4) !important;
+  background: #E8C26B !important;
+  box-shadow: none !important;
+  filter: brightness(1.04);
+  transform: none !important;
+}
+button:focus-visible, [role="button"]:focus-visible,
+input:focus-visible, select:focus-visible, textarea:focus-visible {
+  outline: 2px solid #E8C26B !important;
+  outline-offset: 3px !important;
+}
+button:disabled { opacity: .42; filter: none !important; }
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+select, textarea {
+  min-height: 44px;
+  border: 1px solid rgba(255,255,255,.10) !important;
+  border-radius: 12px !important;
+  background: #171719 !important;
+  color: #F5F1E8 !important;
+  box-shadow: none !important;
+}
+input::placeholder, textarea::placeholder { color: #888888 !important; }
+input:focus, select:focus, textarea:focus {
+  border-color: rgba(232,194,107,.7) !important;
+  box-shadow: 0 0 0 3px rgba(232,194,107,.12) !important;
+}
+
+/* Selected states, tabs, navigation and segmented controls. */
+[aria-selected="true"], [data-state="active"], [role="tab"][aria-selected="true"] {
+  border-color: rgba(232,194,107,.32) !important;
+  background-color: rgba(232,194,107,.17) !important;
+  color: #FFF1C7 !important;
+}
+.admin-root {
+  color: #F5F1E8 !important;
+  background: #000000 !important;
+}
+.admin-root nav button, .admin-root [role="tab"] {
+  min-height: 42px;
+  border: 1px solid transparent;
+  border-radius: 12px !important;
+  background: transparent;
+  color: #b6b6c2;
+  transition: none !important;
+}
+.admin-root nav button:hover, .admin-root [role="tab"]:hover {
+  background: rgba(255,255,255,.045) !important;
+  color: #f5f3fb !important;
+}
+.admin-root table { border-collapse: collapse !important; }
+.admin-root th {
+  color: #B6B6C2 !important;
+  font-family: -apple-system, BlinkMacSystemFont, Inter, sans-serif !important;
+  font-size: 10px !important;
+  font-weight: 700 !important;
+  letter-spacing: .11em !important;
+  text-transform: uppercase;
+}
+.admin-root td, .admin-root th { border-color: rgba(255,255,255,.075) !important; }
+
+/* Player, mode and board tiles retain their existing content and actions. */
+[class*="grid"] > button, [class*="grid"] > [role="button"],
+.game-board button, .game-board [role="button"],
+[data-game-board] button, [data-box], .game-square,
+.box-card, .vault-box, .case-box, .briefcase {
+  border-radius: 15px !important;
+  border-color: rgba(255,255,255,.10) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.035) !important;
+}
+.game-board button, [data-game-board] button, [data-box],
+.game-square, .box-card, .vault-box, .case-box, .briefcase {
+  background-color: #1C1C1E;
+}
+.game-board button:hover, [data-game-board] button:hover, [data-box]:hover,
+.game-square:hover, .box-card:hover, .vault-box:hover, .case-box:hover, .briefcase:hover,
+[class*="grid"] > button:hover, [class*="grid"] > [role="button"]:hover {
+  border-color: rgba(232,194,107,.35) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.045) !important;
+  filter: none !important;
+  transform: none !important;
+}
+.dot-tv-shell {
+  background: #000000 !important;
+  background-image: none !important;
+}
+.dot-tv-shell .comic-panel, .dot-tv-shell .comic-panel-sm {
+  background: #171719 !important;
+  border-color: rgba(255,255,255,.12) !important;
+  backdrop-filter: none !important;
+}
+.dot-tv-moment {
+  border-color: rgba(232,194,107,.45) !important;
+  box-shadow: 0 18px 60px rgba(0,0,0,.45) !important;
+}
+body.dot-mobile-experience .comic-panel,
+body.dot-mobile-experience .comic-panel-sm {
+  border-radius: 18px !important;
+}
+body.dot-mobile-experience button, body.dot-mobile-experience [role="button"] {
+  min-height: 44px;
+}
+
+/* Explicitly remove motion from every existing screen and interaction. */
+*, *::before, *::after {
+  animation: none !important;
+  transition: none !important;
+  scroll-behavior: auto !important;
+}
+.comic-boom:hover, .comic-boom:active,
+button:hover, [role="button"]:hover,
+[class*="grid"] > button:hover, [data-box]:hover,
+.game-square:hover, .box-card:hover, .vault-box:hover, .case-box:hover, .briefcase:hover {
+  transform: none !important;
+}
+
+/* ===== polish.css ===== */
+/* ==========================================================================
+   POLISH — τελικό γυάλισμα για Site / Tablet / TV / Κινητά (ΟΧΙ Admin: αυτό έχει δικό του θέμα).
+   Φορτώνεται μετά το visual-overhaul.css. Μόνο εμφάνιση.
+   ========================================================================== */
+
+/* 1 · Ζεστό μαύρο αντί για κρύο γκρι: τα panels/κάρτες/inputs ταιριάζουν με το χρυσό */
+:root, .dark {
+  --glass-1: rgba(19, 16, 11, 0.74);
+  --glass-2: rgba(30, 25, 16, 0.62);
+  --glass-thick: rgba(12, 10, 7, 0.86);
+  --glass-stroke: rgba(232, 194, 107, 0.20);
+  --glass-hi: rgba(255, 244, 205, 0.14);
+  --card: 40 14% 7%;
+  --popover: 40 14% 8%;
+  --secondary: 40 10% 12%;
+  --muted: 40 8% 14%;
+  --input: 40 10% 10%;
+  --border: 42 28% 24%;
+  --surface-1: 40 10% 5%;
+  --surface-2: 40 10% 9%;
+  --surface-3: 40 8% 14%;
+}
+.bg-card { background-color: rgba(19, 16, 11, 0.74) !important; }
+.bg-secondary { background-color: rgba(255, 236, 180, 0.06) !important; }
+
+/* Κουμπιά-κάψουλες: ζεστό γυαλί με χρυσό περίγραμμα (τα χρωματιστά/primary παραμένουν όπως ορίζονται) */
+.comic-boom:not([class*="bg-primary"]):not([class*="tarot-"]):not([class*="bg-destructive"]):not([class*="bg-emerald"]):not([class*="bg-red"]):not([class*="bg-amber"]) {
+  background:
+    linear-gradient(180deg, rgba(255, 236, 180, 0.10), rgba(255, 236, 180, 0.03)),
+    rgba(26, 21, 12, 0.72) !important;
+  border-color: rgba(232, 194, 107, 0.32) !important;
+}
+
+/* Απενεργοποιημένα κουμπιά: ευανάγνωστα, όχι «φάντασμα» */
+.comic-boom:disabled, .comic-boom[aria-disabled="true"] {
+  opacity: 1 !important;
+  filter: none !important;
+  color: rgba(243, 231, 196, 0.5) !important;
+  background: rgba(255, 244, 205, 0.05) !important;
+  border-color: rgba(232, 194, 107, 0.2) !important;
+  box-shadow: none !important;
+  cursor: not-allowed;
+}
+
+/* 2 · Μπάρα «ΕΝΑΡΞΗ ΠΑΙΧΝΙΔΙΟΥ» στο tablet: πριν ήταν διάφανη και έπεφτε πάνω στις φωτογραφίες */
+.dot-startbar {
+  position: sticky;
+  bottom: 0;
+  z-index: 30;
+  margin-top: 8px;
+  padding: 28px 16px calc(env(safe-area-inset-bottom, 0px) + 18px);
+  text-align: center;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.9) 34%, #000 100%);
+  pointer-events: none;
+}
+.dot-startbar > * { pointer-events: auto; }
+.dot-startbar-hint {
+  display: inline-block;
+  margin-top: 10px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #F3DFA6;
+  background: rgba(232, 194, 107, 0.1);
+  border: 1px solid rgba(232, 194, 107, 0.35);
+}
+
+/* 3 · Δευτερεύον κουμπί (π.χ. «ΔΕΣ ΤΗ ΣΥΛΛΟΓΗ»): περίγραμμα, όχι γεμάτο χρυσό — ιεραρχία σωστή δίπλα στο κύριο */
+.dot-btn-ghost {
+  min-height: 56px;
+  background: transparent !important;
+  border: 1px solid rgba(232, 194, 107, 0.55) !important;
+  color: #F3DFA6 !important;
+  box-shadow: none !important;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+.dot-btn-ghost:hover { background: rgba(232, 194, 107, 0.12) !important; border-color: #E8C26B !important; }
+.cinv-btn { min-height: 56px; }
+
+/* 4 · Πεδία σύνδεσης (TV / κινητά): ζεστό φόντο και καθαρό focus */
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="color"]), select, textarea {
+  background-color: rgba(255, 244, 205, 0.05);
+}
+
+/* 5 · Checkbox/radio στο χρώμα της εφαρμογής (πριν: μπλε του browser) */
+input[type="checkbox"], input[type="radio"], input[type="range"] { accent-color: #E8C26B; }
+
+/* ===== wallpaper.css ===== */
+/* Wallpaper οθόνης: ενεργό ΜΟΝΟ όταν υπάρχει εικόνα (body[data-wallpaper]). Χωρίς εικόνα, τίποτα δεν αλλάζει. */
+.dot-wallpaper {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+/* σκούρο «σεντόνι» για ευανάγνωστα κείμενα πάνω από οποιαδήποτε φωτογραφία */
+.dot-wallpaper::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.7));
+}
+body[data-wallpaper] {
+  background: transparent !important;
+  background-image: none !important;
+}
+body[data-wallpaper] .comic-dots,
+body[data-wallpaper] .comic-dots-dark,
+body[data-wallpaper] .dot-tv-shell {
+  background: transparent !important;
+  background-image: none !important;
+}
+
+/* ===== ios-flat.css ===== */
+/* DEAL OF TEMPTATION — iOS flat layer (φορτώνεται τελευταίο).
+   Συμπαγείς επιφάνειες, χωρίς blur, χωρίς animations/transitions, ελάχιστες σκιές. */
+
+:root, .dark {
+  --glass-1: #1C1C1E;
+  --glass-2: #2C2C2E;
+  --glass-thick: #141416;
+  --glass-stroke: rgba(255, 255, 255, 0.10);
+  --glass-hi: rgba(255, 255, 255, 0.06);
+  --flat-bg: #000000;
+  --flat-surface: #1C1C1E;
+  --flat-surface-2: #2C2C2E;
+  --flat-surface-3: #3A3A3C;
+  --flat-separator: rgba(84, 84, 88, 0.65);
+  --flat-label-2: rgba(235, 235, 245, 0.62);
+  --flat-gold: #E8C26B;
+}
+
+*, *::before, *::after {
+  animation: none !important;
+  transition: none !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+  scroll-behavior: auto !important;
+}
+
+html, body { background: var(--flat-bg) !important; }
+
+/* Διακοσμητικά layers που υπήρχαν μόνο για εφέ */
+.cinv-mote, .promo-mote, .dot-tv-orb, .film-progress,
+.blur-3xl, .blur-2xl, .blur-xl, .blur-lg { display: none !important; }
+.cinv-line { opacity: 1 !important; filter: none !important; transform: none !important; }
+.film-slide.is-on img, .promo-zoom, .cinv-sealwrap { transform: none !important; }
+.cinv-beam { filter: none !important; opacity: .35 !important; }
+
+/* Συμπαγείς επιφάνειες αντί για γυαλί */
+.comic-panel, .adm-card, .adm-sheet, .adm-more, .adm-sessionbar, .adm-header, .adm-sidebar,
+.adm-tabbar, .mode-timer, [class*="glass"] {
+  box-shadow: none !important;
+}
+.comic-panel { background-color: var(--flat-surface) !important; border: 1px solid var(--glass-stroke) !important; }
+.adm-tabbar { background: #121214 !important; border-top: 1px solid var(--flat-separator) !important; }
+.adm-overlay { background: rgba(0, 0, 0, 0.72) !important; }
+
+/* Κουμπιά: καθαρό press feedback χωρίς κίνηση */
+button:active:not(:disabled), a:active, [role="button"]:active { opacity: .72; }
+.comic-boom, .adm-pill, .adm-btn, .adm-chip { box-shadow: none !important; text-shadow: none !important; }
+
+/* Χρονόμετρο-κάψουλα σε κίνδυνο: στατικό κόκκινο */
+.mode-timer.is-danger { color: #FF453A !important; border-color: rgba(255, 69, 58, .6) !important; }
+
+/* Κάρτες παιχνιδιού */
+.dt-card {
+  position: relative;
+  width: 100%;
+  max-width: 340px;
+  min-height: 380px;
+  margin-inline: auto;
+  display: flex;
+  flex-direction: column;
+  border-radius: 22px;
+  overflow: hidden;
+  background: #111113;
+  border: 1.5px solid var(--dt-card-accent, var(--flat-gold));
+  color: #F5F1E8;
+}
+.dt-card--tv { max-width: 460px; min-height: 0; aspect-ratio: 5 / 7; border-width: 3px; border-radius: 28px; }
+.dt-card--compact { max-width: 300px; min-height: 280px; border-radius: 18px; }
+.dt-card__inner {
+  position: absolute; inset: 7px; border-radius: 16px; pointer-events: none;
+  border: 1px solid color-mix(in srgb, var(--dt-card-accent, #E8C26B) 35%, transparent);
+}
+.dt-card__head {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  padding: 14px 16px 10px;
+  font-size: 11px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase;
+  color: var(--dt-card-accent, var(--flat-gold));
+}
+.dt-card__media { flex: 0 0 auto; height: 170px; margin: 0 14px; border-radius: 12px; overflow: hidden; background: #000; }
+.dt-card__media img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.dt-card__emblem {
+  flex: 0 0 auto; margin: 4px auto 6px; width: 64px; height: 64px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center; font-size: 30px;
+  background: color-mix(in srgb, var(--dt-card-accent, #E8C26B) 14%, #0b0b0c);
+  border: 1px solid color-mix(in srgb, var(--dt-card-accent, #E8C26B) 55%, transparent);
+}
+.dt-card__body { flex: 1 1 auto; display: flex; flex-direction: column; gap: 8px; padding: 6px 18px 12px; text-align: center; overflow-y: auto; }
+.dt-card__title { font-family: var(--font-display); font-size: 1.35rem; line-height: 1.15; font-weight: 700; color: #FFF6DE; }
+.dt-card__text { font-size: .98rem; line-height: 1.4; color: rgba(245, 241, 232, .88); }
+.dt-card--tv .dt-card__title { font-size: 2.1rem; }
+.dt-card--tv .dt-card__text { font-size: 1.35rem; }
+.dt-card--compact .dt-card__title { font-size: 1.05rem; }
+.dt-card--compact .dt-card__text { font-size: .85rem; }
+.dt-card__foot {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  padding: 10px 16px 14px; font-size: 12px; font-weight: 600;
+  border-top: 1px solid rgba(255, 255, 255, .08);
+  color: var(--flat-label-2);
+}
+.dt-card__badge {
+  padding: 3px 10px; border-radius: 999px; font-weight: 700;
+  background: color-mix(in srgb, var(--dt-card-accent, #E8C26B) 18%, transparent);
+  color: var(--dt-card-accent, var(--flat-gold));
+}
+.dt-card-actions { max-width: 340px; margin-inline: auto; }
+
+/* Admin */
+img.adm-mark { object-fit: cover; background: #0B1226 !important; padding: 0; }
+#admin-root [class^="adm-"], #admin-root [class*=" adm-"] { box-shadow: none !important; }
+
+/* Tablet: χώρος για τα πλωτά κουμπιά */
+.mode-shell { padding-bottom: 13rem !important; }
+
+/* ===== Native αίσθηση παιχνιδιού (Tablet /, TV /tv, κινητό /play) ===== */
+html.app-game, html.app-game body {
+  overscroll-behavior: none;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+html.app-game input, html.app-game textarea, html.app-game [contenteditable="true"] {
+  -webkit-user-select: text;
+  user-select: text;
+}
+html.app-game img, html.app-game video { -webkit-user-drag: none; }
+html.app-game button, html.app-game [role="button"] { min-height: 44px; }
+
+/* Πλωτά κουμπιά πάνω/κάτω: πάντα έξω από Dynamic Island και home indicator */
+.fixed.top-3 { top: calc(env(safe-area-inset-top, 0px) + 0.75rem); }
+.fixed.top-16 { top: calc(env(safe-area-inset-top, 0px) + 4rem); }
+.fixed.bottom-3 { bottom: calc(env(safe-area-inset-bottom, 0px) + 0.75rem); }
+.fixed.bottom-20 { bottom: calc(env(safe-area-inset-bottom, 0px) + 5rem); }
+.fixed.bottom-24 { bottom: calc(env(safe-area-inset-bottom, 0px) + 6rem); }
+.fixed.bottom-36 { bottom: calc(env(safe-area-inset-bottom, 0px) + 9rem); }
+.fixed.right-3 { right: calc(env(safe-area-inset-right, 0px) + 0.75rem); }
+.fixed.left-3 { left: calc(env(safe-area-inset-left, 0px) + 0.75rem); }
+
+/* iPhone 17 Pro (402pt) / Pro Max (440pt): άνετα περιθώρια, χωρίς οριζόντιο scroll */
+@media (max-width: 440px) {
+  .mode-shell { padding-left: 12px !important; padding-right: 12px !important; }
+  .mode-large-title { font-size: 1.5rem; }
+  .mode-timer { font-size: 1.75rem !important; }
+  .dt-card { max-width: 100%; }
+}
+
+/* MacBook (1280–1800px): περιεχόμενο κεντραρισμένο, όχι απλωμένο */
+@media (min-width: 1280px) {
+  .mode-shell > .max-w-5xl { max-width: 72rem; }
+  .dt-card { max-width: 380px; }
+}
+
+img.dot-tv-brand-mark { object-fit: cover; padding: 0; border-radius: 50%; }
+
+/* Χωρίς blur, οι «κολλημένες» μπάρες χρειάζονται συμπαγές φόντο */
+header.sticky, .sticky.top-0, header.fixed, nav.fixed, .fixed.inset-x-0.top-0 {
+  background-color: rgba(0, 0, 0, 0.96) !important;
+}
+.fixed.inset-0[class*="bg-black/"], .fixed.inset-0[class*="bg-background/"] { background-color: rgba(0, 0, 0, 0.9) !important; }

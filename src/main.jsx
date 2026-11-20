@@ -1,13 +1,6 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
-import '@/index.css'
-import '@/responsive.css'
-import '@/cinematic-tv.css'
-import '@/ios27.css' // Base iOS 27 foundation
-import '@/visual-overhaul.css' // Final full-game visual layer
-import '@/polish.css' // Τελικό γυάλισμα: ζεστό μαύρο/χρυσό, μπάρα έναρξης, δευτερεύοντα κουμπιά
-import '@/wallpaper.css' // Wallpaper οθονών (ενεργό μόνο όταν οριστεί από το Admin)
-import '@/ios-flat.css' // Τελικό επίπεδο: συμπαγές iOS, χωρίς εφέ/animations
+import '@/app.css'
 import '@/lib/push' // πιάνει νωρίς το «Εγκατάσταση εφαρμογής» του browser
 import { loadMedia, subscribeMediaRefresh } from '@/lib/media'
 
