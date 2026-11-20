@@ -110,39 +110,6 @@ export default function AdminInterestParticipation() {
     }
   }
 
-  async function copyInterestLink() {
-    const url = `${window.location.origin}/deal`;
-    try {
-      await navigator.clipboard.writeText(url);
-      setMessage('Ο σύνδεσμος αρχικής δήλωσης ενδιαφέροντος αντιγράφηκε.');
-    } catch {
-      setMessage('Άνοιξε τον σύνδεσμο /deal για να τον αντιγράψεις χειροκίνητα.');
-    }
-  }
-
-  async function copyParticipationLink() {
-    if (!selectedEvent?.room_code) return;
-    const url = `${window.location.origin}/deal/${selectedEvent.room_code}`;
-    try {
-      await navigator.clipboard.writeText(url);
-      setMessage('Ο σύνδεσμος συμμετοχής αντιγράφηκε.');
-    } catch {
-      setMessage('Δεν ήταν δυνατή η αντιγραφή. Χρησιμοποίησε τον σύνδεσμο που εμφανίζεται παρακάτω.');
-    }
-  }
-
-  async function copyModeFormLink() {
-    if (!selectedEvent?.id || !selectedEvent?.room_code) return;
-    const params = new URLSearchParams({ event: selectedEvent.room_code, eventId: selectedEvent.id, roomCode: selectedEvent.room_code });
-    const url = `${window.location.origin}/modes-form?${params.toString()}`;
-    try {
-      await navigator.clipboard.writeText(url);
-      setMessage('Ο σύνδεσμος επιλογής Mode αντιγράφηκε.');
-    } catch {
-      setMessage('Χρησιμοποίησε τον σύνδεσμο επιλογής Mode που εμφανίζεται παρακάτω.');
-    }
-  }
-
   async function updateParticipation(item, choice) {
     setBusy(true);
     try {
@@ -169,13 +136,6 @@ export default function AdminInterestParticipation() {
       <ComicPanel className="bg-card space-y-3">
         <h2 className="font-heading text-2xl text-primary">ΕΝΔΙΑΦΕΡΟΝ & ΣΥΜΜΕΤΟΧΗ</h2>
         <p className="text-sm text-foreground/70">Οι αρχικές δηλώσεις ενδιαφέροντος αποθηκεύονται ανεξάρτητα από Event, πρόσκληση και GameSession.</p>
-        <div className="rounded-lg border border-[#b99a45]/40 bg-background/60 p-3 flex flex-wrap items-center justify-between gap-2">
-          <div>
-            <div className="text-xs font-bold text-primary">ΣΥΝΔΕΣΜΟΣ ΑΡΧΙΚΗΣ ΔΗΛΩΣΗΣ ΕΝΔΙΑΦΕΡΟΝΤΟΣ</div>
-            <a className="text-sm underline underline-offset-2" href="/deal" target="_blank" rel="noreferrer">{window.location.origin}/deal</a>
-          </div>
-          <ComicButton size="sm" variant="dark" onClick={copyInterestLink}>ΑΝΤΙΓΡΑΦΗ</ComicButton>
-        </div>
         <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Αναζήτηση ονόματος ή τύπου…" className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground" />
         <div className="space-y-2">
           {filteredInterests.map((item) => (
@@ -213,16 +173,6 @@ export default function AdminInterestParticipation() {
             <div className="rounded-lg border border-amber-700/40 p-3"><div className="text-[10px] text-foreground/50">ΧΩΡΙΣ ΑΠΑΝΤΗΣΗ</div><div className="font-heading text-2xl">{noResponseCount}</div></div>
           </div>
           <div className="text-xs text-foreground/55">Θετικές επιβεβαιώσεις: {yesCount} / {selectedEvent.expectedCount ?? 0} · Κωδικός Event: {selectedEvent.room_code}</div>
-          <div className="rounded-lg border border-[#b99a45]/40 bg-background/60 p-3 space-y-2">
-            <div className="text-xs font-bold text-primary">ΣΥΝΔΕΣΜΟΣ ΔΗΛΩΣΗΣ ΣΥΜΜΕΤΟΧΗΣ</div>
-            <a className="block break-all text-sm underline underline-offset-2" href={`/deal/${selectedEvent.room_code}`} target="_blank" rel="noreferrer">{window.location.origin}/deal/{selectedEvent.room_code}</a>
-            <ComicButton size="sm" variant="dark" onClick={copyParticipationLink}>ΑΝΤΙΓΡΑΦΗ ΣΥΝΔΕΣΜΟΥ</ComicButton>
-          </div>
-          <div className="rounded-lg border border-[#b99a45]/40 bg-background/60 p-3 space-y-2">
-            <div className="text-xs font-bold text-primary">ΣΥΝΔΕΣΜΟΣ ΦΟΡΜΑΣ ΕΠΙΛΟΓΗΣ MODE</div>
-            <a className="block break-all text-sm underline underline-offset-2" href={`/modes-form?event=${selectedEvent.room_code}&eventId=${selectedEvent.id}&roomCode=${selectedEvent.room_code}`} target="_blank" rel="noreferrer">{window.location.origin}/modes-form?event={selectedEvent.room_code}&eventId={selectedEvent.id}&roomCode={selectedEvent.room_code}</a>
-            <ComicButton size="sm" variant="dark" onClick={copyModeFormLink}>ΑΝΤΙΓΡΑΦΗ ΣΥΝΔΕΣΜΟΥ MODE</ComicButton>
-          </div>
           <div className="space-y-2">
             {responses.map((item) => (
               <div key={item.id} className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-border p-3">
