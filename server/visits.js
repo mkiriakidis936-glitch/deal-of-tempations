@@ -47,7 +47,7 @@ export function visitRoutes() {
         count(*)::int AS total,
         count(*) FILTER (WHERE COALESCE(NULLIF(data->'state'->>'stage', '')::int, 0) >= 3)::int AS completed,
         count(*) FILTER (WHERE COALESCE(NULLIF(data->'state'->>'stage', '')::int, 0) < 3 AND updated_date >= now() - interval '24 hours')::int AS active,
-        count(*) FILTER (WHERE COALESCE(NULLIF(data->'state'->>'stage', '')::int, 0) < 3 AND updated_date < now() - interval '24 hours')::int AS abandoned,
+        count(*) FILTER (WHERE COALESCE(NULLIF(data->'state'->>'stage', '')::int, 0) < 3 AND updated_date < now() - interval '24 hours')::int AS inactive,
         COALESCE(sum(jsonb_array_length(CASE WHEN jsonb_typeof(data->'state'->'players') = 'array' THEN data->'state'->'players' ELSE '[]'::jsonb END)), 0)::int AS player_participations
         ${base}`),
       query(`SELECT COALESCE(data->'state'->>'mode', data->>'mode', 'unknown') AS id, count(*)::int AS count ${base} GROUP BY 1`),
