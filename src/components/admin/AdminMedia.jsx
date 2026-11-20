@@ -124,8 +124,6 @@ export default function AdminMedia() {
     setOv(clean);
   };
 
-  // Αποθήκευση που εφαρμόζει ΜΟΝΟ ό,τι άλλαξε πάνω στις πιο πρόσφατες ρυθμίσεις (για components που
-  // υπολογίζουν την νέα τιμή από παλιό state μετά από ανέβασμα που κράτησε).
   const saveChanged = async (next) => {
     const fresh = (await fetchOverrides())?.value || {};
     const merged = { ...fresh };
@@ -144,7 +142,6 @@ export default function AdminMedia() {
     finally { setBusy(null); setProgress(0); }
   };
 
-  // Το μοναδικό σημείο ανεβάσματος αρχείων είναι η κεντρική βιβλιοθήκη.
   const pick = (id, mode, ref, index, surface = surfaceFilter) => { target.current = { id, mode, index, surface }; ref.current?.click(); };
 
   const onFiles = async (e) => {
@@ -164,7 +161,6 @@ export default function AdminMedia() {
         }
       }
       if (urls.length) {
-        // Πάντα πάνω στις πιο πρόσφατες ρυθμίσεις (το ανέβασμα βίντεο μπορεί να κράτησε λεπτά).
         const fresh = (await fetchOverrides())?.value || {};
         const librarySurfaces = { ...(fresh.librarySurfaces || {}) };
         for (const url of urls) if (t.surface && t.surface !== 'all' && t.surface !== 'preview') librarySurfaces[url] = t.surface;
@@ -437,7 +433,7 @@ export default function AdminMedia() {
         <div className="mt-3 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
           <button type="button" onClick={() => setSurfaceFilter("all")} className={surfaceFilter === "all" ? "rounded-xl border border-primary bg-primary/15 p-3 text-left" : "rounded-xl border border-border bg-secondary/40 p-3 text-left"}><div className="text-sm font-black">ΟΛΑ</div><div className="text-[10px] text-foreground/55">Όλα τα σημεία</div></button>
           {SURFACES.map((surface) => <button key={surface.id} type="button" onClick={() => setSurfaceFilter(surface.id)} className={surfaceFilter === surface.id ? "rounded-xl border border-primary bg-primary/15 p-3 text-left" : "rounded-xl border border-border bg-secondary/40 p-3 text-left"}><div className="text-sm font-black">{surface.label}</div><div className="text-[10px] text-foreground/55">{surface.description}</div></button>)}
-          <button type="button" onClick={() => setSurfaceFilter("preview")} className={surfaceFilter === "preview" ? "rounded-xl border border-primary bg-primary/15 p-3 text-left" : "rounded-xl border border-border bg-secondary/40 p-3 text-left"}><div className="text-sm font-black">LIVE PREVIEW</div><div className="text-[10px] text-foreground/55">Πραγματικές σελίδες</div></button>
+          <button type="button" onClick={() => setSurfaceFilter("preview")} className={surfaceFilter === "preview" ? "rounded-xl border border-primary bg-primary/15 p-3 text-left" : "rounded-xl border border-border bg-secondary/40 p-3 text-left"}><div className="text-sm font-black">ΖΩΝΤΑΝΗ ΠΡΟΕΠΙΣΚΟΠΗΣΗ</div><div className="text-[10px] text-foreground/55">Πραγματικές σελίδες</div></button>
         </div>
       </ComicPanel>
 
@@ -446,7 +442,6 @@ export default function AdminMedia() {
       {showSurface("site", "forms", "tv", "tablet", "mobile") && (
       <ComicPanel className="bg-card space-y-3">
         <div className="font-heading text-lg">🖼️ ΠΟΛΥΜΕΣΑ ΑΝΑ ΣΗΜΕΙΟ</div>
-        <p className="text-xs text-foreground/60">Σε κάθε σημείο μπορείς να ανεβάσεις νέο αρχείο απευθείας ή να συνδέσεις υπάρχον από τη βιβλιοθήκη.</p>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {PHOTO_SPOTS.filter((s) => showSurface(...(s.surfaces || []))).map((s) => {
             const src = ov[s.id] || (ov.emptySlots?.includes(s.id) || ov.clearAllPhotos || ov.clearAllMedia ? '' : DEFAULTS[s.id]);
@@ -492,7 +487,6 @@ export default function AdminMedia() {
       {showSurface('tv') && (
       <ComicPanel className="bg-card space-y-3">
         <div className="font-heading text-lg">🎬 ΒΙΝΤΕΟ ΕΝΑΡΞΗΣ TV</div>
-        <p className="text-xs text-foreground/60">Ανέβασε ξεχωριστά τα δύο βίντεο. Το WELCOME παίζει όταν η TV συνδέεται στη συνεδρία. Το COUNTDOWN παίζει όταν ξεκινά το παιχνίδι από το Tablet.</p>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {VIDEO_SLOTS.map((slot) => {
             const src = ov[slot.id] || '';
@@ -517,7 +511,6 @@ export default function AdminMedia() {
       {showSurface('tablet', 'forms') && (
       <ComicPanel className="bg-card space-y-3">
         <div className="font-heading text-lg">🎮 ΕΞΩΦΥΛΛΟ ΦΩΤΟΓΡΑΦΙΑΣ ΑΝΑ MODE</div>
-        <p className="text-xs text-foreground/60">Οι φωτογραφίες εμφανίζονται στην επιλογή Mode του Tablet και στη φόρμα επιλογής Mode. Τα PAJAMA LOCKDOWN 18+ και BEACH BAR HOME LOCKDOWN διαχειρίζονται στην ενότητα πολυμέσων των νέων Modes.</p>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {MODE_COVER_SLOTS.filter((s) => s.modeId !== 'pedi_extended' && !NEW_MODES.some((mode) => mode.id === s.modeId) && showSurface(...(s.surfaces || ['tablet', 'forms']))).map((s) => {
             const src = ov[s.id] || (ov.emptyModeCovers?.includes(s.id) || ov.clearAllPhotos || ov.clearAllMedia ? '' : DEFAULTS[s.id]);

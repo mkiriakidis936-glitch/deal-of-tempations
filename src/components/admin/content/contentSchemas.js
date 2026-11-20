@@ -1,9 +1,3 @@
-// Field schemas for every GameContent category.
-// shape: 'list' (many records, each data = item object)
-//        'stringList' (many records, each data = { text })
-//        'single' (one record, data = { text })
-//        'json' (one record, data = { json: stringified })
-// field types: 'text' | 'number' | 'textarea' | 'select'
 
 export const CONTENT_CATEGORIES = [
   {

@@ -213,32 +213,3 @@ export const VIP_VAULT = [
   'The Foot Reflex Test: Άσε μια συμπαίκτρια να δοκιμάσει την ευαισθησία σου στην καμάρα με ένα φτερό για 10″ χωρίς να κουνηθείς.',
   'The Final Toast: Σήκωσε το ποτήρι (ή τον καφέ σου) και πες μια επική ευχή για τις επόμενες βραδιές pajama party της παρέας!',
 ];
-
-
-const UNSAFE_EXTENDED_COPY = /hogtie|blindfold|restraint|δεσίμ|δεμέν|δέσιμο|ακινητοπ|zip.?ties|duct tape|παγάκι|παγάκια|γαργαλ|tickle|σφηνάκ|\bshot\b|αλκοόλ|alcohol|χωρίς χέρια|μάτια κλειστά|κλείσε τα μάτια|κλείστε τα μάτια|τυφλά|περιορισμός κίνησης|αγγίζ|ακουμπ|touch|μασάζ|massage|άγγιγμα|σπρώξ|δέσε|δεμένη|δεμένος/i;
-const SAFE_EXTENDED_CHALLENGE = 'Προαιρετικό ψηφιακό challenge: ολοκλήρωσε ένα quiz ή επίλεξε PASS / STOP.';
-function sanitizeExtendedCopy(value, id = '') {
-  if (Array.isArray(value)) {
-    value.forEach((item, index) => {
-      if (typeof item === 'string') value[index] = UNSAFE_EXTENDED_COPY.test(item) ? SAFE_EXTENDED_CHALLENGE : item;
-      else sanitizeExtendedCopy(item, item?.id || id);
-    });
-    return value;
-  }
-  if (!value || typeof value !== 'object') return value;
-  if (value.restraint === true) value.restraint = false;
-  for (const [key, current] of Object.entries(value)) {
-    if (typeof current === 'string' && UNSAFE_EXTENDED_COPY.test(current)) {
-      value[key] = ['title', 'name', 'label'].includes(key)
-        ? 'Safe Digital Challenge'
-        : SAFE_EXTENDED_CHALLENGE;
-    } else if (current && typeof current === 'object') sanitizeExtendedCopy(current, value.id || id);
-  }
-  return value;
-}
-[
-  ROUTES, GLAM_CARDS, CHAOS_CARDS, CHAOS_POWERS, SHOP, SECRET_MISSIONS,
-  EXTENDED_GLAM_CARDS, EXTENDED_CHAOS_CARDS, EXTENDED_SECRET_MISSIONS,
-  EXTENDED_CHAOS_MARKET_CARDS, BLIND_TEXTURES, WHISPER_QUESTIONS,
-  ASMR_CLIPS, MORNING_CLUES, VIP_VAULT,
-].forEach((items) => sanitizeExtendedCopy(items));

@@ -21,7 +21,6 @@ function Field({ label, hint, children }) {
 const Text = ({ value, onChange, ...p }) => <input className={inp} value={value ?? ''} onChange={(e) => onChange(e.target.value)} {...p} />;
 const Area = ({ value, onChange, rows = 4 }) => <textarea className={inp} rows={rows} value={value ?? ''} onChange={(e) => onChange(e.target.value)} />;
 
-// λίστα κειμένων: ένα στοιχείο ανά γραμμή (lines) ή ανά παράγραφο (paras)
 const linesOf = (arr) => (arr || []).join('\n');
 const toLines = (s) => s.split('\n');
 const parasOf = (arr) => (arr || []).join('\n\n');
@@ -62,7 +61,6 @@ export default function AdminSite({ focusScenario = false }) {
     fetchSiteRecord().then((r) => { setRec(r); setAll(r?.value || {}); }).catch(() => setMsg({ ok: false, text: 'Δεν φορτώθηκε το περιεχόμενο.' }));
   }, []);
 
-  // φόρτωση φόρμας όταν αλλάζει event ή φορτώνουν οι ρυθμίσεις
   useEffect(() => {
     const base = DEFAULT_SITE[ev];
     const o = all[ev] || {};
@@ -95,9 +93,6 @@ export default function AdminSite({ focusScenario = false }) {
     <div className="space-y-3">
       <ComicPanel className="bg-card space-y-3">
         <div className="font-heading text-xl text-primary">🌐 ΙΣΤΟΣΕΛΙΔΑ & ΣΕΝΑΡΙΟ</div>
-        <p className="text-xs text-foreground/70">
-          Γράψε τι είναι το παιχνίδι (σενάριο) και άλλαξε όλα τα κείμενα του /site, ξεχωριστά για κάθε event. Οι φωτογραφίες αλλάζουν από την καρτέλα 🖼️.
-        </p>
         <div className="flex gap-2 flex-wrap">
           {SITE_EVENTS.map((e) => (
             <ComicButton key={e.id} size="sm" variant={ev === e.id ? 'yellow' : 'dark'} onClick={() => setEv(e.id)}>{e.label}</ComicButton>

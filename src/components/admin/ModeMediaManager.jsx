@@ -172,7 +172,7 @@ export default function ModeMediaManager({ value = {}, files = [], onSave, onRef
   return (
     <section className="space-y-3">
       <div className="rounded-2xl border border-primary/30 bg-gradient-to-br from-[#17131d] to-[#292039] p-4 sm:p-5 text-white">
-        <div className="text-[10px] font-black tracking-[.2em] text-primary">MODE MEDIA CENTER</div>
+        <div className="text-[10px] font-black tracking-[.2em] text-primary">ΠΟΛΥΜΕΣΑ ΑΝΑ MODE</div>
         <div className="mt-1 font-heading text-2xl">Φωτογραφική ταυτότητα ανά Mode</div>
         <p className="mt-1 text-xs text-white/65">Κάθε θέση δέχεται απευθείας ανέβασμα από τον υπολογιστή ή επιλογή ήδη ανεβασμένου αρχείου. Όπου υπάρχει καθορισμένο όνομα στις προδιαγραφές, ελέγχεται πριν γίνει το ανέβασμα.</p>
         <div className="mt-4 grid grid-cols-2 xl:grid-cols-4 gap-2">

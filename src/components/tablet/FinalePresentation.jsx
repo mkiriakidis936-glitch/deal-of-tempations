@@ -168,7 +168,7 @@ export default function FinalePresentation({ state, updateState, onEnd }) {
       <div className="min-h-screen comic-dots p-3 pb-24 flex items-center justify-center">
         <div className="max-w-2xl w-full space-y-3">
           <ComicPanel className="bg-tarot-royal text-center py-3">
-            <div className="font-heading text-xl text-tarot-gold">📜 RECAP ΣΤΙΓΜΩΝ</div>
+            <div className="font-heading text-xl text-tarot-gold">📜 ΑΝΑΣΚΟΠΗΣΗ ΣΤΙΓΜΩΝ</div>
             <div className="text-xs text-foreground/60">{recapIndex + 1} / {keyMoments.length}</div>
           </ComicPanel>
           <ComicPanel className="bg-card comic-pop text-center py-8">

@@ -82,7 +82,6 @@ const AUTO_TITLES = {
  "sound_opening_theme": "Θέμα έναρξης",
  "sound_recap_theme": "Θέμα κλεισίματος"
 };
-// Τα αρχεία της βιβλιοθήκης έχουν όνομα «χρόνος-hex-όνομα.ext» (π.χ. lx3k9a-1f2e3d-opening-02-vault-awakens.mp4).
 const normalizeMediaName = (name = '') => String(name).toLowerCase()
   .replace(/\.[a-z0-9]+$/, '')
   .replace(/^[a-z0-9]+-[a-f0-9]{6}-/, '')
@@ -132,7 +131,6 @@ export default function AVControlRoom({ mediaFiles = [], onRefreshMedia }) {
 
   useEffect(() => { load(); }, [load]);
 
-  // Η επιλεγμένη διοργάνωση είναι κοινή με Admin, Tablet και TV.
   useEffect(() => {
     let alive = true;
     getActiveSessionCode().then((code) => { if (alive && code) setSessionCode(code); });
@@ -157,7 +155,7 @@ export default function AVControlRoom({ mediaFiles = [], onRefreshMedia }) {
       }
     }).catch(() => {});
     refreshCue();
-    const off = base44.entities.ProductionCue.subscribe((event) => { if (event?.data?.sessionCode === sessionCode) refreshCue(); });
+    const off = base44.entities.ProductionCue.subscribe((event) => { if (event?.type === 'resync' || event?.data?.sessionCode === sessionCode) refreshCue(); });
     return () => { alive = false; off?.(); };
   }, [sessionCode]);
 
@@ -313,8 +311,8 @@ export default function AVControlRoom({ mediaFiles = [], onRefreshMedia }) {
       {currentSession && <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center text-xs">
         <div className="rounded-lg bg-secondary p-2"><b className="block text-base">{currentSession.sessionCode}</b>Κωδικός Event</div>
         <div className="rounded-lg bg-secondary p-2"><b className="block text-base">{currentSession.mode || '—'}</b>Mode</div>
-        <div className="rounded-lg bg-secondary p-2"><b className="block text-base">{currentSession.state?.round || 1}</b>Round</div>
-        <div className="rounded-lg bg-secondary p-2"><b className="block text-base">{currentSession.state?.stage ?? '—'}</b>Stage</div>
+        <div className="rounded-lg bg-secondary p-2"><b className="block text-base">{currentSession.state?.round || 1}</b>Γύρος</div>
+        <div className="rounded-lg bg-secondary p-2"><b className="block text-base">{currentSession.state?.stage ?? '—'}</b>Στάδιο</div>
       </div>}
     </ComicPanel>
 
@@ -340,7 +338,7 @@ export default function AVControlRoom({ mediaFiles = [], onRefreshMedia }) {
 
       <div className="space-y-3">
         <ComicPanel className="bg-card space-y-3">
-          <h3 className="font-heading text-lg">MEDIA PREVIEW & DETAILS</h3>
+          <h3 className="font-heading text-lg">ΠΡΟΕΠΙΣΚΟΠΗΣΗ & ΣΤΟΙΧΕΙΑ</h3>
           {selectedFile ? <>
             <div className="rounded-lg bg-black/70 min-h-40 flex items-center justify-center p-2">
               {selectedFile.kind === 'video' ? <video key={selectedFile.url} src={selectedFile.url} controls playsInline preload="none" className="max-h-64 max-w-full" /> : selectedFile.kind === 'audio' ? <audio key={selectedFile.url} src={selectedFile.url} controls preload="none" className="w-full" /> : <img src={selectedFile.url} alt="" className="max-h-64 max-w-full object-contain" />}
@@ -349,8 +347,8 @@ export default function AVControlRoom({ mediaFiles = [], onRefreshMedia }) {
             <label className="block space-y-1 text-xs font-bold">ΦΑΚΕΛΟΣ / ΚΑΤΗΓΟΡΙΑ<select className={field} value={selectedMeta.folder || 'Γενικά'} onChange={(e) => saveMetadata({ folder: e.target.value })}>{folders.map((folder) => <option key={folder}>{folder}</option>)}</select></label>
             <label className="block space-y-1 text-xs font-bold">MODE / ΧΡΗΣΗ<input className={field} value={selectedMeta.mode || ''} placeholder="π.χ. Heist Night, Pajama…" onChange={(e) => setMetadata((v) => ({ ...v, [selected]: { ...selectedMeta, mode: e.target.value } }))} onBlur={(e) => saveMetadata({ mode: e.target.value })} /></label>
             <div className="grid grid-cols-2 gap-2">
-              <label className="block space-y-1 text-xs font-bold">ROUND<input className={field} value={selectedMeta.round || ''} onChange={(e) => setMetadata((v) => ({ ...v, [selected]: { ...selectedMeta, round: e.target.value } }))} onBlur={(e) => saveMetadata({ round: e.target.value })} /></label>
-              <label className="block space-y-1 text-xs font-bold">SCENE / EVENT<input className={field} value={selectedMeta.scene || ''} onChange={(e) => setMetadata((v) => ({ ...v, [selected]: { ...selectedMeta, scene: e.target.value } }))} onBlur={(e) => saveMetadata({ scene: e.target.value })} /></label>
+              <label className="block space-y-1 text-xs font-bold">ΓΥΡΟΣ<input className={field} value={selectedMeta.round || ''} onChange={(e) => setMetadata((v) => ({ ...v, [selected]: { ...selectedMeta, round: e.target.value } }))} onBlur={(e) => saveMetadata({ round: e.target.value })} /></label>
+              <label className="block space-y-1 text-xs font-bold">ΣΚΗΝΗ / ΓΕΓΟΝΟΣ<input className={field} value={selectedMeta.scene || ''} onChange={(e) => setMetadata((v) => ({ ...v, [selected]: { ...selectedMeta, scene: e.target.value } }))} onBlur={(e) => saveMetadata({ scene: e.target.value })} /></label>
             </div>
             <label className="block space-y-1 text-xs font-bold">ΔΙΚΑΙΩΜΑΤΑ / ΣΥΓΚΑΤΑΘΕΣΗ
               <select className={field} value={selectedMeta.permission || 'pending'} onChange={(e) => saveMetadata({ permission: e.target.value })}>
@@ -359,16 +357,15 @@ export default function AVControlRoom({ mediaFiles = [], onRefreshMedia }) {
             </label>
             <label className="block space-y-1 text-xs font-bold">ΣΗΜΕΙΩΣΕΙΣ / ΠΗΓΗ ΑΔΕΙΑΣ<textarea className={field} rows={2} value={selectedMeta.notes || ''} onChange={(e) => setMetadata((v) => ({ ...v, [selected]: { ...selectedMeta, notes: e.target.value } }))} onBlur={(e) => saveMetadata({ notes: e.target.value })} /></label>
             <div className="flex flex-wrap gap-2"><ComicButton size="sm" onClick={() => addToQueue(selectedFile)}>＋ ΣΤΗΝ ΟΥΡΑ</ComicButton><ComicButton size="sm" onClick={() => publish({ ...selectedFile, label: selectedMeta.title || selectedFile.name }, queueIndex)} disabled={busy || selectedMeta.permission !== 'cleared'}>▶ ΑΜΕΣΗ ΠΡΟΒΟΛΗ TV</ComicButton></div>
-          </> : <p className="text-xs text-foreground/50">Επίλεξε αρχείο από τη βιβλιοθήκη για προεπισκόπηση και διαχείριση.</p>}
+          </> : <p className="text-xs text-foreground/50">Επίλεξε αρχείο από τη βιβλιοθήκη.</p>}
         </ComicPanel>
 
         <ComicPanel className="bg-card space-y-3">
-          <div className="flex items-center justify-between"><h3 className="font-heading text-lg">LIVE AV OUTPUT</h3><span className={`rounded-full px-2 py-1 text-[10px] ${cueRecord?.active ? 'bg-emerald-500/20 text-emerald-300' : 'bg-secondary text-foreground/60'}`}>{cueRecord?.active ? 'LIVE' : 'STANDBY'}</span></div>
-          <p className="text-xs text-foreground/60">Η έξοδος στέλνει το επιλεγμένο media στην υπάρχουσα οθόνη /tv για το ενεργό Event.</p>
+          <div className="flex items-center justify-between"><h3 className="font-heading text-lg">ΕΞΟΔΟΣ ΗΧΟΥ & ΕΙΚΟΝΑΣ TV</h3><span className={`rounded-full px-2 py-1 text-[10px] ${cueRecord?.active ? 'bg-emerald-500/20 text-emerald-300' : 'bg-secondary text-foreground/60'}`}>{cueRecord?.active ? 'LIVE' : 'ΑΝΑΜΟΝΗ'}</span></div>
           <div className="rounded-lg bg-secondary/70 p-2 text-xs" role="status">Κατάσταση TV: <b>{cueRecord?.playbackStatus || (cueRecord?.active ? 'pending' : 'standby')}</b>{cueRecord?.playbackError ? <span className="block text-destructive mt-1">{cueRecord.playbackError}</span> : null}</div>
-          <div className="grid grid-cols-3 gap-2"><ComicButton size="sm" disabled={busy || !queue.length} onClick={() => playQueue(0)}>▶ PLAY</ComicButton><ComicButton size="sm" variant="dark" disabled={busy || queueIndex <= 0} onClick={() => playQueue(-1)}>PREV</ComicButton><ComicButton size="sm" variant="dark" disabled={busy || queueIndex < 0 || queueIndex >= queue.length - 1} onClick={() => playQueue(1)}>NEXT</ComicButton></div>
+          <div className="grid grid-cols-3 gap-2"><ComicButton size="sm" disabled={busy || !queue.length} onClick={() => playQueue(0)}>▶ ΑΝΑΠΑΡΑΓΩΓΗ</ComicButton><ComicButton size="sm" variant="dark" disabled={busy || queueIndex <= 0} onClick={() => playQueue(-1)}>ΠΡΟΗΓ.</ComicButton><ComicButton size="sm" variant="dark" disabled={busy || queueIndex < 0 || queueIndex >= queue.length - 1} onClick={() => playQueue(1)}>ΕΠΟΜ.</ComicButton></div>
           <div className="grid grid-cols-3 gap-2"><ComicButton size="sm" variant="dark" disabled={busy || !cueRecord?.active} onClick={() => sendPlaybackCommand("play")}>▶ CONTINUE</ComicButton><ComicButton size="sm" variant="dark" disabled={busy || !cueRecord?.active} onClick={() => sendPlaybackCommand("pause")}>Ⅱ PAUSE</ComicButton><ComicButton size="sm" variant="dark" disabled={busy || !cueRecord?.active} onClick={() => sendPlaybackCommand("stop")}>■ STOP MEDIA</ComicButton></div>
-          <div className="flex items-center gap-3 text-xs"><span>VOLUME</span><input aria-label="Ένταση TV" className="flex-1" type="range" min="0" max="1" step="0.05" value={volume} onChange={(e) => setVolume(Number(e.target.value))} /><b>{Math.round(volume * 100)}%</b><ComicButton size="sm" variant="dark" disabled={busy || !cueRecord?.active} onClick={() => sendPlaybackCommand("volume", volume)}>SET</ComicButton><ComicButton size="sm" variant="dark" disabled={busy || !cueRecord?.active} onClick={() => sendPlaybackCommand("mute")}>MUTE</ComicButton><ComicButton size="sm" variant="dark" disabled={busy || !cueRecord?.active} onClick={() => sendPlaybackCommand("unmute")}>UNMUTE</ComicButton></div>
+          <div className="flex items-center gap-3 text-xs"><span>ΕΝΤΑΣΗ</span><input aria-label="Ένταση TV" className="flex-1" type="range" min="0" max="1" step="0.05" value={volume} onChange={(e) => setVolume(Number(e.target.value))} /><b>{Math.round(volume * 100)}%</b><ComicButton size="sm" variant="dark" disabled={busy || !cueRecord?.active} onClick={() => sendPlaybackCommand("volume", volume)}>SET</ComicButton><ComicButton size="sm" variant="dark" disabled={busy || !cueRecord?.active} onClick={() => sendPlaybackCommand("mute")}>ΣΙΓΑΣΗ</ComicButton><ComicButton size="sm" variant="dark" disabled={busy || !cueRecord?.active} onClick={() => sendPlaybackCommand("unmute")}>ΗΧΟΣ ON</ComicButton></div>
           <ComicButton size="sm" variant="dark" disabled={busy} onClick={stopOutput}>■ STOP TV OVERLAY</ComicButton>
           <div className="text-xs text-foreground/60">Τρέχον στοιχείο: {currentCue?.label || '—'}</div>
           <div className="space-y-1 max-h-56 overflow-y-auto">{queue.map((item, index) => <div key={item.id} className={`flex items-center gap-1 rounded-lg border p-2 ${index === queueIndex ? 'border-primary bg-primary/10' : 'border-border'}`}><button className="min-w-0 flex-1 text-left text-xs truncate" onClick={() => publish(item, index)}>{index + 1}. {item.label}</button><button className="px-2 text-xs" disabled={index === 0} onClick={() => moveQueueItem(index, -1)}>↑</button><button className="px-2 text-xs" disabled={index === queue.length - 1} onClick={() => moveQueueItem(index, 1)}>↓</button><button className="px-2 text-xs text-red-400" onClick={() => removeQueueItem(item.id)}>×</button></div>)}</div>

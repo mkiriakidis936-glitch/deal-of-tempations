@@ -6,7 +6,7 @@ import AdminSettingVersionHistory from '@/components/admin/AdminSettingVersionHi
 import { saveAdminSettingVersion } from '@/lib/adminVersionHistory';
 import { GLOBAL_DESIGN_DEFAULTS, GLOBAL_DESIGN_KEY, applySavedGlobalDesign } from '@/lib/globalDesign';
 
-const FONTS = ['Cinzel', 'Cinzel Decorative', 'Cormorant Garamond', 'Inter'];
+const FONTS = [['system', 'Σύστημα (SF Pro · iOS)'], ['Inter', 'Inter'], ['Cinzel', 'Cinzel'], ['Cinzel Decorative', 'Cinzel Decorative'], ['Cormorant Garamond', 'Cormorant Garamond']];
 
 export default function AdminGlobalDesign() {
   const [value, setValue] = useState(GLOBAL_DESIGN_DEFAULTS);
@@ -71,9 +71,8 @@ export default function AdminGlobalDesign() {
   return (
     <div className="space-y-3">
       <ComicPanel className="bg-card space-y-3">
-        <div className="font-heading text-xl">GLOBAL DESIGN SETTINGS</div>
-        <p className="text-xs text-foreground/60">Κεντρικά χρώματα και γραμματοσειρές για Admin, Tablet, TV και δημόσιο site.</p>
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+        <div className="font-heading text-xl">ΣΧΕΔΙΑΣΗ ΕΦΑΡΜΟΓΗΣ</div>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           {[
             ['background', 'Φόντο'], ['foreground', 'Κείμενο'], ['card', 'Κάρτες'],
             ['primary', 'Κύριο χρώμα'], ['accent', 'Δευτερεύον'], ['border', 'Περιγράμματα'],
@@ -92,14 +91,14 @@ export default function AdminGlobalDesign() {
         ].map(([key, label]) => (
           <label key={key} className="block text-xs font-bold">{label}
             <select className="mt-1 w-full rounded border border-border bg-background p-2" value={value[key]} onChange={(event) => change(key, event.target.value)}>
-              {FONTS.map((font) => <option key={font} value={font}>{font}</option>)}
+              {FONTS.map(([font, label]) => <option key={font} value={font}>{label}</option>)}
             </select>
           </label>
         ))}
         <div className="rounded-xl border border-border p-4 space-y-2" style={{ backgroundColor: value.background, color: value.foreground }}>
-          <div style={{ color: value.primary, fontFamily: value.display }} className="text-2xl">DEAL OF TEMPTATION</div>
-          <div style={{ fontFamily: value.heading }}>Προεπισκόπηση τίτλου</div>
-          <div style={{ fontFamily: value.body }}>Προεπισκόπηση κειμένου και εμφάνισης περιεχομένου.</div>
+          <div style={{ color: value.primary, fontFamily: value.display === 'system' ? undefined : value.display }} className="text-2xl">DEAL OF TEMPTATION</div>
+          <div style={{ fontFamily: value.heading === 'system' ? undefined : value.heading }}>Προεπισκόπηση τίτλου</div>
+          <div style={{ fontFamily: value.body === 'system' ? undefined : value.body }}>Προεπισκόπηση κειμένου και εμφάνισης περιεχομένου.</div>
           <div className="rounded-lg p-3" style={{ backgroundColor: value.card, border: `1px solid ${value.border}` }}>Κάρτα περιεχομένου</div>
         </div>
         {message && <div className="text-xs font-bold">{message}</div>}

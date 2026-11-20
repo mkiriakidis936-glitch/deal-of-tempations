@@ -1,4 +1,5 @@
 import React from 'react';
+import GameCard from '@/components/shared/GameCard';
 
 export default function InterrogationTV({ state }) {
   const currentPlayer = state.players?.[state.currentPlayerIndex];
@@ -22,21 +23,16 @@ export default function InterrogationTV({ state }) {
       )}
 
       {card ? (
-        <div className="comic-panel bg-destructive p-6 comic-pop">
-          <div className="text-center">
-            <div className="text-5xl mb-2">{card.icon || '🎴'}</div>
-            <div className="font-heading text-2xl text-foreground mb-2">{card.name}</div>
-            <div className="text-xs font-bold text-foreground/70 mb-3">
-              {state.cardAction === 'street_truth' ? '💬 ΑΛΗΘΕΙΑ' : state.cardAction === 'street_dare' ? '🔥 ΤΟΛΜΗ' : state.cardAction || 'ΚΑΡΤΑ'}
-            </div>
-            <div className="comic-panel-sm bg-background p-4">
-              <p className="text-lg text-foreground font-body">{card.text}</p>
-            </div>
-            {card.duration && (
-              <div className="mt-3 font-heading text-4xl text-tarot-gold comic-pulse">⏱ {card.duration}″</div>
-            )}
-          </div>
-        </div>
+        <GameCard
+          variant="tv"
+          kicker={state.cardAction === 'street_truth' ? 'Αλήθεια' : state.cardAction === 'street_dare' ? 'Τόλμη' : (state.cardAction || 'Κάρτα')}
+          icon={card.icon || '🎴'}
+          image={card.image}
+          accent={state.cardAction === 'street_dare' ? '#FF453A' : '#E8C26B'}
+          title={card.name}
+          text={card.text}
+          footRight={card.duration ? `⏱ ${card.duration}″` : null}
+        />
       ) : (
         <div className="comic-panel bg-card p-6 text-center">
           <div className="text-foreground/50 font-body">Αναμονή επόμενης ανάκρισης...</div>

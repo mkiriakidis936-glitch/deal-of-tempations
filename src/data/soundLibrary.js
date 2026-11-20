@@ -63,6 +63,7 @@ function createCtx() {
   const ctx = new Ctx();
   activeContexts.add(ctx);
   getAudioOutput(ctx);
+  if (ctx.state === 'suspended') ctx.resume().catch(() => {});
   return ctx;
 }
 

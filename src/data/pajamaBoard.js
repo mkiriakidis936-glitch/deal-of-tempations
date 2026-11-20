@@ -1,11 +1,11 @@
 export const SQUARE_META = {
   nails: { color: 'pink', icon: '💅', label: 'Νύχια & Pedi-Glam' },
   slippers: { color: 'purple', icon: '🩴', label: 'Παντόφλες & Ήχοι' },
-  tickle: { color: 'neon', icon: '✨', label: 'Digital Challenge Traps' },
+  tickle: { color: 'neon', icon: '✨', label: 'Tickle Traps & Δέσιμα' },
   wildcard: { color: 'yellow', icon: '⚡', label: 'Wildcards & Τροχός' },
   morning_confessions: { color: 'amber', icon: '☕', label: 'Πρωινές Εξομολογήσεις' },
   morning_slippers: { color: 'purple', icon: '🩴', label: 'Πρωινές Δοκιμασίες' },
-  morning_tickle: { color: 'neon', icon: '✨', label: 'Πρωινό Quiz' },
+  morning_tickle: { color: 'neon', icon: '✨', label: 'Πρωινό Γαργαλητό' },
   finish: { color: 'gold', icon: '🏁', label: 'ΤΕΡΜΑΤΙΣΜΟΣ — 44' },
 };
 

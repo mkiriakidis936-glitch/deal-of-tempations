@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import confetti from 'canvas-confetti';
 import { GIFT_CODE, VOW_TEXT, GIFT_NAME, GIFT_TEXT, PASS_TITLE } from '@/data/giftVault';
 
 function playChime() {
@@ -27,17 +26,7 @@ function playChime() {
 }
 
 function celebrate() {
-  const colors = ['#F7E3A8', '#E8C26B', '#E8C26B', '#ffffff'];
-  confetti({ particleCount: 170, spread: 100, origin: { y: 0.6 }, colors });
-  setTimeout(() => {
-    confetti({ particleCount: 80, spread: 140, origin: { y: 0.35 }, colors });
-  }, 300);
-  if (confetti.shapeFromText) {
-    const heart = confetti.shapeFromText({ text: '❤️', scalar: 2.2 });
-    setTimeout(() => {
-      confetti({ particleCount: 40, spread: 120, origin: { y: 0.5 }, shapes: [heart], scalar: 2 });
-    }, 550);
-  }
+  try { navigator.vibrate?.([30, 40, 30]); } catch { /* δεν υποστηρίζεται */ }
 }
 
 export default function GiftUnlock() {

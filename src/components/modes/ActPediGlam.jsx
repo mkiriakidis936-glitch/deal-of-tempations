@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import GameCard from '@/components/shared/GameCard';
 import { Panel, Btn } from '@/components/modes/ModeShell';
 import { PEDI_GLAM_CARDS } from '@/data/modes/pediGlamContent';
 import { pick, timerLeft, useTick } from '@/lib/modeKit';
@@ -75,9 +76,7 @@ export default function ActPediGlam({ ctx, onDone }) {
         )}
         {active && (
           <div className="rounded-xl border border-primary/50 bg-background/70 p-4 space-y-3">
-            <div className="text-xs opacity-70">Κάρτα για: {players.find((p) => p.id === playerId)?.name || '—'}</div>
-            <div className="font-heading text-2xl">{active.title}</div>
-            <p className="font-body text-base">{active.text}</p>
+            <GameCard kicker="Pedi-Glam" corner={players.find((p) => p.id === playerId)?.name || '—'} icon={active.icon || '💅'} image={active.image} title={active.title} text={active.text} footLeft={active.secs ? `⏱ ${active.secs}″` : ''} footRight={active.reward ? `+${active.reward}` : null} />
             {active.sharedReward && (
               <select value={shareWithId} onChange={(e) => setShareWithId(e.target.value)} className="w-full rounded bg-background border border-border p-2 text-sm">
                 <option value="">Επίλεξε συμπαίκτρια για το κοινό bonus</option>

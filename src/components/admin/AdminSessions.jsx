@@ -79,7 +79,6 @@ export default function AdminSessions({ sessions, loading, onSelect, onDelete, o
 
             {isExpanded && (
               <div className="mt-3 pt-3 border-t-2 border-border/10 space-y-3">
-                {/* Players summary */}
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                   {players.map((p) => (
                     <div key={p.id} className="comic-panel-sm p-2 text-xs">
@@ -97,7 +96,6 @@ export default function AdminSessions({ sessions, loading, onSelect, onDelete, o
                   ))}
                 </div>
 
-                {/* History */}
                 {state.history && state.history.length > 0 && (
                   <div>
                     <div className="text-xs font-bold mb-1">📜 Ιστορικό ({state.history.length} συμβάντα):</div>
@@ -113,7 +111,6 @@ export default function AdminSessions({ sessions, loading, onSelect, onDelete, o
                   </div>
                 )}
 
-                {/* Actions */}
                 <div className="flex gap-2 flex-wrap">
                   <ComicButton variant="magenta" size="sm" onClick={() => onSelect(s)}>
                     ✏️ ΕΠΕΞΕΡΓΑΣΙΑ ΠΑΙΚΤΡΙΩΝ

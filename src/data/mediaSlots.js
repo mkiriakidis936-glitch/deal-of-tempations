@@ -55,6 +55,8 @@ export const MODE_COVER_SLOTS = [
   { id: 'modeCover_pedi_extended', modeId: 'pedi_extended', label: 'Pedi-Glam Extended', filename: '', surfaces: ['tablet', 'forms'] },
   { id: 'modeCover_lockdown', modeId: 'lockdown', label: 'PAJAMA LOCKDOWN 18+', filename: 'cover.jpg', surfaces: ['tablet', 'forms'] },
   { id: 'modeCover_beach_bar', modeId: 'beach_bar', label: 'BEACH BAR HOME LOCKDOWN', filename: 'cover.jpg', surfaces: ['tablet', 'forms'] },
+  { id: 'modeCover_pedi_glam', modeId: 'pedi_glam', label: 'Pajama Pedi-Glam 90′', filename: '', surfaces: ['tablet', 'forms'] },
+  { id: 'modeCover_marathon_4h', modeId: 'marathon_4h', label: 'Pajama Marathon 4H', filename: '', surfaces: ['tablet', 'forms'] },
 ];
 
 // Τα δύο βίντεο έναρξης της τηλεόρασης.

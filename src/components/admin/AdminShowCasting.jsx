@@ -214,7 +214,6 @@ export default function AdminShowCasting() {
       <ComicPanel className="bg-card space-y-3">
         <div>
           <div className="font-heading text-xl text-primary">ΕΠΙΛΟΓΗ ΣΥΜΜΕΤΕΧΟΥΣΩΝ · ΕΠΙΛΟΓΗ ΕΠΕΙΣΟΔΙΟΥ</div>
-          <p className="text-sm text-foreground/65">Οι εγκεκριμένες συμμετοχές συγκεντρώνονται εδώ. Επίλεξε τη λειτουργία που θα πραγματοποιηθεί και τις παίκτριες του συγκεκριμένου επεισοδίου.</p>
         </div>
         <div className="space-y-2">
           <div className="text-xs font-bold text-foreground/60">ΕΠΙΛΟΓΕΣ ΠΑΙΚΤΡΙΩΝ ΑΝΑ MODE</div>

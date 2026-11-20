@@ -36,7 +36,7 @@ export default function TVProductionOutput({ sessionCode }) {
 
     refresh();
     const off = base44.entities.ProductionCue.subscribe((event) => {
-      if (event?.data?.sessionCode === sessionCode) refresh();
+      if (event?.type === 'resync' || event?.data?.sessionCode === sessionCode) refresh();
     }, { sessionCode });
 
     return () => {

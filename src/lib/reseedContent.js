@@ -65,8 +65,8 @@ export function buildGameContentRecords() {
 }
 
 // Διαγράφει όλο το περιεχόμενο και το ξανασπέρνει από τα static αρχεία.
-export async function reseedGameContent() {
-  const records = buildGameContentRecords();
+export async function reseedGameContent(sourceRecords) {
+  const records = sourceRecords || buildGameContentRecords();
   // καθαρισμός
   let more = true;
   while (more) {

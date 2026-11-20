@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import GameCard from '@/components/shared/GameCard';
 import ComicPanel from '@/components/comic/ComicPanel';
 import ComicButton from '@/components/comic/ComicButton';
 import BoardView from '@/components/shared/BoardView';
@@ -269,20 +270,16 @@ export default function PatrolScreen({ state, updateState, onGoToStage2, playerP
 
         {uiPhase === 'card' && state.activeCard && (
           <ComicPanel className="bg-card comic-pop">
-            <div className="text-center mb-3">
-              <div className="font-heading text-2xl text-primary">
-                {state.cardAction === 'street_truth' ? '💬 ΑΛΗΘΕΙΑ' : '🔥 ΤΟΛΜΗ'}
-              </div>
-              <div className="text-sm font-bold text-foreground/60 font-body">{state.activeCard.name}</div>
-            </div>
-            <div className="comic-panel-sm p-4 bg-secondary mb-4">
-              <p className="text-lg font-medium text-foreground font-body">{state.activeCard.text}</p>
-              {state.activeCard.duration && (
-                <div className="mt-2 text-center font-heading text-xl text-destructive">
-                  ⏱ {state.activeCard.duration}″
-                </div>
-              )}
-            </div>
+            <GameCard
+              className="mb-4"
+              kicker={state.cardAction === 'street_truth' ? 'Αλήθεια' : state.cardAction === 'street_dare' ? 'Τόλμη' : (state.cardAction || 'Κάρτα')}
+              icon={state.activeCard.icon || (state.cardAction === 'street_truth' ? '💬' : '🔥')}
+              image={state.activeCard.image}
+              accent={state.cardAction === 'street_dare' ? '#FF453A' : '#E8C26B'}
+              title={state.activeCard.name}
+              text={state.activeCard.text}
+              footRight={state.activeCard.duration ? `⏱ ${state.activeCard.duration}″` : null}
+            />
             <div className="text-center mb-3">
               <SpeakButton text={state.activeCard.text} label="🔊 ΕΚΦΩΝΗΣΗ" />
             </div>

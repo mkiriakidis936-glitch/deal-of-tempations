@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Panel, Btn, RestraintNote } from '@/components/modes/ModeShell';
 import MissionPanel from '@/components/modes/MissionPanel';
+import GameCard from '@/components/shared/GameCard';
 import {
   GATE_TOKENS, EXT_END, EXT_PORTAL, EXT_ZONES, squareType, zoneOf, ROUTES,
   EXTENDED_GLAM_CARDS, EXTENDED_CHAOS_CARDS, EXTENDED_CHAOS_MARKET_CARDS, SHOP, EXTENDED_SECRET_MISSIONS,
@@ -213,7 +214,7 @@ export default function ActBoard({ ctx, onDone }) {
         </Panel>
       )}
 
-      {mg.card && <CardStage card={mg.card} who={nameOf(mg.card.playerId)} players={players} tokens={tokens} immune={(mg.immune || []).includes(mg.card.playerId)} onResolve={resolve} onImmunity={payImmunity} stopped={stopped} onRansom={(buyerId) => { const nextTokens = { ...tokens, [buyerId]: Math.max(0, (tokens[buyerId] || 0) - 2) }; setMg({ card: null, tokens: nextTokens, ...nextTurn(turn, finished, mg.skip || []) }); log(nameOf(buyerId) + ' εξαγόρασε την κάρτα Challenge Ransom με 2 Tokens.'); }} canPay={(tokens[mg.card.playerId] || 0) >= 2} />}
+      {mg.card && <CardStage card={mg.card} who={nameOf(mg.card.playerId)} players={players} tokens={tokens} immune={(mg.immune || []).includes(mg.card.playerId)} onResolve={resolve} onImmunity={payImmunity} stopped={stopped} onRansom={(buyerId) => { const nextTokens = { ...tokens, [buyerId]: Math.max(0, (tokens[buyerId] || 0) - 2) }; setMg({ card: null, tokens: nextTokens, ...nextTurn(turn, finished, mg.skip || []) }); log(nameOf(buyerId) + ' εξαγόρασε την κάρτα Hogtie Ransom με 2 Tokens.'); }} canPay={(tokens[mg.card.playerId] || 0) >= 2} />}
 
       {!mg.card && !mg.branch && !allDone && (
         <div className="text-center">
@@ -285,9 +286,17 @@ function CardStage({ card, who, players, tokens, immune, onResolve, onImmunity, 
   const r = ROUTES[card.route];
   return (
     <Panel accent={r.color}>
-      <div className="text-xs opacity-70">{r.icon} {r.name} · {who}</div>
-      <div className="font-heading text-2xl">{card.title}</div>
-      <p className="font-body text-base sm:text-lg leading-snug">{card.text}</p>
+      <GameCard
+        kicker={r.name}
+        corner={who}
+        icon={r.icon}
+        image={card.image}
+        accent={r.color}
+        title={card.title}
+        text={card.text}
+        footLeft={card.secs ? `⏱ ${card.secs}″` : 'Χωρίς χρονόμετρο'}
+        footRight={`+${card.reward || (card.free ? 1 : r.reward)} 🪙`}
+      />
       {card.restraint && <RestraintNote />}
       {card.secs ? (
         <div className="flex items-center gap-3">
@@ -335,7 +344,7 @@ function Market({ ctx, cur }) {
       const tg = target || players.find((p) => p.id !== b)?.id;
       if (!tg) return;
       t[tg] = (t[tg] || 0) + 1;
-      log(`💸 ${nameOf(b)} δωροδόκησε την ${nameOf(tg)} να πάρει τη θέση της στο επόμενο ψηφιακό challenge`);
+      log(`💸 ${nameOf(b)} δωροδόκησε την ${nameOf(tg)} να πάρει τη θέση της στο επόμενο δύσκολο δέσιμο`);
     } else log(`🛒 ${nameOf(b)} αγόρασε «${item.name}»`);
     setMg(patch);
     sfx.ok();

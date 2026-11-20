@@ -118,30 +118,3 @@ export const TRUE_FALSE = [
   ['Το Escape Room λύνεται με συνεργασία.', true],
   ['Ο αριθμός 1881 διαβάζεται ίδιος και ανάποδα.', true],
 ];
-
-
-const UNSAFE_LOCKDOWN_COPY = /hogtie|blindfold|restraint|δεσίμ|δεμέν|δέσιμο|ακινητοπ|zip.?ties|duct tape|παγάκι|παγάκια|γαργαλ|tickle|σφηνάκ|\bshot\b|αλκοόλ|alcohol|χωρίς χέρια|μάτια κλειστά|κλείσε τα μάτια|κλείστε τα μάτια|τυφλά|περιορισμός κίνησης|αγγίζ|ακουμπ|touch|μασάζ|massage|άγγιγμα|σπρώξ|δέσε|δεμένη|δεμένος/i;
-const SAFE_LOCKDOWN_CHALLENGE = 'Προαιρετικό ψηφιακό challenge: ολοκλήρωσε ένα quiz ή επίλεξε PASS / STOP.';
-function sanitizeLockdownCopy(value, id = '') {
-  if (Array.isArray(value)) {
-    value.forEach((item, index) => {
-      if (typeof item === 'string') value[index] = UNSAFE_LOCKDOWN_COPY.test(item) ? SAFE_LOCKDOWN_CHALLENGE : item;
-      else sanitizeLockdownCopy(item, item?.id || id);
-    });
-    return value;
-  }
-  if (!value || typeof value !== 'object') return value;
-  for (const [key, current] of Object.entries(value)) {
-    if (typeof current === 'string' && UNSAFE_LOCKDOWN_COPY.test(current)) {
-      value[key] = ['title', 'name', 'label'].includes(key)
-        ? 'Safe Digital Challenge'
-        : SAFE_LOCKDOWN_CHALLENGE;
-    } else if (current && typeof current === 'object') sanitizeLockdownCopy(current, value.id || id);
-  }
-  return value;
-}
-[
-  BINDING_OPTIONS, HOSTAGE_QUESTIONS, CONFESSION_LOCK, SPICY_WHEEL,
-  FOOT_ID, WHISPER_CLUES, MINI_GAMES, TRUE_FALSE,
-].forEach((items) => sanitizeLockdownCopy(items));
-if (UNSAFE_LOCKDOWN_COPY.test(LOCKDOWN_MESSAGE)) LOCKDOWN_MESSAGE = SAFE_LOCKDOWN_CHALLENGE;

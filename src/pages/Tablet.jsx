@@ -379,15 +379,15 @@ export default function Tablet() {
           onClick={() => setOverlay('controlroom')}
           className="fixed bottom-24 right-3 z-[65] comic-boom bg-tarot-royal text-tarot-gold px-3 py-2 font-heading text-xs shadow-xl"
         >
-          MASTER CONTROL ROOM
+          ΚΕΝΤΡΟ ΕΛΕΓΧΟΥ
         </button>
         <a
           href={`/tv?code=${encodeURIComponent(session.sessionCode)}`}
           target="_blank"
           rel="noreferrer"
-          className="fixed bottom-24 left-3 z-[65] comic-boom bg-background/90 border border-primary/60 text-primary px-3 py-2 font-heading text-xs shadow-xl"
+          className="fixed bottom-36 left-3 z-[65] comic-boom bg-background/90 border border-primary/60 text-primary px-3 py-2 font-heading text-xs shadow-xl"
         >
-          LIVE TV PREVIEW ↗
+          ΠΡΟΕΠΙΣΚΟΠΗΣΗ TV ↗
         </a>
         {overlay === 'controlroom' && (
           <ControlRoom

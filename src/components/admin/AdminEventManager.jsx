@@ -85,7 +85,6 @@ export default function AdminEventManager() {
       <ComicPanel className="bg-card space-y-2">
         <h2 className="font-heading text-2xl text-primary">ΔΙΑΧΕΙΡΙΣΗ EVENT</h2>
         <p className="text-sm text-foreground/70">Το Event είναι οργανωτικό επίπεδο. Η δημιουργία του δεν ξεκινά αυτόματα GameSession.</p>
-        <p className="text-xs text-foreground/55">Η σύνδεση με GameSession εμφανίζεται μόνο για ανάγνωση.</p>
       </ComicPanel>
 
       {message && <ComicPanel className="bg-secondary p-3"><p role="status" className="text-sm">{message}</p></ComicPanel>}
@@ -130,7 +129,7 @@ export default function AdminEventManager() {
 
             <div className="grid gap-2 sm:grid-cols-2">
               <div className="rounded-lg border border-border p-3">
-                <div className="text-[10px] text-foreground/50">ROOM CODE</div>
+                <div className="text-[10px] text-foreground/50">ΚΩΔΙΚΟΣ ΔΩΜΑΤΙΟΥ</div>
                 <div className="font-mono text-xl tracking-[.2em] text-[#E8C26B]">{event.room_code}</div>
                 <div className="text-xs text-foreground/60">Αναμενόμενες συμμετοχές: {event.expectedCount ?? event.interestIds?.length ?? 0}</div>
               </div>

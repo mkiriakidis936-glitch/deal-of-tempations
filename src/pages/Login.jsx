@@ -26,7 +26,7 @@ export default function Login() {
       await base44.auth.loginViaEmailPassword(email, password);
       window.location.href = returnTo;
     } catch (err) {
-      setError(err.message || "Invalid email or password");
+      setError(err.message || "Λάθος email ή κωδικός");
     } finally {
       setLoading(false);
     }
@@ -43,12 +43,12 @@ export default function Login() {
       subtitle="Συνδέσου στον λογαριασμό σου"
       footer={
         <>
-          Don't have an account?{" "}
+          Δεν έχεις λογαριασμό;{" "}
           <Link
             to={"/register" + (returnTo !== "/" ? "?returnTo=" + encodeURIComponent(returnTo) : "")}
             className="text-primary font-medium hover:underline"
           >
-            Create one
+            Δημιούργησε έναν
           </Link>
         </>
       }
@@ -59,7 +59,7 @@ export default function Login() {
         onClick={handleGoogle}
       >
         <GoogleIcon className="w-5 h-5 mr-2" />
-        Continue with Google
+        Συνέχεια με Google
       </Button>
 
       <div className="relative mb-6">
@@ -99,7 +99,7 @@ export default function Login() {
           <div className="flex items-center justify-between">
             <Label htmlFor="password">Κωδικός</Label>
             <Link to="/forgot-password" className="text-xs text-primary hover:underline">
-              Forgot password?
+              Ξέχασες τον κωδικό;
             </Link>
           </div>
           <div className="relative">
@@ -120,10 +120,10 @@ export default function Login() {
           {loading ? (
             <>
               <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              Logging in...
+              Σύνδεση…
             </>
           ) : (
-            "Log in"
+            "Σύνδεση"
           )}
         </Button>
       </form>

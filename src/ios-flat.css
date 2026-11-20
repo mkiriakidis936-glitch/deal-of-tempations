@@ -1,0 +1,158 @@
+/* DEAL OF TEMPTATION — iOS flat layer (φορτώνεται τελευταίο).
+   Συμπαγείς επιφάνειες, χωρίς blur, χωρίς animations/transitions, ελάχιστες σκιές. */
+
+:root, .dark {
+  --glass-1: #1C1C1E;
+  --glass-2: #2C2C2E;
+  --glass-thick: #141416;
+  --glass-stroke: rgba(255, 255, 255, 0.10);
+  --glass-hi: rgba(255, 255, 255, 0.06);
+  --flat-bg: #000000;
+  --flat-surface: #1C1C1E;
+  --flat-surface-2: #2C2C2E;
+  --flat-surface-3: #3A3A3C;
+  --flat-separator: rgba(84, 84, 88, 0.65);
+  --flat-label-2: rgba(235, 235, 245, 0.62);
+  --flat-gold: #E8C26B;
+}
+
+*, *::before, *::after {
+  animation: none !important;
+  transition: none !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+  scroll-behavior: auto !important;
+}
+
+html, body { background: var(--flat-bg) !important; }
+
+/* Διακοσμητικά layers που υπήρχαν μόνο για εφέ */
+.cinv-mote, .promo-mote, .dot-tv-orb, .film-progress,
+.blur-3xl, .blur-2xl, .blur-xl, .blur-lg { display: none !important; }
+.cinv-line { opacity: 1 !important; filter: none !important; transform: none !important; }
+.film-slide.is-on img, .promo-zoom, .cinv-sealwrap { transform: none !important; }
+.cinv-beam { filter: none !important; opacity: .35 !important; }
+
+/* Συμπαγείς επιφάνειες αντί για γυαλί */
+.comic-panel, .adm-card, .adm-sheet, .adm-more, .adm-sessionbar, .adm-header, .adm-sidebar,
+.adm-tabbar, .mode-timer, [class*="glass"] {
+  box-shadow: none !important;
+}
+.comic-panel { background-color: var(--flat-surface) !important; border: 1px solid var(--glass-stroke) !important; }
+.adm-tabbar { background: #121214 !important; border-top: 1px solid var(--flat-separator) !important; }
+.adm-overlay { background: rgba(0, 0, 0, 0.72) !important; }
+
+/* Κουμπιά: καθαρό press feedback χωρίς κίνηση */
+button:active:not(:disabled), a:active, [role="button"]:active { opacity: .72; }
+.comic-boom, .adm-pill, .adm-btn, .adm-chip { box-shadow: none !important; text-shadow: none !important; }
+
+/* Χρονόμετρο-κάψουλα σε κίνδυνο: στατικό κόκκινο */
+.mode-timer.is-danger { color: #FF453A !important; border-color: rgba(255, 69, 58, .6) !important; }
+
+/* Κάρτες παιχνιδιού */
+.dt-card {
+  position: relative;
+  width: 100%;
+  max-width: 340px;
+  min-height: 380px;
+  margin-inline: auto;
+  display: flex;
+  flex-direction: column;
+  border-radius: 22px;
+  overflow: hidden;
+  background: #111113;
+  border: 1.5px solid var(--dt-card-accent, var(--flat-gold));
+  color: #F5F1E8;
+}
+.dt-card--tv { max-width: 460px; min-height: 0; aspect-ratio: 5 / 7; border-width: 3px; border-radius: 28px; }
+.dt-card--compact { max-width: 300px; min-height: 280px; border-radius: 18px; }
+.dt-card__inner {
+  position: absolute; inset: 7px; border-radius: 16px; pointer-events: none;
+  border: 1px solid color-mix(in srgb, var(--dt-card-accent, #E8C26B) 35%, transparent);
+}
+.dt-card__head {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  padding: 14px 16px 10px;
+  font-size: 11px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase;
+  color: var(--dt-card-accent, var(--flat-gold));
+}
+.dt-card__media { flex: 0 0 auto; height: 170px; margin: 0 14px; border-radius: 12px; overflow: hidden; background: #000; }
+.dt-card__media img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.dt-card__emblem {
+  flex: 0 0 auto; margin: 4px auto 6px; width: 64px; height: 64px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center; font-size: 30px;
+  background: color-mix(in srgb, var(--dt-card-accent, #E8C26B) 14%, #0b0b0c);
+  border: 1px solid color-mix(in srgb, var(--dt-card-accent, #E8C26B) 55%, transparent);
+}
+.dt-card__body { flex: 1 1 auto; display: flex; flex-direction: column; gap: 8px; padding: 6px 18px 12px; text-align: center; overflow-y: auto; }
+.dt-card__title { font-family: var(--font-display); font-size: 1.35rem; line-height: 1.15; font-weight: 700; color: #FFF6DE; }
+.dt-card__text { font-size: .98rem; line-height: 1.4; color: rgba(245, 241, 232, .88); }
+.dt-card--tv .dt-card__title { font-size: 2.1rem; }
+.dt-card--tv .dt-card__text { font-size: 1.35rem; }
+.dt-card--compact .dt-card__title { font-size: 1.05rem; }
+.dt-card--compact .dt-card__text { font-size: .85rem; }
+.dt-card__foot {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  padding: 10px 16px 14px; font-size: 12px; font-weight: 600;
+  border-top: 1px solid rgba(255, 255, 255, .08);
+  color: var(--flat-label-2);
+}
+.dt-card__badge {
+  padding: 3px 10px; border-radius: 999px; font-weight: 700;
+  background: color-mix(in srgb, var(--dt-card-accent, #E8C26B) 18%, transparent);
+  color: var(--dt-card-accent, var(--flat-gold));
+}
+.dt-card-actions { max-width: 340px; margin-inline: auto; }
+
+/* Admin */
+img.adm-mark { object-fit: cover; background: #0B1226 !important; padding: 0; }
+#admin-root [class^="adm-"], #admin-root [class*=" adm-"] { box-shadow: none !important; }
+
+/* Tablet: χώρος για τα πλωτά κουμπιά */
+.mode-shell { padding-bottom: 13rem !important; }
+
+/* ===== Native αίσθηση παιχνιδιού (Tablet /, TV /tv, κινητό /play) ===== */
+html.app-game, html.app-game body {
+  overscroll-behavior: none;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+html.app-game input, html.app-game textarea, html.app-game [contenteditable="true"] {
+  -webkit-user-select: text;
+  user-select: text;
+}
+html.app-game img, html.app-game video { -webkit-user-drag: none; }
+html.app-game button, html.app-game [role="button"] { min-height: 44px; }
+
+/* Πλωτά κουμπιά πάνω/κάτω: πάντα έξω από Dynamic Island και home indicator */
+.fixed.top-3 { top: calc(env(safe-area-inset-top, 0px) + 0.75rem); }
+.fixed.top-16 { top: calc(env(safe-area-inset-top, 0px) + 4rem); }
+.fixed.bottom-3 { bottom: calc(env(safe-area-inset-bottom, 0px) + 0.75rem); }
+.fixed.bottom-20 { bottom: calc(env(safe-area-inset-bottom, 0px) + 5rem); }
+.fixed.bottom-24 { bottom: calc(env(safe-area-inset-bottom, 0px) + 6rem); }
+.fixed.bottom-36 { bottom: calc(env(safe-area-inset-bottom, 0px) + 9rem); }
+.fixed.right-3 { right: calc(env(safe-area-inset-right, 0px) + 0.75rem); }
+.fixed.left-3 { left: calc(env(safe-area-inset-left, 0px) + 0.75rem); }
+
+/* iPhone 17 Pro (402pt) / Pro Max (440pt): άνετα περιθώρια, χωρίς οριζόντιο scroll */
+@media (max-width: 440px) {
+  .mode-shell { padding-left: 12px !important; padding-right: 12px !important; }
+  .mode-large-title { font-size: 1.5rem; }
+  .mode-timer { font-size: 1.75rem !important; }
+  .dt-card { max-width: 100%; }
+}
+
+/* MacBook (1280–1800px): περιεχόμενο κεντραρισμένο, όχι απλωμένο */
+@media (min-width: 1280px) {
+  .mode-shell > .max-w-5xl { max-width: 72rem; }
+  .dt-card { max-width: 380px; }
+}
+
+img.dot-tv-brand-mark { object-fit: cover; padding: 0; border-radius: 50%; }
+
+/* Χωρίς blur, οι «κολλημένες» μπάρες χρειάζονται συμπαγές φόντο */
+header.sticky, .sticky.top-0, header.fixed, nav.fixed, .fixed.inset-x-0.top-0 {
+  background-color: rgba(0, 0, 0, 0.96) !important;
+}
+.fixed.inset-0[class*="bg-black/"], .fixed.inset-0[class*="bg-background/"] { background-color: rgba(0, 0, 0, 0.9) !important; }

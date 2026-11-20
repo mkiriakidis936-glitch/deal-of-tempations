@@ -11,13 +11,9 @@ export default function ModeShell({ modeId, ctx, state, act, children, onQR, onE
   const [showLog, setShowLog] = useState(false);
   const { mg, stopped, toggleStop, centralStopped } = ctx;
   useEffect(() => { setGameStopActive(stopped); }, [stopped]);
-  useTick(!!mg.timer && showTimer);
-  const left = timerLeft(mg.timer);
-  const danger = mg.timer && left <= 60;
 
   return (
     <div className="mode-shell min-h-screen p-3 pb-28 text-foreground" style={{ background: theme.bg }}>
-      <GameDurationClock state={state} />
       <div className="max-w-5xl mx-auto space-y-3">
         <header className="flex items-center justify-between gap-3 pr-28">
           <div className="min-w-0">
@@ -27,13 +23,10 @@ export default function ModeShell({ modeId, ctx, state, act, children, onQR, onE
             </div>
             {act && <div className="text-xs sm:text-sm opacity-70 font-body">{actTitle}</div>}
           </div>
-          {showTimer && mg.timer && (
-            <div
-              className={`mode-timer text-3xl sm:text-5xl ${danger ? 'is-danger comic-pulse' : ''}`}
-            >
-              {fmt(left)}
-            </div>
-          )}
+          <div className="flex items-center gap-2">
+            <GameDurationClock state={state} inline />
+            {showTimer && mg.timer && <ModeTimer timer={mg.timer} />}
+          </div>
         </header>
 
         {children}
@@ -73,7 +66,7 @@ export default function ModeShell({ modeId, ctx, state, act, children, onQR, onE
         <div className="mode-stop-overlay fixed inset-0 z-[60] flex flex-col items-center justify-center gap-4 p-6 text-center">
           <div className="font-display text-5xl sm:text-7xl text-white comic-pulse">⏸ ΣΤΟΠ</div>
           <p className="text-lg sm:text-2xl font-body text-white max-w-xl">
-            Όλα σταματούν αμέσως. Όλες επιβεβαιώνουν ότι είναι καλά και συνεχίζετε μόνο όταν όλες συμφωνούν.
+            Όλα σταματούν. Λύστε αμέσως κάθε δέσιμο, κατεβάστε τις μάσκες και ελέγξτε ότι όλες είναι ΟΚ πριν συνεχίσετε.
           </p>
           {centralStopped
             ? <div className="rounded-lg bg-black/40 px-5 py-3 text-sm text-white">Η παύση ελέγχεται αποκλειστικά από τον Director.</div>
@@ -100,11 +93,16 @@ export default function ModeShell({ modeId, ctx, state, act, children, onQR, onE
   );
 }
 
-// Κοινή υπενθύμιση ασφάλειας για κάθε ψηφιακή πρόκληση.
+function ModeTimer({ timer }) {
+  useTick(true, 500);
+  const left = timerLeft(timer);
+  return <div className={`mode-timer text-3xl sm:text-5xl ${left <= 60 ? 'is-danger' : ''}`}>{fmt(left)}</div>;
+}
+
 export function RestraintNote() {
   return (
     <div className="rounded-md border border-amber-400/60 bg-amber-500/10 px-3 py-2 text-xs sm:text-sm text-amber-100 font-body">
-      Οι προκλήσεις είναι προαιρετικές, χωρίς σωματική επαφή ή περιορισμό κίνησης. PASS και STOP είναι πάντα διαθέσιμα.
+      🎀 Δέσιμο: χαλαρά και ποτέ σε σφιχτό κόμπο, ψαλίδι/εύκολη λύση δίπλα σου, ποτέ μόνη. Όποια πει «ΣΤΟΠ» λύνεται αμέσως.
     </div>
   );
 }

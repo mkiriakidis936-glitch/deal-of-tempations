@@ -472,16 +472,28 @@ const PLAYER_PRESENCE_TTL_MS = 45_000;
 function broadcast(entity, event) {
   const set = streams.get(entity);
   if (!set) return;
+  const sent = new Map();
   for (const subscriber of set) {
     if (subscriber.sessionCode && event.data?.sessionCode !== subscriber.sessionCode) continue;
+    const dedupeKey = subscriber.isPublic && entity === 'GameSession' ? `${subscriber.playerId || ''}` : '';
+    const written = sent.has(subscriber.res) ? sent.get(subscriber.res) : null;
+    if (written && written.has(dedupeKey)) continue;
     const delivered = subscriber.isPublic && entity === 'GameSession'
       ? { ...event, data: sanitizePublicSession(event.data, subscriber.playerId) }
       : event;
-    subscriber.res.write(`data: ${JSON.stringify(delivered)}\n\n`);
+    subscriber.res.write(`data: ${JSON.stringify({ ...delivered, entity })}\n\n`);
+    if (written) written.add(dedupeKey); else sent.set(subscriber.res, new Set([dedupeKey]));
   }
 }
 // keep proxies (Railway) from closing idle connections
-setInterval(() => { for (const set of streams.values()) for (const subscriber of set) subscriber.res.write(': ping\n\n'); }, 25000).unref();
+setInterval(() => {
+  const seen = new Set();
+  for (const set of streams.values()) for (const subscriber of set) {
+    if (seen.has(subscriber.res)) continue;
+    seen.add(subscriber.res);
+    subscriber.res.write(': ping\n\n');
+  }
+}, 25000).unref();
 
 
 
@@ -1217,6 +1229,45 @@ export function entityRoutes() {
     res.json({ players: connected });
   });
 
+  // Μία κοινή σύνδεση για πολλές οντότητες: ο browser επιτρέπει λίγες ταυτόχρονες συνδέσεις ανά server.
+  r.get('/multi/stream', async (req, res) => {
+    let subs;
+    try { subs = JSON.parse(String(req.query.subs || '[]')); } catch { return res.status(400).json({ error: 'Invalid subscriptions' }); }
+    if (!Array.isArray(subs) || !subs.length || subs.length > 60) return res.status(400).json({ error: 'Invalid subscriptions' });
+    const admin = isAdmin(req);
+    const accepted = [];
+    for (const item of subs) {
+      const entity = String(item?.entity || '');
+      if (!ENTITIES.includes(entity)) continue;
+      if (needsAdmin(entity, 'read') && !admin) continue;
+      let sessionCode = String(item?.sessionCode || '').trim().toUpperCase() || null;
+      let playerId = String(item?.playerId || '') || null;
+      if (entity === 'GameSession') {
+        if (!admin && !sessionCode) continue;
+        if (sessionCode) {
+          const { rows } = await query("SELECT data FROM records WHERE entity = 'GameSession' AND data->>'sessionCode' = $1 LIMIT 1", [sessionCode]);
+          if (!rows[0]) continue;
+          if (!admin && playerId && !(rows[0].data?.state?.players || []).some((player) => player.id === playerId)) continue;
+        }
+      } else {
+        sessionCode = null;
+        playerId = null;
+      }
+      accepted.push({ entity, sessionCode, playerId });
+    }
+    res.set({ 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache, no-transform', Connection: 'keep-alive', 'X-Accel-Buffering': 'no' });
+    res.flushHeaders();
+    res.write('retry: 2000\n\n');
+    const registered = accepted.map(({ entity, sessionCode, playerId }) => {
+      if (!streams.has(entity)) streams.set(entity, new Set());
+      const subscriber = { res, sessionCode, playerId, isPublic: !admin };
+      streams.get(entity).add(subscriber);
+      return [entity, subscriber];
+    });
+    res.write(`event: ready\ndata: ${JSON.stringify({ accepted: accepted.map((item) => item.entity) })}\n\n`);
+    req.on('close', () => registered.forEach(([entity, subscriber]) => streams.get(entity)?.delete(subscriber)));
+  });
+
   // --- realtime stream (EventSource can't send headers; admins authenticate with a one-time ?ticket= from POST /api/entities/stream-ticket) ---
   r.get('/:entity/stream', guard('read'), async (req, res) => {
     let sessionCode = null;
@@ -1248,6 +1299,10 @@ export function entityRoutes() {
     let effectiveSort = sort;
     let effectiveLimit = limit;
     let effectiveSkip = skip;
+    if (req.entity === 'GameSession' && isAdmin(req) && isObject(effectiveQuery) && 'playerId' in effectiveQuery) {
+      const { playerId: _viewer, ...rest } = effectiveQuery;
+      effectiveQuery = rest;
+    }
     if (req.entity === 'GameSession' && !isAdmin(req)) {
       const keys = Object.keys(effectiveQuery);
       if (keys.some((key) => !['sessionCode', 'playerId'].includes(key)) ||

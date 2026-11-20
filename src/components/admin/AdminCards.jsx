@@ -4,8 +4,8 @@ import ComicButton from '@/components/comic/ComicButton';
 import ContentCrudTab from '@/components/admin/content/ContentCrudTab';
 import { CONTENT_CATEGORIES } from '@/components/admin/content/contentSchemas';
 import { reseedGameContent } from '@/lib/reseedContent';
+import { staticGameContentRecords } from '@/lib/gameContentStore';
 
-// Δομικές/διαμορφωτικές κατηγορίες — όχι κάρτες περιεχομένου.
 const STRUCTURAL_IDS = new Set([
   'board',
   'square_types',
@@ -33,7 +33,7 @@ export default function AdminCards() {
     setReseeding(true);
     setReseedMsg('');
     try {
-      const n = await reseedGameContent();
+      const n = await reseedGameContent(staticGameContentRecords());
       setReseedMsg(`✓ Επανασπάρθηκαν ${n} εγγραφές.`);
     } catch (e) {
       setReseedMsg('✗ Σφάλμα: ' + (e.message || 'αποτυχία'));

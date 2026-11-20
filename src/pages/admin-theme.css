@@ -1,14 +1,3 @@
-/* ==========================================================================
-   ADMIN · iOS 27 (γραφίτης + υαλώδη υλικά, χρυσό ΜΟΝΟ ως accent)
-   Μόνο το Admin: κάθε κανόνας ξεκινά από #admin-root (ή από dialogs που ανοίγουν μέσα από αυτό).
-   Site / Tablet / TV / Κινητά δεν επηρεάζονται. Δεν αλλάζει καμία λειτουργία — μόνο εμφάνιση.
-
-   Χρώμα:  κείμενο λευκό / γκρι · υλικά ουδέτερος γραφίτης · hairlines λευκά 10%.
-   Χρυσό:  κύρια κουμπιά, focus ring, συνδέσμους, μικρές ενδείξεις, εικονίδιο ενεργού μενού.
-   Κόκκινο: μόνο κίνδυνος / διαγραφή.
-   ========================================================================== */
-
-/* ---------- 1 · TOKENS ---------- */
 :root:has(#admin-root) {
   --background: 0 0% 0%;
   --foreground: 240 10% 96%;
@@ -58,7 +47,6 @@
   color-scheme: dark;
 }
 
-/* ---------- 2 · CANVAS ---------- */
 #admin-root {
   background-color: #000 !important;
   background-image:
@@ -77,18 +65,15 @@
 #admin-root *::-webkit-scrollbar-thumb { background: #48484a; border-radius: 99px; border: 2px solid #000; }
 #admin-root *::-webkit-scrollbar-track { background: transparent; }
 
-/* ---------- 3 · TYPOGRAPHY ---------- */
 #admin-root .font-heading,
 #admin-root h1, #admin-root h2, #admin-root h3 { font-family: var(--adm-font-display); letter-spacing: -0.014em; }
 #admin-root .comic-text-stroke, #admin-root .comic-text-stroke-thin { -webkit-text-stroke: 0 !important; text-shadow: none !important; }
-/* τίτλοι panels: λευκοί (πριν ήταν χρυσοί) */
 #admin-root .font-heading.text-primary,
 #admin-root .font-heading[class*="text-tarot-gold"],
 #admin-root .font-heading[class*="text-[#e5c76b]"],
 #admin-root .font-heading[class*="text-[#d4af37]"] { color: var(--adm-text) !important; }
 #admin-root .text-foreground\/60, #admin-root .text-foreground\/70, #admin-root .text-muted-foreground { color: var(--adm-text-2); }
 
-/* ---------- 4 · SURFACES (Liquid Glass, ουδέτερο) ---------- */
 #admin-root .comic-panel,
 #admin-root .comic-panel-sm {
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.015) 40%), var(--adm-glass) !important;
@@ -114,13 +99,11 @@
 #admin-root .border-2, #admin-root .border-4 { border-width: 1px !important; }
 #admin-root [class*="bg-secondary"]:not(button):not(select):not(input):not(.comic-panel) { background-color: var(--adm-fill) !important; }
 #admin-root [class*="bg-black/"]:not(button):not(select):not(input) { background-color: rgba(0, 0, 0, 0.5) !important; }
-/* επιλεγμένο στοιχείο (π.χ. surface tile): εδώ το χρυσό είναι σωστό — δείχνει «επιλογή» */
 #admin-root [class*="border-primary"] { border-color: var(--adm-gold-line) !important; }
 #admin-root [class*="bg-primary/"]:not(button) { background-color: var(--adm-gold-soft) !important; }
 #admin-root hr, #admin-root [class*="border-t"], #admin-root [class*="border-b"] { border-color: rgba(255, 255, 255, 0.08) !important; }
 #admin-root .border-dashed { border-style: dashed !important; border-color: var(--adm-line-strong) !important; }
 
-/* ---------- 5 · BUTTONS ---------- */
 #admin-root .comic-boom {
   min-height: 40px; padding-inline: 16px; border-radius: 999px !important;
   font-family: var(--adm-font); font-size: 12.5px; font-weight: 600; letter-spacing: 0.005em; text-transform: none !important;
@@ -133,7 +116,6 @@
 #admin-root .comic-boom:hover { background: var(--adm-fill-3) !important; border-color: var(--adm-line-strong) !important; transform: none; }
 #admin-root .comic-boom:active { transform: scale(0.965); }
 #admin-root .comic-boom:focus-visible, #admin-root button:focus-visible, #admin-root a:focus-visible { outline: 2px solid var(--adm-gold); outline-offset: 2px; }
-/* ΚΥΡΙΟ κουμπί = το βασικό σημείο χρυσού */
 #admin-root .comic-boom[class~="bg-primary"],
 #admin-root .comic-boom[class*="tarot-parchment"] {
   color: #000 !important;
@@ -143,7 +125,6 @@
 }
 #admin-root .comic-boom[class~="bg-primary"]:hover { filter: brightness(1.07); }
 #admin-root .comic-boom[class~="bg-primary"] *, #admin-root .comic-boom[class*="tarot-parchment"] * { color: #000 !important; }
-/* κίνδυνος / διαγραφή: το ΜΟΝΟ κόκκινο */
 #admin-root .comic-boom[class*="tarot-crimson"], #admin-root .comic-boom[class*="bg-red"], #admin-root .comic-boom[class*="bg-destructive"] {
   color: #FF8E86 !important; background: rgba(255, 69, 58, 0.12) !important; border-color: rgba(255, 69, 58, 0.5) !important;
 }
@@ -153,7 +134,6 @@
 #admin-root button:not(.comic-boom):not(:disabled):active { transform: scale(0.985); }
 #admin-root button, #admin-root select, #admin-root [role="button"] { touch-action: manipulation; }
 
-/* ---------- 6 · FORM CONTROLS ---------- */
 #admin-root input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="color"]),
 #admin-root select, #admin-root textarea {
   min-height: 40px; color: var(--adm-text) !important;
@@ -185,7 +165,6 @@
 #admin-root :disabled { cursor: not-allowed; }
 #admin-root label { color: var(--adm-text-2); }
 
-/* ---------- 7 · TABLES ---------- */
 #admin-root table { border-collapse: separate !important; border-spacing: 0; width: 100%; }
 #admin-root th {
   color: var(--adm-text-2) !important; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; text-align: left;
@@ -194,13 +173,11 @@
 #admin-root td, #admin-root th { border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important; padding: 10px 12px; }
 #admin-root tr:hover td { background: var(--adm-fill); }
 
-/* ---------- 8 · TABS (segmented control) ---------- */
 #admin-root [role="tablist"]:not(.adm-tabbar) { background: var(--adm-fill); border: 1px solid var(--adm-line); border-radius: 999px; padding: 4px; gap: 2px; }
 #admin-root [role="tablist"]:not(.adm-tabbar) [role="tab"] { border-radius: 999px !important; font-weight: 600; }
 #admin-root [role="tablist"]:not(.adm-tabbar) [aria-selected="true"],
 #admin-root [role="tablist"]:not(.adm-tabbar) [data-state="active"] { color: var(--adm-text) !important; background: var(--adm-fill-3) !important; box-shadow: inset 0 1px 0 var(--adm-hi); }
 
-/* ---------- 9 · ADMIN CHROME ---------- */
 .adm-shell { max-width: 88rem; margin-inline: auto; display: flex; flex-direction: column; gap: 14px; }
 
 .adm-header {
@@ -245,7 +222,6 @@
 @media (min-width: 1024px) { .adm-sidebar { display: block; } }
 .adm-content { flex: 1; min-width: 0; width: 100%; }
 
-/* διπλό πλαίσιο: παλιοί κανόνες `.admin-root nav` έβαζαν δεύτερο πλαίσιο μέσα στο panel */
 #admin-root .adm-sidebar nav, #admin-root .adm-more nav, #admin-root .adm-more section {
   border: 0 !important; background: transparent !important; box-shadow: none !important;
   -webkit-backdrop-filter: none !important; backdrop-filter: none !important; padding: 0 !important; border-radius: 0 !important;
@@ -262,7 +238,6 @@
 .adm-navitem svg { flex: none; width: 18px; height: 18px; color: var(--adm-text-2); stroke-width: 1.9; transition: color 0.2s; }
 .adm-navitem:hover { background: var(--adm-fill-2); }
 .adm-navitem:hover svg { color: var(--adm-text); }
-/* ενεργό: ουδέτερη «επιλογή» iOS + χρυσό εικονίδιο (όχι γεμάτο χρυσό κουμπί) */
 .adm-navitem[aria-current="page"] { background: var(--adm-fill-3); border-color: var(--adm-line); box-shadow: inset 0 1px 0 var(--adm-hi); }
 .adm-navitem[aria-current="page"] svg { color: var(--adm-gold); }
 .adm-navitem > span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -287,7 +262,6 @@
 .adm-chip:hover { background: var(--adm-fill-3); border-color: var(--adm-line-strong); }
 .adm-chip:active { transform: scale(0.96); }
 
-/* Αναζήτηση (sheet) */
 .adm-overlay { position: fixed; inset: 0; z-index: 100; padding: 12px; background: rgba(0, 0, 0, 0.66); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); }
 .adm-sheet {
   margin: 8vh auto 0; max-width: 40rem; padding: 14px; border-radius: 28px;
@@ -300,7 +274,6 @@
 .adm-result small { font-size: 11px; color: var(--adm-text-3); }
 .adm-empty { padding: 28px 12px; text-align: center; font-size: 13px; color: var(--adm-text-3); }
 
-/* Κινητό: πλωτή κάψουλα πλοήγησης */
 .adm-tabbar-wrap { position: fixed; z-index: 40; left: 0; right: 0; bottom: 0; display: flex; justify-content: center; padding: 0 12px calc(env(safe-area-inset-bottom, 0px) + 10px); pointer-events: none; }
 @media (min-width: 1024px) { .adm-tabbar-wrap { display: none; } }
 .adm-tabbar {
@@ -337,7 +310,6 @@
   #admin-root .comic-panel { border-radius: 20px !important; }
 }
 
-/* ---------- 9b · ΚΕΝΤΡΟ ΕΛΕΓΧΟΥ (AdminOverview) ---------- */
 .adm-hero {
   position: relative; isolation: isolate; overflow: hidden; padding: clamp(20px, 3vw, 32px); border-radius: 28px;
   background: radial-gradient(110% 130% at 100% 0%, rgba(232, 194, 107, 0.10), transparent 55%), linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.01)), var(--adm-glass-thick);
@@ -395,7 +367,6 @@
 .adm-quick:hover { transform: translateY(-2px); border-color: var(--adm-line-strong); background: var(--adm-fill-2); }
 .adm-quick:active { transform: scale(0.985); }
 
-/* Παλιά components είχαν σκληροκωδικοποιημένα χρώματα: εδώ ενοποιούνται με το νέο θέμα σε ΟΛΕΣ τις ενότητες */
 #admin-root [class*="text-[#e5c76b]"] { color: var(--adm-text-2); }
 #admin-root [class*="text-[#e8c26b]" i], #admin-root [class*="text-[#b99a45]" i] { color: var(--adm-text-2) !important; }
 #admin-root [class*="text-[#f4e6bd]" i] { color: var(--adm-text) !important; }
@@ -409,7 +380,6 @@
   color: #000 !important; background: linear-gradient(180deg, #F5DC9A, #E8C26B 55%, #D4A94A) !important; border-color: rgba(255, 233, 160, 0.7) !important; border-radius: 999px;
 }
 
-/* ---------- 10 · DIALOGS / POPOVERS (portals) ---------- */
 :root:has(#admin-root) [role="dialog"],
 :root:has(#admin-root) [role="alertdialog"],
 :root:has(#admin-root) [data-radix-popper-content-wrapper] > * {
@@ -419,7 +389,6 @@
   box-shadow: inset 0 1px 0 var(--adm-hi), 0 40px 100px -30px #000 !important;
 }
 
-/* ---------- 11 · ACCESSIBILITY ---------- */
 @media (prefers-reduced-motion: reduce) {
   #admin-root *, .adm-pill, .adm-chip, .adm-navitem, .adm-tab, .adm-btn, .adm-quick { transition: none !important; animation: none !important; }
 }

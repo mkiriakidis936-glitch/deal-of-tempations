@@ -8,7 +8,6 @@ function blankItem(fields) {
   const obj = {};
   fields.forEach((f) => {
     if (f.dataKey) {
-      // nested ultra.duration / ultra.desc
       const [parent, child] = f.dataKey.split('.');
       obj[parent] = obj[parent] || {};
       obj[parent][child] = f.type === 'number' ? '' : '';
@@ -156,7 +155,6 @@ export default function ContentCrudTab({ category }) {
     setError('');
     try {
       let payload = { ...editing.data };
-      // for json shape, validate parse
       if (shape === 'json') {
         try { JSON.parse(payload.json || '{}'); } catch (e) {
           setError('Μη έγκυρο JSON: ' + e.message);
@@ -214,7 +212,6 @@ export default function ContentCrudTab({ category }) {
       {error && <div className="text-xs text-destructive font-bold">{error}</div>}
       <ComicPanel className="bg-card space-y-2">
         <div className="font-heading text-base">🕘 ΙΣΤΟΡΙΚΟ ΕΚΔΟΣΕΩΝ — {label}</div>
-        <p className="text-xs text-foreground/60">Αποθηκεύονται έως 30 προηγούμενες εκδόσεις στοιχείων αυτής της κατηγορίας.</p>
         {versions.length === 0 ? <div className="text-xs text-foreground/50">Δεν υπάρχουν προηγούμενες εκδόσεις.</div> : versions.map((version) => (
           <div key={version.id} className="flex flex-wrap items-center justify-between gap-2 rounded border border-border/40 p-2">
             <div className="text-xs">{new Date(version.createdAt).toLocaleString('el-GR')} · {version.itemId}</div>

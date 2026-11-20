@@ -181,7 +181,7 @@ export default function GrandJuryControl({ state, updateState, onClose }) {
           })}
           {manualLogs.length > 0 && (
             <ComicPanel className="bg-primary/20">
-              <div className="font-heading text-lg text-primary">📝 ΧΕΙΡΟΚΙΝΗΤΑ LOGS</div>
+              <div className="font-heading text-lg text-primary">📝 ΧΕΙΡΟΚΙΝΗΤΕΣ ΣΗΜΕΙΩΣΕΙΣ</div>
               <div className="space-y-1 mt-2">
                 {manualLogs.map((m, i) => (
                   <div key={i} className="text-sm comic-panel-sm p-2 bg-card text-foreground font-body">{m.text}</div>

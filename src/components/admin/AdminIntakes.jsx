@@ -79,7 +79,6 @@ export default function AdminIntakes() {
     } catch (e) { console.error('Delete error', e); setMsg({ ok: false, text: e.message || 'Η διαγραφή απέτυχε.' }); }
   }
 
-  // Compact summary
   const nailCounts = {};
   intakes.forEach((i) => { if (i.nailColor) nailCounts[i.nailColor] = (nailCounts[i.nailColor] || 0) + 1; });
   const shoeSizes = intakes.map((i) => i.shoeSize).filter(Boolean);
@@ -96,7 +95,6 @@ export default function AdminIntakes() {
     <div className="space-y-3">
       {msg && <ComicPanel className={msg.ok ? 'bg-tarot-forest' : 'bg-tarot-crimson'}><div className="text-sm font-bold">{msg.text}</div></ComicPanel>}
 
-      {/* Compact counter strip */}
       <ComicPanel className="bg-primary/20 p-3">
         <div className="flex items-center justify-between flex-wrap gap-2">
           <div className="font-heading text-lg">📝 {intakes.length} παίκτριες · {bachIntakes.length} intake</div>
@@ -113,7 +111,6 @@ export default function AdminIntakes() {
         )}
       </ComicPanel>
 
-      {/* Sub-tab toggle */}
       <div className="flex gap-2">
         <ComicButton variant={subtab === 'players' ? 'magenta' : 'white'} size="sm" onClick={() => setSubtab('players')}>
           👥 Παίκτριες ({intakes.length})
@@ -126,7 +123,6 @@ export default function AdminIntakes() {
         </ComicButton>
       </div>
 
-      {/* Players sub-tab */}
       {subtab === 'players' && (
         <>
           {intakes.length === 0 ? (
@@ -177,7 +173,6 @@ export default function AdminIntakes() {
         </>
       )}
 
-      {/* A&H Intake sub-tab */}
       {subtab === 'intake' && (
         <>
           {bachIntakes.length === 0 ? (
@@ -220,7 +215,6 @@ export default function AdminIntakes() {
         </>
       )}
 
-      {/* Pajama Party sub-tab */}
       {subtab === 'pajama' && <PajamaIntakeList />}
     </div>
   );

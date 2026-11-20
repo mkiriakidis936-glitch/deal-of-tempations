@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import confetti from 'canvas-confetti';
 import { Panel, Btn } from '@/components/modes/ModeShell';
 import { MORNING_CLUES, DEFAULT_MORNING_CODE, VIP_VAULT } from '@/data/modes/extendedContent';
 import { pick, sfx } from '@/lib/modeKit';
@@ -29,7 +28,6 @@ export default function ActMorning({ ctx, onFinish }) {
       setMg({ vaultUnlocked: true, morningSolvedAt: Date.now(), playerAction: null });
       log(`☀️ ${nameOf(action.playerId)} έλυσε τον Coffee Code από το κινητό`);
       sfx.ok();
-      confetti({ particleCount: 160, spread: 90, origin: { y: 0.6 }, colors: ['#E8C26B', '#F0B85A', '#ffffff'] });
     } else {
       setMg({ playerAction: null });
       log(`☀️ ${nameOf(action.playerId)} δοκίμασε λανθασμένο Coffee Code`);
@@ -47,7 +45,6 @@ export default function ActMorning({ ctx, onFinish }) {
       setMg({ vaultUnlocked: true, morningSolvedAt: Date.now() });
       log('☀️ Ο Coffee Code λύθηκε — VIP VAULT UNLOCKED');
       sfx.ok();
-      confetti({ particleCount: 160, spread: 90, origin: { y: 0.6 }, colors: ['#E8C26B', '#F0B85A', '#ffffff'] });
     } else {
       setWrong(true);
       sfx.fail();

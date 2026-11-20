@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
-import { LayoutDashboard, Inbox, Ticket, Settings, LayoutGrid, X } from 'lucide-react';
+import { LayoutDashboard, Inbox, Radio, Layers, LayoutGrid, X } from 'lucide-react';
 
-// Desktop: κάθετο γυάλινο μενού σε εννέα ομάδες
 export default function AdminNav({ groups, active, onChange }) {
   return (
     <nav aria-label="Πλοήγηση διαχείρισης">
@@ -31,12 +30,11 @@ export default function AdminNav({ groups, active, onChange }) {
 
 const PRIMARY_TABS = [
   { id: 'dashboard', label: 'Αρχική', icon: LayoutDashboard },
+  { id: 'show', label: 'Live', icon: Radio },
+  { id: 'modes', label: 'Κάρτες', icon: Layers },
   { id: 'inbox', label: 'Αιτήσεις', icon: Inbox },
-  { id: 'events', label: 'Events', icon: Ticket },
-  { id: 'settings', label: 'Ρυθμίσεις', icon: Settings },
 ];
 
-// Κινητό: βασικές συντομεύσεις + πλήρες μενού για όλες τις υπόλοιπες ενότητες
 export function AdminTabBar({ groups, active, onChange }) {
   const [moreOpen, setMoreOpen] = useState(false);
   const inPrimary = PRIMARY_TABS.some((tab) => tab.id === active);

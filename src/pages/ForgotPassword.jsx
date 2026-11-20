@@ -38,7 +38,7 @@ export default function ForgotPassword() {
     >
       {sent ? (
         <p className="text-sm text-foreground text-center">
-          If an account exists with that email, you'll receive a password reset link shortly.
+          Αν υπάρχει λογαριασμός με αυτό το email, θα λάβεις σύντομα σύνδεσμο επαναφοράς κωδικού.
         </p>
       ) : (
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -63,10 +63,10 @@ export default function ForgotPassword() {
             {loading ? (
               <>
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                Sending...
+                Αποστολή…
               </>
             ) : (
-              "Send reset link"
+              "Αποστολή συνδέσμου"
             )}
           </Button>
         </form>

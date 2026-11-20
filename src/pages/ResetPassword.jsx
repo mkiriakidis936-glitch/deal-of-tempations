@@ -20,7 +20,7 @@ export default function ResetPassword() {
     e.preventDefault();
     setError("");
     if (newPassword !== confirmPassword) {
-      setError("Passwords do not match");
+      setError("Οι κωδικοί δεν ταιριάζουν");
       return;
     }
     setLoading(true);
@@ -28,7 +28,7 @@ export default function ResetPassword() {
       await base44.auth.resetPassword({ resetToken, newPassword });
       window.location.href = "/login";
     } catch (err) {
-      setError(err.message || "Failed to reset password");
+      setError(err.message || "Η επαναφορά κωδικού απέτυχε");
     } finally {
       setLoading(false);
     }
@@ -42,12 +42,12 @@ export default function ResetPassword() {
         subtitle="Ο σύνδεσμος επαναφοράς λείπει ή δεν ισχύει"
         footer={
           <Link to="/forgot-password" className="text-primary font-medium hover:underline">
-            Request a new link
+            Ζήτησε νέο σύνδεσμο
           </Link>
         }
       >
         <p className="text-sm text-foreground text-center">
-          The link you used appears to be incomplete. Please request a new password reset email.
+          Ο σύνδεσμος φαίνεται ελλιπής. Ζήτησε νέο email επαναφοράς κωδικού.
         </p>
       </AuthLayout>
     );
@@ -102,10 +102,10 @@ export default function ResetPassword() {
           {loading ? (
             <>
               <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              Resetting...
+              Επαναφορά…
             </>
           ) : (
-            "Reset password"
+            "Επαναφορά κωδικού"
           )}
         </Button>
       </form>

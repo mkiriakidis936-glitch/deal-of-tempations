@@ -34,45 +34,100 @@ export async function request(method, path, body) {
   return data;
 }
 
-// ---------- realtime (Server-Sent Events, one shared connection per entity) ----------
-const streams = new Map(); // entity -> { es, listeners:Set }
+// ---------- realtime: ΜΙΑ κοινή σύνδεση SSE για όλες τις οντότητες της σελίδας ----------
+const subscriptions = new Map();
+const live = { es: null, pending: null, timer: null, retry: 0, opened: false, signature: '', scheduled: null };
+
+const emitTo = (sub, event) => sub.listeners.forEach((fn) => { try { fn(event); } catch (e) { console.error(e); } });
+
+function matches(sub, event) {
+  if (sub.entity !== event.entity) return false;
+  if (sub.sessionCode && event.data?.sessionCode && event.data.sessionCode !== sub.sessionCode) return false;
+  return true;
+}
+
+function closeLive() {
+  if (live.timer) { clearTimeout(live.timer); live.timer = null; }
+  live.pending?.close();
+  live.pending = null;
+  live.es?.close();
+  live.es = null;
+  live.signature = '';
+}
+
+async function openLive(reason) {
+  if (live.timer) { clearTimeout(live.timer); live.timer = null; }
+  const subs = [...subscriptions.values()].map(({ entity, sessionCode, playerId }) => ({ entity, ...(sessionCode ? { sessionCode } : {}), ...(playerId ? { playerId } : {}) }));
+  if (!subs.length) { closeLive(); return; }
+  const signature = JSON.stringify(subs);
+  const params = new URLSearchParams({ subs: signature });
+  if (getToken()) {
+    try { params.set('ticket', (await request('POST', '/api/entities/stream-ticket')).ticket); } catch { /* ανώνυμη σύνδεση */ }
+  }
+  if (JSON.stringify([...subscriptions.values()].map(({ entity, sessionCode, playerId }) => ({ entity, ...(sessionCode ? { sessionCode } : {}), ...(playerId ? { playerId } : {}) }))) !== signature) return;
+  live.pending?.close();
+  const es = new EventSource(`${API_URL}/api/entities/multi/stream?${params.toString()}`);
+  live.pending = es;
+  live.signature = signature;
+  es.addEventListener('ready', () => {
+    if (live.pending !== es) return;
+    const previous = live.es;
+    live.es = es;
+    live.pending = null;
+    previous?.close();
+    const resync = reason === 'error' || reason === 'wake';
+    live.retry = 0;
+    live.opened = true;
+    if (resync) subscriptions.forEach((sub) => emitTo(sub, { type: 'resync', entity: sub.entity }));
+  });
+  es.onmessage = (msg) => {
+    if (live.es !== es) return;
+    let event;
+    try { event = JSON.parse(msg.data); } catch { return; }
+    subscriptions.forEach((sub) => { if (matches(sub, event)) emitTo(sub, event); });
+  };
+  es.onerror = () => {
+    es.close();
+    if (live.pending === es) live.pending = null;
+    if (live.es === es) live.es = null;
+    if (live.timer || !subscriptions.size) return;
+    live.retry = Math.min(live.retry + 1, 5);
+    live.timer = setTimeout(() => openLive('error'), 1000 * live.retry);
+  };
+}
+
+function scheduleReopen() {
+  if (live.scheduled) return;
+  live.scheduled = setTimeout(() => { live.scheduled = null; openLive('change'); }, 30);
+}
 
 function subscribeEntity(name, callback, options = {}) {
-  let s = streams.get(name);
-  if (!s) {
-    s = { es: null, listeners: new Set(), closed: false };
-    streams.set(name, s);
-    const open = async () => {
-      const params = new URLSearchParams();
-      // Admin: εφάπαξ εισιτήριο 60″ αντί για το μόνιμο token στο URL
-      if (getToken()) {
-        try { params.set('ticket', (await request('POST', '/api/entities/stream-ticket')).ticket); } catch { /* ανώνυμη σύνδεση */ }
-      }
-      if (s.closed) return;
-      if (options.sessionCode) params.set('sessionCode', options.sessionCode);
-      if (options.playerId) params.set('playerId', options.playerId);
-      const query = params.toString();
-      const es = new EventSource(`${API_URL}/api/entities/${name}/stream${query ? `?${query}` : ''}`);
-      s.es = es;
-      es.onmessage = (msg) => {
-        let event;
-        try { event = JSON.parse(msg.data); } catch { return; }
-        s.listeners.forEach((fn) => { try { fn(event); } catch (e) { console.error(e); } });
-      };
-      // Το εισιτήριο είναι εφάπαξ: η αυτόματη επανασύνδεση του browser θα το ξαναχρησιμοποιούσε και θα
-      // γινόταν ανώνυμη. Γι' αυτό σε κάθε διακοπή κλείνουμε και ανοίγουμε νέα σύνδεση με νέο εισιτήριο.
-      es.onerror = () => {
-        es.close();
-        if (!s.closed) setTimeout(() => { if (!s.closed) open(); }, 2000);
-      };
-    };
-    open();
+  const sessionCode = name === 'GameSession' ? (options.sessionCode || '') : '';
+  const playerId = name === 'GameSession' ? (options.playerId || '') : '';
+  const key = `${name}|${sessionCode}|${playerId}`;
+  let sub = subscriptions.get(key);
+  if (!sub) {
+    sub = { entity: name, sessionCode, playerId, listeners: new Set() };
+    subscriptions.set(key, sub);
+    scheduleReopen();
   }
-  s.listeners.add(callback);
+  sub.listeners.add(callback);
   return () => {
-    s.listeners.delete(callback);
-    if (s.listeners.size === 0) { s.closed = true; s.es?.close(); streams.delete(name); }
+    sub.listeners.delete(callback);
+    if (sub.listeners.size === 0 && subscriptions.get(key) === sub) {
+      subscriptions.delete(key);
+      scheduleReopen();
+    }
   };
+}
+
+if (typeof window !== 'undefined') {
+  const wake = () => {
+    if (!subscriptions.size) return;
+    if (!live.es || live.es.readyState === 2) openLive('wake');
+  };
+  window.addEventListener('online', wake);
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') wake(); });
 }
 
 function makeEntity(name) {

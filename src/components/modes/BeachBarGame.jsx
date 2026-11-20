@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import GameCard from '@/components/shared/GameCard';
 import { Panel, Btn, RestraintNote } from '@/components/modes/ModeShell';
 import MissionPanel from '@/components/modes/MissionPanel';
 import {
@@ -66,7 +67,7 @@ export default function BeachBarGame({ ctx, onEnd }) {
             <div key={p.id} className="rounded px-2 py-1 bg-background/50 flex items-center gap-2">
               <b>{p.name}</b>
               <button onClick={() => setBb({ flops: { ...(bb.flops || {}), [p.id]: !flopOn(p.id) } })} className={flopOn(p.id) ? '' : 'opacity-30'} title="σαγιονάρες">🩴</button>
-              <span>🥤{drinks[p.id] || 0}</span>
+              <span>🥃{drinks[p.id] || 0}</span>
               <span>⭐{(mg.scores || {})[p.id] || 0}</span>
               {(mg.immune || []).includes(p.id) && <span title="ασυλία">🛡️</span>}
             </div>
@@ -155,7 +156,7 @@ function Dance({ ctx, bb, setBb, T, addDrink, flopOn }) {
     addDrink(p.id);
     setBb({ phase: 'wheel', loser: p.id, freeze: null });
     if (fromMobile) ctx.setMg({ playerAction: null });
-    log(`🥤 ${p.name} ολοκλήρωσε το Freeze — mocktail counter και Τροχός Προκλήσεων`);
+    log(`🥃 ${p.name} έχασε στο Freeze — σφηνάκι και Τροχός Ποινών`);
   }
 
   useEffect(() => {
@@ -190,7 +191,7 @@ function Dance({ ctx, bb, setBb, T, addDrink, flopOn }) {
           <Btn onClick={() => setBb({ freeze: null })}>Ακύρωση</Btn>
         </div>
       )}
-      <div className="text-xs opacity-70">Η καθυστερημένη επιλέγει mocktail ή PASS και περνά στον Τροχό Προκλήσεων. {T('')}</div>
+      <div className="text-xs opacity-70">Η καθυστερημένη πίνει σφηνάκι και περνά αυτόματα στον Τροχό Ποινών. {T('')}</div>
     </Panel>
   );
 }
@@ -248,7 +249,7 @@ function Wheel({ ctx, bb, setBb, T, flopOn }) {
 
   const meta = WHEEL_CATEGORIES.find((c) => c.id === (card ? card.cat : cat));
   return (
-    <Panel title="🎡 The Digital Challenge Wheel" accent={CORAL}>
+    <Panel title="🎡 The Tie, Hogtie & Tickle Wheel" accent={CORAL}>
       <div className="flex flex-wrap gap-2 items-center">
         <select value={who} onChange={(e) => setWho(e.target.value)} className="px-2 py-2 rounded bg-background border border-border">
           {players.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
@@ -261,10 +262,8 @@ function Wheel({ ctx, bb, setBb, T, flopOn }) {
         ))}
       </div>
       {card && !spinning && (
-        <div className="rounded-lg p-4 space-y-2" style={{ background: '#0B0B0C', border: `2px solid ${meta?.color || CORAL}` }}>
-          <div className="text-xs opacity-70">{nameOf(bb.wheel.pid)} · {meta?.icon} {meta?.name}</div>
-          <div className="font-heading text-2xl">{card.title}</div>
-          <p className="font-body text-lg">{T(card.text)}</p>
+        <div className="space-y-3">
+          <GameCard kicker={meta?.name || 'Τροχός ποινών'} corner={nameOf(bb.wheel.pid)} icon={meta?.icon || '🎡'} image={card.image} accent={meta?.color || CORAL} title={card.title} text={T(card.text)} footLeft={card.secs ? `⏱ ${card.secs}″` : ''} footRight={card.loseFlop ? 'Χάνει σαγιονάρα' : null} />
           {card.restraint && <RestraintNote />}
           <div className="flex flex-wrap gap-2 items-center">
             {card.secs ? <Btn color="bg-sky-700" onClick={() => setRun(true)} disabled={run}>⏱ {Math.ceil(run ? left : card.secs)}″</Btn> : null}
@@ -282,7 +281,7 @@ function Truth({ ctx, bb, setBb, T, addDrink }) {
   const [who, setWho] = useState(players[0]?.id || '');
   const [q, setQ] = useState(null);
   const [state, setState] = useState('idle'); // idle | decide | quiz
-  const left = useLocalCountdown(BEACH_STEP_SECONDS, state === 'decide', () => { setState('quiz'); setBb({ truth: { ...(bb.truth || {}), status: 'quiz' } }); sfx.alarm(); log(`🚨 ${nameOf(who)} άργησε — ενεργοποιήθηκε ψηφιακό quiz`); });
+  const left = useLocalCountdown(BEACH_STEP_SECONDS, state === 'decide', () => { setState('quiz'); setBb({ truth: { ...(bb.truth || {}), status: 'quiz' } }); sfx.alarm(); log(`🚨 ${nameOf(who)} άργησε — συναγερμός ομαδικού γαργαλητού`); });
   const tk = useLocalCountdown(20, state === 'quiz', () => sfx.alarm());
 
   function respond(value, fromMobile = false) {
@@ -290,7 +289,7 @@ function Truth({ ctx, bb, setBb, T, addDrink }) {
     if (value === 'truth') {
       setState('idle'); setQ(null); sfx.ok(); log(`🗣️ ${nameOf(who)} είπε αλήθεια`);
     } else {
-      addDrink(who, 2); setState('idle'); setQ(null); log(`🥤 ${nameOf(who)} επέλεξε mocktail / PASS`);
+      addDrink(who, 2); setState('idle'); setQ(null); log(`🥃 ${nameOf(who)} ήπιε διπλό σφηνάκι`);
     }
     setBb({ truth: null });
     if (fromMobile) ctx.setMg({ playerAction: null });
@@ -304,8 +303,8 @@ function Truth({ ctx, bb, setBb, T, addDrink }) {
 
 
   return (
-    <Panel title="🥤 Mocktail & Truth Sync" accent={CORAL}>
-      <p className="text-sm opacity-80">Απαντάς ειλικρινά ή επιλέγεις μη αλκοολούχο mocktail / PASS. Αν αργήσεις πάνω από 5″, ενεργοποιείται προαιρετικό ψηφιακό quiz.</p>
+    <Panel title="🥃 Shot & Truth Sync" accent={CORAL}>
+      <p className="text-sm opacity-80">Απαντάς ειλικρινά Ή πίνεις διπλό σφηνάκι. Αν αρνηθείς και τα δύο (ή αργήσεις πάνω από 5″), συναγερμός ομαδικού γαργαλητού στη χαμένη.</p>
       <div className="flex flex-wrap gap-2 items-center">
         <select value={who} onChange={(e) => setWho(e.target.value)} className="px-2 py-2 rounded bg-background border border-border">
           {players.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
@@ -324,18 +323,18 @@ function Truth({ ctx, bb, setBb, T, addDrink }) {
             <div className="flex flex-wrap gap-2 items-center">
               <b className="font-display text-4xl w-16">{Math.ceil(left)}″</b>
               <Btn color="bg-emerald-700" onClick={() => respond('truth')}>🗣️ TRUTH</Btn>
-              <Btn color="bg-orange-600" onClick={() => respond('mocktail')}>🥤 MOCKTAIL / PASS</Btn>
+              <Btn color="bg-orange-600" onClick={() => respond('mocktail')}>🥃 DRINK (διπλό)</Btn>
             </div>
           )}
-          {state === 'quiz' && (
+          {state === 'tickle' && (
             <div className="space-y-2">
-              <div className="font-display text-4xl text-red-300 comic-pulse">🧩 ΨΗΦΙΑΚΟ QUIZ — {Math.ceil(tk)}″</div>
+              <div className="font-display text-4xl text-red-300 comic-pulse">🚨 ΣΥΝΑΓΕΡΜΟΣ ΓΑΡΓΑΛΗΤΟΥ — {Math.ceil(tk)}″</div>
               <Btn onClick={() => { setState('idle'); setQ(null); }}>Τέλος</Btn>
             </div>
           )}
         </div>
       )}
-      <div className="text-xs opacity-60">{T('Το mocktail μετράει στον μετρητή 🥤.')}</div>
+      <div className="text-xs opacity-60">{T('Ο διπλός σφηνάκι μετράει στον μετρητή 🥃.')}</div>
     </Panel>
   );
 }
@@ -349,7 +348,7 @@ function Finale({ ctx, bb, setBb, flopOn, onEnd }) {
   const queen = bb.queen;
   return (
     <Panel title="👑 The Last Queen Standing" accent="#E8C26B">
-      <p className="text-sm opacity-80">Όσες έχουν χάσει τις σαγιονάρες τους (κλοπές ή ποινές) μπαίνουν στον τελικό γύρο: 3λεπτο προαιρετικό Dance & Freeze challenge με ψηφιακές εντολές, χωρίς περιορισμό κίνησης ή σωματική επαφή. Η νικήτρια γίνεται Beach Queen και διαλέγει την τελική ομαδική δοκιμασία.</p>
+      <p className="text-sm opacity-80">Όσες έχουν χάσει τις σαγιονάρες τους (κλοπές ή ποινές) μπαίνουν στον τελικό γύρο: 3λεπτο χορευτικό challenge με δεμένους καρπούς. Όποια κρατήσει τον ρυθμό και δεν γελάσει στις παγίδες γαργαλητού γίνεται Beach Queen και διαλέγει την τελική ομαδική δοκιμασία.</p>
       <div className="flex flex-wrap gap-2 text-sm">
         Φιναλίστ: {field.map((p) => <b key={p.id} className="px-2 py-0.5 rounded bg-background/60">{p.name}</b>)}
         {finalists.length < 2 && <span className="opacity-60">(λιγότερες από 2 χωρίς σαγιονάρες — παίζουν όλες)</span>}

@@ -77,7 +77,7 @@ export default function GrandJuryTV({ state }) {
           </div>
           {(gj.manualLogs || []).length > 0 && (
             <div className="comic-panel bg-primary text-tarot-dark p-4 mt-4">
-              <div className="font-heading text-lg mb-2">📝 ΧΕΙΡΟΚΙΝΗΤΑ LOGS</div>
+              <div className="font-heading text-lg mb-2">📝 ΧΕΙΡΟΚΙΝΗΤΕΣ ΣΗΜΕΙΩΣΕΙΣ</div>
               <div className="space-y-1">
                 {(gj.manualLogs || []).map((m, i) => (
                   <div key={i} className="text-sm bg-tarot-dark text-foreground rounded px-2 py-1 font-body">{m.text}</div>

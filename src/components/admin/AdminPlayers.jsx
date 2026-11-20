@@ -36,8 +36,6 @@ export default function AdminPlayers({ sessions, selectedSession, onSelect, onUp
     };
   }, [selectedSession?.sessionCode]);
 
-  // Κάθε νεότερο SSE snapshot περνά στο Admin χωρίς να σβήνει τις τοπικές,
-  // μη αποθηκευμένες αλλαγές του χρήστη.
   useEffect(() => {
     if (!selectedSession) return;
     const incoming = selectedSession.state?.players || [];
@@ -109,7 +107,6 @@ export default function AdminPlayers({ sessions, selectedSession, onSelect, onUp
 
   return (
     <div className="space-y-4">
-      {/* Session header */}
       <ComicPanel className="bg-primary">
         <div className="flex items-center justify-between flex-wrap gap-2">
           <div>
@@ -123,7 +120,6 @@ export default function AdminPlayers({ sessions, selectedSession, onSelect, onUp
         </div>
       </ComicPanel>
 
-      {/* Player editors */}
       <div className="space-y-2">
         {players.map((p) => {
           const edit = edits[p.id] || p;
@@ -151,7 +147,6 @@ export default function AdminPlayers({ sessions, selectedSession, onSelect, onUp
               )}
 
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
-                {/* Penalty step */}
                 <div>
                   <label className="font-bold block mb-1">Ποινή (0-{ladder.length})</label>
                   <input
@@ -164,7 +159,6 @@ export default function AdminPlayers({ sessions, selectedSession, onSelect, onUp
                   />
                 </div>
 
-                {/* Bounty */}
                 <div>
                   <label className="font-bold block mb-1">Επικήρυξη $</label>
                   <input
@@ -176,7 +170,6 @@ export default function AdminPlayers({ sessions, selectedSession, onSelect, onUp
                   />
                 </div>
 
-                {/* Μάρκες */}
                 <div>
                   <label className="font-bold block mb-1">🎟️ Μάρκες</label>
                   <input
@@ -188,7 +181,6 @@ export default function AdminPlayers({ sessions, selectedSession, onSelect, onUp
                   />
                 </div>
 
-                {/* Position */}
                 {!isArrestHeist && (
                   <div>
                     <label className="font-bold block mb-1">📍 Θέση</label>
@@ -203,7 +195,6 @@ export default function AdminPlayers({ sessions, selectedSession, onSelect, onUp
                   </div>
                 )}
 
-                {/* Οι κρυφοί ρόλοι ανήκουν στο Classic. */}
                 {mode === 'classic' && (
                   <div>
                     <label className="font-bold block mb-1">🎭 Ρόλος</label>
@@ -218,7 +209,6 @@ export default function AdminPlayers({ sessions, selectedSession, onSelect, onUp
                   </div>
                 )}
 
-                {/* Footwear */}
                 <div>
                   <label className="font-bold block mb-1">👢 Υπόδηση</label>
                   <select
@@ -230,7 +220,6 @@ export default function AdminPlayers({ sessions, selectedSession, onSelect, onUp
                   </select>
                 </div>
 
-                {/* Toenail perk */}
                 <div>
                   <label className="font-bold block mb-1">💅 Προνόμιο</label>
                   <select
@@ -243,7 +232,6 @@ export default function AdminPlayers({ sessions, selectedSession, onSelect, onUp
                   </select>
                 </div>
 
-                {/* Ομάδες Marathon / Arrest & Heist */}
                 {(isMarathon || isArrestHeist) && (
                   <div>
                     <label className="font-bold block mb-1">👥 Ομάδα</label>
@@ -275,7 +263,6 @@ export default function AdminPlayers({ sessions, selectedSession, onSelect, onUp
                 </div>
               )}
 
-              {/* Mode-specific roles and status */}
               <div className="flex gap-2 flex-wrap mt-3">
                 {mode === 'classic' && (
                   <>

@@ -124,7 +124,7 @@ export default function ControlRoom({ state, updateState, playerProfiles = [], p
       <div onClick={(e) => e.stopPropagation()} className="mx-auto max-w-5xl space-y-3">
         <div className="comic-panel ds-sheen px-5 py-4">
           <div className="ds-eyebrow text-primary/80">DEAL OF TEMPTATION · LIVE PRODUCTION</div>
-          <div className="ds-title mt-1 text-2xl text-foreground">MASTER CONTROL ROOM</div>
+          <div className="ds-title mt-1 text-2xl text-foreground">ΚΕΝΤΡΟ ΕΛΕΓΧΟΥ</div>
           <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-foreground/70">
             <span>MODE: <strong>{modeName}</strong></span>
             <span>ΠΑΙΚΤΡΙΕΣ: <strong>{players.length}</strong></span>

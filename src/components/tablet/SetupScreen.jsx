@@ -342,7 +342,7 @@ export default function SetupScreen({ onStart }) {
         {intakesLoaded && (intakes.length > 0 || pajamaApproved.length > 0) && (
           <ComicPanel className="bg-secondary p-2">
             <div className="text-xs font-bold text-foreground font-body">
-              ✅ {pajamaApproved.length} εγκεκριμένες φόρμες Pajama Party{intakes.length > 0 ? ` · ${intakes.length} από το /welcome` : ''} — τα ονόματα συμπληρώθηκαν αυτόματα.
+              ✅ {new Set([...pajamaApproved, ...intakes].map((item) => item.id)).size} εγκεκριμένες συμμετοχές — τα ονόματα μπαίνουν αυτόματα όταν επιλέξεις το Mode τους.
             </div>
           </ComicPanel>
         )}
@@ -598,7 +598,7 @@ export default function SetupScreen({ onStart }) {
         <ComicPanel className={testMode ? 'bg-tarot-royal/40' : 'bg-secondary'}>
           <button onClick={() => setTestMode((t) => !t)} className="w-full flex items-center justify-between gap-3 text-left">
             <div>
-              <div className="font-heading text-xl text-primary">🧪 TEST MODE</div>
+              <div className="font-heading text-xl text-primary">🧪 ΔΟΚΙΜΑΣΤΙΚΗ ΠΑΡΤΙΔΑ</div>
               <div className="text-sm text-foreground/70 font-body">
                 Δοκιμαστική παρτίδα: δεν αποθηκεύεται στο Chronicle ούτε στα στατιστικά.
               </div>

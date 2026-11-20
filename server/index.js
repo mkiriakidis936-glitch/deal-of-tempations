@@ -30,6 +30,14 @@ app.use(attachUser);
 
 app.get('/api/health', (_req, res) => res.json({ ok: true }));
 
+const PACKAGE_VERSION = JSON.parse(fs.readFileSync(path.resolve(import.meta.dirname, '..', 'package.json'), 'utf8')).version;
+const startedAt = new Date().toISOString();
+app.get('/api/version', (_req, res) => {
+  let info = { version: PACKAGE_VERSION, build: 'dev', builtAt: '' };
+  try { info = { ...info, ...JSON.parse(fs.readFileSync(path.resolve(import.meta.dirname, '..', 'dist', 'version.json'), 'utf8')) }; } catch { /* χωρίς build */ }
+  res.set('Cache-Control', 'no-store').json({ ...info, serverStartedAt: startedAt });
+});
+
 app.get('/api/production/privacy', async (req, res) => {
   const sessionCode = String(req.query.event || '').trim().toUpperCase();
   if (!sessionCode || sessionCode.length > 40) return res.status(400).json({ error: 'Μη έγκυρος κωδικός διοργάνωσης.' });
@@ -64,13 +72,23 @@ app.use('/api', (_req, res) => res.status(404).json({ error: 'Not found' }));
 const dist = path.resolve(import.meta.dirname, '..', 'dist');
 if (fs.existsSync(dist)) {
   // index.html is rendered per request so shared links (WhatsApp, Viber, Messenger) get a proper title, description and preview image.
-  const indexTemplate = fs.readFileSync(path.join(dist, 'index.html'), 'utf8');
+  const indexFile = path.join(dist, 'index.html');
+  let indexTemplate = fs.readFileSync(indexFile, 'utf8');
+  let indexMtime = fs.statSync(indexFile).mtimeMs;
+  const currentIndex = () => {
+    try {
+      const mtime = fs.statSync(indexFile).mtimeMs;
+      if (mtime !== indexMtime) { indexTemplate = fs.readFileSync(indexFile, 'utf8'); indexMtime = mtime; }
+    } catch { /* κρατάμε το τελευταίο γνωστό */ }
+    return indexTemplate;
+  };
   const SITE_DESC = 'DEAL OF TEMPTATIONS — THE PRIVATE REALITY GAME NIGHT. Ιδιωτική βιωματική Reality Show εμπειρία με παιχνίδια, σκηνοθεσία, ήχο, εικόνα και προαιρετικό recap. 18+.';
   const PAGES = {
     '/site': { title: 'DEAL OF TEMPTATIONS — THE PRIVATE REALITY GAME NIGHT', desc: SITE_DESC, index: true },
     '/portal': { title: 'DEAL OF TEMPTATIONS — Πληροφορίες Event', desc: 'Ημερομηνία, τοποθεσία και πρακτικές πληροφορίες της εκδήλωσης.' },
     '/promo': { title: 'DEAL OF TEMPTATIONS — Trailer', desc: SITE_DESC, index: true },
     '/gift-unlock': { title: 'DEAL OF TEMPTATIONS — Ξεκλείδωσε το δώρο σου', desc: 'Βάλε τον κωδικό σου και ξεκλείδωσε το δώρο.' },
+    '/play': { title: 'DT Play — Deal of Temptation', desc: 'Το κινητό σου στο παιχνίδι.' },
     '/forms': { title: 'DEAL OF TEMPTATIONS — Φόρμα συμμετοχής', desc: 'Ενιαία φόρμα επιλογής Mode και υποβολής συμμετοχής.' },
   };
   const esc = (v) => String(v).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
@@ -79,8 +97,8 @@ if (fs.existsSync(dist)) {
     const route = req.path.replace(/\/+$/, '') || '/';
     const meta = PAGES[route] || { title: 'Deal of Temptation', desc: SITE_DESC };
     const indexable = !!meta.index;
-    return indexTemplate
-       .replace('<title>DEAL OF TEMPTATIONS</title>', `<title>${esc(meta.title)}</title>`)
+    return currentIndex()
+      .replace('<title>DEAL OF TEMPTATIONS</title>', `<title>${esc(meta.title)}</title>`)
       .replaceAll('__TITLE__', esc(meta.title)).replaceAll('__DESC__', esc(meta.desc))
       .replaceAll('__ORIGIN__', origin).replaceAll('__URL__', esc(origin + route))
       .replaceAll('__ROBOTS__', indexable ? 'index,follow' : 'noindex,nofollow');
@@ -91,12 +109,13 @@ if (fs.existsSync(dist)) {
     maxAge: '1h',
     // το service worker και το manifest δεν πρέπει να μένουν σε cache, αλλιώς δεν ενημερώνεται η εφαρμογή
     setHeaders: (res, file) => {
-      if (/(^|[\/])(sw\.js|manifest(-public)?\.webmanifest)$/.test(file)) res.setHeader('Cache-Control', 'no-cache');
+      if (/(^|[\/])(sw\.js|version\.json|manifest(-public|-play)?\.webmanifest)$/.test(file)) res.setHeader('Cache-Control', 'no-cache');
       else if (/[\/]assets[\/]/.test(file)) res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
     },
   }));
   app.use((req, res, next) => {
     if (req.method !== 'GET') return next();
+    if (/^\/assets\/|\.(js|css|map|png|jpe?g|webp|svg|ico|json|webmanifest)$/i.test(req.path)) return res.status(404).end();
     res.type('html').set('Cache-Control', 'no-cache').send(renderIndex(req));
   });
 }

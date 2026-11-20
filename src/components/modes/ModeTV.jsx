@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import GameCard from '@/components/shared/GameCard';
 import { MODE_THEMES, modeMeta, ACT_META } from '@/data/modes/modeRegistry';
 import { EXT_END, EXT_ZONES, zoneOf, squareType, ROUTES } from '@/data/modes/extendedContent';
 import { EXIT_CODE, syncExitCode } from '@/data/modes/lockdownContent';
@@ -15,7 +16,7 @@ export default function ModeTV({ state }) {
   const players = state.players || [];
   const act = meta.acts[Math.min(mg.actIndex || 0, meta.acts.length - 1)];
   useEffect(() => { setGameStopActive(!!(mg.stop || state.stopActive)); }, [mg.stop, state.stopActive]);
-  useTick(true, 500);
+  useTick(true, 1000);
   const left = timerLeft(mg.timer);
   const ld = mg.ld || {};
   const bb = mg.bb || {};
@@ -63,7 +64,7 @@ export default function ModeTV({ state }) {
         <div className="space-y-3">
           <div className="text-2xl opacity-80">{({ checkin: '🩴 Check-in', dance: '🎶 Dance & Freeze', wheel: '🎡 Τροχός Ποινών', truth: '🥃 Shot & Truth', finale: '👑 The Last Queen Standing' })[bb.phase || 'checkin']}</div>
           {bb.freeze && <div className="rounded-xl p-6 text-center font-display text-4xl comic-pulse" style={{ background: '#141416', border: '3px solid #F0B85A' }}>📯 {bb.freeze.cmd}</div>}
-          {bb.wheel && <div className="rounded-xl p-6 text-center text-3xl" style={{ background: '#0B0B0C', border: '3px solid #F0B85A' }}><div className="opacity-70 text-xl">{players.find((p) => p.id === bb.wheel.pid)?.name}</div><b>{bb.wheel.card.title}</b></div>}
+          {bb.wheel && <GameCard variant="tv" kicker="Τροχός ποινών" corner={players.find((p) => p.id === bb.wheel.pid)?.name} icon="🎡" image={bb.wheel.card.image} accent="#F0B85A" title={bb.wheel.card.title} text={bb.wheel.card.text} footLeft={bb.wheel.card.secs ? `⏱ ${bb.wheel.card.secs}″` : ''} />}
           {bb.queen && <div className="rounded-xl p-6 text-center font-display text-5xl" style={{ color: '#E8C26B', background: '#120F05' }}>👑 BEACH QUEEN: {players.find((p) => p.id === bb.queen)?.name}</div>}
         </div>
       )}
@@ -103,11 +104,18 @@ function TVBoard({ mg, players }) {
       <div className="flex gap-4 text-sm opacity-80">{EXT_ZONES.map((z) => <span key={z.id}><i className="inline-block w-3 h-3 rounded-full mr-1" style={{ background: z.color }} />{z.name}</span>)}</div>
       {mg.branch && <div className="rounded-xl p-4 text-center text-2xl" style={{ background: '#120F05', border: '2px solid #E8C26B' }}>🔀 {players.find((p) => p.id === mg.branch)?.name} διαλέγει: {Object.values(ROUTES).map((r) => r.icon + ' ' + r.name).join('  ή  ')}</div>}
       {mg.card && (
-        <div className="rounded-xl p-6 space-y-2" style={{ background: '#0B0B0C', border: `3px solid ${ROUTES[mg.card.route].color}` }}>
-          <div className="opacity-70">{players.find((p) => p.id === mg.card.playerId)?.name} · {ROUTES[mg.card.route].icon} {ROUTES[mg.card.route].name}</div>
-          <div className="font-display text-3xl">{mg.card.title}</div>
-          <div className="text-xl">{mg.card.text}</div>
-        </div>
+        <GameCard
+          variant="tv"
+          kicker={ROUTES[mg.card.route].name}
+          corner={players.find((p) => p.id === mg.card.playerId)?.name}
+          icon={ROUTES[mg.card.route].icon}
+          image={mg.card.image}
+          accent={ROUTES[mg.card.route].color}
+          title={mg.card.title}
+          text={mg.card.text}
+          footLeft={mg.card.secs ? `⏱ ${mg.card.secs}″` : ''}
+          footRight={`+${mg.card.reward || (mg.card.free ? 1 : ROUTES[mg.card.route].reward)} 🪙`}
+        />
       )}
     </div>
   );

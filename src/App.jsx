@@ -9,7 +9,7 @@ import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import ScrollToTop from './components/ScrollToTop';
 import { trackVisit } from '@/lib/track';
 import GlobalDesignProvider from '@/components/GlobalDesignProvider';
-// Add page imports here
+import UpdateBanner from '@/components/UpdateBanner';
 const Tablet = lazy(() => import('@/pages/Tablet'));
 const TVScreen = lazy(() => import('@/pages/TV'));
 const Play = lazy(() => import('@/pages/Play'));
@@ -58,20 +58,17 @@ const PublicVisitTracker = () => {
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings } = useAuth();
 
-  // Show loading spinner while checking app public settings or auth
   if (isLoadingPublicSettings || isLoadingAuth) {
     return (
       <div className="fixed inset-0 flex items-center justify-center">
-        <div className="w-8 h-8 border-4 border-slate-200 border-t-slate-800 rounded-full animate-spin"></div>
+        <img src="/icons/icon-192.png" alt="" className="w-16 h-16 rounded-2xl opacity-80" />
       </div>
     );
   }
 
-  // Render the main app
   return (
-    <Suspense fallback={<div className="fixed inset-0 flex items-center justify-center bg-background"><div className="w-8 h-8 border-4 border-slate-200 border-t-slate-800 rounded-full animate-spin" /></div>}>
+    <Suspense fallback={<div className="fixed inset-0 flex items-center justify-center bg-background"><img src="/icons/icon-192.png" alt="" className="w-16 h-16 rounded-2xl opacity-80" /></div>}>
     <Routes>
-      {/* Add your page Route elements here */}
       <Route path="/" element={<RequireAdmin><Tablet /></RequireAdmin>} />
       <Route path="/tv" element={<TVScreen />} />
       <Route path="/play" element={<Play />} />
@@ -106,6 +103,7 @@ function App() {
           <ScrollToTop />
           <PublicVisitTracker />
           <AuthenticatedApp />
+          <UpdateBanner />
         </Router>
         <Toaster />
       </QueryClientProvider>

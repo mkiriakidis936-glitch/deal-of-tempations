@@ -1,4 +1,6 @@
 import ScreenWallpaper from '@/components/shared/ScreenWallpaper';
+import SoundUnlock from '@/components/shared/SoundUnlock';
+import GameCard from '@/components/shared/GameCard';
 import ModeMobile from '@/components/modes/ModeMobile';
 import { isNewMode } from '@/data/modes/modeRegistry';
 import { ART } from '@/data/brandArt';
@@ -51,7 +53,12 @@ function PlayInner() {
   const prevTurnRef = useRef(false);
   const currentCodeRef = useRef(null);
 
-  React.useEffect(() => { currentCodeRef.current = session?.sessionCode || null; }, [session?.sessionCode]);
+  const [endedCode, setEndedCode] = useState('');
+  React.useEffect(() => {
+    if (!session?.sessionCode && currentCodeRef.current && !loading) setEndedCode(currentCodeRef.current);
+    if (session?.sessionCode) setEndedCode('');
+    currentCodeRef.current = session?.sessionCode || null;
+  }, [session?.sessionCode, loading]);
 
   // Κάθε επιλεγμένη παίκτρια στέλνει heartbeat· η παρουσία λήγει αυτόματα 45″ μετά την τελευταία επαφή.
   React.useEffect(() => {
@@ -99,10 +106,10 @@ function PlayInner() {
     if (autoJoinTried || session) return;
     setAutoJoinTried(true);
     const code = new URLSearchParams(window.location.search).get('code');
-    if (code) { joinByCode(code.toUpperCase()); return undefined; }
-    let alive = true;
-    getActiveSessionCode().then((active) => { if (alive && active) joinByCode(active); });
-    return () => { alive = false; };
+    if (code) { joinByCode(code.toUpperCase()); return; }
+    getActiveSessionCode().then((active) => {
+      if (active && !currentCodeRef.current) joinByCode(active);
+    });
   }, [autoJoinTried, session, joinByCode]);
 
   // Αν ο Game Master αλλάξει συνεδρία, ακολουθεί και το κινητό.
@@ -123,6 +130,17 @@ function PlayInner() {
     return (
       <div className="min-h-screen comic-dots flex items-center justify-center">
         <div className="font-heading text-3xl comic-pulse text-primary">ΦΟΡΤΩΣΗ...</div>
+      </div>
+    );
+  }
+
+  if ((!session || !state) && endedCode) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center gap-5 p-6 text-center">
+        <img src="/icons/icon-192.png" alt="" className="h-20 w-20 rounded-[22px]" />
+        <div className="font-heading text-3xl text-primary">Το παιχνίδι ολοκληρώθηκε</div>
+        <p className="max-w-xs text-sm text-foreground/70">Ευχαριστούμε που έπαιξες! Τα αποτελέσματα φαίνονται στην κεντρική οθόνη.</p>
+        <button type="button" onClick={() => { setEndedCode(''); getActiveSessionCode().then((code) => { if (code && code !== endedCode) joinByCode(code); }); }} className="rounded-full bg-primary px-6 py-3 font-bold text-primary-foreground">Σύνδεση σε νέο παιχνίδι</button>
       </div>
     );
   }
@@ -250,30 +268,18 @@ function PlayInner() {
             <SyncTimerDisplay state={state} variant="mobile" />
 
             {state.activeCard && (
-              <ComicPanel className={`comic-pop ${isMyTurn ? 'bg-primary/20 ring-4 ring-destructive' : 'bg-secondary'}`}>
-                <div className="flex items-center gap-2 mb-2">
-                  <span className={isMyTurn ? 'text-5xl' : 'text-3xl'}>{state.activeCard.icon || '🎴'}</span>
-                  <div className="flex-1">
-                    <div className={`font-heading ${isMyTurn ? 'text-2xl' : 'text-lg'} leading-tight text-foreground`}>{state.activeCard.name}</div>
-                    <div className="text-xs font-bold text-foreground/60">
-                      {state.cardAction === 'street_truth' ? '💬 ΑΛΗΘΕΙΑ'
-                        : state.cardAction === 'street_dare' ? '🔥 ΤΟΛΜΗ'
-                        : state.cardAction || 'ΚΑΡΤΑ'}
-                    </div>
-                  </div>
-                </div>
-                <div className="comic-panel-sm p-3 bg-background">
-                  <p className={`font-medium ${isMyTurn ? 'text-lg' : 'text-base'} text-foreground font-body`}>{state.activeCard.text}</p>
-                  {state.activeCard.duration && (
-                    <div className="mt-2 text-center font-heading text-3xl text-destructive comic-pulse">
-                      ⏱ {state.activeCard.duration}″
-                    </div>
-                  )}
-                </div>
-                {state.activeCard.desc && (
-                  <div className="text-xs mt-2 text-foreground/60 font-body">{state.activeCard.desc}</div>
-                )}
-              </ComicPanel>
+              <GameCard
+                variant={isMyTurn ? 'default' : 'compact'}
+                kicker={state.cardAction === 'street_truth' ? 'Αλήθεια' : state.cardAction === 'street_dare' ? 'Τόλμη' : (state.cardAction || 'Κάρτα')}
+                corner={isMyTurn ? 'Η σειρά σου' : null}
+                icon={state.activeCard.icon || '🎴'}
+                image={state.activeCard.image}
+                accent={state.cardAction === 'street_dare' ? '#FF453A' : '#E8C26B'}
+                title={state.activeCard.name}
+                text={state.activeCard.text}
+                footLeft={state.activeCard.desc || ''}
+                footRight={state.activeCard.duration ? `⏱ ${state.activeCard.duration}″` : null}
+              />
             )}
 
             {state.activePlotTwist && (
@@ -475,6 +481,7 @@ export default function Play() {
   return (
     <>
       <ScreenWallpaper src={ART.wallpaperPhone} />
+      <SoundUnlock />
       <PlayInner />
     </>
   );

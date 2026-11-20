@@ -22,7 +22,6 @@ export default function AdminVisits() {
 
   useEffect(() => {
     load();
-    // Δεν γίνεται polling αυτόματα· τα στατιστικά φορτώνονται στην είσοδο ή με χειροκίνητη ανανέωση.
   }, [load]);
 
   const max = Math.max(1, ...(s?.days || []).map((d) => d.views));

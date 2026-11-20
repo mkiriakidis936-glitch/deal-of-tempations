@@ -11,7 +11,7 @@ export default function FinaleTV({ state }) {
   if (finale.phase === 'recap') {
     return (
       <div className="fixed inset-0 z-[65] bg-background flex flex-col items-center justify-center">
-        <div className="font-heading text-2xl text-tarot-gold mb-6">📜 RECAP ΣΤΙΓΜΩΝ</div>
+        <div className="font-heading text-2xl text-tarot-gold mb-6">📜 ΑΝΑΣΚΟΠΗΣΗ ΣΤΙΓΜΩΝ</div>
         <div className="text-9xl comic-pulse">🎬</div>
         <div className="font-body text-xl text-foreground/50 mt-6 italic">Αναπαράσταση γεγονότων...</div>
       </div>

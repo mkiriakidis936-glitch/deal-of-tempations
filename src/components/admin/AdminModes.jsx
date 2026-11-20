@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import ComicPanel from '@/components/comic/ComicPanel';
 import ComicButton from '@/components/comic/ComicButton';
 import AdminSettingVersionHistory from '@/components/admin/AdminSettingVersionHistory';
+import MediaField from '@/components/admin/MediaField';
 import { saveAdminSettingVersion } from '@/lib/adminVersionHistory';
 import { NEW_MODES } from '@/data/modes/modeRegistry';
 import { COLLECTIONS, defaultsOf, fetchModesRecord, saveModesContent } from '@/lib/modesContentStore';
@@ -10,7 +11,6 @@ const inp = 'w-full px-3 py-2 rounded-lg border-2 border-border bg-background te
 const ORIGIN = typeof window !== 'undefined' ? window.location.origin : '';
 const SITE_IDS = { pedi_glam: 'pedi_glam', pedi_extended: 'pedi_extended', lockdown: 'lockdown', beach_bar: 'beachbar', marathon_4h: 'marathon4h' };
 
-// Admin → 🎮 Νέα Modes: επεξεργασία κάρτων, ερωτήσεων και αποστολών των 5 ψηφιακών modes.
 export default function AdminModes() {
   const [saved, setSaved] = useState({});
   const [loaded, setLoaded] = useState(false);
@@ -56,7 +56,7 @@ export default function AdminModes() {
   const save = () => {
     const validation = col?.validate?.(list);
     if (validation) { setMsg({ ok: false, text: validation }); return; }
-    persist({ ...saved, [sel]: list }, 'Αποθηκεύτηκε ✓ — ισχύει στο επόμενο φόρτωμα του tablet.');
+    persist({ ...saved, [sel]: list }, 'Αποθηκεύτηκε ✓ — ενημερώθηκε αμέσως σε Tablet, TV και κινητά.');
   };
   const reset = () => {
     if (!window.confirm('Επαναφορά αυτής της λίστας στα αρχικά του PDF;')) return;
@@ -77,6 +77,7 @@ export default function AdminModes() {
       <label key={f.key} className="block space-y-1">
         <span className="text-[11px] font-bold text-primary/90">{f.label}</span>
         {f.type === 'area' && <textarea rows={3} className={inp} value={v ?? ''} onChange={(e) => onChange({ ...item, [f.key]: e.target.value })} />}
+        {f.type === 'image' && <MediaField value={v || ''} onChange={(url) => onChange({ ...item, [f.key]: url || undefined })} />}
         {f.type === 'text' && <input className={inp} value={v ?? ''} onChange={(e) => onChange({ ...item, [f.key]: e.target.value })} />}
         {f.type === 'number' && <input type="number" className={inp} value={v ?? ''} onChange={(e) => onChange({ ...item, [f.key]: e.target.value === '' ? undefined : Number(e.target.value) })} />}
         {f.type === 'select' && (
@@ -107,7 +108,6 @@ export default function AdminModes() {
             </div>
           ))}
         </div>
-        <p className="text-[11px] text-foreground/60">Έναρξη παιχνιδιού: Tablet → Επιλογή Mode. Εγκρίσεις φορμών: Ερωτηματολόγια → Pajama. Κείμενα της ιστοσελίδας: 🌐 Ιστοσελίδα & Σενάριο.</p>
       </ComicPanel>
 
       <ComicPanel className="bg-card space-y-2">

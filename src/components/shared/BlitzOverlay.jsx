@@ -8,7 +8,7 @@ export default function BlitzOverlay({ blitz, embedded = false }) {
 
   useEffect(() => {
     if (!blitz?.running) return undefined;
-    const id = setInterval(() => setNow(Date.now()), 100);
+    const id = setInterval(() => setNow(Date.now()), 250);
     return () => clearInterval(id);
   }, [blitz?.running, blitz?.endsAt]);
 

@@ -183,7 +183,6 @@ export default function GameMediaLibraries({ value = {}, files = [], onSave, onR
 
       <section className="space-y-3">
         <h3 className="font-heading text-xl">ΣΥΝΔΕΣΗ ΑΡΧΕΙΩΝ ΜΕ ΣΗΜΕΙΑ ΠΑΙΧΝΙΔΙΟΥ</h3>
-        <p className="text-xs text-foreground/60">Επίλεξε αρχείο από την κεντρική βιβλιοθήκη. Το ίδιο αρχείο μπορεί να συνδεθεί με πολλά σημεία χωρίς νέο ανέβασμα.</p>
         <div className="grid sm:grid-cols-2 lg:grid-cols-[1.5fr_1fr_1.5fr_auto] gap-2">
           <select aria-label="Επιλογή αρχείου" className={inputClass} value={assignmentUrl} onChange={(event) => setAssignmentUrl(event.target.value)}>
             <option value="">Επιλογή αρχείου</option>

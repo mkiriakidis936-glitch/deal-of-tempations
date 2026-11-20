@@ -1,6 +1,6 @@
 // Service worker: PWA (offline κέλυφος) + push ειδοποιήσεις.
 // Άλλαξε το VERSION όταν θες να καθαριστεί η cache σε όλες τις συσκευές.
-const VERSION = 'v1';
+const VERSION = 'v4';
 const RUNTIME = `dot-runtime-${VERSION}`;
 const SHELL_KEY = '/__shell';
 

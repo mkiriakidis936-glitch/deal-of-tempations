@@ -2,16 +2,25 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { base44, request } from '@/api/base44Client';
 import ComicPanel from '@/components/comic/ComicPanel';
 import ComicButton from '@/components/comic/ComicButton';
+import { GAME_MODES } from '@/data/gameConfig';
 
 const SOURCES = [
   ['PublicFormSubmission', 'Δημόσια φόρμα'],
   ['PlayerIntake', 'Αίτηση παίκτριας'],
-  ['PajamaIntake', 'Pajama αίτηση'],
+  ['PajamaIntake', 'Αίτηση συμμετοχής'],
   ['BacheloretteIntake', 'Bachelorette αίτηση'],
   ['InvitationRSVP', 'Επιβεβαίωση πρόσκλησης'],
   ['VIPInvitationSubmission', 'VIP πρόσκληση'],
 ];
 const STATUSES = ['Νέο', 'Επικοινωνία', 'Επιβεβαιώθηκε', 'Απορρίφθηκε'];
+const GAME_ENTITIES = new Set(['PlayerIntake', 'PajamaIntake', 'BacheloretteIntake', 'VIPInvitationSubmission']);
+const modeName = (id) => GAME_MODES.find((mode) => mode.id === id)?.name || id;
+const modesFor = (item) => {
+  if (item._entity === 'BacheloretteIntake') return ['arrest_heist'];
+  if (Array.isArray(item.preferredModes) && item.preferredModes.length) return item.preferredModes;
+  const single = item.vipGameMode || item.gameMode;
+  return single ? [single] : item._entity === 'PajamaIntake' ? ['pajama'] : [];
+};
 const labelFor = (entity) => SOURCES.find(([key]) => key === entity)?.[1] || entity;
 const nameFor = (item) => item.name || item.displayName || item.legalName || 'Χωρίς όνομα';
 const dateFor = (item) => item.submittedAt || item.created_date || item.updated_date || '';
@@ -63,6 +72,17 @@ export default function AdminInbox({ sessions = [] }) {
     } catch (error) { setMessage(error.message || 'Η ενημέρωση απέτυχε.'); }
   }
 
+  async function setApproval(item, approved) {
+    try {
+      await request('POST', `/api/entities/intake-approvals/${item._entity}/${encodeURIComponent(item.id)}`, approved ? {} : { approved: false });
+      setItems((current) => current.map((entry) => entry.id === item.id && entry._entity === item._entity
+        ? { ...entry, approved, approvalStatus: approved ? 'approved' : 'pending', status: approved ? 'Επιβεβαιώθηκε' : entry.status, readAt: entry.readAt || (approved ? new Date().toISOString() : entry.readAt) }
+        : entry));
+      if (approved && item.status !== 'Επιβεβαιώθηκε') base44.entities[item._entity].update(item.id, { status: 'Επιβεβαιώθηκε', readAt: item.readAt || new Date().toISOString() }).catch(() => {});
+      setMessage(approved ? `Η ${nameFor(item)} εγκρίθηκε και εμφανίζεται στο Tablet.` : `Η έγκριση της ${nameFor(item)} ανακλήθηκε.`);
+    } catch (error) { setMessage(error.message || 'Η έγκριση απέτυχε.'); }
+  }
+
   async function remove(item) {
     if (!window.confirm(`Να διαγραφεί οριστικά η εγγραφή «${nameFor(item)}» από το ${labelFor(item._entity)};`)) return;
     try {
@@ -103,7 +123,15 @@ export default function AdminInbox({ sessions = [] }) {
           <div className="min-w-0"><div className="font-heading text-lg">{nameFor(item)}</div><div className="text-[11px] text-primary">{labelFor(item._entity)} · {new Date(dateFor(item) || Date.now()).toLocaleString('el-GR')}</div></div>
           {!item.readAt && <span className="rounded-full bg-primary/20 px-2 py-1 text-[10px] font-bold">ΝΕΟ</span>}
         </div>
-        <div className="text-sm text-foreground/75 break-words">{[item.eventType, item.gameMode, item.sessionCode, contact].filter(Boolean).join(' · ')}</div>
+        <div className="text-sm text-foreground/75 break-words">{[item.eventType, ...modesFor(item).map(modeName), item.sessionCode, contact].filter(Boolean).join(' · ')}</div>
+        {GAME_ENTITIES.has(item._entity) && (
+          <div className="flex flex-wrap items-center gap-2">
+            <span className={`rounded-full px-3 py-1 text-xs font-bold ${item.approved ? 'bg-emerald-500/20 text-emerald-300' : 'bg-amber-500/15 text-amber-300'}`}>{item.approved ? '✓ Εγκεκριμένη για το παιχνίδι' : 'Αναμένει έγκριση'}</span>
+            {item.approved
+              ? <ComicButton size="sm" variant="dark" onClick={() => setApproval(item, false)}>ΑΚΥΡΩΣΗ ΕΓΚΡΙΣΗΣ</ComicButton>
+              : <ComicButton size="sm" variant="green" onClick={() => setApproval(item, true)}>ΕΓΚΡΙΣΗ ΓΙΑ ΤΟ ΠΑΙΧΝΙΔΙ</ComicButton>}
+          </div>
+        )}
         {(item.message || item.suggestion) && <div className="rounded-lg bg-secondary p-2 text-sm whitespace-pre-wrap">{item.message || item.suggestion}</div>}
         <div className="flex flex-wrap items-center gap-2">
           <select value={status} onChange={(e) => updateItem(item, { status: e.target.value })} className="rounded border border-border bg-background p-2 text-xs">{STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}</select>

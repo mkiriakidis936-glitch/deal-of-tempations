@@ -1,6 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
 
-// Δείχνει περιεχόμενο σχεδιασμένο για 1280x720 μέσα σε μικρότερο κουτί (preview οθόνης TV).
 export default function ScaledFrame({ children, className = '' }) {
   const ref = useRef(null);
   const [scale, setScale] = useState(0.3);

@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
+import GameCard from '@/components/shared/GameCard';
 import { MODE_THEMES, modeMeta } from '@/data/modes/modeRegistry';
-import { EXTENDED_CHAOS_MARKET_CARDS, GATE_TOKENS } from '@/data/modes/extendedContent';
+import { EXTENDED_CHAOS_MARKET_CARDS, GATE_TOKENS, ROUTES } from '@/data/modes/extendedContent';
 import { EXIT_CODE, syncExitCode } from '@/data/modes/lockdownContent';
 import { consentPending } from '@/lib/consent';
 import { ConsentMobile } from '@/components/modes/ConsentCheckIn';
@@ -16,7 +17,7 @@ export default function ModeMobile({ state, me, updateState, onChangePlayer, ses
   const meta = modeMeta(state.mode);
   const theme = MODE_THEMES[state.mode];
   const players = state.players || [];
-  useTick(true, 500);
+  useTick(true, 1000);
 
   const mission = (mg.missions || {})[me.id];
   const missionKey = mission ? `${mission.sentAt}` : null;
@@ -70,7 +71,7 @@ export default function ModeMobile({ state, me, updateState, onChangePlayer, ses
   // Consent check-in: πριν ξεκινήσει το παιχνίδι κάθε παίκτρια δηλώνει τα όριά της.
   if (consentPending(mg)) {
     return (
-      <div className="min-h-screen p-3 pb-24 text-foreground" style={{ background: theme.bg }}>
+      <div className="min-h-screen p-3 pb-[calc(env(safe-area-inset-bottom,0px)+11rem)] text-foreground" style={{ background: theme.bg }}>
         <div className="max-w-md mx-auto space-y-3">
           <div className="text-center">
             <div className="font-display text-xl" style={{ color: theme.accent }}>{meta.icon} {meta.name}</div>
@@ -83,16 +84,16 @@ export default function ModeMobile({ state, me, updateState, onChangePlayer, ses
   }
 
   return (
-    <div className="min-h-screen p-3 pb-24 text-foreground" style={{ background: theme.bg }}>
+    <div className="min-h-screen p-3 pb-[calc(env(safe-area-inset-bottom,0px)+11rem)] text-foreground" style={{ background: theme.bg }}>
       <div className="max-w-md mx-auto space-y-3">
-        <GameDurationClock state={state} compact />
+        <div className="flex justify-center"><GameDurationClock state={state} inline /></div>
         <div className="text-center">
           <div className="font-display text-xl" style={{ color: theme.accent, textShadow: `0 0 12px ${theme.accent}88` }}>{meta.icon} {meta.name}</div>
           <div className="text-xs opacity-60">{me.name}</div>
         </div>
 
         {mg.timer && (
-          <div className={`text-center font-display text-5xl tabular-nums ${left < 60 ? 'comic-pulse' : ''}`} style={{ color: left < 60 ? '#FF453A' : theme.accent2 }}>{fmt(left)}</div>
+          <div className={`text-center font-display text-5xl tabular-nums`} style={{ color: left < 60 ? '#FF453A' : theme.accent2 }}>{fmt(left)}</div>
         )}
 
         {mg.stop && (
@@ -112,12 +113,17 @@ export default function ModeMobile({ state, me, updateState, onChangePlayer, ses
         )}
 
         {mission && mission.status === 'active' && (
-          <div className="rounded-lg p-3 space-y-1" style={{ background: '#141416', border: '2px solid #E8C26B' }}>
-            <div className="text-xs uppercase tracking-widest text-fuchsia-300">🕵️ Μυστική αποστολή · μόνο για σένα</div>
-            <div className="font-heading text-lg">{mission.title}</div>
-            <div className="text-sm">{mission.text}</div>
-            <div className="text-xs opacity-70">Λήγει σε {fmt((mission.expiresAt - Date.now()) / 1000)} — η διοργανώτρια κρίνει την επιτυχία.</div>
-          </div>
+          <GameCard
+            variant="compact"
+            kicker="Μυστική αποστολή"
+            corner="Μόνο για σένα"
+            icon="🕵️"
+            image={mission.image}
+            title={mission.title}
+            text={mission.text}
+            footLeft={`Λήγει σε ${fmt((mission.expiresAt - Date.now()) / 1000)}`}
+            footRight={mission.reward ? `+${mission.reward} 🪙` : null}
+          />
         )}
 
         {isLockdown && ld.stage === 'exit' && (
@@ -141,7 +147,7 @@ export default function ModeMobile({ state, me, updateState, onChangePlayer, ses
 
         {act === 'board' && (
           <div className="rounded-lg p-3 space-y-2" style={{ background: '#121214', border: '1px solid #E8C26B' }}>
-            <div className="font-heading">🎮 ΧΕΙΡΙΣΤΗΡΙΟ BOARD</div>
+            <div className="font-heading">🎮 ΧΕΙΡΙΣΤΗΡΙΟ ΤΑΜΠΛΟ</div>
             {!mg.card && !mg.branch && players[(mg.turn || 0) % Math.max(1, players.length)]?.id === me.id && (
               <button disabled={!!mg.playerAction} onClick={() => sendAction('board_roll')} className="w-full rounded-lg bg-fuchsia-700 p-3 font-heading disabled:opacity-40">🎲 ΡΙΞΕ ΤΟ ΖΑΡΙ</button>
             )}
@@ -181,9 +187,7 @@ export default function ModeMobile({ state, me, updateState, onChangePlayer, ses
 
         {act === 'beach' && bb.phase === 'finale' && bb.finalChallenge?.card && (
           <div className="rounded-lg p-3 space-y-2" style={{ background: '#16120A', border: '1px solid #E8C26B' }}>
-            <div className="font-heading text-amber-200">🏖️ ΤΕΛΙΚΟ ΟΜΑΔΙΚΟ CHALLENGE</div>
-            <div className="font-heading">{bb.finalChallenge.card.title}</div>
-            <div className="text-sm">{bb.finalChallenge.card.text}</div>
+            <GameCard variant="compact" kicker="Τελικό ομαδικό challenge" icon="🏖️" image={bb.finalChallenge.card.image} accent="#E8C26B" title={bb.finalChallenge.card.title} text={bb.finalChallenge.card.text} />
             {bb.finalChallenge.responses?.[me.id] ? <div className="text-center text-sm">Η επιλογή σου καταχωρήθηκε: {bb.finalChallenge.responses[me.id] === 'done' ? 'Ολοκλήρωσα' : 'PASS'}</div> : (
               <div className="grid grid-cols-2 gap-2">
                 <button disabled={!!mg.playerAction} onClick={() => sendAction('beach_finale_response', { value: 'done' })} className="rounded-lg bg-emerald-700 p-3 font-heading disabled:opacity-40">ΟΛΟΚΛΗΡΩΣΑ</button>
@@ -208,7 +212,7 @@ export default function ModeMobile({ state, me, updateState, onChangePlayer, ses
             {hand.length > 0 && (
               <div className="text-xs">🃏 Chaos Cards (κρυφές): {hand.map((id) => EXTENDED_CHAOS_MARKET_CARDS.find((x) => x.id === id)?.name).join(', ')} — πες στη διοργανώτρια πότε θες να παίξεις.</div>
             )}
-            {mg.card && mg.card.playerId === me.id && <div className="rounded bg-fuchsia-950/70 p-2 text-sm"><b>{mg.card.title}</b><div>{mg.card.text}</div></div>}
+            {mg.card && mg.card.playerId === me.id && <GameCard variant="compact" kicker={ROUTES[mg.card.route]?.name || 'Κάρτα'} icon={ROUTES[mg.card.route]?.icon} image={mg.card.image} accent={ROUTES[mg.card.route]?.color} title={mg.card.title} text={mg.card.text} footLeft={mg.card.secs ? `⏱ ${mg.card.secs}″` : ''} />}
             {mg.branch === me.id && <div className="rounded bg-yellow-900/60 p-2 text-sm">🔀 Σε διακλάδωση! Διάλεξε Glam ή Chaos Route στο tablet.</div>}
             {(mg.pos || {})[me.id] != null && <div className="text-xs opacity-60">Θέση ταμπλό: #{(mg.pos || {})[me.id] || 0}</div>}
           </div>
@@ -219,8 +223,8 @@ export default function ModeMobile({ state, me, updateState, onChangePlayer, ses
             <div className="text-sm">🩴 Σαγιονάρες: {(bb.flops || {})[me.id] === false ? 'έχασες! 😱' : 'ΟΚ'} · 🥃 {(bb.drinks || {})[me.id] || 0}</div>
             {bb.freeze && <div className="rounded p-2 text-center space-y-2" style={{ background: '#141416', border: '2px solid #F0B85A' }}>📯 {bb.freeze.cmd}<button disabled={!!mg.playerAction || !!bb.loser} onClick={() => sendAction('beach_freeze_loser')} className="w-full rounded bg-rose-700 p-2 font-heading disabled:opacity-40">ΕΙΜΑΙ Η ΤΕΛΕΥΤΑΙΑ</button></div>}
             {bb.loser === me.id && !bb.wheel && <button disabled={!!mg.playerAction} onClick={() => sendAction('beach_wheel_spin')} className="w-full rounded bg-rose-700 p-3 font-heading disabled:opacity-40">🎡 ΓΥΡΝΑ ΤΟΝ ΤΡΟΧΟ</button>}
-            {bb.wheel && bb.wheel.pid === me.id && <div className="rounded p-2 text-sm space-y-2" style={{ background: '#0B0B0C', border: '2px solid #F0B85A' }}><b>{bb.wheel.card.title}</b><div>{bb.wheel.card.text}</div><div className="grid grid-cols-2 gap-2"><button disabled={!!mg.playerAction} onClick={() => sendAction('beach_wheel_done')} className="rounded bg-emerald-700 p-2 font-heading disabled:opacity-40">ΕΓΙΝΕ</button><button disabled={!!mg.playerAction} onClick={() => sendAction('beach_wheel_again')} className="rounded bg-secondary p-2 font-heading disabled:opacity-40">ΝΕΑ ΠΕΡΙΣΤΡΟΦΗ</button></div></div>}
-            {bb.truth && bb.truth.who === me.id && <div className="rounded p-2 text-sm space-y-2" style={{ background: '#0B0B0C', border: '2px solid #F0B85A' }}><b>🥃 SHOT & TRUTH</b><div>{bb.truth.question || 'Η ερώτηση εμφανίζεται στην κεντρική οθόνη.'}</div>{bb.truth.status === 'decide' && <div className="grid grid-cols-2 gap-2"><button disabled={!!mg.playerAction} onClick={() => sendAction('beach_truth_response', { value: 'truth' })} className="rounded bg-emerald-700 p-2 font-heading disabled:opacity-40">TRUTH</button><button disabled={!!mg.playerAction} onClick={() => sendAction('beach_truth_response', { value: 'mocktail' })} className="rounded bg-orange-700 p-2 font-heading disabled:opacity-40">MOCKTAIL / PASS</button></div>}</div>}
+            {bb.wheel && bb.wheel.pid === me.id && <div className="space-y-2"><GameCard variant="compact" kicker="Τροχός ποινών" icon="🎡" image={bb.wheel.card.image} accent="#F0B85A" title={bb.wheel.card.title} text={bb.wheel.card.text} footLeft={bb.wheel.card.secs ? `⏱ ${bb.wheel.card.secs}″` : ''} /><div className="grid grid-cols-2 gap-2"><button disabled={!!mg.playerAction} onClick={() => sendAction('beach_wheel_done')} className="rounded bg-emerald-700 p-2 font-heading disabled:opacity-40">ΕΓΙΝΕ</button><button disabled={!!mg.playerAction} onClick={() => sendAction('beach_wheel_again')} className="rounded bg-secondary p-2 font-heading disabled:opacity-40">ΝΕΑ ΠΕΡΙΣΤΡΟΦΗ</button></div></div>}
+            {bb.truth && bb.truth.who === me.id && <div className="rounded p-2 text-sm space-y-2" style={{ background: '#0B0B0C', border: '2px solid #F0B85A' }}><b>🥃 SHOT & TRUTH</b><div>{bb.truth.question || 'Η ερώτηση εμφανίζεται στην κεντρική οθόνη.'}</div>{bb.truth.status === 'decide' && <div className="grid grid-cols-2 gap-2"><button disabled={!!mg.playerAction} onClick={() => sendAction('beach_truth_response', { value: 'truth' })} className="rounded bg-emerald-700 p-2 font-heading disabled:opacity-40">TRUTH</button><button disabled={!!mg.playerAction} onClick={() => sendAction('beach_truth_response', { value: 'mocktail' })} className="rounded bg-orange-700 p-2 font-heading disabled:opacity-40">🥃 DRINK</button></div>}</div>}
             {bb.queen === me.id && <div className="text-center font-display text-2xl" style={{ color: '#E8C26B' }}>👑 Beach Queen!</div>}
           </div>
         )}

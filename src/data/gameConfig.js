@@ -65,13 +65,13 @@ export const SQUARE_TYPES = {
 
 // ===== PENALTY LADDER =====
 export const FULL_PENALTY_LADDER = [
-  { step: 1, label: 'Quick Logic', icon: '🧩', detail: 'Σύντομος γρίφος λογικής στην οθόνη.', challenge: 'Λύσε τον γρίφο μέσα σε 30″ ή επίλεξε PASS.' },
-  { step: 2, label: 'Memory Sequence', icon: '🧠', detail: 'Ψηφιακή ακολουθία συμβόλων.', challenge: 'Επανάλαβε σωστά την ακολουθία στην οθόνη.' },
-  { step: 3, label: 'Trivia Round', icon: '🎯', detail: 'Μία ερώτηση γνώσεων.', challenge: 'Απάντησε σωστά ή ζήτησε PASS.' },
-  { step: 4, label: 'Karaoke Moment', icon: '🎤', detail: 'Προαιρετική επιλογή τραγουδιού.', challenge: 'Διάλεξε τραγούδι ή πέρασε τη σειρά.' },
-  { step: 5, label: 'Team Riddle', icon: '🔐', detail: 'Ομαδικός γρίφος.', challenge: 'Η ομάδα βρίσκει μαζί τη λύση.' },
-  { step: 6, label: 'Code Challenge', icon: '🔢', detail: 'Ψηφιακός κωδικός 4 ψηφίων.', challenge: 'Βρες τον κωδικό πριν λήξει ο χρόνος.' },
-  { step: 7, label: 'Final Quiz', icon: '🏆', detail: 'Τελική ερώτηση γνώσεων.', challenge: 'Ολοκλήρωσε το quiz ή επίλεξε PASS. Η συμμετοχή είναι πάντα προαιρετική.' },
+  { step: 1, label: 'Δέσιμο Ποδιών (αστράγαλοι)', icon: '🦶', detail: 'Σχοινί, zip-tie ή tape στους αστραγάλους.', challenge: 'Πρέπει να κάνει 3 βήματα με δεμένα πόδια. Αν πέσει, +10" γαργαλήματος στις μασχάλες.' },
+  { step: 2, label: 'Δέσιμο Χεριών (καρποί)', icon: '✋', detail: 'Καρποί δεμένοι μπροστά ή πίσω.', challenge: 'Πρέπει να πιει 1 σφηνάκι χωρίς χέρια, μόνο με το στόμα από το τραπέζι.' },
+  { step: 3, label: 'Βγάλσιμο Αριστερού Παπουτσιού', icon: '👟', detail: 'Ένα παπούτσι φεύγει.', challenge: 'Το παπούτσι περνάει σε άλλη παίκτρια — το φοράει για 1 γύρο ως «κατάσχεση».' },
+  { step: 4, label: 'Βγάλσιμο Δεξιού Παπουτσιού', icon: '👟', detail: 'Χωρίς παπούτσια.', challenge: 'Πρέπει να περπατήσει ξυπόλυτη σε όλο το δωμάτιο και να φέρει ένα αντικείμενο.' },
+  { step: 5, label: 'Βγάλσιμο Αριστερής Κάλτσας', icon: '🧦', detail: '1 γυμνό πέλμα.', challenge: 'Η παρέα ακουμπάει 1 αντικείμενο στο γυμνό πέλμα — πρέπει να μαντέψει τι είναι.' },
+  { step: 6, label: 'Βγάλσιμο Δεξιάς Κάλτσας', icon: '🧦', detail: 'Εντελώς ξυπόλυτη.', challenge: '15" γαργάλημα στις γυμνές πατούσες από 1 παίκτρια. Αν γελάσει, +1 επιπλέον ποινή.' },
+  { step: 7, label: 'Toe Tie — Δέσιμο Μυτών', icon: '🎀', detail: 'Τα δύο μεγάλα δάχτυλα δεμένα μεταξύ τους. Πέλματα κλειδωμένα. Fully Restrained → Στάδιο 2.', challenge: 'Πλήρης ακινητοποίηση ποδιών. Αν κινηθεί τα δάχτυλα, +20" συνεχόμενο γαργάλημα. Τέλος Σκάλας → Στάδιο 2.' },
 ];
 
 export function getPenaltyLadder(footwearLevel) {
@@ -91,11 +91,11 @@ export const FOOTWEAR_LEVELS = [
 
 // ===== TOENAIL PERKS =====
 export const TOENAIL_PERKS = [
-  { id: 'red', name: 'Red Queen', icon: '🔴', color: '#FF453A', desc: 'Μεταφορά μίας ψηφιακής πρόκλησης σε άλλη παίκτρια, μόνο με τη συγκατάθεσή της.' },
-  { id: 'black', name: 'Goth Shield', icon: '🖤', color: '#1e293b', desc: '30 δευτερόλεπτα ασυλία από ψηφιακές προκλήσεις.' },
-  { id: 'nude', name: 'Stealth Mode', icon: '🤍', color: '#e2d6c8', desc: 'Ακύρωση μίας ψηφιακής πρόκλησης (Skip).' },
+  { id: 'red', name: 'Red Queen', icon: '🔴', color: '#FF453A', desc: 'Μεταφορά 1 ποινής δεσίματος ή σφηνακίου σε άλλη παίκτρια.' },
+  { id: 'black', name: 'Goth Shield', icon: '🖤', color: '#1e293b', desc: '30 δευτερόλεπτα πλήρης ασυλία στο γαργάλημα.' },
+  { id: 'nude', name: 'Stealth Mode', icon: '🤍', color: '#e2d6c8', desc: 'Ακύρωση 1 στάσης δεσίματος (Skip).' },
   { id: 'pink', name: 'Girlboss Override', icon: '🩷', color: '#E8C26B', desc: 'Επιλογή της παίκτριας που θα παίξει στη συνέχεια.' },
-  { id: 'glitter', name: 'Glitch Code', icon: '🪩', color: '#E8C26B', desc: 'Αλλαγή κάρτας ή ψηφιακής πρόκλησης.' },
+  { id: 'glitter', name: 'Glitch Code', icon: '🪩', color: '#E8C26B', desc: 'Αλλαγή κάρτας ή αλλαγή της ποινής που έβγαλε η εφαρμογή.' },
 ];
 
 // ===== HIDDEN ROLES =====
@@ -113,31 +113,31 @@ export const INTENSITY_LEVELS = [
 ];
 
 // ===== GAME MODES =====
-// Four legacy modes plus the five digital modes registered below.
+// BUILD 11:07 — 4 modes: classic, marathon, arrest_heist, pajama
 export const GAME_MODES = [
   { id: 'classic', name: 'ΚΛΑΣΣΙΚΗ', icon: '🎲', desc: '2-6 παίκτριες. Ταμπλό 24 κουτιών, Σκάλα 7 Ποινών, Στάδια 1-3.' },
   { id: 'marathon', name: 'MEGA MARATHON', icon: '🏆', desc: '8-10 παίκτριες. 2 ομάδες (Alpha & Beta), 4 στάδια, $200.000 Loot ή 10 Wanted Stars.' },
   { id: 'arrest_heist', name: 'ARREST & HEIST', icon: '🚨', desc: '2 Ομάδες (Alpha vs Beta). 6 γύροι, 6 στάδια ποινών, Grand Heist Escape.' },
-  { id: 'pajama', name: 'PAJAMA PEDI-GLAM · 5H', icon: '🩴', desc: 'Μένουν στο σπίτι. Πιτζάμες, νύχια, παντόφλες, ψηφιακές προκλήσεις και ομαδικά quiz. 44 κουτιά, νύχτα & πρωί.' },
+  { id: 'pajama', name: 'PAJAMA PEDI-GLAM · 5H', icon: '🩴', desc: 'Μένουν στο σπίτι. Πιτζάμες, νύχια, παντόφλες, γαργαλητό & δεσίματα. 44 κουτιά, νύχτα & πρωί.' },
 ];
 
-// Τα τέσσερα ψηφιακά modes ορίζονται στο data/modes/modeRegistry.js
+// Τα 4 ψηφιακά modes του «Μεγάλου Update» ορίζονται στο data/modes/modeRegistry.js
 import { NEW_MODES } from '@/data/modes/modeRegistry';
 NEW_MODES.forEach((m) => GAME_MODES.push({ id: m.id, name: m.name, icon: m.icon, desc: m.desc }));
 
 // ===== MARATHON STAGES =====
 export const MARATHON_STAGES = [
   { stage: 1, name: 'INFILTRATION', wantedRange: '1-3', target: 'FINISH', desc: 'Ψηφιακό φιδάκι 80 κουτιών. Ζάρι και κίνηση. Challenge: Επιτυχία +$5.000, Αποτυχία +1⭐. Κόντρα: Νίκη +$5.000, Ήττα +1⭐. Παγίδες/Ποινές: αυτόματο εφέ +1⭐. Πρώτη ομάδα στο FINISH.' },
-  { stage: 2, name: 'THE VAULT', wantedRange: '4-6', target: '$100.000', desc: 'Εσωτερικός κύκλος, διπλάσιο Loot και 5 ατομικές ψηφιακές δοκιμασίες.' },
+  { stage: 2, name: 'THE VAULT', wantedRange: '4-6', target: '$100.000', desc: 'Εσωτερικός κύκλος, διπλάσια Loot. 5 ατομικές δοκιμασίες ξυπόλυτων. Κλιμάκωση δεσίματος.' },
   { stage: 3, name: 'POLICE RAIDS', wantedRange: '7-9', target: '$160.000', desc: '3 ομαδικές ποινές (2-3 παίκτριες ταυτόχρονα).' },
-  { stage: 4, name: 'TOTAL LOCKDOWN', wantedRange: '10 / $200.000', target: 'ΝΙΚΗ', desc: 'Η ηττημένη ομάδα ολοκληρώνει ομαδικό ψηφιακό challenge 120″.' },
+  { stage: 4, name: 'TOTAL LOCKDOWN', wantedRange: '10 / $200.000', target: 'ΝΙΚΗ', desc: 'Η ηττημένη ομάδα ακινητοποιείται. 120″ τελικής εκτέλεσης.' },
 ];
 
 // ===== BOMB EVENT =====
 export const BOMB_TYPING_TYPES = [
-  { id: 'hogtie', name: 'Logic Grid', icon: '🧩', desc: 'Επίλυση ψηφιακού πίνακα λογικής.' },
-  { id: 'tiptoe', name: 'Sequence Lock', icon: '🔢', desc: 'Αναπαραγωγή ακολουθίας αριθμών στην οθόνη.' },
-  { id: 'spitlock', name: 'Memory Code', icon: '🧠', desc: 'Απομνημόνευση και εισαγωγή κωδικού.' },
+  { id: 'hogtie', name: 'Hogtie', icon: '🪢', desc: 'Καρποί πίσω από την πλάτη. Αστράγαλοι δεμένοι, φτέρνες στους γλουτούς.' },
+  { id: 'tiptoe', name: 'Overhead Standing Tiptoe Lock', icon: '🩰', desc: 'Χέρια δεμένα ψηλά. Αστράγαλοι δεμένοι κάτω. Στέκεται στις μύτες.' },
+  { id: 'spitlock', name: 'The Spit Lock (Σούβλα)', icon: '🍢', desc: 'Μαντήλι στα μάτια. Χέρια & πόδια σε οριζόντια δοκό.' },
 ];
 
 export const BOMB_RIDDLES_ALPHA = [
@@ -159,26 +159,26 @@ export const BOMB_RIDDLES_BETA = [
 ];
 
 export const BOMB_PASO_TRIALS = [
-  { id: 'truth', name: 'ΑΚΡΑΙΑ ΑΛΗΘΕΙΑ (Extreme Truth)', desc: 'Προαιρετική ερώτηση συζήτησης. Μπορείς να απαντήσεις, να επιλέξεις PASS ή να ζητήσεις αλλαγή ερώτησης.', success: 'Η παίκτρια επιβεβαιώνει ότι θέλει να απαντήσει.' },
-  { id: 'dare', name: 'ΑΚΡΑΙΟ ΘΑΡΡΟΣ (Extreme Dare)', desc: 'Λύσε έναν σύντομο γρίφο ή ολοκλήρωσε ένα ψηφιακό quiz μέσα στον διαθέσιμο χρόνο.', success: 'Σωστή απάντηση ή ελεύθερη επιλογή PASS.' },
+  { id: 'truth', name: 'ΑΚΡΑΙΑ ΑΛΗΘΕΙΑ (Extreme Truth)', desc: 'Πες μπροστά σε όλες, με κάθε λεπτομέρεια και χωρίς να διστάσεις: Ποιο είναι το πιο ντροπιαστικό πράγμα που έχεις κάνει ή η πιο κρυφή σκέψη που έχεις κάνει για μία συγκεκριμένη παίκτρια της αντίπαλης ομάδας;', success: 'Πλήρης, αναλυτική απάντηση χωρίς δισταγμό άνω των 5 δευτερολέπτων.' },
+  { id: 'dare', name: 'ΑΚΡΑΙΟ ΘΑΡΡΟΣ (Extreme Dare)', desc: 'Βγάλε αμέσως τα παπούτσια και τις κάλτσες σου. Κάθισε στο πάτωμα και άφησε 2 παίκτριες της αντίπαλης ομάδας να σου γαργαλήσουν τις γυμνές αψίδες των πελμάτων για 30 δευτερόλεπτα, χωρίς να μετακινήσεις τα πόδια σου και χωρίς να βγάλεις τον παραμικρό ήχο/γέλιο!', success: 'Απόλυτη ακινησία και σιγή για 30 δευτερόλεπτα.' },
 ];
 
 // ===== WHEEL OF MISFORTUNE =====
-export const WHEEL_BINDING_MATERIALS = ['Κάρτα PASS', 'Glam Tokens', 'Ψηφιακό Quiz', 'Κάρτα Bonus'];
-export const WHEEL_TICKLE_TOOLS = ['Γρίφος', 'Trivia', 'Memory Sequence', 'Karaoke Prompt'];
+export const WHEEL_BINDING_MATERIALS = ['Σχοινί', 'Zip-ties', 'Duct Tape', 'Βελούδινη Κορδέλα'];
+export const WHEEL_TICKLE_TOOLS = ['Γυμνά δάχτυλα', 'Παγάκι', 'Πινέλο μακιγιάζ', 'Φτερό'];
 
 // ===== ARREST & HEIST MODE =====
 export const ARREST_HEIST_LADDER = [
-  { step: 1, label: 'Έλεγχος Εγγράφων', icon: '🚔', detail: 'Απάντησε σε μία σύντομη ερώτηση γνώσεων.' },
-  { step: 2, label: 'Κρυπτογράφηση', icon: '🔐', detail: 'Λύσε έναν ψηφιακό γρίφο κρυπτογράφησης.' },
-  { step: 3, label: 'Ανάκληση Μνήμης', icon: '🧠', detail: 'Θυμήσου και επανάλαβε σωστά μία ακολουθία.' },
-  { step: 4, label: 'Κωδικός Πρόσβασης', icon: '🔢', detail: 'Βρες τον τετραψήφιο κωδικό στην οθόνη.' },
-  { step: 5, label: 'Ομαδική Απόδραση', icon: '🗝️', detail: 'Συνεργαστείτε για να λύσετε τον τελικό γρίφο.' },
-  { step: 6, label: 'Grand Heist Challenge', icon: '🏆', detail: 'Ολοκληρώστε το τελικό quiz. PASS και STOP είναι διαθέσιμα σε όλες.' },
+  { step: 1, label: 'Σύλληψη', icon: '🚔', detail: 'Αφαίρεση 1ου παπουτσιού (αργά από την αντίπαλη ομάδα) + Δέσιμο καρπών με Zip-ties.' },
+  { step: 2, label: 'Περιορισμός', icon: '⛓️', detail: 'Αφαίρεση 2ου παπουτσιού + Τύλιγμα γονάτων με Duct tape (περιορισμός κίνησης).' },
+  { step: 3, label: 'Απογύμνωση 1', icon: '🧦', detail: 'Αφαίρεση 1ης κάλτσας + Δέσιμο των δύο ποδιών μεταξύ τους στους αστραγάλους.' },
+  { step: 4, label: 'Απογύμνωση 2', icon: '🦶', detail: 'Αφαίρεση 2ης κάλτσας (τελείως γυμνές πατούσες) + Σφιχτό Blindfold.' },
+  { step: 5, label: 'Full Hogtie Lockdown', icon: '🪢', detail: 'Πλήρες Hogtie με σχοινί στον καναπέ/πάτωμα.' },
+  { step: 6, label: 'Blindfold Full Lockdown', icon: '🙈', detail: 'Hogtie + Blindfold + Γυμνές Πατούσες. Τέλος ποινών — Grand Heist ξεκινά.' },
 ];
 
 export const ARREST_HEIST_INTENSITY = [
-  { id: 'soft', name: 'SOFT', icon: '🟢', desc: 'Σύντομα quiz και απλοί γρίφοι.' },
-  { id: 'medium', name: 'MEDIUM', icon: '🟡', desc: 'Μεσαίας δυσκολίας ψηφιακά challenges.' },
-  { id: 'hardcore', name: 'FULL HARDCORE', icon: '🔴', desc: 'Δύσκολοι γρίφοι και σύνθετα ψηφιακά challenges.' },
+  { id: 'soft', name: 'SOFT', icon: '🟢', desc: 'Ελαφριές ποινές, λιγότερο γαργάλημα.' },
+  { id: 'medium', name: 'MEDIUM', icon: '🟡', desc: 'Κλιμακωτό γαργάλημα & δεσίματα.' },
+  { id: 'hardcore', name: 'FULL HARDCORE', icon: '🔴', desc: 'Hogtie, Tickle & ακραίες δοκιμασίες.' },
 ];

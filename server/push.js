@@ -77,16 +77,16 @@ export function notifyNewSubmission(entity, rec) {
     const mode = clip(rec.gameMode || rec.vipGameMode, 80);
     msg = { title: '📝 Νέα αίτηση συμμετοχής', body: `${name} υπέβαλε νέα αίτηση${mode ? ` · ${mode}` : ''} μέσω της δημόσιας φόρμας`, url: '/admin?tab=forms' };
   } else if (entity === 'InvitationRSVP' && rec.event === 'pajama') {
-    msg = { title: '🩴 Νέα κράτηση θέσης', body: `${name} κράτησε θέση στο /pajama-invite`, url: '/admin?tab=rsvp' };
+    msg = { title: '🩴 Νέα κράτηση θέσης', body: `${name} κράτησε θέση στο /pajama-invite`, url: '/admin?tab=forms' };
   } else if (entity === 'VIPInvitationSubmission') {
-    msg = { title: '✦ Νέο VIP Ερωτηματολόγιο', body: `${clip(rec.displayName || name, 80)} συμπλήρωσε το VIP Questionnaire`, url: '/admin?tab=digital-invitations' };
+    msg = { title: '✦ Νέο VIP Ερωτηματολόγιο', body: `${clip(rec.displayName || name, 80)} συμπλήρωσε το VIP Questionnaire`, url: '/admin?tab=invitations' };
   } else if (entity === 'PajamaIntake') {
     const modes = Array.isArray(rec.preferredModes) && rec.preferredModes.length ? ` · ${clip(rec.preferredModes.join(', '), 80)}` : '';
     msg = { title: '📝 Νέα αίτηση συμμετοχής', body: `${name} υπέβαλε νέα αίτηση μέσω της δημόσιας φόρμας${modes}`, url: '/admin?tab=forms' };
   } else if (entity === 'BacheloretteIntake') {
     const leader = clip(rec.leaderName, 80) || 'Κάποια ομάδα';
     const code = clip(rec.sessionCode, 8);
-    msg = { title: '🎲 Νέο Intake ομάδας', body: `${leader} συμπλήρωσε το Intake${code ? ` (κωδικός ${code})` : ''}`, url: '/admin?tab=intakes' };
+    msg = { title: '🎲 Νέο Intake ομάδας', body: `${leader} συμπλήρωσε το Intake${code ? ` (κωδικός ${code})` : ''}`, url: '/admin?tab=forms' };
   }
   if (msg) notifyAdmins(msg).catch((e) => console.error('[push] notify error:', e.message));
 }

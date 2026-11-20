@@ -6,8 +6,8 @@ export default function PajamaPenalty({ penalty, onDone }) {
     <div className="min-h-screen bg-gradient-to-b from-rose-950 via-purple-950 to-slate-950 text-pink-50 p-4 pb-16">
       <div className="max-w-lg mx-auto space-y-3 pt-6">
         <div className="text-center">
-          <div className="text-5xl">🧩🎯</div>
-          <div className="font-heading text-2xl text-rose-200 mt-1">ΣΤΑΘΜΟΣ ΨΗΦΙΑΚΗΣ ΠΡΟΚΛΗΣΗΣ</div>
+          <div className="text-5xl">⛓️🦶😈</div>
+          <div className="font-heading text-2xl text-rose-200 mt-1">ΣΤΑΘΜΟΣ ΑΚΙΝΗΤΟΠΟΙΗΣΗΣ</div>
           <div className="text-sm text-pink-300">
             {penalty.cardTitle || 'Αποτυχία δοκιμασίας'} · -{penalty.points || 1} πόντος
           </div>
@@ -20,7 +20,8 @@ export default function PajamaPenalty({ penalty, onDone }) {
           <div className="font-heading text-2xl text-rose-100">{penalty.playerName}</div>
           <div className="text-sm font-bold">{penalty.binding}</div>
           <p className="text-xs text-pink-100/80">
-            Η παίκτρια ολοκληρώνει ένα σύντομο ψηφιακό quiz ή γρίφο. Μπορεί να επιλέξει PASS ή STOP οποιαδήποτε στιγμή.
+            Δύο εκτελέστριες κάνουν αμείλικτο γαργαλητό στα πέλματα και στα δάχτυλα — η παίκτρια δεν μπορεί να
+            προστατευτεί ούτε να τραβήξει τα πόδια της.
           </p>
         </div>
 

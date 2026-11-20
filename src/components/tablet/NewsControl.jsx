@@ -20,7 +20,7 @@ export default function NewsControl({ state, updateState, onClose }) {
   return (
     <div className="fixed inset-0 z-[85] flex items-center justify-center bg-background/90 p-4">
       <ComicPanel className="w-full max-w-xl space-y-3 bg-card">
-        <div className="font-heading text-2xl text-primary">📡 BREAKING NEWS · TV</div>
+        <div className="font-heading text-2xl text-primary">📡 ΕΚΤΑΚΤΟ ΔΕΛΤΙΟ · TV</div>
         <p className="text-sm text-foreground/65">Η ανακοίνωση θα εμφανιστεί αμέσως στην τηλεόραση και στην κάτω ζωντανή ροή.</p>
         <textarea
           value={detail}

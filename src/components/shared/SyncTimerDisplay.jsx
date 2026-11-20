@@ -9,7 +9,7 @@ export default function SyncTimerDisplay({ state, variant = 'tv' }) {
 
   useEffect(() => {
     if (!timer?.running) return undefined;
-    const id = setInterval(() => setNow(Date.now()), 200);
+    const id = setInterval(() => setNow(Date.now()), 500);
     return () => clearInterval(id);
   }, [timer?.running, timer?.endsAt]);
 

@@ -135,7 +135,6 @@ export default function AdminInterestParticipation() {
     <div className="space-y-4">
       <ComicPanel className="bg-card space-y-3">
         <h2 className="font-heading text-2xl text-primary">ΕΝΔΙΑΦΕΡΟΝ & ΣΥΜΜΕΤΟΧΗ</h2>
-        <p className="text-sm text-foreground/70">Οι αρχικές δηλώσεις ενδιαφέροντος αποθηκεύονται ανεξάρτητα από Event, πρόσκληση και GameSession.</p>
         <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Αναζήτηση ονόματος ή τύπου…" className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground" />
         <div className="space-y-2">
           {filteredInterests.map((item) => (

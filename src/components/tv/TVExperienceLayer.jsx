@@ -32,7 +32,7 @@ export default function TVExperienceLayer({ sessionCode, mode, playerCount, stag
 
       <header className="dot-tv-hud" aria-label="Κατάσταση τηλεοπτικής οθόνης">
         <div className="dot-tv-brand">
-          <span className="dot-tv-brand-mark">D</span>
+          <img className="dot-tv-brand-mark" src="/icons/icon-192.png" alt="" />
           <span>
             <strong>DEAL OF TEMPTATION</strong>
             <small>{modeLabel}</small>

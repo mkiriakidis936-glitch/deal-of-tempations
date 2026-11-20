@@ -11,6 +11,9 @@ export function useGameSession({ autoLoad = true } = {}) {
   const [connectionEpoch, setConnectionEpoch] = useState(0);
   const recoveryBusyRef = useRef(false);
   const operationRef = useRef(0);
+  const refreshRef = useRef(null);
+  const viewerRef = useRef(null);
+  viewerRef.current = viewerPlayerId;
 
   useEffect(() => {
     if (!autoLoad) { setLoading(false); return; }
@@ -38,6 +41,7 @@ export function useGameSession({ autoLoad = true } = {}) {
   useEffect(() => {
     if (!session) return;
     const unsub = base44.entities.GameSession.subscribe((event) => {
+      if (event.type === 'resync') { refreshRef.current?.(); return; }
       if (event.id !== sessionRef.current?.id) return;
       if (event.type === 'delete') {
         sessionRef.current = null;
@@ -115,7 +119,7 @@ export function useGameSession({ autoLoad = true } = {}) {
       const operation = operationRef.current;
       const currentCode = sessionRef.current?.sessionCode;
       const currentId = sessionRef.current?.id;
-      const query = currentCode ? { sessionCode: currentCode } : {};
+      const query = currentCode ? { sessionCode: currentCode, ...(viewerRef.current ? { playerId: viewerRef.current } : {}) } : {};
       const { items } = await base44.entities.GameSession.filter(query, { sort: '-created_date', limit: 1 });
       if (operation !== operationRef.current || currentId !== sessionRef.current?.id) return;
       if (items && items.length > 0 && (!currentCode || items[0].sessionCode === currentCode)) {
@@ -130,6 +134,8 @@ export function useGameSession({ autoLoad = true } = {}) {
       recoveryBusyRef.current = false;
     }
   }, []);
+
+  refreshRef.current = refresh;
 
   // Reconnect the live subscription and recover the latest server state after network return or app resume.
   useEffect(() => {

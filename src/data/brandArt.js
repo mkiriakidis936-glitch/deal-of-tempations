@@ -6,7 +6,7 @@ const BASE = '/assets/';
 export const MEDIA_FOCAL_POINTS = {};
 
 export const ART = {
-  emblem: `${BASE}b53d2d438_kse5udkse5udkse5.jpeg`,
+  emblem: '/icons/icon-512.png',
   poster: `${BASE}a6f4b0278_l5k9kkl5k9kkl5k9.jpeg`,
   group: `${BASE}6699d79d8_i94p4ai94p4ai94j.jpeg`,
   scene: `${BASE}f73b71f5b_os4kmvos4kmvos4k.jpeg`,
@@ -31,7 +31,7 @@ export const ART = {
   heist9: `${BASE}64ab52272_heist-h9.jpeg`,
   heist10: `${BASE}c0901d88c_heist-h10.jpeg`,
   banner: '/assets/059bca0c5_Gemini_Generated_Image_hmy5gghmy5gghmy5.jpeg',
-  logo: '/assets/ee5e63437_Gemini_Generated_Image_h0aclsh0aclsh0ac.jpeg',
+  logo: '/brand/logo-full.jpg',
   invitationBg: '/assets/38a7c85ef_DealofTemptation2.jpeg',
   invitation: '',
   extraHeistRoom: '',
@@ -50,6 +50,8 @@ export const MODE_COVERS = {
   modeCover_pedi_extended: ART.photoPediGlam,
   modeCover_lockdown: ART.vault,
   modeCover_beach_bar: ART.photoSlippers,
+  modeCover_pedi_glam: ART.extraPediGlam || ART.photoPediGlam,
+  modeCover_marathon_4h: ART.party2,
 };
 
 // Ανεξάρτητη φωτογραφική ταυτότητα για καθένα από τα τέσσερα νέα Modes.

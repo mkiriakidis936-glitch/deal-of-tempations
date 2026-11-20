@@ -268,7 +268,7 @@ export default function GmTools({ state, onClose }) {
           {!activeTool ? (
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <div className="font-heading text-xl">🧪 GM TOOLS</div>
+                <div className="font-heading text-xl">🧪 ΕΡΓΑΛΕΙΑ ΔΙΟΡΓΑΝΩΤΡΙΑΣ</div>
                 <ComicButton variant="dark" size="sm" onClick={onClose}>✕</ComicButton>
               </div>
               <div className="text-sm text-foreground/70">Χειροκίνητα ενεργοποιούμενα — δεν πειράζουν το game flow</div>

@@ -66,7 +66,6 @@ export default function AdminSiteVersions({ eventId, onRestore }) {
   return (
     <ComicPanel className="bg-card space-y-2">
       <div className="font-heading text-lg">🕘 ΙΣΤΟΡΙΚΟ ΕΚΔΟΣΕΩΝ SITE</div>
-      <p className="text-xs text-foreground/60">Διατηρούνται έως 20 προηγούμενες αποθηκευμένες εκδόσεις ανά event. Η επαναφορά φορτώνει την έκδοση στον editor και απαιτεί ξεχωριστή αποθήκευση.</p>
       {message && <div className="text-xs font-bold text-primary">{message}</div>}
       {loading ? <div className="text-xs">Φόρτωση…</div> : versions.length === 0 ? (
         <div className="text-xs text-foreground/50">Δεν υπάρχουν προηγούμενες εκδόσεις για αυτό το event.</div>

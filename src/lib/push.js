@@ -22,6 +22,22 @@ const toKey = (b64) => {
   return Uint8Array.from([...raw].map((c) => c.charCodeAt(0)));
 };
 
+async function readyRegistration() {
+  if (!navigator.serviceWorker.controller) {
+    const existing = await navigator.serviceWorker.getRegistration();
+    if (!existing) await navigator.serviceWorker.register('/sw.js');
+  }
+  return Promise.race([
+    navigator.serviceWorker.ready,
+    new Promise((_, reject) => setTimeout(() => reject(new Error('Η εφαρμογή δεν ήταν έτοιμη για ειδοποιήσεις. Ανανέωσε τη σελίδα και ξαναδοκίμασε.')), 10000)),
+  ]);
+}
+
+function assertPushAvailable() {
+  if (isIOS() && !isStandalone()) throw new Error('Στο iPhone/iPad: Κοινοποίηση → «Προσθήκη στην οθόνη Αφετηρίας», άνοιξε την εφαρμογή από το εικονίδιο και ενεργοποίησε από εκεί.');
+  if (!pushSupported()) throw new Error('Αυτός ο browser δεν υποστηρίζει ειδοποιήσεις.');
+}
+
 export async function currentSubscription() {
   if (!pushSupported()) return null;
   const reg = await navigator.serviceWorker.getRegistration();
@@ -29,8 +45,8 @@ export async function currentSubscription() {
 }
 
 export async function enablePush() {
-  if (!pushSupported()) throw new Error('Αυτός ο browser δεν υποστηρίζει ειδοποιήσεις.');
-  const reg = await navigator.serviceWorker.ready;
+  assertPushAvailable();
+  const reg = await readyRegistration();
   const perm = await Notification.requestPermission();
   if (perm !== 'granted') throw new Error('Οι ειδοποιήσεις είναι μπλοκαρισμένες. Επίτρεψέ τες από τις ρυθμίσεις του browser/συσκευής.');
   const { key } = await request('GET', '/api/push/public-key');
@@ -42,9 +58,8 @@ export async function enablePush() {
 
 export async function enablePlayerPush(sessionCode, playerId) {
   if (!sessionCode || !playerId) throw new Error('Δεν έχει επιλεγεί συνεδρία και παίκτρια.');
-  if (!pushSupported()) throw new Error('Η συσκευή ή ο browser δεν υποστηρίζει ειδοποιήσεις push.');
-  if (isIOS() && !isStandalone()) throw new Error('Σε iPhone/iPad πρόσθεσε πρώτα το παιχνίδι στην Αφετηρία και άνοιξέ το από το εικονίδιο της εφαρμογής.');
-  const reg = await navigator.serviceWorker.ready;
+  assertPushAvailable();
+  const reg = await readyRegistration();
   const perm = await Notification.requestPermission();
   if (perm !== 'granted') throw new Error('Οι ειδοποιήσεις είναι απενεργοποιημένες στις ρυθμίσεις της συσκευής.');
   const { key } = await request('GET', '/api/push/public-key');

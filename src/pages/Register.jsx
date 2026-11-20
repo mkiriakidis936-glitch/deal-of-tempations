@@ -24,7 +24,7 @@ export default function Register() {
     e.preventDefault();
     setError("");
     if (password !== confirmPassword) {
-      setError("Passwords do not match");
+      setError("Οι κωδικοί δεν ταιριάζουν");
       return;
     }
     setLoading(true);
@@ -32,7 +32,7 @@ export default function Register() {
       await base44.auth.register({ email, password });
       window.location.href = safeReturnTo();
     } catch (err) {
-      setError(err.message || "Registration failed");
+      setError(err.message || "Η εγγραφή απέτυχε");
     } finally {
       setLoading(false);
     }
@@ -48,7 +48,7 @@ export default function Register() {
       }
       window.location.href = safeReturnTo();
     } catch (err) {
-      setError(err.message || "Invalid verification code");
+      setError(err.message || "Λάθος κωδικός επιβεβαίωσης");
     } finally {
       setLoading(false);
     }
@@ -63,7 +63,7 @@ export default function Register() {
         description: "Έλεγξε το email σου για τον νέο κωδικό.",
       });
     } catch (err) {
-      setError(err.message || "Failed to resend code");
+      setError(err.message || "Δεν στάλθηκε ξανά ο κωδικός");
     }
   };
 
@@ -109,10 +109,10 @@ export default function Register() {
           {loading ? (
             <>
               <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              Verifying...
+              Επιβεβαίωση…
             </>
           ) : (
-            "Verify"
+            "Επιβεβαίωση"
           )}
         </Button>
         <p className="text-center text-sm text-muted-foreground mt-4">
@@ -132,12 +132,12 @@ export default function Register() {
       subtitle="Εγγράψου για να ξεκινήσεις"
       footer={
         <>
-          Already have an account?{" "}
+          Έχεις ήδη λογαριασμό;{" "}
           <Link
             to={"/login" + (safeReturnTo() !== "/" ? "?returnTo=" + encodeURIComponent(safeReturnTo()) : "")}
             className="text-primary font-medium hover:underline"
           >
-            Log in
+            Σύνδεση
           </Link>
         </>
       }
@@ -148,7 +148,7 @@ export default function Register() {
         onClick={handleGoogle}
       >
         <GoogleIcon className="w-5 h-5 mr-2" />
-        Continue with Google
+        Συνέχεια με Google
       </Button>
 
       <div className="relative mb-6">
@@ -220,10 +220,10 @@ export default function Register() {
           {loading ? (
             <>
               <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              Creating account...
+              Δημιουργία λογαριασμού…
             </>
           ) : (
-            "Create account"
+            "Δημιουργία λογαριασμού"
           )}
         </Button>
       </form>

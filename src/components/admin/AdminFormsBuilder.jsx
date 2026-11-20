@@ -67,7 +67,6 @@ export default function AdminFormsBuilder() {
   return <div className="space-y-3">
     <ComicPanel className="bg-card space-y-2">
       <div className="font-heading text-xl text-primary">ΔΙΑΧΕΙΡΙΣΗ ΦΟΡΜΩΝ</div>
-      <p className="text-xs text-foreground/60">Διαχείριση πρόσθετων ερωτήσεων στις υπάρχουσες φόρμες. Τα υφιστάμενα πεδία, οι υποχρεωτικοί έλεγχοι και η διαδικασία υποβολής παραμένουν αμετάβλητα.</p>
       <select className="w-full rounded border border-border bg-background p-2" value={formType} onChange={(e) => { setFormType(e.target.value); setEditing(null); }} >{FORM_TYPES.map((form) => <option key={form.id} value={form.id}>{form.label}</option>)}</select>
       <ComicButton onClick={() => setEditing(blank())}>＋ ΝΕΑ ΕΡΩΤΗΣΗ</ComicButton>
     </ComicPanel>

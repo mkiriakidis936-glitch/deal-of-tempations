@@ -111,7 +111,6 @@ export default function AdminNotifications() {
               <li><b>MacBook (Chrome/Edge):</b> εικονίδιο εγκατάστασης δεξιά στη μπάρα διευθύνσεων.</li>
               <li><b>MacBook (Safari):</b> Αρχείο → Προσθήκη στο Dock.</li>
             </ul>
-            <p className="text-[11px] text-foreground/50">Μετά την εγκατάσταση χρειάζεται να συνδεθείς μία φορά μέσα στην εφαρμογή.</p>
           </>
         )}
       </ComicPanel>

@@ -181,7 +181,6 @@ export default function AdminDigitalInvitations() {
   return <div className="space-y-4">
     <ComicPanel className="bg-card space-y-3 border border-[#b99a45]/60">
       <div className="font-heading text-xl text-primary">ΙΔΙΩΤΙΚΗ VIP ΠΡΟΣΚΛΗΣΗ</div>
-      <p className="text-sm text-foreground/70">Έτοιμη, ιδιωτική πρόσκληση DEAL OF TEMPTATION. Το σύστημα δημιουργεί έναν κοινό σύνδεσμο και QR για όλους τους καλεσμένους. Το κείμενο και ο σχεδιασμός είναι προκαθορισμένα.</p>
       <div className="rounded-xl border border-[#b99a45]/50 bg-black p-4 text-center">
         <div className="text-xs tracking-[0.35em] text-[#E8C26B]">ΑΠΟΚΛΕΙΣΤΙΚΗ ΠΡΟΣΒΑΣΗ</div>
         <div className="my-2 font-serif text-2xl tracking-[0.12em] text-[#f4e6bd]">VIP ΠΡΟΣΚΛΗΣΗ</div>
@@ -189,9 +188,7 @@ export default function AdminDigitalInvitations() {
       </div>
       <ComicButton disabled={vipBusy} onClick={createVipInvitation}>＋ ΔΗΜΙΟΥΡΓΙΑ ΕΤΟΙΜΗΣ VIP ΠΡΟΣΚΛΗΣΗΣ</ComicButton>
       {vipMessage && <div className="text-sm font-bold text-foreground">{vipMessage}</div>}
-      <p className="text-xs text-foreground/55">Το Mode επιλέγεται από κάθε καλεσμένη μέσα στη δική της πρόσκληση.</p>
       <label className="block space-y-1 text-sm font-bold text-[#E8C26B]">ΣΥΝΔΕΣΗ ΜΕ EVENT<select value={selectedEventId} onChange={(e) => setSelectedEventId(e.target.value)} className="w-full rounded-lg border border-[#b99a45]/50 bg-black px-3 py-3 text-sm text-[#f4e6bd]"><option value="">Επίλεξε Event</option>{events.filter((event) => !['closing', 'completed'].includes(event.status)).map((event) => <option key={event.id} value={event.id}>{event.title} · {event.room_code}</option>)}</select></label>
-      <p className="text-xs text-foreground/55">Η πρόσκληση συνδέεται με το Event πριν δημιουργηθεί GameSession.</p>
     </ComicPanel>
 
     {vipInvitations.map((invitation) => {
@@ -249,7 +246,6 @@ export default function AdminDigitalInvitations() {
 
     <ComicPanel className="bg-card space-y-3">
       <div className="font-heading text-xl text-primary">ΨΗΦΙΑΚΕΣ ΠΡΟΣΚΛΗΣΕΙΣ</div>
-      <p className="text-xs text-foreground/65">Δημιουργία QR μόνο για την ενιαία φόρμα συμμετοχής ή τις VIP φόρμες.</p>
       <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Τίτλος πρόσκλησης" className="w-full rounded-lg border-2 border-border bg-background px-3 py-2 text-sm" />
       <select value={target} onChange={(e) => setTarget(e.target.value)} className="w-full rounded-lg border-2 border-border bg-background px-3 py-2 text-sm">
         {TARGETS.map((item) => <option key={item.path} value={item.path}>{item.label}</option>)}

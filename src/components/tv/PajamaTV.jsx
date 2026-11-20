@@ -1,4 +1,5 @@
 import React from 'react';
+import GameCard from '@/components/shared/GameCard';
 import { PAJAMA_BOARD, PAJAMA_NIGHT_LENGTH, SQUARE_META } from '@/data/pajamaBoard';
 import { PAJAMA_ACTS } from '@/data/pajamaProgram';
 import { getAtmosphere } from '@/data/pajamaAtmosphere';
@@ -66,11 +67,7 @@ export default function PajamaTV({ players = [], pj = {} }) {
       )}
 
       {card && (
-        <div className="comic-panel bg-fuchsia-950/80 p-3">
-          <div className="text-xs text-pink-300">{card.categoryId?.replace('_', ' ')}</div>
-          {card.title && <div className="font-heading text-xl text-pink-100">{card.title}</div>}
-          <p className="text-base text-pink-50 font-body leading-snug">{card.text}</p>
-        </div>
+        <GameCard variant="tv" kicker={card.categoryId?.replace('_', ' ') || 'Pajama'} icon="🩴" image={card.image} title={card.title} text={card.text} footRight={card.timer ? `⏱ ${card.timer}″` : null} />
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-3">

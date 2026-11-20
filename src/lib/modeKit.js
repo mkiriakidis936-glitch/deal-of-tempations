@@ -51,12 +51,20 @@ export function useGameStopState() {
   return paused;
 }
 
-export function useTick(active = true, ms = 250) {
+export function useTick(active = true, ms = 1000) {
   const [, set] = useState(0);
   useEffect(() => {
     if (!active) return undefined;
-    const i = setInterval(() => set((n) => n + 1), ms);
-    return () => clearInterval(i);
+    let id = null;
+    const start = () => { if (id === null) id = setInterval(() => set((n) => n + 1), ms); };
+    const stop = () => { if (id !== null) { clearInterval(id); id = null; } };
+    const onVisibility = () => {
+      if (document.visibilityState === 'hidden') stop();
+      else { set((n) => n + 1); start(); }
+    };
+    if (document.visibilityState !== 'hidden') start();
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => { stop(); document.removeEventListener('visibilitychange', onVisibility); };
   }, [active, ms]);
 }
 
@@ -114,6 +122,9 @@ export function useLocalCountdown(seconds, running, onDone) {
 
 // ---------- Ήχοι (WebAudio, χωρίς αρχεία) ----------
 let audioCtx = null;
+export function unlockModeAudio() {
+  try { ac(); } catch { /* χωρίς WebAudio */ }
+}
 function ac() {
   if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
   if (audioCtx.state === 'suspended') audioCtx.resume().catch(() => {});

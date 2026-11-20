@@ -1,33 +1,21 @@
 import React from 'react';
 import PajamaTimer from '@/components/pajama/PajamaTimer';
+import GameCard from '@/components/shared/GameCard';
 
 export default function PajamaCardStage({ card, cat, atmo, onResolve }) {
   return (
-    <div
-      className="comic-pop rounded-2xl p-5 sm:p-7 space-y-4"
-      style={{
-        background: atmo.cardBg,
-        border: `2px solid ${atmo.border}`,
-        boxShadow: `0 30px 80px rgba(0,0,0,.75), 0 0 70px ${atmo.accent}2e, inset 0 0 0 1px ${atmo.accentSoft}`,
-      }}
-    >
-      <div className="flex items-center justify-between text-[10px] uppercase tracking-[0.28em]" style={{ color: atmo.accent }}>
-        <span>{cat?.icon} {cat?.name}</span>
-        <span>{card.scored === false ? 'ΧΩΡΙΣ ΣΚΟΡ' : `+${card.success ?? 2} / −${card.fail ?? 1}`}</span>
-      </div>
-
-      {card.title && (
-        <h2
-          className="font-display text-center leading-tight"
-          style={{ fontSize: 'clamp(1.5rem, 3.4vw, 2.3rem)', color: atmo.text, textShadow: '0 2px 0 #000' }}
-        >
-          {card.title}
-        </h2>
-      )}
-
-      <p className="text-center font-body leading-snug" style={{ fontSize: 'clamp(1.05rem, 1.7vw, 1.5rem)', color: atmo.text }}>
-        {card.text}
-      </p>
+    <div className="space-y-4">
+      <GameCard
+        kicker={cat?.name || 'Pajama'}
+        corner={card.scored === false ? 'Χωρίς σκορ' : null}
+        icon={cat?.icon || '🩴'}
+        image={card.image}
+        accent={atmo.accent}
+        title={card.title}
+        text={card.text}
+        footLeft={card.timer ? `⏱ ${card.timer}″` : ''}
+        footRight={card.scored === false ? null : `+${card.success ?? 2} / −${card.fail ?? 1}`}
+      />
 
       {card.timer ? (
         <div className="space-y-1">

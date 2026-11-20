@@ -43,7 +43,6 @@ export default function AdminAchievementDefinitions() {
   return (
     <ComicPanel className="bg-card space-y-3">
       <div className="font-heading text-lg">ΟΡΙΣΜΟΙ ACHIEVEMENTS</div>
-      <p className="text-xs text-foreground/60">Διαχείριση των τεσσάρων υπαρχόντων achievements. Μπορείς να ενεργοποιήσεις/απενεργοποιήσεις κάθε achievement και να αντιστοιχίσεις μόνο έναν από τους ήδη υπάρχοντες κανόνες του παιχνιδιού.</p>
       {items.map((item) => (
         <div key={item.id} className="rounded-lg border border-border/50 p-3 space-y-2">
           <div className="text-[10px] text-foreground/50">{item.id}</div>

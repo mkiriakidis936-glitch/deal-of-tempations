@@ -20,7 +20,7 @@ export default function SyncTimerControl({ state, updateState, onClose }) {
   const [now, setNow] = useState(Date.now());
 
   useEffect(() => {
-    const id = setInterval(() => setNow(Date.now()), 200);
+    const id = setInterval(() => setNow(Date.now()), 500);
     return () => clearInterval(id);
   }, []);
 

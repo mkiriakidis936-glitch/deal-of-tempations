@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { loadModesContent } from '@/lib/modesContentStore';
+import { loadModesContent, subscribeModesContent } from '@/lib/modesContentStore';
 import ModeShell, { Panel, Btn } from '@/components/modes/ModeShell';
 import ActBoard from '@/components/modes/ActBoard';
 import ActMidnight from '@/components/modes/ActMidnight';
@@ -16,17 +16,19 @@ import ModeRecap from '@/components/modes/ModeRecap';
 
 // Tablet (game master) για τα ψηφιακά modes. Κάθε mode = λίστα από acts.
 export default function ModeGame({ state, updateState, onEnd, onQR, playerProfiles = [], playerProfilesReady = true }) {
-  const [, setContentReady] = useState(false);
+  const [, setContentReady] = useState(0);
+  const [contentRev, setContentRev] = useState(0);
+  useEffect(() => subscribeModesContent(() => setContentRev((n) => n + 1)), []);
   useEffect(() => {
     let active = true;
     let restoreScenario = null;
     loadModesContent().then(() => {
       if (!active) return;
       if (state.customScenario) restoreScenario = applyScenarioCollections(state.mode, state.customScenario.collections || []);
-      setContentReady(true);
+      setContentReady((n) => n + 1);
     });
     return () => { active = false; restoreScenario?.(); };
-  }, [state.mode, state.customScenario?.id]);
+  }, [state.mode, state.customScenario?.id, contentRev]);
   const modeContext = useModeCtx(state, updateState);
   const ctx = { ...modeContext, playerProfiles, playerProfilesReady };
   const { mg, setMg, log } = ctx;

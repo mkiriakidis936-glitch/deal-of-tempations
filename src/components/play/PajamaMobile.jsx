@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import GameCard from '@/components/shared/GameCard';
 import { PAJAMA_BOARD, SQUARE_META } from '@/data/pajamaBoard';
 import { PAJAMA_ACTS } from '@/data/pajamaProgram';
 import PediPassport from '@/components/play/PediPassport';
@@ -61,13 +62,7 @@ export default function PajamaMobile({ pj = {}, players = [], me, updateState, o
         )}
 
         {pj.activeCard && (
-          <div className="comic-panel bg-fuchsia-950/70 p-3">
-            <div className="text-[10px] uppercase tracking-widest text-pink-300">Ενεργή κάρτα</div>
-            {pj.activeCard.title && (
-              <div className="font-heading text-lg text-pink-100">{pj.activeCard.title}</div>
-            )}
-            <p className="text-sm text-pink-50 font-body leading-snug">{pj.activeCard.text}</p>
-          </div>
+          <GameCard variant="compact" kicker="Ενεργή κάρτα" icon="🩴" image={pj.activeCard.image} title={pj.activeCard.title} text={pj.activeCard.text} footLeft={pj.activeCard.timer ? `⏱ ${pj.activeCard.timer}″` : ''} />
         )}
 
         {writing && (

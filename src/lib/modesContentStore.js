@@ -11,11 +11,12 @@ const T = (key, label, extra = {}) => ({ key, label, type: 'text', ...extra });
 const A = (key, label, extra = {}) => ({ key, label, type: 'area', ...extra });
 const N = (key, label, extra = {}) => ({ key, label, type: 'number', ...extra });
 const C = (key, label) => ({ key, label, type: 'check' });
+const I = (key = 'image', label = 'Εικόνα κάρτας') => ({ key, label, type: 'image' });
 
 export const COLLECTIONS = [
-  { id: 'glam_cards', group: '💅 Pedi-Glam & Marathon (Act 1)', label: 'Glam Route κάρτες', arr: EXT.GLAM_CARDS, blank: { id: '', title: '', text: '' }, fields: [T('title', 'Τίτλος'), A('text', 'Κείμενο'), N('secs', 'Χρονόμετρο (δευτ.)')] },
-  { id: 'chaos_cards', group: '💅 Pedi-Glam & Marathon (Act 1)', label: 'Chaos Route κάρτες', arr: EXT.CHAOS_CARDS, blank: { id: '', title: '', text: '' }, fields: [T('title', 'Τίτλος'), A('text', 'Κείμενο'), N('secs', 'Χρονόμετρο (δευτ.)'), C('restraint', 'Έχει δέσιμο (δείχνει υπενθύμιση ασφάλειας)'), C('trap', 'Παγίδα γαργαλητού (πληρώνεις 2 tokens)')] },
-  { id: 'secret_missions', group: '💅 Pedi-Glam & Marathon (Act 1)', label: 'Μυστικές αποστολές (κινητό)', arr: EXT.SECRET_MISSIONS, blank: { id: '', title: '', text: '', reward: 2, mins: 5 }, fields: [T('title', 'Τίτλος'), A('text', 'Κείμενο που βλέπει στο κινητό'), N('reward', 'Glam Tokens επιτυχίας'), N('mins', 'Λεπτά διορίας')] },
+  { id: 'glam_cards', group: '💅 Pedi-Glam & Marathon (Act 1)', label: 'Glam Route κάρτες', arr: EXT.GLAM_CARDS, blank: { id: '', title: '', text: '' }, fields: [T('title', 'Τίτλος'), A('text', 'Κείμενο'), N('secs', 'Χρονόμετρο (δευτ.)'), I()] },
+  { id: 'chaos_cards', group: '💅 Pedi-Glam & Marathon (Act 1)', label: 'Chaos Route κάρτες', arr: EXT.CHAOS_CARDS, blank: { id: '', title: '', text: '' }, fields: [T('title', 'Τίτλος'), A('text', 'Κείμενο'), N('secs', 'Χρονόμετρο (δευτ.)'), C('restraint', 'Έχει δέσιμο (δείχνει υπενθύμιση ασφάλειας)'), C('trap', 'Παγίδα γαργαλητού (πληρώνεις 2 tokens)'), I()] },
+  { id: 'secret_missions', group: '💅 Pedi-Glam & Marathon (Act 1)', label: 'Μυστικές αποστολές (κινητό)', arr: EXT.SECRET_MISSIONS, blank: { id: '', title: '', text: '', reward: 2, mins: 5 }, fields: [T('title', 'Τίτλος'), A('text', 'Κείμενο που βλέπει στο κινητό'), N('reward', 'Glam Tokens επιτυχίας'), N('mins', 'Λεπτά διορίας'), I()] },
   { id: 'chaos_powers', group: '💅 Pedi-Glam & Marathon (Act 1)', label: 'Chaos Powers', arr: EXT.CHAOS_POWERS, fixedItems: true, blank: {}, fields: [T('name', 'Όνομα'), T('icon', 'Εικονίδιο'), A('text', 'Περιγραφή')] },
   { id: 'shop_items', group: '💅 Pedi-Glam & Marathon (Act 1)', label: 'Glam Token Shop', arr: EXT.SHOP, fixedItems: true, blank: {}, fields: [T('name', 'Όνομα'), T('icon', 'Εικονίδιο'), N('cost', 'Κόστος tokens'), A('desc', 'Περιγραφή'), C('needsTarget', 'Απαιτεί επιλογή συμπαίκτριας')] },
   { id: 'blind_textures', group: '🌙 Midnight Vault (Act 2)', label: 'Blind ASMR υφές', arr: EXT.BLIND_TEXTURES, blank: { id: '', name: '', text: '' }, fields: [T('name', 'Όνομα'), A('text', 'Περιγραφή')] },
@@ -32,10 +33,10 @@ export const COLLECTIONS = [
   { id: 'confession_lock', group: '🚨 Pajama Lockdown', label: 'Secret Confession Lock', arr: LD.CONFESSION_LOCK, strings: true },
   { id: 'spicy_wheel', group: '🚨 Pajama Lockdown', label: 'Spicy Truth Wheel', arr: LD.SPICY_WHEEL, strings: true },
   { id: 'foot_id', group: '🚨 Pajama Lockdown', label: 'Blind Foot ID (υφή → ψηφίο)', arr: LD.FOOT_ID, blank: { digit: '0', name: '', text: '' }, fields: [T('digit', 'Ψηφίο'), T('name', 'Όνομα'), A('text', 'Περιγραφή')] },
-  { id: 'beach_wheel', group: '🍹 Beach Bar Lockdown', label: 'Τροχός Ποινών', arr: BB.BEACH_WHEEL, blank: { cat: 'dance', title: '', text: '' }, fields: [{ key: 'cat', label: 'Κατηγορία', type: 'select', options: () => BB.WHEEL_CATEGORIES.map((c) => [c.id, `${c.icon} ${c.name}`]) }, T('title', 'Τίτλος'), A('text', 'Κείμενο'), N('secs', 'Χρονόμετρο (δευτ.)'), C('restraint', 'Έχει δέσιμο'), C('loseFlop', 'Χάνει σαγιονάρα')] },
+  { id: 'beach_wheel', group: '🍹 Beach Bar Lockdown', label: 'Τροχός Ποινών', arr: BB.BEACH_WHEEL, blank: { cat: 'dance', title: '', text: '' }, fields: [{ key: 'cat', label: 'Κατηγορία', type: 'select', options: () => BB.WHEEL_CATEGORIES.map((c) => [c.id, `${c.icon} ${c.name}`]) }, T('title', 'Τίτλος'), A('text', 'Κείμενο'), N('secs', 'Χρονόμετρο (δευτ.)'), C('restraint', 'Έχει δέσιμο'), C('loseFlop', 'Χάνει σαγιονάρα'), I()] },
   { id: 'beach_categories', group: '🍹 Beach Bar Lockdown', label: 'Κατηγορίες τροχού', arr: BB.WHEEL_CATEGORIES, fixedItems: true, blank: {}, fields: [T('icon', 'Εικονίδιο'), T('name', 'Όνομα'), T('color', 'Χρώμα')] },
   { id: 'beach_phases', group: '🍹 Beach Bar Lockdown', label: 'Ονομασίες φάσεων', arr: BB.BEACH_PHASES, fixedItems: true, blank: {}, fields: [T('label', 'Ονομασία φάσης')] },
-  { id: 'beach_missions', group: '🍹 Beach Bar Lockdown', label: 'Flip-Flop Heist αποστολές', arr: BB.FLIPFLOP_MISSIONS, blank: { id: '', title: '', text: '', mins: 5, reward: 'point' }, fields: [T('title', 'Τίτλος'), A('text', 'Κείμενο'), N('mins', 'Λεπτά διορίας'), { key: 'reward', label: 'Ανταμοιβή', type: 'select', options: [['point', '1 πόντος'], ['immunity', 'Ασυλία']] }] },
+  { id: 'beach_missions', group: '🍹 Beach Bar Lockdown', label: 'Flip-Flop Heist αποστολές', arr: BB.FLIPFLOP_MISSIONS, blank: { id: '', title: '', text: '', mins: 5, reward: 'point' }, fields: [T('title', 'Τίτλος'), A('text', 'Κείμενο'), N('mins', 'Λεπτά διορίας'), { key: 'reward', label: 'Ανταμοιβή', type: 'select', options: [['point', '1 πόντος'], ['immunity', 'Ασυλία']] }, I()] },
   { id: 'shot_truth', group: '🍹 Beach Bar Lockdown', label: 'Shot & Truth ερωτήσεις', arr: BB.SHOT_TRUTH, strings: true },
   { id: 'freeze_commands', group: '🍹 Beach Bar Lockdown', label: 'Freeze εντολές', arr: BB.FREEZE_COMMANDS, strings: true },
 ];
@@ -52,32 +53,9 @@ function clean(c, list) {
 }
 
 // Αντικαθιστά το περιεχόμενο των λιστών στη μνήμη (ή επαναφέρει τα αρχικά αν λείπει).
-const UNSAFE_MODE_COPY = /hogtie|blindfold|restraint|δεσίμ|δεμέν|δέσιμο|ακινητοπ|zip.?ties|duct tape|παγάκι|παγάκια|γαργαλ|tickle|σφηνάκ|\bshot\b|αλκοόλ|alcohol|χωρίς χέρια|μάτια κλειστά|κλείσε τα μάτια|κλείστε τα μάτια|τυφλά|περιορισμός κίνησης|αγγίζ|ακουμπ|touch|μασάζ|massage|άγγιγμα|σπρώξ|κράτα ομήρους/i;
-const SAFE_MODE_CHALLENGE = 'Προαιρετικό ψηφιακό challenge: ολοκλήρωσε ένα quiz ή επίλεξε PASS / STOP.';
-function sanitizeModeCopy(value, id = '') {
-  if (Array.isArray(value)) {
-    return value.map((item) => typeof item === 'string'
-      ? (UNSAFE_MODE_COPY.test(item) ? SAFE_MODE_CHALLENGE : item)
-      : sanitizeModeCopy(item, item?.id || id));
-  }
-  if (!value || typeof value !== 'object') return value;
-  const safe = { ...value };
-  if (safe.restraint === true) safe.restraint = false;
-  for (const [key, current] of Object.entries(safe)) {
-    if (typeof current === 'string' && UNSAFE_MODE_COPY.test(current)) {
-      safe[key] = ['title', 'name', 'label'].includes(key)
-        ? `Safe Digital Challenge ${safe.id || id}`.trim()
-        : SAFE_MODE_CHALLENGE;
-    } else if (current && typeof current === 'object') {
-      safe[key] = sanitizeModeCopy(current, safe.id || id);
-    }
-  }
-  return safe;
-}
-
 export function applyModesContent(overrides = {}) {
   COLLECTIONS.forEach((c) => {
-    const next = sanitizeModeCopy(clean(c, overrides[c.id]) || DEFAULTS[c.id]);
+    const next = clean(c, overrides[c.id]) || DEFAULTS[c.id];
     const runtimeNext = c.toRuntime ? c.toRuntime(next) : next;
     const target = c.targetArr || c.arr;
     target.splice(0, target.length, ...JSON.parse(JSON.stringify(runtimeNext)));
@@ -98,6 +76,16 @@ export function loadModesContent(force = false) {
       .catch((e) => { console.warn('[modes] χρήση αρχικού περιεχομένου:', e.message); return false; });
   }
   return loading;
+}
+
+export function subscribeModesContent(onChange) {
+  return base44.entities.AppSetting.subscribe((event) => {
+    if (event?.type === 'resync') { loadModesContent(true).then(() => onChange()); return; }
+    if (event?.data?.key !== MODES_KEY) return;
+    applyModesContent(event.type === 'delete' ? {} : (event.data.value || {}));
+    loading = Promise.resolve(true);
+    onChange();
+  });
 }
 
 export async function saveModesContent(next) {

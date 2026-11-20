@@ -1,7 +1,7 @@
 import { base44 } from '@/api/base44Client';
 import { PAJAMA_CATEGORIES, PAJAMA_SECRETS } from '@/data/pajamaContent';
 
-function defaultRows() {
+export function defaultRows() {
   const cards = PAJAMA_CATEGORIES.flatMap((cat) =>
     cat.cards.map((c, i) => ({
       kind: 'card',
@@ -27,10 +27,6 @@ function defaultRows() {
   return [...cards, ...secrets];
 }
 
-const UNSAFE_PAJAMA_ROW = /hogtie|blindfold|restraint|δεσίμ|δεμέν|δέσιμο|ακινητοπ|zip.?ties|duct tape|παγάκι|παγάκια|γαργαλ|tickle|σφηνάκ|\bshot\b|αλκοόλ|alcohol|χωρίς χέρια|μάτια κλειστά|κλείσε τα μάτια|κλείστε τα μάτια|τυφλά|περιορισμός κίνησης|αγγίζ|ακουμπ|touch|μασάζ|massage|άγγιγμα|σπρώξ|κράτα ομήρους|τρέξε|περπάτησε.*σκοτάδι/i;
-const SAFE_PAJAMA_ROW = 'Προαιρετική ψηφιακή δοκιμασία: ολοκλήρωσε ένα σύντομο quiz ή γρίφο. PASS και STOP είναι πάντα διαθέσιμα.';
-const safeRowText = (value) => typeof value === 'string' && UNSAFE_PAJAMA_ROW.test(value) ? SAFE_PAJAMA_ROW : value;
-
 export function groupContent(rows) {
   const cards = rows.filter((r) => r.kind === 'card');
   const categories = PAJAMA_CATEGORIES.map((cat) => ({
@@ -40,8 +36,8 @@ export function groupContent(rows) {
       .sort((a, b) => (a.order || 0) - (b.order || 0))
       .map((r) => ({
         id: r.id,
-        title: safeRowText(r.title) || undefined,
-        text: safeRowText(r.text) || '',
+        title: r.title || undefined,
+        text: r.text || '',
         scored: r.scored !== false,
         success: r.success || 2,
         fail: r.fail ?? 1,
@@ -52,7 +48,7 @@ export function groupContent(rows) {
   const secrets = rows
     .filter((r) => r.kind === 'secret')
     .sort((a, b) => (a.order || 0) - (b.order || 0))
-    .map((r) => safeRowText(r.text))
+    .map((r) => r.text)
     .filter(Boolean);
   return { categories, secrets };
 }

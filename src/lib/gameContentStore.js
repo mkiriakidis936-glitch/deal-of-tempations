@@ -4,6 +4,7 @@
 // static defaults if the DB is empty or the call fails.
 
 import { base44 } from '@/api/base44Client';
+import { buildGameContentRecords } from '@/lib/reseedContent';
 
 import {
   BOARD, SQUARE_TYPES, FULL_PENALTY_LADDER, FOOTWEAR_LEVELS, TOENAIL_PERKS,
@@ -24,6 +25,13 @@ import {
 } from '@/data/gameContent';
 
 let hydrated = false;
+let staticSnapshot = null;
+
+// Τα αρχικά κείμενα από τον κώδικα, πριν τα αντικαταστήσει η βάση.
+export function staticGameContentRecords() {
+  if (!staticSnapshot) staticSnapshot = JSON.parse(JSON.stringify(buildGameContentRecords()));
+  return JSON.parse(JSON.stringify(staticSnapshot));
+}
 
 function replaceArray(arr, items) {
   arr.length = 0;
@@ -80,6 +88,7 @@ const TARGETS = {
 
 export async function hydrateGameContent() {
   if (hydrated) return true;
+  staticGameContentRecords();
   try {
     const { items } = await base44.entities.GameContent.filter({}, { sort: 'order', limit: 1000 });
     if (!items || items.length === 0) {

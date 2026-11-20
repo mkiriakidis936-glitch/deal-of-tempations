@@ -1,17 +1,21 @@
 export const GLOBAL_DESIGN_KEY = 'admin_global_design';
 
 export const GLOBAL_DESIGN_DEFAULTS = {
-  background: '#120f12',
-  foreground: '#eee8dc',
-  card: '#211b21',
-  primary: '#d5b36a',
-  accent: '#8f7041',
-  border: '#66543c',
-  heading: 'Cinzel',
-  body: 'Cormorant Garamond',
-  display: 'Cinzel Decorative',
-  ui: 'Inter',
+  background: '#000000',
+  foreground: '#f5f1e8',
+  card: '#1c1c1e',
+  primary: '#e8c26b',
+  accent: '#8a6a1e',
+  border: '#3a3a3c',
+  heading: 'system',
+  body: 'system',
+  display: 'system',
+  ui: 'system',
 };
+
+export const SYSTEM_FONT = 'system';
+const SYSTEM_STACK = "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Inter', 'Segoe UI', system-ui, Roboto, 'Helvetica Neue', Arial, sans-serif";
+const fontStack = (font, fallback) => (!font || font === SYSTEM_FONT ? SYSTEM_STACK : `'${font}', ${fallback}`);
 
 function hexToHsl(hex) {
   if (typeof hex !== 'string') return null;
@@ -101,8 +105,8 @@ export function applySavedGlobalDesign(value) {
   };
 
   Object.entries(vars).forEach(([name, token]) => root.style.setProperty(name, token));
-  root.style.setProperty('--font-heading', `'${design.heading}', Georgia, 'Times New Roman', serif`);
-  root.style.setProperty('--font-body', `'${design.body}', Georgia, 'Times New Roman', serif`);
-  root.style.setProperty('--font-display', `'${design.display}', Georgia, 'Times New Roman', serif`);
-  root.style.setProperty('--font-ui', `'${design.ui}', ui-sans-serif, system-ui, -apple-system, 'Helvetica Neue', Arial, sans-serif`);
+  root.style.setProperty('--font-heading', fontStack(design.heading, "Georgia, 'Times New Roman', serif"));
+  root.style.setProperty('--font-body', fontStack(design.body, "Georgia, 'Times New Roman', serif"));
+  root.style.setProperty('--font-display', fontStack(design.display, "Georgia, 'Times New Roman', serif"));
+  root.style.setProperty('--font-ui', fontStack(design.ui, "ui-sans-serif, system-ui, -apple-system, 'Helvetica Neue', Arial, sans-serif"));
 }

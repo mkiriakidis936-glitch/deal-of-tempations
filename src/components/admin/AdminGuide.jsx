@@ -2,7 +2,6 @@ import React from 'react';
 import ComicPanel from '@/components/comic/ComicPanel';
 import { GAME_MODES, INTENSITY_LEVELS, FOOTWEAR_LEVELS, MARATHON_STAGES, ARREST_HEIST_LADDER } from '@/data/gameConfig';
 
-// Quick-reference guide for the Tablet screen — rules, modes, penalty ladders.
 export default function AdminGuide() {
   return (
     <div className="space-y-4">

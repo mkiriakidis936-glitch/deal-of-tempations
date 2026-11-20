@@ -5,6 +5,7 @@ import { NEW_MODES } from '@/data/modes/modeRegistry';
 import ModeForm from '@/pages/ModeForm';
 import PajamaForm from '@/pages/PajamaForm';
 import InvitationIntakeForm from '@/components/invitation/InvitationIntakeForm';
+import { MODE_COVERS } from '@/data/brandArt';
 
 const isNewMode = (id) => NEW_MODES.some((mode) => mode.id === id);
 
@@ -53,10 +54,13 @@ export default function PublicForms() {
               key={mode.id}
               type="button"
               onClick={() => chooseMode(mode.id)}
-              className="rounded-xl border border-[#806a35] bg-[#111] p-4 text-left transition hover:border-[#E8C26B] hover:bg-[#201a0d]"
+              className="overflow-hidden rounded-2xl border border-[#806a35] bg-[#111] text-left hover:border-[#E8C26B]"
             >
-              <span className="block text-lg font-bold text-[#F7E3A8]">{mode.icon} {mode.name}</span>
-              <span className="mt-2 block text-sm text-[#b6aa8b]">{mode.desc}</span>
+              {MODE_COVERS[`modeCover_${mode.id}`] && <img src={MODE_COVERS[`modeCover_${mode.id}`]} alt="" loading="lazy" decoding="async" className="aspect-[16/9] w-full object-cover" />}
+              <span className="block p-4">
+                <span className="block text-lg font-bold text-[#F7E3A8]">{mode.icon} {mode.name}</span>
+                <span className="mt-2 block text-sm text-[#b6aa8b]">{mode.desc}</span>
+              </span>
             </button>
           ))}
         </section>
