@@ -71,22 +71,6 @@ export default function AdminPlayers({ sessions, selectedSession, onSelect, onUp
   async function saveAll() { await savePlayerChanges(); }
   async function savePlayer(playerId) { await savePlayerChanges([playerId]); }
 
-  async function forceStage(newStage) { await onUpdate(selectedSession.id, { stage: newStage }); }
-  async function toggleStop() { await onUpdate(selectedSession.id, { stopActive: !state.stopActive }); }
-  async function clearBomb() { await onUpdate(selectedSession.id, { bombEvent: null }); }
-
-  async function resetAllPenalties() {
-    const saved = await onUpdate(selectedSession.id, { players: players.map((p) => ({ id: p.id, penaltyStep: 0, immunity: false })) });
-    if (!saved) return;
-    players.forEach((p) => { if (dirtyFields.current[p.id]) { dirtyFields.current[p.id].delete('penaltyStep'); dirtyFields.current[p.id].delete('immunity'); } });
-  }
-
-  async function giveAllImmunity() {
-    const saved = await onUpdate(selectedSession.id, { players: players.map((p) => ({ id: p.id, immunity: true })) });
-    if (!saved) return;
-    players.forEach((p) => dirtyFields.current[p.id]?.delete('immunity'));
-  }
-
   async function setPajamaSaboteur(playerId) {
     await onUpdate(selectedSession.id, { pajama: { saboteurId: playerId || null } });
   }
@@ -102,36 +86,6 @@ export default function AdminPlayers({ sessions, selectedSession, onSelect, onUp
           </div>
           <div className="flex gap-2 flex-wrap">
             <ComicButton variant="green" size="sm" onClick={saveAll}>💾 ΑΠΟΘΗΚΕΥΣΗ ΟΛΩΝ</ComicButton>
-          </div>
-        </div>
-      </ComicPanel>
-
-      {/* Game controls */}
-      <ComicPanel className="bg-card">
-        <div className="font-heading text-lg mb-2">⚙️ Έλεγχος Παιχνιδιού</div>
-        <div className="flex gap-2 flex-wrap">
-          <ComicButton variant={state.stopActive ? 'green' : 'red'} size="sm" onClick={toggleStop}>
-            {state.stopActive ? '▶️ ΣΥΝΕΧΙΣΗ' : '⏸ ΠΑΥΣΗ'}
-          </ComicButton>
-          {state.bombEvent && (
-            <ComicButton variant="red" size="sm" onClick={clearBomb}>💣 ΑΚΥΡΩΣΗ BOMB</ComicButton>
-          )}
-          <ComicButton variant="dark" size="sm" onClick={resetAllPenalties}>🔄 ΜΗΔΕΝΙΣΜΟΣ ΠΟΙΝΩΝ</ComicButton>
-          <ComicButton variant="cyan" size="sm" onClick={giveAllImmunity}>🛡️ ΑΣΥΛΙΑ ΟΛΩΝ</ComicButton>
-        </div>
-        <div className="mt-3">
-          <div className="text-xs font-bold mb-1">📍 Αλλαγή Σταδίου:</div>
-          <div className="flex gap-2 flex-wrap">
-            {[0, 1, 2, 3].map((st) => (
-              <ComicButton
-                key={st}
-                variant={state.stage === st ? 'magenta' : 'white'}
-                size="sm"
-                onClick={() => forceStage(st)}
-              >
-                Στάδιο {st}
-              </ComicButton>
-            ))}
           </div>
         </div>
       </ComicPanel>
