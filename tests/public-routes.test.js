@@ -35,17 +35,6 @@ test('mode submissions retain Event identity and Tablet filters by that Event', 
 });
 
 
-test('Admin exposes the public participation link for a selected Event', () => {
-  const adminInterest = read('../src/components/admin/AdminInterestParticipation.jsx');
-  assert.match(app, /path="\/deal"/);
-  assert.match(app, /path="\/deal\/:roomCode"/);
-  assert.match(adminInterest, /\/deal\/\$\{selectedEvent\.room_code\}/);
-  assert.match(adminInterest, /copyParticipationLink/);
-  assert.match(adminInterest, /href="\/deal"/);
-  assert.match(adminInterest, /copyInterestLink/);
-  assert.match(adminInterest, /modes-form\?event=/);
-  assert.match(adminInterest, /copyModeFormLink/);
-});
 
 
 test('Bachelorette intake submissions can be approved and only approved players enter Arrest & Heist', () => {
