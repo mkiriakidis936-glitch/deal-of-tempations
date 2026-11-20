@@ -22,6 +22,7 @@ const AdminSessions = lazy(() => import('@/components/admin/AdminSessions'));
 const AdminSessionRecovery = lazy(() => import('@/components/admin/AdminSessionRecovery'));
 const AdminEpisodeArchive = lazy(() => import('@/components/admin/AdminEpisodeArchive'));
 const AdminPlayers = lazy(() => import('@/components/admin/AdminPlayers'));
+const AdminLiveControl = lazy(() => import('@/components/admin/AdminLiveControl'));
 const AdminIntakes = lazy(() => import('@/components/admin/AdminIntakes'));
 const AdminShowCasting = lazy(() => import('@/components/admin/AdminShowCasting'));
 const AdminLinks = lazy(() => import('@/components/admin/AdminLinks'));
@@ -375,9 +376,17 @@ export default function Admin() {
       case 'casting':
         return <AdminShowCasting />;
       case 'players':
-      case 'live':
         return (
           <AdminPlayers
+            sessions={sessions}
+            selectedSession={activeSession}
+            onSelect={selectSession}
+            onUpdate={handleUpdateSession}
+          />
+        );
+      case 'live':
+        return (
+          <AdminLiveControl
             sessions={sessions}
             selectedSession={activeSession}
             onSelect={selectSession}
