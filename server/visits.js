@@ -2,7 +2,7 @@ import express from 'express';
 import { query } from './db.js';
 import { requireAdmin } from './auth.js';
 
-const isTrackedPath = (value) => typeof value === 'string' && /^\/site(?:\/[a-z0-9_-]+)?$/.test(value);
+const isTrackedPath = (value) => typeof value === 'string' && /^\/(?:site(?:\/[a-z0-9_-]+)?|promo|forms|gift-unlock|vip|production-consent)$/.test(value);
 const BOT = /bot|crawl|spider|slurp|preview|facebookexternalhit|headless|lighthouse|pingdom|uptime|monitor|curl|wget/i;
 const hits = new Map(); // ip -> { n, reset }  (απλό rate limit)
 setInterval(() => hits.clear(), 60_000).unref();
