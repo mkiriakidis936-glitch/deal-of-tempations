@@ -2,7 +2,7 @@ import React, { lazy, Suspense, useState, useEffect, useCallback, useRef } from 
 import './admin-theme.css';
 import { useSearchParams } from 'react-router-dom';
 import { base44, request } from '@/api/base44Client';
-import { setActiveSessionCode, subscribeActiveSession } from '@/lib/activeSession';
+import { getActiveSessionCode, setActiveSessionCode, subscribeActiveSession } from '@/lib/activeSession';
 import {
   LayoutDashboard, Inbox, Ticket, BarChart3, Gamepad2, Radio, AudioLines, Clapperboard, Video, Users, Award, Layers, Drama,
   Images, Globe, Mail, FileText, Link2, History, Film, HardDrive, LifeBuoy, Settings, CalendarDays, Bell, Search, RefreshCw,
@@ -209,11 +209,17 @@ export default function Admin() {
       if (event.type === 'create' && event.data.sessionCode) setActiveSessionCode(event.data.sessionCode);
     });
 
-    loadSessions().then((items) => {
+    loadSessions().then(async (items) => {
       if (!mounted || !items?.length) return;
-      // Η πιο πρόσφατη συνεδρία που εμφανίζεται πρώτη στο Admin γίνεται η κοινή ενεργή.
-      const latest = sessionsRef.current[0] || items[0];
-      if (latest?.sessionCode) setActiveSessionCode(latest.sessionCode);
+      // Διατηρείται η ήδη επιλεγμένη κοινή συνεδρία· μόνο στην πρώτη χρήση επιλέγεται η νεότερη.
+      const currentCode = await getActiveSessionCode();
+      if (!mounted) return;
+      const saved = currentCode ? sessionsRef.current.find((item) => item.sessionCode === currentCode) : null;
+      const active = saved || sessionsRef.current[0] || items[0];
+      if (active?.sessionCode) {
+        setPickedSession(active);
+        setActiveSessionCode(active.sessionCode);
+      }
     });
 
     return () => { mounted = false; unsubscribe(); };
