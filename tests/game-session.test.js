@@ -12,11 +12,9 @@ const players = [
   { id: 'p1', name: 'Player 1', vipProfile: { boundaries: ['own-only'] } },
 ];
 
-test('approved digital modes exclude retired Pajama Marathon and Pedi-Glam Extended', () => {
-  assert.deepEqual(NEW_MODES.map((mode) => mode.id), ['lockdown', 'beach_bar']);
-  assert.equal(NEW_MODES.some((mode) => mode.id === 'pedi_extended'), false);
-  assert.equal(NEW_MODES.some((mode) => mode.id === 'marathon_4h'), false);
-  assert.ok(NEW_MODES.every((mode) => mode.minutes === 300));
+test('all five approved digital modes are active with their specified durations', () => {
+  assert.deepEqual(NEW_MODES.map((mode) => mode.id), ['pedi_glam', 'pedi_extended', 'lockdown', 'beach_bar', 'marathon_4h']);
+  assert.deepEqual(NEW_MODES.map((mode) => mode.minutes), [90, 150, 60, 150, 240]);
 });
 
 test('player session response never exposes another player VIP profile', () => {
