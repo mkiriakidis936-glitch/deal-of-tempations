@@ -574,7 +574,7 @@ export function entityRoutes() {
         playbackStatus: status,
         playbackStatusAt: new Date().toISOString(),
         playbackError: status === 'error' ? String(req.body?.error || 'Αποτυχία αναπαραγωγής').slice(0, 500) : '',
-        ...(status === 'closed' || status === 'stopped' ? { active: false } : {}),
+        ...(status === 'closed' ? { active: false } : {}),
       };
       if (status === 'ended') {
         const queue = Array.isArray(current.queue) ? current.queue : [];
