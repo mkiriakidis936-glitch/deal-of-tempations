@@ -3,6 +3,7 @@ import { SITE_EVENTS, getSiteContent } from '@/data/siteContent';
 import { ART, MODE_COVERS, MODE_MEDIA } from '@/data/brandArt';
 
 const MODE_IDS = {
+  pedi_extended: 'pedi_extended',
   lockdown: 'lockdown',
   beachbar: 'beach_bar',
   marathon4h: 'marathon_4h',
@@ -21,7 +22,7 @@ export default function SiteModes({ onSelect, compact = false }) {
         <div className="max-w-2xl mx-auto text-center mb-10 sm:mb-14">
           <div className="text-[10px] sm:text-xs tracking-[0.42em] text-tarot-gold/65 uppercase mb-3">ΕΠΕΛΕΞΕ ΕΜΠΕΙΡΙΑ</div>
           <h2 className="font-display text-3xl sm:text-4xl text-tarot-gold tracking-[0.08em]">ΨΗΦΙΑΚΑ MODES</h2>
-          <p className="mt-4 text-sm sm:text-base text-foreground/60 leading-relaxed">Διάλεξε ένα από τα δύο αρχικά events ή ανακάλυψε τα διαθέσιμα ψηφιακά Modes.</p>
+          <p className="mt-4 text-sm sm:text-base text-foreground/60 leading-relaxed">Διάλεξε μία από τις διαθέσιμες ψηφιακές εμπειρίες.</p>
         </div>
         <div className={`grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5 ${compact ? 'max-w-5xl mx-auto' : ''}`}>
           {SITE_EVENTS.map((event, index) => {
