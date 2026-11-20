@@ -85,7 +85,10 @@ export function visitRoutes() {
         ) item
       )
       SELECT summary.*, by_mode.value AS "byMode", by_intensity.value AS "byIntensity",
-        by_stage.value AS "byStage", recent.value AS recent, 24 AS "activeWindowHours"
+        by_stage.value AS "byStage", recent.value AS recent,
+        (SELECT count(DISTINCT data->>'playerName')::int FROM records
+          WHERE entity = 'PlayerProfile' AND COALESCE(data->>'playerName', '') <> '') AS unique_players,
+        24 AS "activeWindowHours"
       FROM summary CROSS JOIN by_mode CROSS JOIN by_intensity CROSS JOIN by_stage CROSS JOIN recent
     `);
     res.json(rows[0]);
