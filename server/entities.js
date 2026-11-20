@@ -1255,7 +1255,7 @@ export function entityRoutes() {
       }
       if (req.entity === 'PajamaIntake' && body.formType === 'modes') {
         const modes = body.preferredModes;
-        if (!Array.isArray(modes) || !modes.length || modes.some((mode) => !['lockdown', 'beach_bar'].includes(mode))) {
+        if (!Array.isArray(modes) || !modes.length || modes.some((mode) => !['pedi_extended', 'lockdown', 'beach_bar', 'marathon_4h'].includes(mode))) {
           return res.status(400).json({ error: 'Επίλεξε τουλάχιστον ένα διαθέσιμο Mode.' });
         }
       }
