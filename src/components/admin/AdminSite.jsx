@@ -125,7 +125,8 @@ export default function AdminSite({ focusScenario = false }) {
         <Field label="Κουμπί κράτησης"><Text value={d.cta.label} onChange={(v) => up({ cta: { ...d.cta, label: v } })} /></Field>
         <Field label="Πού πηγαίνει το κουμπί">
           <select className={inp} value={d.cta.path} onChange={(e) => up({ cta: { ...d.cta, path: e.target.value } })}>
-            <option value="/forms">/forms (ενιαία φόρμα συμμετοχής — επιλογή Mode)</option>
+            {d.cta.path?.startsWith('/forms') && d.cta.path !== '/forms' && <option value={d.cta.path}>{d.cta.path} (ενιαία φόρμα · επιλεγμένο Mode)</option>}
+          <option value="/forms">/forms (ενιαία φόρμα συμμετοχής — επιλογή Mode)</option>
           </select>
         </Field>
         <Field label="Ημερομηνία & ώρα αυτής της εκδήλωσης" hint="Αν το αφήσεις κενό, χρησιμοποιείται η γενική ημερομηνία από τα Πρακτικά.">
