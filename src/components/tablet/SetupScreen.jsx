@@ -63,12 +63,13 @@ export default function SetupScreen({ onStart }) {
 
   const loadIntakes = async () => {
     try {
-      const [classicRes, pajamaRes, heistRes, castingRes, eventRes] = await Promise.all([
+      const [classicRes, pajamaRes, heistRes, castingRes, eventRes, vipRes] = await Promise.all([
         base44.entities.PlayerIntake.filter({}, { sort: '-created_date', limit: 500 }),
         base44.entities.PajamaIntake.filter(eventCode ? { sessionCode: eventCode } : {}, { sort: '-created_date', limit: 500 }),
         base44.entities.BacheloretteIntake.filter(eventCode ? { sessionCode: eventCode } : {}, { sort: '-created_date', limit: 500 }),
         base44.entities.AppSetting.filter({ key: 'show_casting_plan' }, { limit: 1 }),
         base44.entities.DotEvent.filter({}, { sort: '-created_date', limit: 200 }),
+        base44.entities.VIPInvitationSubmission.filter({}, { sort: '-created_date', limit: 500 }),
       ]);
       const loadedEvents = eventRes.items || [];
       setDotEvents(loadedEvents);
@@ -84,7 +85,8 @@ export default function SetupScreen({ onStart }) {
       const pending = [
         ...scopeToEvent(classicRes.items).filter((item) => item.approved !== true).map((item) => ({ ...item, sourceEntity: 'PlayerIntake', modeIds: item.preferredModes?.length ? item.preferredModes : [item.vipGameMode || item.gameMode || 'classic'] })),
         ...allPajama.filter((item) => item.approved !== true).map((item) => ({ ...item, sourceEntity: 'PajamaIntake', modeIds: item.preferredModes?.length ? item.preferredModes : ['pajama'] })),
-      ].sort((a, b) => new Date(b.created_date || 0) - new Date(a.created_date || 0));
+        ...scopeToEvent(vipRes.items).filter((item) => item.approved !== true && item.approvalStatus !== 'rejected').map((item) => ({ ...item, sourceEntity: 'VIPInvitationSubmission', modeIds: [item.gameMode || 'classic'] })),
+      ].sort((a, b) => new Date(b.created_date || b.submittedAt || 0) - new Date(a.created_date || a.submittedAt || 0));
       setPendingIntakes(pending);
       setHeistIntakes([...scopeToEvent(heistRes.items), ...allClassic.filter((item) => item.gameMode === 'arrest_heist')]);
       setIntakes(allClassic);
@@ -140,7 +142,8 @@ export default function SetupScreen({ onStart }) {
     const offPlayers = base44.entities.PlayerIntake.subscribe(refresh);
     const offPajama = base44.entities.PajamaIntake.subscribe(refresh);
     const offEvents = base44.entities.DotEvent.subscribe(refresh);
-    return () => { offPlayers?.(); offPajama?.(); offEvents?.(); };
+    const offVip = base44.entities.VIPInvitationSubmission.subscribe(refresh);
+    return () => { offPlayers?.(); offPajama?.(); offEvents?.(); offVip?.(); };
   }, []);
 
   useEffect(() => {
