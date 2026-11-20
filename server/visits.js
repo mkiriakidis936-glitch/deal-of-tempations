@@ -38,6 +38,38 @@ export function visitRoutes() {
     res.status(204).end();
   });
 
+  // Συγκεντρωτικά στατιστικά συνεδριών απευθείας στη βάση — χωρίς φόρτωση όλων των sessions στο browser.
+  r.get('/session-stats', requireAdmin, async (_req, res) => {
+    const base = `FROM records
+      WHERE entity = 'GameSession'`;
+    const [summary, modes, intensities, stages, recent] = await Promise.all([
+      query(`SELECT
+        count(*)::int AS total,
+        count(*) FILTER (WHERE COALESCE(NULLIF(data->'state'->>'stage', '')::int, 0) >= 3)::int AS completed,
+        count(*) FILTER (WHERE COALESCE(NULLIF(data->'state'->>'stage', '')::int, 0) < 3 AND updated_date >= now() - interval '24 hours')::int AS active,
+        count(*) FILTER (WHERE COALESCE(NULLIF(data->'state'->>'stage', '')::int, 0) < 3 AND updated_date < now() - interval '24 hours')::int AS abandoned,
+        COALESCE(sum(jsonb_array_length(CASE WHEN jsonb_typeof(data->'state'->'players') = 'array' THEN data->'state'->'players' ELSE '[]'::jsonb END)), 0)::int AS player_participations
+        ${base}`),
+      query(`SELECT COALESCE(data->'state'->>'mode', data->>'mode', 'unknown') AS id, count(*)::int AS count ${base} GROUP BY 1`),
+      query(`SELECT COALESCE(data->'state'->>'intensity', data->>'intensity', 'unknown') AS id, count(*)::int AS count ${base} GROUP BY 1`),
+      query(`SELECT COALESCE(NULLIF(data->'state'->>'stage', '')::int, 0) AS stage, count(*)::int AS count ${base} GROUP BY 1`),
+      query(`SELECT id, data->>'sessionCode' AS "sessionCode",
+        COALESCE(data->'state'->>'mode', data->>'mode') AS mode,
+        COALESCE(NULLIF(data->'state'->>'stage', '')::int, 0) AS stage,
+        jsonb_array_length(CASE WHEN jsonb_typeof(data->'state'->'players') = 'array' THEN data->'state'->'players' ELSE '[]'::jsonb END)::int AS players,
+        updated_date
+        ${base} ORDER BY updated_date DESC LIMIT 10`),
+    ]);
+    res.json({
+      ...summary.rows[0],
+      byMode: modes.rows,
+      byIntensity: intensities.rows,
+      byStage: stages.rows,
+      recent: recent.rows,
+      activeWindowHours: 24,
+    });
+  });
+
   // GET /api/visits/stats?path=/site — μόνο admin
   r.get('/stats', requireAdmin, async (req, res) => {
     const path = isTrackedPath(String(req.query.path || '')) ? String(req.query.path) : '/site';
