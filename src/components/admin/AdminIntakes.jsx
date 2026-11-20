@@ -180,7 +180,7 @@ export default function AdminIntakes() {
               <div className="text-4xl mb-2">📝</div>
               <div className="font-heading text-lg">Δεν υπάρχουν Arrest & Heist intakes ακόμα</div>
               <div className="text-xs mt-2 text-foreground/60">
-                Στείλε το link: {window.location.origin}/intake
+                Στείλε το link: {window.location.origin}/forms?mode=arrest_heist
               </div>
             </ComicPanel>
           ) : (
