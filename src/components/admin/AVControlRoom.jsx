@@ -234,8 +234,8 @@ export default function AVControlRoom({ refreshKey = 0 }) {
         source: item.url,
         mediaItemId: item.id || item.url,
         mediaFolder: assetMeta.folder || 'Γενικά',
-        queue,
-        queueIndex: index,
+        queue: queue[index]?.url === item.url ? queue : [],
+        queueIndex: queue[index]?.url === item.url ? index : -1,
         volume,
       };
       const saved = await publishProductionCue(sessionCode, data);
