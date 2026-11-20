@@ -17,7 +17,6 @@ import { HomeProgram, HomeFaq } from '@/components/site/SiteHomeProgram';
 import SiteProduction from '@/components/site/SiteProduction';
 import { getSiteContent, SITE_EVENTS } from '@/data/siteContent';
 import { ART, PHOTO, MODE_COVERS, MODE_MEDIA } from '@/data/brandArt';
-import { trackVisit } from '@/lib/track';
 
 const MODE_IDS = {
   extended: 'pedi_extended',
@@ -48,7 +47,6 @@ export default function Site() {
     ? (MODE_MEDIA[modeId]?.hero || MODE_MEDIA[modeId]?.cover || MODE_COVERS[`modeCover_${modeId}`])
     : ev === 'pajama' ? ART.party1 : ev === 'heist' ? ART.heistNight : PHOTO.siteHero;
 
-  useEffect(() => { trackVisit(isHome ? '/site' : `/site/${ev}`); }, [isHome, ev]);
   useEffect(() => {
     base44.entities.AppSetting.filter({ key: 'event_date' }, { limit: 1 })
       .then(({ items }) => { if (items?.[0]?.value) setGlobalDate(items[0].value); })
