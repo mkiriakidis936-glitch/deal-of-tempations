@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import ComicPanel from '@/components/comic/ComicPanel';
 import ComicButton from '@/components/comic/ComicButton';
@@ -73,9 +73,9 @@ export default function AdminShowCasting() {
   useEffect(() => { load(); }, []);
 
   const selectedEvent = events.find((event) => event.id === selectedEventId) || null;
-  const scopeToEvent = (items) => (items || []).filter((item) => selectedEventId
+  const scopeToEvent = useCallback((items) => (items || []).filter((item) => selectedEventId
     ? item.dotEventId === selectedEventId || item.roomCode === selectedEvent?.room_code || item.sessionCode === selectedEvent?.room_code
-    : !item.dotEventId && !item.roomCode && !item.sessionCode);
+    : !item.dotEventId && !item.roomCode && !item.sessionCode), [selectedEventId, selectedEvent?.room_code]);
 
   useEffect(() => {
     if (!plan?.mode || !Array.isArray(plan.players)) { setSelected([]); return; }
@@ -117,7 +117,7 @@ export default function AdminShowCasting() {
     scopeToEvent(playerIntakes).filter((item) => item.approved === true || item.approvalStatus === 'approved').forEach((item) => add(item, 'player'));
     scopeToEvent(pajamaIntakes).forEach((item) => add(item, 'pajama'));
     return [...byName.values()].sort((a, b) => a.name.localeCompare(b.name, 'el'));
-  }, [mode, playerIntakes, pajamaIntakes, selectedEventId, selectedEvent?.room_code]);
+  }, [mode, playerIntakes, pajamaIntakes, scopeToEvent]);
 
   const modeCounts = useMemo(() => {
     const counts = new Map();
@@ -132,7 +132,7 @@ export default function AdminShowCasting() {
     scopeToEvent(playerIntakes).filter((item) => item.approved === true || item.approvalStatus === 'approved').forEach((item) => add(item, 'player'));
     scopeToEvent(pajamaIntakes).forEach((item) => add(item, 'pajama'));
     return GAME_MODES.map((item) => ({ ...item, count: counts.get(item.id)?.size || 0 }));
-  }, [playerIntakes, pajamaIntakes, selectedEventId, selectedEvent?.room_code]);
+  }, [playerIntakes, pajamaIntakes, scopeToEvent]);
 
   const limits = playerLimits(mode);
   const selectedCandidates = candidates.filter((item) => selected.includes(normalizeName(item.name)));
