@@ -4,6 +4,7 @@ import { isNewMode } from '@/data/modes/modeRegistry';
 import { ART } from '@/data/brandArt';
 import React, { useRef, useState } from 'react';
 import { useGameSession } from '@/hooks/useGameSession';
+import { request } from '@/api/base44Client';
 import { getActiveSessionCode, subscribeActiveSession } from '@/lib/activeSession';
 import ComicPanel from '@/components/comic/ComicPanel';
 import ComicButton from '@/components/comic/ComicButton';
@@ -51,6 +52,20 @@ function PlayInner() {
   const currentCodeRef = useRef(null);
 
   React.useEffect(() => { currentCodeRef.current = session?.sessionCode || null; }, [session?.sessionCode]);
+
+  // Κάθε επιλεγμένη παίκτρια στέλνει heartbeat· η παρουσία λήγει αυτόματα 45″ μετά την τελευταία επαφή.
+  React.useEffect(() => {
+    if (!session?.sessionCode || !selectedPlayerId) return undefined;
+    const heartbeat = () => {
+      request('POST', '/api/entities/player-presence', {
+        sessionCode: session.sessionCode,
+        playerId: selectedPlayerId,
+      }).catch(() => {});
+    };
+    heartbeat();
+    const timer = window.setInterval(heartbeat, 15000);
+    return () => window.clearInterval(timer);
+  }, [session?.sessionCode, selectedPlayerId]);
 
   // Επανασύνδεση: θυμάται την παίκτρια μετά από refresh/κλείσιμο του κινητού.
   React.useEffect(() => {
