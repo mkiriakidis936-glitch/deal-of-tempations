@@ -8,9 +8,9 @@ import { COLLECTIONS, defaultsOf, fetchModesRecord, saveModesContent } from '@/l
 
 const inp = 'w-full px-3 py-2 rounded-lg border-2 border-border bg-background text-foreground font-body text-sm';
 const ORIGIN = typeof window !== 'undefined' ? window.location.origin : '';
-const SITE_IDS = { pedi_extended: 'pedi_extended', lockdown: 'lockdown', beach_bar: 'beachbar', marathon_4h: 'marathon4h' };
+const SITE_IDS = { pedi_glam: 'pedi_glam', pedi_extended: 'pedi_extended', lockdown: 'lockdown', beach_bar: 'beachbar', marathon_4h: 'marathon4h' };
 
-// Admin → 🎮 Νέα Modes: επεξεργασία κάρτων, ερωτήσεων και αποστολών των 4 ψηφιακών modes.
+// Admin → 🎮 Νέα Modes: επεξεργασία κάρτων, ερωτήσεων και αποστολών των 5 ψηφιακών modes.
 export default function AdminModes() {
   const [saved, setSaved] = useState({});
   const [loaded, setLoaded] = useState(false);
@@ -93,7 +93,7 @@ export default function AdminModes() {
       <ComicPanel className="bg-card space-y-3">
         <div className="font-heading text-xl text-primary">🎮 ΝΕΑ MODES</div>
         <p className="text-xs text-foreground/70">
-          Επεξεργάσου τις κάρτες, τις ερωτήσεις και τις αποστολές των 3 ψηφιακών modes. Ό,τι δεν αλλάξεις μένει όπως ήταν στο PDF.
+          Επεξεργάσου τις κάρτες, τις ερωτήσεις και τις αποστολές των 5 ψηφιακών modes. Ό,τι δεν αλλάξεις μένει όπως ήταν στο PDF.
         </p>
         <div className="grid sm:grid-cols-2 gap-2">
           {NEW_MODES.map((m) => (
