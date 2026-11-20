@@ -58,17 +58,18 @@ export function useGameSession({ autoLoad = true } = {}) {
   const updateState = useCallback(async (newState, { playerId } = {}) => {
     if (!sessionRef.current) return;
     const targetSessionId = sessionRef.current.id;
+    const targetSessionCode = sessionRef.current.sessionCode;
     const previousState = stateRef.current;
     const merged = { ...previousState, ...newState };
     stateRef.current = merged;
     setState(merged);
     const payload = { statePatch: newState };
     if (playerId) {
-      payload.sessionCode = sessionRef.current.sessionCode;
+      payload.sessionCode = targetSessionCode;
       payload.playerId = playerId;
     }
     try {
-      const updated = await base44.entities.GameSession.update(sessionRef.current.id, payload);
+      const updated = await base44.entities.GameSession.update(targetSessionId, payload);
       if (updated?.state && sessionRef.current?.id === targetSessionId) {
         sessionRef.current = updated;
         stateRef.current = updated.state;
