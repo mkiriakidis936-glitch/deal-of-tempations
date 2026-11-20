@@ -72,6 +72,9 @@ export default function AdminPlayers({ sessions, selectedSession, onSelect, onUp
   const mode = state.mode || selectedSession.mode;
   const isMarathon = mode === 'marathon';
   const isArrestHeist = mode === 'arrest_heist';
+  const currentPlayer = players[state.currentPlayerIndex ?? 0];
+  const lastActivity = state.history?.[0];
+  const activityLabel = lastActivity?.description || lastActivity?.detail || lastActivity?.text || lastActivity?.type || 'Δεν υπάρχει πρόσφατη ενέργεια';
 
   function editField(playerId, field, value) {
     dirtyFields.current[playerId] ||= new Set();
@@ -111,7 +114,8 @@ export default function AdminPlayers({ sessions, selectedSession, onSelect, onUp
         <div className="flex items-center justify-between flex-wrap gap-2">
           <div>
             <div className="font-heading text-xl">{selectedSession.sessionCode}</div>
-            <div className="text-xs font-bold">{mode} · Στάδιο {state.stage} · {players.length} δηλωμένες · {players.filter((player) => presence[player.id] && Date.now() - Number(presence[player.id]) <= 45000).length} συνδεδεμένες</div>
+            <div className="text-xs font-bold">{mode} · Γύρος {state.round ?? 1} · Στάδιο {state.stage ?? 0} · {players.length} δηλωμένες · {players.filter((player) => presence[player.id] && Date.now() - Number(presence[player.id]) <= 45000).length} συνδεδεμένες</div>
+            <div className="mt-1 text-[11px] text-foreground/70">Σειρά: {currentPlayer?.name || '—'} · Τελευταία ενέργεια: {String(activityLabel).replace(/[_-]/g, ' ')}</div>
           </div>
           <div className="flex gap-2 flex-wrap">
             <ComicButton variant="green" size="sm" onClick={saveAll}>💾 ΑΠΟΘΗΚΕΥΣΗ ΟΛΩΝ</ComicButton>
