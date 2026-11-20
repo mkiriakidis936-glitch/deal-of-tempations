@@ -75,8 +75,8 @@ export default function SetupScreen({ onStart }) {
       setDotEvents(loadedEvents);
       const selectedEvent = loadedEvents.find((item) => item.id === selectedDotEventId);
       const scopeToEvent = (items) => (items || []).filter((item) => selectedDotEventId
-        ? item.dotEventId === selectedDotEventId || item.roomCode === selectedEvent?.room_code
-        : eventCode ? item.sessionCode === eventCode : !item.sessionCode && !item.dotEventId);
+        ? item.dotEventId === selectedDotEventId || item.roomCode === selectedEvent?.room_code || item.sessionCode === selectedEvent?.room_code
+        : eventCode ? item.sessionCode === eventCode || item.roomCode === eventCode : !item.sessionCode && !item.roomCode && !item.dotEventId);
       const allClassic = scopeToEvent(classicRes.items).filter((item) => item.approved === true);
       const classic = allClassic.filter((item) => item.gameMode === 'classic' || item.vipGameMode === 'classic' || (!item.gameMode && !item.vipGameMode && !['pajama', 'modes'].includes(item.formType) && !Array.isArray(item.preferredModes)));
       const allPajama = scopeToEvent(pajamaRes.items);
