@@ -54,7 +54,7 @@ export default function AdminInterestParticipation() {
     loadAll();
     const offInterest = base44.entities.Interest.subscribe(() => loadAll());
     const offEvents = base44.entities.DotEvent.subscribe(() => loadAll());
-    const offParticipation = base44.entities.Participation.subscribe(() => loadResponses());
+    const offParticipation = base44.entities.Participation.subscribe(() => loadAll());
     return () => { offInterest?.(); offEvents?.(); offParticipation?.(); };
   }, []);
 
