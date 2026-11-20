@@ -139,7 +139,15 @@ export default function AVControlRoom({ refreshKey = 0 }) {
   useEffect(() => {
     if (!sessionCode) { setCueRecord(null); return undefined; }
     let alive = true;
-    const refreshCue = () => base44.entities.ProductionCue.filter({ sessionCode }, { limit: 1 }).then(({ items = [] }) => { if (alive) setCueRecord(items[0] || null); }).catch(() => {});
+    const refreshCue = () => base44.entities.ProductionCue.filter({ sessionCode }, { limit: 1 }).then(({ items = [] }) => {
+      if (!alive) return;
+      const nextCue = items[0] || null;
+      setCueRecord(nextCue);
+      if (Array.isArray(nextCue?.queue) && nextCue.queue.length && Number.isInteger(nextCue.queueIndex)) {
+        setQueueIndex(nextCue.queueIndex);
+        persist(metadata, queue, nextCue.queueIndex).catch(() => {});
+      }
+    }).catch(() => {});
     refreshCue();
     const off = base44.entities.ProductionCue.subscribe((event) => { if (event?.data?.sessionCode === sessionCode) refreshCue(); });
     return () => { alive = false; off?.(); };
