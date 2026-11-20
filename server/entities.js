@@ -1626,11 +1626,11 @@ export function entityRoutes() {
       if (!found[0]) return res.status(404).json({ error: 'Not found' });
       const current = toRecord(found[0]);
       const patch = stripBuiltins(req.body);
-      const allowed = new Set(['title', 'type', 'status', 'phase', 'room_code', 'notes', 'interestIds', 'expectedCount']);
+      const allowed = new Set(['title', 'type', 'status', 'phase', 'room_code', 'notes', 'interestIds', 'expectedCount', 'gameSessionId', 'gameSessionCode']);
       if (Object.keys(patch).some((key) => !allowed.has(key))) return res.status(400).json({ error: 'Το Event περιέχει πεδίο που δεν επιτρέπεται να αλλάξει.' });
       const next = { ...current, ...patch };
       const phases = DOT_EVENT_PHASES[next.type];
-      if (!String(next.title || '').trim() || !phases || !DOT_EVENT_STATUSES.includes(next.status) || !phases.includes(next.phase) || !/^[A-Z0-9]{4}$/.test(String(next.room_code || ''))) {
+      if (!String(next.title || '').trim() || !phases || !DOT_EVENT_STATUSES.includes(next.status) || !phases.includes(next.phase) || !/^[A-Z0-9]{4}$/.test(String(next.room_code || '')) || typeof (next.gameSessionId || '') !== 'string' || typeof (next.gameSessionCode || '') !== 'string') {
         return res.status(400).json({ error: 'Τα στοιχεία του Event δεν είναι έγκυρα.' });
       }
       if (next.room_code !== current.room_code) {
