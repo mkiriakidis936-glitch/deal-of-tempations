@@ -153,7 +153,7 @@ export async function uploadMedia(file, onProgress) {
     xhr.onload = () => {
       let data = {};
       try { data = JSON.parse(xhr.responseText); } catch { /* ignore */ }
-      if (xhr.status >= 200 && xhr.status < 300) resolve(data);
+      if (xhr.status >= 200 && xhr.status < 300) { invalidateMediaList(); resolve(data); }
       else reject(new Error(data.error || `Σφάλμα ${xhr.status}`));
     };
     xhr.onerror = () => reject(new Error('Πρόβλημα σύνδεσης κατά το ανέβασμα.'));
@@ -163,21 +163,43 @@ export async function uploadMedia(file, onProgress) {
 
 const authHeaders = () => { const t = getToken(); return t ? { Authorization: `Bearer ${t}` } : {}; };
 
-export async function listMedia() {
-  const res = await fetch(`${API_URL}/api/media`, { headers: authHeaders() });
-  if (!res.ok) throw new Error('Δεν φορτώθηκε η βιβλιοθήκη.');
-  return (await res.json()).items || [];
+const MEDIA_LIST_CACHE_MS = 15000;
+let mediaListCache = null;
+let mediaListCachedAt = 0;
+let mediaListRequest = null;
+
+export function invalidateMediaList() {
+  mediaListCache = null;
+  mediaListCachedAt = 0;
 }
+
+export async function listMedia({ force = false } = {}) {
+  if (!force && mediaListCache && Date.now() - mediaListCachedAt < MEDIA_LIST_CACHE_MS) return mediaListCache;
+  if (mediaListRequest) return mediaListRequest;
+  const request = (async () => {
+    const res = await fetch(`${API_URL}/api/media`, { headers: authHeaders() });
+    if (!res.ok) throw new Error('Δεν φορτώθηκε η βιβλιοθήκη.');
+    const items = (await res.json()).items || [];
+    mediaListCache = items;
+    mediaListCachedAt = Date.now();
+    return items;
+  })();
+  mediaListRequest = request;
+  try { return await request; }
+  finally { if (mediaListRequest === request) mediaListRequest = null; }
+}
+
 
 export async function deleteMedia(name) {
   const res = await fetch(`${API_URL}/api/media/${encodeURIComponent(name)}`, { method: 'DELETE', headers: authHeaders() });
   if (!res.ok) throw new Error('Δεν διαγράφηκε.');
+  invalidateMediaList();
 }
-
 
 export async function deleteAllMedia(kind = 'all') {
   const res = await fetch(`${API_URL}/api/media?kind=${encodeURIComponent(kind)}`, { method: 'DELETE', headers: authHeaders() });
   const data = await res.json().catch(() => ({}));
   if (!res.ok) throw new Error(data.error || 'Δεν διαγράφηκαν τα αρχεία.');
+  invalidateMediaList();
   return data;
 }
