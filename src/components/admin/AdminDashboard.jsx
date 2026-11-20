@@ -47,7 +47,7 @@ export default function AdminDashboard() {
     { label: 'Ολοκληρωμένες', value: stats.completed, icon: '🏆', color: 'bg-tarot-royal/60' },
     { label: 'Αδρανείς · άνω 24 ωρών', value: stats.inactive, icon: '⏸', color: 'bg-secondary' },
     { label: 'Συμμετοχές Παικτριών', value: stats.player_participations, icon: '👥', color: 'bg-tarot-wine/60' },
-    { label: 'Μοναδικές Παίκτριες', value: '—', icon: '🧍', color: 'bg-secondary' },
+    { label: 'Μοναδικές Παίκτριες με αποθηκευμένο προφίλ', value: stats.unique_players ?? 0, icon: '🧍', color: 'bg-secondary' },
   ];
 
   return (
