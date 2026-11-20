@@ -89,7 +89,7 @@ export default function SetupScreen({ onStart }) {
         ...scopeToEvent(vipRes.items).filter((item) => item.approved !== true && item.approvalStatus !== 'rejected').map((item) => ({ ...item, sourceEntity: 'VIPInvitationSubmission', modeIds: [item.gameMode || 'classic'] })),
       ].sort((a, b) => new Date(b.created_date || b.submittedAt || 0) - new Date(a.created_date || a.submittedAt || 0));
       setPendingIntakes(pending);
-      setHeistIntakes([...scopeToEvent(heistRes.items).filter((item) => item.approved === true), ...allClassic.filter((item) => item.gameMode === 'arrest_heist')]);
+      setHeistIntakes([...scopeToEvent(heistRes.items).filter((item) => item.approved === true).map((item) => ({ ...item, modeIds: ['arrest_heist'] })), ...allClassic.filter((item) => item.gameMode === 'arrest_heist')]);
       setIntakes(allClassic);
       setPajamaApproved(approved);
 
@@ -162,7 +162,7 @@ export default function SetupScreen({ onStart }) {
   const minPlayers = newMode ? newMode.min : mode === 'marathon' ? 8 : mode === 'arrest_heist' ? 4 : 2;
   const modePreferenceRows = GAME_MODES.map((entry) => {
     const names = new Set();
-    [...intakes, ...pajamaApproved, ...pendingIntakes].forEach((item) => {
+    [...intakes, ...pajamaApproved, ...heistIntakes, ...pendingIntakes].forEach((item) => {
       const name = String(item.name || item.displayName || '').trim().toLocaleLowerCase('el-GR');
       if (!name) return;
       const ids = Array.isArray(item.modeIds) ? item.modeIds
