@@ -65,8 +65,8 @@ export default function SetupScreen({ onStart }) {
     try {
       const [classicRes, pajamaRes, heistRes, castingRes, eventRes, vipRes] = await Promise.all([
         base44.entities.PlayerIntake.filter({}, { sort: '-created_date', limit: 500 }),
-        base44.entities.PajamaIntake.filter(eventCode ? { sessionCode: eventCode } : {}, { sort: '-created_date', limit: 500 }),
-        base44.entities.BacheloretteIntake.filter(eventCode ? { sessionCode: eventCode } : {}, { sort: '-created_date', limit: 500 }),
+        base44.entities.PajamaIntake.filter({}, { sort: '-created_date', limit: 500 }),
+        base44.entities.BacheloretteIntake.filter({}, { sort: '-created_date', limit: 500 }),
         base44.entities.AppSetting.filter({ key: 'show_casting_plan' }, { limit: 1 }),
         base44.entities.DotEvent.filter({}, { sort: '-created_date', limit: 200 }),
         base44.entities.VIPInvitationSubmission.filter({}, { sort: '-created_date', limit: 500 }),
