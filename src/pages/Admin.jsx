@@ -15,6 +15,8 @@ const AdminDashboard = lazy(() => import('@/components/admin/AdminDashboard'));
 const AdminOverview = lazy(() => import('@/components/admin/AdminOverview'));
 const AdminInbox = lazy(() => import('@/components/admin/AdminInbox'));
 const AdminEventCenter = lazy(() => import('@/components/admin/AdminEventCenter'));
+const AdminEventManager = lazy(() => import('@/components/admin/AdminEventManager'));
+const AdminInterestParticipation = lazy(() => import('@/components/admin/AdminInterestParticipation'));
 const AdminSettings = lazy(() => import('@/components/admin/AdminSettings'));
 const AdminBackup = lazy(() => import('@/components/admin/AdminBackup'));
 const AdminSessions = lazy(() => import('@/components/admin/AdminSessions'));
@@ -46,6 +48,7 @@ const NAV_GROUPS = [
       { id: 'dashboard', label: 'Επισκόπηση', icon: LayoutDashboard },
       { id: 'inbox', label: 'Εισερχόμενα', icon: Inbox },
       { id: 'events', label: 'Διοργανώσεις & καλεσμένοι', icon: Ticket },
+      { id: 'interest', label: 'Ενδιαφέρον & συμμετοχή', icon: Users },
       { id: 'statistics', label: 'Στατιστικά & επισκέψεις', icon: BarChart3 },
     ],
   },
@@ -314,7 +317,9 @@ export default function Admin() {
       case 'inbox':
         return <AdminInbox sessions={sessions} />;
       case 'events':
-        return <AdminEventCenter sessions={sessions} selectedSession={activeSession} onDeleteSession={handleDeleteSession} onRefreshSessions={loadSessions} />;
+        return <AdminEventManager />;
+      case 'interest':
+        return <AdminInterestParticipation />;
       case 'modes':
         return <AdminContentHub />;
       case 'production':
@@ -404,7 +409,7 @@ export default function Admin() {
   const pickResult = (item) => {
     if (!item) return;
     if (item.type === 'tab') setTab(item.id);
-    else { setPickedSession(sessions.find((session) => session.id === item.id) || null); setTab('events'); }
+    else { setPickedSession(sessions.find((session) => session.id === item.id) || null); setTab('sessions'); }
     setSearchOpen(false);
   };
 
