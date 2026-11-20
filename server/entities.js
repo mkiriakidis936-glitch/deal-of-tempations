@@ -562,6 +562,29 @@ export function entityRoutes() {
         playbackError: status === 'error' ? String(req.body?.error || 'Αποτυχία αναπαραγωγής').slice(0, 500) : '',
         ...(status === 'closed' || status === 'stopped' ? { active: false } : {}),
       };
+      if (status === 'ended') {
+        const queue = Array.isArray(current.queue) ? current.queue : [];
+        const nextIndex = Number(current.queueIndex ?? -1) + 1;
+        const nextItem = queue[nextIndex];
+        if (nextItem?.url && ['video', 'audio', 'image'].includes(nextItem.kind)) {
+          Object.assign(patch, {
+            active: true,
+            label: nextItem.label || nextItem.name || 'Media',
+            kind: nextItem.kind,
+            source: nextItem.url,
+            mediaItemId: nextItem.id || nextItem.url,
+            queueIndex: nextIndex,
+            playbackCommand: 'play',
+            commandId: crypto.randomUUID(),
+            commandAt: Date.now(),
+            playbackStatus: 'pending',
+            playbackError: '',
+            activatedAt: new Date().toISOString(),
+          });
+        } else {
+          patch.active = false;
+        }
+      }
       const { rows } = await query(
         "UPDATE records SET data = data || $1::jsonb, updated_date = now() WHERE id = $2 AND entity = 'ProductionCue' RETURNING *",
         [JSON.stringify(patch), cueId],
