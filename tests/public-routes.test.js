@@ -20,3 +20,16 @@ test('all five digital modes have canonical site form links', () => {
   assert.match(publicForms, /const validMode = GAME_MODES\.some/);
   assert.match(publicForms, /if \(isNewMode\(selectedMode\)\) return <ModeForm \/>/);
 });
+
+
+test('mode submissions retain Event identity and Tablet filters by that Event', () => {
+  const modeForm = read('../src/pages/ModeForm.jsx');
+  const setup = read('../src/components/tablet/SetupScreen.jsx');
+  assert.match(modeForm, /params\.get\('eventId'\) \|\| params\.get\('dotEventId'\)/);
+  assert.match(modeForm, /dotEventId \? \{ dotEventId \} : \{\}/);
+  assert.match(modeForm, /roomCode \? \{ roomCode \} : \{\}/);
+  assert.match(setup, /item\.dotEventId === selectedDotEventId/);
+  assert.match(setup, /item\.roomCode === selectedEvent\?\.room_code/);
+  assert.match(setup, /item\.sessionCode === selectedEvent\?\.room_code/);
+  assert.match(setup, /PajamaIntake\.filter\(\{\}/);
+});
