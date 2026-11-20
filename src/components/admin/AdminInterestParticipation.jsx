@@ -110,6 +110,16 @@ export default function AdminInterestParticipation() {
     }
   }
 
+  async function copyInterestLink() {
+    const url = `${window.location.origin}/deal`;
+    try {
+      await navigator.clipboard.writeText(url);
+      setMessage('Ο σύνδεσμος αρχικής δήλωσης ενδιαφέροντος αντιγράφηκε.');
+    } catch {
+      setMessage('Άνοιξε τον σύνδεσμο /deal για να τον αντιγράψεις χειροκίνητα.');
+    }
+  }
+
   async function copyParticipationLink() {
     if (!selectedEvent?.room_code) return;
     const url = `${window.location.origin}/deal/${selectedEvent.room_code}`;
@@ -147,6 +157,13 @@ export default function AdminInterestParticipation() {
       <ComicPanel className="bg-card space-y-3">
         <h2 className="font-heading text-2xl text-primary">ΕΝΔΙΑΦΕΡΟΝ & ΣΥΜΜΕΤΟΧΗ</h2>
         <p className="text-sm text-foreground/70">Οι αρχικές δηλώσεις ενδιαφέροντος αποθηκεύονται ανεξάρτητα από Event, πρόσκληση και GameSession.</p>
+        <div className="rounded-lg border border-[#b99a45]/40 bg-background/60 p-3 flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <div className="text-xs font-bold text-primary">ΣΥΝΔΕΣΜΟΣ ΑΡΧΙΚΗΣ ΔΗΛΩΣΗΣ ΕΝΔΙΑΦΕΡΟΝΤΟΣ</div>
+            <a className="text-sm underline underline-offset-2" href="/deal" target="_blank" rel="noreferrer">{window.location.origin}/deal</a>
+          </div>
+          <ComicButton size="sm" variant="dark" onClick={copyInterestLink}>ΑΝΤΙΓΡΑΦΗ</ComicButton>
+        </div>
         <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Αναζήτηση ονόματος ή τύπου…" className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground" />
         <div className="space-y-2">
           {filteredInterests.map((item) => (
