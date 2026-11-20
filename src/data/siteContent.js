@@ -58,9 +58,9 @@ export const DEFAULT_SITE = {
   },
 
   pajama: {
-    tab: 'Pajama Pedi-Glam',
-    overline: 'Pajama Pedi-Glam & Tickle Secrets · 18+',
-    titleLines: ['PAJAMA', 'PEDI-GLAM'],
+    tab: 'Pajama Pedi-Glam · 5H',
+    overline: 'Pajama Pedi-Glam · Night & Morning · 18+',
+    titleLines: ['PAJAMA PEDI-GLAM', '5H OVERNIGHT'],
     tagline: 'Μια βραδιά με πιτζάμες, παντόφλες και υποχρεώσεις που δεν διάβασες πριν φτάσεις.',
     date: '',
     cta: { label: 'ΚΛΕΙΣΕ ΘΕΣΗ', path: '/forms?mode=pajama' },
@@ -97,7 +97,7 @@ export const DEFAULT_SITE = {
 };
 
 
-// ---------- Τα 4 νέα ψηφιακά modes ----------
+// ---------- Τα 5 νέα ψηφιακά modes ----------
 const modeInfo = (dress, bring) => [
   { title: 'Πότε', text: '{date}' },
   { title: 'Πού', text: 'Ιδιωτικός χώρος — η διεύθυνση στέλνεται με την επιβεβαίωση' },
