@@ -526,6 +526,52 @@ export function entityRoutes() {
     } catch (error) { return next(error); }
   });
 
+  // TV playback acknowledgements are restricted to the active cue and its current command.
+  const playbackAckBuckets = new Map();
+  r.post('/production-cue/ack', async (req, res, next) => {
+    try {
+      const ip = req.ip || req.socket.remoteAddress || 'unknown';
+      const now = Date.now();
+      const bucket = playbackAckBuckets.get(ip) || { at: now, count: 0 };
+      if (now - bucket.at > 60000) { bucket.at = now; bucket.count = 0; }
+      if (bucket.count >= 120) return res.status(429).json({ error: 'Πολλές ενημερώσεις αναπαραγωγής.' });
+      bucket.count += 1;
+      playbackAckBuckets.set(ip, bucket);
+
+      const sessionCode = String(req.body?.sessionCode || '').trim().toUpperCase();
+      const cueId = String(req.body?.cueId || '');
+      const commandId = String(req.body?.commandId || '');
+      const status = String(req.body?.status || '');
+      const allowed = new Set(['ready', 'playing', 'paused', 'ended', 'error', 'closed', 'stopped']);
+      if (!sessionCode || !cueId || !commandId || !allowed.has(status)) {
+        return res.status(400).json({ error: 'Μη έγκυρη επιβεβαίωση αναπαραγωγής.' });
+      }
+      const { rows: found } = await query(
+        "SELECT * FROM records WHERE id = $1 AND entity = 'ProductionCue' LIMIT 1",
+        [cueId],
+      );
+      if (!found[0]) return res.status(404).json({ error: 'Το cue δεν βρέθηκε.' });
+      const current = toRecord(found[0]);
+      if (String(current.sessionCode || '').toUpperCase() !== sessionCode ||
+          current.commandId !== commandId || !current.active) {
+        return res.status(409).json({ error: 'Η επιβεβαίωση αφορά παλαιότερη εντολή.' });
+      }
+      const patch = {
+        playbackStatus: status,
+        playbackStatusAt: new Date().toISOString(),
+        playbackError: status === 'error' ? String(req.body?.error || 'Αποτυχία αναπαραγωγής').slice(0, 500) : '',
+        ...(status === 'closed' || status === 'stopped' ? { active: false } : {}),
+      };
+      const { rows } = await query(
+        "UPDATE records SET data = data || $1::jsonb, updated_date = now() WHERE id = $2 AND entity = 'ProductionCue' RETURNING *",
+        [JSON.stringify(patch), cueId],
+      );
+      const rec = toRecord(rows[0]);
+      broadcast('ProductionCue', { type: 'update', id: rec.id, data: rec });
+      return res.json({ success: true, cue: rec });
+    } catch (error) { return next(error); }
+  });
+
   r.param('entity', (req, res, next, name) => {
     if (!ENTITIES.includes(name)) return res.status(404).json({ error: `Unknown entity ${name}` });
     req.entity = name;
