@@ -93,3 +93,20 @@ test('casting plans are Event-scoped and revoked approvals cannot enter Tablet s
   assert.match(setup, /const planHasOnlyApprovedPlayers =/);
   assert.match(setup, /eligibleModesByName\.get/);
 });
+
+
+test('Tablet loads approved preferred Modes from every supported intake source', () => {
+  const setup = read('../src/components/tablet/SetupScreen.jsx');
+  assert.match(setup, /allClassic\.filter\(\(item\) => item\.preferredModes\?\.includes\(currentMode\) \|\| item\.vipGameMode === currentMode\)/);
+  assert.match(setup, /const approvedForMode = \[\.\.\.intakes, \.\.\.pajamaApproved\]/);
+  assert.match(setup, /i\.preferredModes\.includes\(m\.id\)/);
+});
+
+test('session switching ignores stale async responses and binds updates to their originating session', () => {
+  const hook = read('../src/hooks/useGameSession.js');
+  assert.match(hook, /const operationRef = useRef\(0\)/);
+  assert.match(hook, /if \(operation !== operationRef\.current\) return false/);
+  assert.match(hook, /const targetSessionId = sessionRef\.current\.id/);
+  assert.match(hook, /GameSession\.update\(targetSessionId, payload\)/);
+  assert.match(hook, /if \(updated\?\.state && sessionRef\.current\?\.id === targetSessionId\)/);
+});
