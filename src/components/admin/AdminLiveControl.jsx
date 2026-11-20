@@ -3,6 +3,9 @@ import ComicPanel from '@/components/comic/ComicPanel';
 import ComicButton from '@/components/comic/ComicButton';
 
 export default function AdminLiveControl({ sessions = [], selectedSession, onSelect, onUpdate }) {
+  const [busyAction, setBusyAction] = useState('');
+  const [actionMessage, setActionMessage] = useState('');
+
   if (!selectedSession) {
     return (
       <ComicPanel className="bg-card text-center py-8">
@@ -13,8 +16,6 @@ export default function AdminLiveControl({ sessions = [], selectedSession, onSel
     );
   }
 
-  const [busyAction, setBusyAction] = useState('');
-  const [actionMessage, setActionMessage] = useState('');
   const state = selectedSession.state || {};
   const players = state.players || [];
   const mode = state.mode || selectedSession.mode || '—';
