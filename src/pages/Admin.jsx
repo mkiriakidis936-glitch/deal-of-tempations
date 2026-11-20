@@ -248,7 +248,9 @@ export default function Admin() {
       if (updated?.state) {
         setSessions((prev) => prev.map((session) => session.id === id ? updated : session));
         setPickedSession((prev) => (prev?.id === id ? updated : prev));
+        return updated;
       }
+      return null;
     } catch (e) {
       console.error('Update error', e);
       window.alert('Η αποθήκευση της συνεδρίας απέτυχε. Οι αλλαγές δεν καταχωρήθηκαν.');
