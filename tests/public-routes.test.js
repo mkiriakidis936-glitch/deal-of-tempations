@@ -41,4 +41,6 @@ test('Admin exposes the public participation link for a selected Event', () => {
   assert.match(app, /path="\/deal\/:roomCode"/);
   assert.match(adminInterest, /\/deal\/\$\{selectedEvent\.room_code\}/);
   assert.match(adminInterest, /copyParticipationLink/);
+  assert.match(adminInterest, /href="\/deal"/);
+  assert.match(adminInterest, /copyInterestLink/);
 });
