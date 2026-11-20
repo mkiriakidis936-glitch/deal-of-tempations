@@ -252,7 +252,7 @@ export default function Admin() {
     } catch (e) {
       console.error('Update error', e);
       window.alert('Η αποθήκευση της συνεδρίας απέτυχε. Οι αλλαγές δεν καταχωρήθηκαν.');
-      throw e;
+      return null;
     }
   }
 
