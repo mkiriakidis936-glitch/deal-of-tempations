@@ -8,9 +8,9 @@ import { COLLECTIONS, defaultsOf, fetchModesRecord, saveModesContent } from '@/l
 
 const inp = 'w-full px-3 py-2 rounded-lg border-2 border-border bg-background text-foreground font-body text-sm';
 const ORIGIN = typeof window !== 'undefined' ? window.location.origin : '';
-const SITE_IDS = { lockdown: 'lockdown', beach_bar: 'beachbar', marathon_4h: 'marathon4h' };
+const SITE_IDS = { pedi_extended: 'pedi_extended', lockdown: 'lockdown', beach_bar: 'beachbar', marathon_4h: 'marathon4h' };
 
-// Admin → 🎮 Νέα Modes: επεξεργασία κάρτων, ερωτήσεων και αποστολών των 3 ψηφιακών modes.
+// Admin → 🎮 Νέα Modes: επεξεργασία κάρτων, ερωτήσεων και αποστολών των 4 ψηφιακών modes.
 export default function AdminModes() {
   const [saved, setSaved] = useState({});
   const [loaded, setLoaded] = useState(false);
