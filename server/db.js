@@ -77,4 +77,6 @@ export async function migrate() {
     );
     CREATE INDEX IF NOT EXISTS page_views_path_created_idx ON page_views (path, created_date DESC);
   `);
+  // Concurrent index build avoids blocking visit inserts while the index is created.
+  await query('CREATE INDEX CONCURRENTLY IF NOT EXISTS page_views_visitor_path_created_idx ON page_views (visitor, path, created_date DESC)');
 }
