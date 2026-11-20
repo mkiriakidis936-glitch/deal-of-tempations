@@ -8,7 +8,7 @@ import { isValidConsentEntry } from '../src/lib/consent.js';
 // Entities that used to live in base44/entities/*.jsonc
 export const ENTITIES = [
   'Achievement', 'AppSetting', 'BacheloretteIntake', 'BlackmailVault', 'Chronicle', 'GameContent',
-  'GameSession', 'GameSessionSnapshot', 'Haunting', 'InvitationRSVP', 'Memorial', 'PajamaContent', 'PajamaIntake',
+  'DotEvent', 'GameSession', 'GameSessionSnapshot', 'Haunting', 'Interest', 'InvitationRSVP', 'Memorial', 'Participation', 'PajamaContent', 'PajamaIntake',
   'PlayerIntake', 'PlayerProfile', 'SessionArchive', 'VIPInvitation', 'VIPInvitationSubmission',
   'PublicFormSubmission', 'ShowProduction', 'ProductionConsent', 'ProductionCue',
 ];
@@ -18,6 +18,9 @@ export const ENTITIES = [
 //   read   = filter / get / stream      count = count
 const ADMIN = 'admin';
 const rules = {
+  DotEvent: { read: ADMIN, create: ADMIN, update: ADMIN, delete: ADMIN },
+  Interest: { read: ADMIN, update: ADMIN, delete: ADMIN },
+  Participation: { read: ADMIN, update: ADMIN, delete: ADMIN },
   // personal answers: anyone can submit the form, only admins can read them
   PlayerIntake:       { read: ADMIN, update: ADMIN, delete: ADMIN },
   PajamaIntake:       { read: ADMIN, update: ADMIN, delete: ADMIN },
@@ -47,6 +50,11 @@ const rules = {
 };
 const needsAdmin = (entity, op) => (rules[entity]?.[op] || 'public') === ADMIN;
 const isAdmin = (req) => req.user?.role === 'admin';
+const DOT_EVENT_PHASES = {
+  one_night: ['arrival', 'preparation', 'start', 'show_game_1', 'break', 'show_game_2', 'final_round', 'close'],
+  villa_48h: ['arrival', 'day_1', 'afternoon', 'night_1', 'dawn_morning', 'day_2', 'final_show', 'finale', 'close'],
+};
+const DOT_EVENT_STATUSES = ['prep', 'arrival', 'active', 'closing', 'completed'];
 const isObject = (value) => value !== null && typeof value === 'object' && !Array.isArray(value);
 const sameJson = (a, b) => JSON.stringify(a ?? null) === JSON.stringify(b ?? null);
 const withoutKeys = (value, keys) => Object.fromEntries(Object.entries(value || {}).filter(([key]) => !keys.includes(key)));
@@ -1226,7 +1234,92 @@ export function entityRoutes() {
     res.json(toRecord(rows[0]));
   });
 
-  r.post('/:entity', guard('create'), formLimit, async (req, res) => {
+  r.post('/:entity', guard('create'), formLimit, async (req, res, next) => {
+    if (req.entity === 'Interest' && !isAdmin(req)) {
+      const body = req.body || {};
+      const name = typeof body.name === 'string' ? body.name.trim().slice(0, 60) : '';
+      const eventType = String(body.eventType || '');
+      const declaration = String(body.declaration || '');
+      if (!name || !['one_night', 'villa_48h'].includes(eventType) || !['yes', 'no'].includes(declaration)) {
+        return res.status(400).json({ error: 'Συμπλήρωσε όνομα, τύπο εμπειρίας και δήλωση συμμετοχής.' });
+      }
+      req.body = { name, eventType, declaration, submittedAt: new Date().toISOString() };
+    }
+    if (req.entity === 'DotEvent') {
+      if (!isAdmin(req)) return res.status(403).json({ error: 'Forbidden' });
+      const body = req.body || {};
+      const title = typeof body.title === 'string' ? body.title.trim().slice(0, 100) : '';
+      const type = String(body.type || '');
+      const phases = DOT_EVENT_PHASES[type];
+      const status = String(body.status || 'prep');
+      const roomCode = String(body.room_code || '').trim().toUpperCase();
+      const phase = String(body.phase || phases?.[0] || '');
+      if (!title || !phases || !DOT_EVENT_STATUSES.includes(status) || !phases.includes(phase) || !/^[A-Z0-9]{4}$/.test(roomCode)) {
+        return res.status(400).json({ error: 'Τα στοιχεία του Event δεν είναι έγκυρα.' });
+      }
+      const { rows: duplicateCodes } = await query("SELECT id FROM records WHERE entity = 'DotEvent' AND data->>'room_code' = $1 LIMIT 1", [roomCode]);
+      if (duplicateCodes[0]) return res.status(409).json({ error: 'Ο κωδικός χώρου χρησιμοποιείται ήδη.' });
+      const interestIds = Array.isArray(body.interestIds) ? [...new Set(body.interestIds.filter((id) => typeof id === 'string').slice(0, 300))] : [];
+      req.body = {
+        title, type, status, phase, room_code: roomCode,
+        notes: typeof body.notes === 'string' ? body.notes.trim().slice(0, 3000) : '',
+        interestIds,
+        expectedCount: Number.isInteger(body.expectedCount) ? Math.max(0, Math.min(body.expectedCount, 300)) : interestIds.length,
+        gameSessionId: '',
+        gameSessionCode: '',
+        createdAt: new Date().toISOString(),
+      };
+    }
+    if (req.entity === 'Participation' && !isAdmin(req)) {
+      const body = req.body || {};
+      const roomCode = String(body.roomCode || '').trim().toUpperCase();
+      const name = typeof body.name === 'string' ? body.name.trim().slice(0, 60) : '';
+      const choice = String(body.choice || '');
+      if (!/^[A-Z0-9]{4}$/.test(roomCode) || !name || !['yes', 'no'].includes(choice)) {
+        return res.status(400).json({ error: 'Συμπλήρωσε όνομα και δήλωση συμμετοχής.' });
+      }
+      const client = await pool.connect();
+      let record;
+      let action = 'create';
+      try {
+        await client.query('BEGIN');
+        const { rows: events } = await client.query(
+          "SELECT * FROM records WHERE entity = 'DotEvent' AND data->>'room_code' = $1 FOR UPDATE",
+          [roomCode],
+        );
+        if (!events[0]) { await client.query('ROLLBACK'); return res.status(404).json({ error: 'Το Event δεν βρέθηκε.' }); }
+        const event = toRecord(events[0]);
+        if (['closing', 'completed'].includes(event.status)) {
+          await client.query('ROLLBACK');
+          return res.status(409).json({ error: 'Η δήλωση συμμετοχής για αυτό το Event έχει κλείσει.' });
+        }
+        const { rows: existing } = await client.query(
+          "SELECT * FROM records WHERE entity = 'Participation' AND data->>'roomCode' = $1 AND lower(data->>'name') = lower($2) FOR UPDATE",
+          [roomCode, name],
+        );
+        const data = { roomCode, eventId: event.id, name, choice, submittedAt: new Date().toISOString() };
+        if (existing[0]) {
+          const { rows } = await client.query(
+            "UPDATE records SET data = data || $1::jsonb, updated_date = now() WHERE id = $2 AND entity = 'Participation' RETURNING *",
+            [JSON.stringify(data), existing[0].id],
+          );
+          record = toRecord(rows[0]);
+          action = 'update';
+        } else {
+          const { rows } = await client.query(
+            "INSERT INTO records (id, entity, data, created_by) VALUES ($1, 'Participation', $2, NULL) RETURNING *",
+            [crypto.randomUUID(), JSON.stringify(data)],
+          );
+          record = toRecord(rows[0]);
+        }
+        await client.query('COMMIT');
+      } catch (error) {
+        await client.query('ROLLBACK').catch(() => {});
+        return next(error);
+      } finally { client.release(); }
+      broadcast('Participation', { type: action, id: record.id, data: record });
+      return res.json(record);
+    }
     if (req.entity === 'ProductionConsent' && !isAdmin(req)) {
       const body = req.body || {};
       const code = String(body.sessionCode || '').trim().toUpperCase();
@@ -1499,6 +1592,23 @@ export function entityRoutes() {
         throw error;
       } finally {
         client.release();
+      }
+    }
+    if (req.entity === 'DotEvent') {
+      const { rows: found } = await query("SELECT * FROM records WHERE id = $1 AND entity = 'DotEvent'", [req.params.id]);
+      if (!found[0]) return res.status(404).json({ error: 'Not found' });
+      const current = toRecord(found[0]);
+      const patch = stripBuiltins(req.body);
+      const allowed = new Set(['title', 'type', 'status', 'phase', 'room_code', 'notes', 'interestIds', 'expectedCount']);
+      if (Object.keys(patch).some((key) => !allowed.has(key))) return res.status(400).json({ error: 'Το Event περιέχει πεδίο που δεν επιτρέπεται να αλλάξει.' });
+      const next = { ...current, ...patch };
+      const phases = DOT_EVENT_PHASES[next.type];
+      if (!String(next.title || '').trim() || !phases || !DOT_EVENT_STATUSES.includes(next.status) || !phases.includes(next.phase) || !/^[A-Z0-9]{4}$/.test(String(next.room_code || ''))) {
+        return res.status(400).json({ error: 'Τα στοιχεία του Event δεν είναι έγκυρα.' });
+      }
+      if (next.room_code !== current.room_code) {
+        const { rows: duplicate } = await query("SELECT id FROM records WHERE entity = 'DotEvent' AND data->>'room_code' = $1 AND id <> $2 LIMIT 1", [next.room_code, req.params.id]);
+        if (duplicate[0]) return res.status(409).json({ error: 'Ο κωδικός χώρου χρησιμοποιείται ήδη.' });
       }
     }
     const { rows } = await query(
