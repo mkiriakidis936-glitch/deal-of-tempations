@@ -23,7 +23,11 @@ export default function PajamaIntakeList() {
     }
   }
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => {
+    load();
+    const unsubscribe = base44.entities.PajamaIntake.subscribe(() => load());
+    return () => unsubscribe?.();
+  }, []);
 
   async function toggleApprove(item) {
     const next = !item.approved;

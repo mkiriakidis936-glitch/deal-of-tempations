@@ -36,7 +36,12 @@ export default function AdminIntakes() {
     }
   }, []);
 
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => {
+    load();
+    const offPlayers = base44.entities.PlayerIntake.subscribe(() => load());
+    const offHeist = base44.entities.BacheloretteIntake.subscribe(() => load());
+    return () => { offPlayers?.(); offHeist?.(); };
+  }, [load]);
 
   async function handleApprove(item) {
     try {
