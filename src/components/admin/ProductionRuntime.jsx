@@ -1,5 +1,6 @@
 import React,{useEffect,useMemo,useState} from 'react';
 import {base44,getToken} from '@/api/base44Client';
+import {publishProductionCue,stopProductionCue} from '@/lib/productionCue';
 import ComicPanel from '@/components/comic/ComicPanel';
 import ComicButton from '@/components/comic/ComicButton';
 
@@ -55,12 +56,7 @@ export default function ProductionRuntime({selected,record,draft,onChange,onSave
    ...patch,
    productionLog:[{id:makeId(),at:new Date().toISOString(),action,detail:detail||'',stage:activeStage?.title||''},...log].slice(0,250),
  });
- const activateCue=async(data)=>{
-   const {items=[]}=await base44.entities.ProductionCue.filter({sessionCode:selected.sessionCode},{limit:1});
-   const current=items[0];
-   const cueData={sessionCode:selected.sessionCode,active:true,activatedAt:new Date().toISOString(),...data};
-   return current?.id?base44.entities.ProductionCue.update(current.id,cueData):base44.entities.ProductionCue.create(cueData);
- };
+ const activateCue=async(data)=>publishProductionCue(selected.sessionCode,data);
  const setStatus=(status)=>{
    const now=new Date().toISOString();
    const labels={live:'Η παραγωγή ξεκίνησε',paused:'Η παραγωγή μπήκε σε διάλειμμα',completed:'Η παραγωγή ολοκληρώθηκε',ready:'Η παραγωγή είναι έτοιμη'};
@@ -92,7 +88,7 @@ export default function ProductionRuntime({selected,record,draft,onChange,onSave
    if(saved){try{await activateCue({kind:'winner',label:'WINNER’S VAULT',winnerName:draft.winnerName,winnerNotes:draft.winnerNotes||''});}catch(error){setMessage(error.message||'Τα στοιχεία αποθηκεύτηκαν, αλλά η αποκάλυψη δεν προβλήθηκε.');}}
  };
  const stopCue=async()=>{
-   try{const {items=[]}=await base44.entities.ProductionCue.filter({sessionCode:selected.sessionCode},{limit:1});if(items[0]?.id)await base44.entities.ProductionCue.update(items[0].id,{active:false});setMessage('Η προβολή στην TV σταμάτησε.');}
+   try{await stopProductionCue(selected.sessionCode);setMessage('Η προβολή στην TV σταμάτησε.');}
    catch(error){setMessage(error.message||'Δεν ήταν δυνατή η διακοπή της προβολής.');}
  };
  const uploadMedia=async(files)=>{
