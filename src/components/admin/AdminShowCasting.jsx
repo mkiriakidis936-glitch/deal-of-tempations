@@ -35,6 +35,8 @@ export default function AdminShowCasting() {
   const [mode, setMode] = useState('classic');
   const [playerIntakes, setPlayerIntakes] = useState([]);
   const [pajamaIntakes, setPajamaIntakes] = useState([]);
+  const [events, setEvents] = useState([]);
+  const [selectedEventId, setSelectedEventId] = useState('');
   const [selected, setSelected] = useState([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -45,20 +47,21 @@ export default function AdminShowCasting() {
     setLoading(true);
     setMessage('');
     try {
-      const [players, pajama, settings] = await Promise.all([
+      const [players, pajama, settings, eventResult] = await Promise.all([
         base44.entities.PlayerIntake.filter({}, { sort: '-created_date', limit: 500 }),
         base44.entities.PajamaIntake.filter({}, { sort: '-created_date', limit: 500 }),
         base44.entities.AppSetting.filter({ key: CAST_KEY }, { limit: 1 }),
+        base44.entities.DotEvent.filter({}, { sort: '-created_date', limit: 200 }),
       ]);
+      const loadedEvents = eventResult.items || [];
+      setEvents(loadedEvents);
+      setSelectedEventId((current) => current || loadedEvents.find((event) => event.status !== 'completed')?.id || loadedEvents[0]?.id || '');
       setPlayerIntakes(players.items || []);
       setPajamaIntakes((pajama.items || []).filter((item) => item.approved === true));
       const record = settings.items?.[0] || null;
       const current = record?.value && typeof record.value === 'object' ? record.value : null;
       setPlan(current ? { ...current, settingId: record.id } : null);
-      if (current?.mode && Array.isArray(current.players)) {
-        setMode(current.mode);
-        setSelected(current.players.map((player) => normalizeName(player.name)).filter(Boolean));
-      }
+
     } catch (error) {
       console.error('Show casting load failed', error);
       setMessage(error.message || 'Δεν φορτώθηκαν οι συμμετοχές.');
@@ -68,6 +71,21 @@ export default function AdminShowCasting() {
   };
 
   useEffect(() => { load(); }, []);
+
+  const selectedEvent = events.find((event) => event.id === selectedEventId) || null;
+  const scopeToEvent = (items) => (items || []).filter((item) => selectedEventId
+    ? item.dotEventId === selectedEventId || item.roomCode === selectedEvent?.room_code || item.sessionCode === selectedEvent?.room_code
+    : !item.dotEventId && !item.roomCode && !item.sessionCode);
+
+  useEffect(() => {
+    if (!plan?.mode || !Array.isArray(plan.players)) { setSelected([]); return; }
+    const matchesEvent = selectedEventId
+      ? plan.dotEventId === selectedEventId || (!!plan.roomCode && plan.roomCode === selectedEvent?.room_code) || (!!plan.sessionCode && plan.sessionCode === selectedEvent?.room_code)
+      : !plan.dotEventId && !plan.roomCode && !plan.sessionCode;
+    if (!matchesEvent) { setSelected([]); return; }
+    setMode(plan.mode);
+    setSelected(plan.players.map((player) => normalizeName(player.name)).filter(Boolean));
+  }, [plan, selectedEventId, selectedEvent?.room_code]);
 
   const candidates = useMemo(() => {
     const byName = new Map();
@@ -96,10 +114,10 @@ export default function AdminShowCasting() {
       previous.preferredModes = [...new Set([...previous.preferredModes, ...modes])];
       byName.set(key, previous);
     };
-    playerIntakes.filter((item) => item.approved === true || item.approvalStatus === 'approved').forEach((item) => add(item, 'player'));
-    pajamaIntakes.forEach((item) => add(item, 'pajama'));
+    scopeToEvent(playerIntakes).filter((item) => item.approved === true || item.approvalStatus === 'approved').forEach((item) => add(item, 'player'));
+    scopeToEvent(pajamaIntakes).forEach((item) => add(item, 'pajama'));
     return [...byName.values()].sort((a, b) => a.name.localeCompare(b.name, 'el'));
-  }, [mode, playerIntakes, pajamaIntakes]);
+  }, [mode, playerIntakes, pajamaIntakes, selectedEventId, selectedEvent?.room_code]);
 
   const modeCounts = useMemo(() => {
     const counts = new Map();
@@ -111,10 +129,10 @@ export default function AdminShowCasting() {
         counts.get(modeId).add(key);
       });
     };
-    playerIntakes.filter((item) => item.approved === true || item.approvalStatus === 'approved').forEach((item) => add(item, 'player'));
-    pajamaIntakes.forEach((item) => add(item, 'pajama'));
+    scopeToEvent(playerIntakes).filter((item) => item.approved === true || item.approvalStatus === 'approved').forEach((item) => add(item, 'player'));
+    scopeToEvent(pajamaIntakes).forEach((item) => add(item, 'pajama'));
     return GAME_MODES.map((item) => ({ ...item, count: counts.get(item.id)?.size || 0 }));
-  }, [playerIntakes, pajamaIntakes]);
+  }, [playerIntakes, pajamaIntakes, selectedEventId, selectedEvent?.room_code]);
 
   const limits = playerLimits(mode);
   const selectedCandidates = candidates.filter((item) => selected.includes(normalizeName(item.name)));
@@ -152,6 +170,12 @@ export default function AdminShowCasting() {
         players,
         source: 'admin-casting',
         publishedAt: new Date().toISOString(),
+        ...(selectedEvent ? {
+          dotEventId: selectedEvent.id,
+          roomCode: selectedEvent.room_code || '',
+          sessionCode: selectedEvent.room_code || '',
+          eventTitle: selectedEvent.title || selectedEvent.name || '',
+        } : {}),
       };
       if (plan?.settingId) {
         await base44.entities.AppSetting.update(plan.settingId, { value });
@@ -195,6 +219,13 @@ export default function AdminShowCasting() {
             ))}
           </div>
         </div>
+        <label className="block space-y-1 text-sm font-bold">
+          ΕΝΕΡΓΟ EVENT
+          <select value={selectedEventId} onChange={(event) => { setSelectedEventId(event.target.value); setSelected([]); }} className="w-full rounded-lg border-2 border-border bg-background px-3 py-2">
+            <option value="">Γενικές συμμετοχές χωρίς Event</option>
+            {events.map((event) => <option key={event.id} value={event.id}>{event.title || event.name || event.room_code || 'Event'}{event.room_code ? ` · ${event.room_code}` : ''}</option>)}
+          </select>
+        </label>
         <label className="block space-y-1 text-sm font-bold">
           ΤΕΛΙΚΟ MODE
           <select value={mode} onChange={(event) => { setMode(event.target.value); setSelected([]); }} className="w-full rounded-lg border-2 border-border bg-background px-3 py-2">
