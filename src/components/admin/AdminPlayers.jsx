@@ -76,12 +76,14 @@ export default function AdminPlayers({ sessions, selectedSession, onSelect, onUp
   async function clearBomb() { await onUpdate(selectedSession.id, { bombEvent: null }); }
 
   async function resetAllPenalties() {
-    await onUpdate(selectedSession.id, { players: players.map((p) => ({ id: p.id, penaltyStep: 0, immunity: false })) });
+    const saved = await onUpdate(selectedSession.id, { players: players.map((p) => ({ id: p.id, penaltyStep: 0, immunity: false })) });
+    if (!saved) return;
     players.forEach((p) => { if (dirtyFields.current[p.id]) { dirtyFields.current[p.id].delete('penaltyStep'); dirtyFields.current[p.id].delete('immunity'); } });
   }
 
   async function giveAllImmunity() {
-    await onUpdate(selectedSession.id, { players: players.map((p) => ({ id: p.id, immunity: true })) });
+    const saved = await onUpdate(selectedSession.id, { players: players.map((p) => ({ id: p.id, immunity: true })) });
+    if (!saved) return;
     players.forEach((p) => dirtyFields.current[p.id]?.delete('immunity'));
   }
 
