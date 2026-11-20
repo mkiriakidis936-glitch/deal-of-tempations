@@ -3,7 +3,7 @@ import ComicPanel from '@/components/comic/ComicPanel';
 import { Image } from '@/components/ui/image';
 import { GAME_MODES, INTENSITY_LEVELS } from '@/data/gameConfig';
 import { ART } from '@/data/brandArt';
-import { request } from '@/api/base44Client';
+import { base44, request } from '@/api/base44Client';
 
 export default function AdminDashboard() {
   const [stats, setStats] = useState(null);
@@ -12,11 +12,23 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     let mounted = true;
-    request('GET', '/api/visits/session-stats')
-      .then((data) => { if (mounted) setStats(data); })
+    let refreshTimer = null;
+    const loadStats = () => request('GET', '/api/visits/session-stats')
+      .then((data) => { if (mounted) { setStats(data); setError(''); } })
       .catch((e) => { if (mounted) setError(e.message || 'Δεν φορτώθηκαν τα στατιστικά.'); })
       .finally(() => { if (mounted) setLoading(false); });
-    return () => { mounted = false; };
+
+    loadStats();
+    const unsubscribe = base44.entities.GameSession.subscribe(() => {
+      if (refreshTimer) clearTimeout(refreshTimer);
+      refreshTimer = setTimeout(() => { if (mounted) loadStats(); }, 350);
+    });
+
+    return () => {
+      mounted = false;
+      if (refreshTimer) clearTimeout(refreshTimer);
+      unsubscribe?.();
+    };
   }, []);
 
   if (loading) {
