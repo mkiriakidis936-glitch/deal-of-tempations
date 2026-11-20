@@ -1408,7 +1408,7 @@ export function entityRoutes() {
   // Approve a submitted form and create/update its unified PlayerIntake profile.
   r.post('/intake-approvals/:entity/:id', requireAdmin, async (req, res, next) => {
     const entity = String(req.params.entity || '');
-    if (!['PlayerIntake', 'PajamaIntake', 'VIPInvitationSubmission'].includes(entity)) {
+    if (!['PlayerIntake', 'PajamaIntake', 'BacheloretteIntake', 'VIPInvitationSubmission'].includes(entity)) {
       return res.status(400).json({ error: 'Μη υποστηριζόμενη φόρμα.' });
     }
     const client = await pool.connect();
