@@ -1,0 +1,146 @@
+import React, { useEffect, useRef, useState } from 'react';
+import { Panel, Btn } from '@/components/modes/ModeShell';
+import { pick, useTick, fmt } from '@/lib/modeKit';
+import { getVipAnswers, isVipActivityAllowed } from '@/lib/playerIntelligence';
+
+// Real-Time Secret Missions: ξεκινούν από το tablet και εμφανίζονται κρυφά στο κινητό της παίκτριας.
+export default function MissionPanel({ ctx, pool, onSuccess, onFail, title = '📲 Secret Missions' }) {
+  const { players, mg, setMg, log, stopped } = ctx;
+  const missions = mg.missions || {};
+  const [target, setTarget] = useState('random');
+  const [auto, setAuto] = useState(false);
+  const [everyMin, setEveryMin] = useState(6);
+  const [message, setMessage] = useState('');
+  useTick(true, 1000);
+
+  function profileFor(player) {
+    return getVipAnswers(ctx, player);
+  }
+
+  function canReceiveMissions(player) {
+    return isVipActivityAllowed(ctx, player, 'missions');
+  }
+
+  function send() {
+    if (stopped) return;
+    setMessage('');
+    const cur = ctx.mg.missions || {};
+    const free = players.filter((player) => canReceiveMissions(player) && (!cur[player.id] || cur[player.id].status !== 'active'));
+    const eligible = players.filter(canReceiveMissions);
+    if (target === 'random' && free.length === 0) {
+      setMessage('Όλες οι διαθέσιμες παίκτριες έχουν ήδη ενεργή αποστολή.');
+      return;
+    }
+    const p = target === 'random' ? pick(free) : players.find((player) => player.id === target);
+    if (!p || !canReceiveMissions(p)) {
+      setMessage('Η παίκτρια δεν έχει επιλέξει συμμετοχή σε μυστικές αποστολές.');
+      return;
+    }
+    if (cur[p.id]?.status === 'active') {
+      setMessage('Η παίκτρια έχει ήδη ενεργή αποστολή. Περίμενε να ολοκληρωθεί ή να λήξει.');
+      return;
+    }
+    const answers = profileFor(p);
+    const suitablePool = pool;
+    if (!suitablePool.length) {
+      setMessage('Δεν υπάρχουν διαθέσιμες αποστολές σε αυτό το Mode.');
+      return;
+    }
+    if (auto && answers?.boundaries?.trim()) {
+      setMessage('Η παίκτρια έχει δηλώσει προσωπικά όρια. Απαιτείται χειροκίνητος έλεγχος πριν από την αποστολή.');
+      return;
+    }
+    const m = pick(suitablePool);
+    if (!auto) {
+      const boundaries = String(answers?.boundaries || '').trim();
+      const review = `Αποστολή στη ${p.name}: «${m.title}»\n\n${m.text}${boundaries ? `\n\nΠΡΟΣΩΠΙΚΑ ΟΡΙΑ: ${boundaries}\n\nΕπιβεβαίωσε ότι η αποστολή δεν παραβιάζει τα όρια.` : ''}`;
+      if (!window.confirm(review)) return;
+    }
+    setMg({
+      missions: {
+        ...cur,
+        [p.id]: { ...m, playerId: p.id, sentAt: Date.now(), expiresAt: Date.now() + (m.mins || 5) * 60000, status: 'active' },
+      },
+    });
+    log(`📲 Μυστική αποστολή στο κινητό της ${p.name}: «${m.title}»`);
+  }
+  const sendRef = useRef(send);
+  sendRef.current = send;
+
+  useEffect(() => {
+    if (!auto || stopped) return undefined;
+    const i = setInterval(() => sendRef.current(), everyMin * 60000);
+    return () => clearInterval(i);
+  }, [auto, everyMin, stopped]);
+
+  function finish(pid, ok) {
+    if (stopped) return;
+    const m = missions[pid];
+    if (!m || m.status !== 'active') return;
+    setMg({ missions: { ...missions, [pid]: { ...m, status: ok ? 'done' : 'failed' } } });
+    const name = players.find((p) => p.id === pid)?.name;
+    log(`${ok ? '✅' : '❌'} ${name}: «${m.title}»`);
+    if (ok) onSuccess?.(m, pid); else onFail?.(m, pid);
+  }
+
+  useEffect(() => {
+    if (stopped) return undefined;
+    const interval = setInterval(() => {
+      const current = ctx.mg.missions || {};
+      const now = Date.now();
+      let changed = false;
+      const next = { ...current };
+      Object.entries(current).forEach(([playerId, mission]) => {
+        if (mission?.status === 'active' && Number(mission.expiresAt) > 0 && mission.expiresAt <= now) {
+          next[playerId] = { ...mission, status: 'expired', expiredAt: now };
+          changed = true;
+        }
+      });
+      if (changed) setMg({ missions: next });
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [stopped, ctx.mg.missions, setMg]);
+
+  const active = Object.values(missions).filter((m) => m.status === 'active');
+
+  return (
+    <Panel title={title}>
+      <div className="flex flex-wrap items-center gap-2">
+        <select value={target} onChange={(e) => setTarget(e.target.value)} className="px-2 py-2 rounded bg-background border border-border text-sm">
+          <option value="random">🎲 Τυχαία παίκτρια</option>
+          {players.map((p) => <option key={p.id} value={p.id} disabled={!canReceiveMissions(p) || missions[p.id]?.status === 'active'}>{p.name}{!canReceiveMissions(p) ? ' · χωρίς αποστολές' : missions[p.id]?.status === 'active' ? ' · ενεργή αποστολή' : ''}</option>)}
+        </select>
+        <Btn color="bg-fuchsia-700" onClick={send} disabled={stopped}>📲 Στείλε αποστολή</Btn>
+        <label className="flex items-center gap-1 text-xs">
+          <input type="checkbox" checked={auto} onChange={(e) => setAuto(e.target.checked)} />
+          αυτόματα κάθε
+          <input
+            type="number" min="1" max="30" value={everyMin}
+            onChange={(e) => setEveryMin(Math.max(1, Number(e.target.value) || 1))}
+            className="w-12 px-1 rounded bg-background border border-border text-center"
+          />
+          λεπτά
+        </label>
+      </div>
+      {message && <div role="status" className="rounded border border-amber-500/30 bg-amber-500/10 p-2 text-xs">{message}</div>}
+      {active.length === 0 && <div className="text-xs opacity-60">Καμία ενεργή αποστολή. Οι αποστολές εμφανίζονται στο κινητό της παίκτριας (άνοιγμα /play).</div>}
+      {active.map((m) => {
+        const name = players.find((p) => p.id === m.playerId)?.name;
+        const left = (m.expiresAt - Date.now()) / 1000;
+        return (
+          <div key={m.playerId} className="rounded border border-fuchsia-500/50 bg-fuchsia-950/40 p-2 text-sm space-y-1">
+            <div className="flex justify-between gap-2">
+              <b>{name} · {m.title}</b>
+              <span className={left <= 0 ? 'text-red-400' : 'text-fuchsia-200'}>{left > 0 ? fmt(left) : 'έληξε'}</span>
+            </div>
+            <div className="text-xs opacity-80">{m.text}</div>
+            <div className="flex gap-2">
+              <Btn color="bg-emerald-700" className="!py-1.5" onClick={() => finish(m.playerId, true)} disabled={stopped}>✅ Πέτυχε</Btn>
+              <Btn color="bg-red-800" className="!py-1.5" onClick={() => finish(m.playerId, false)} disabled={stopped}>❌ Απέτυχε</Btn>
+            </div>
+          </div>
+        );
+      })}
+    </Panel>
+  );
+}
