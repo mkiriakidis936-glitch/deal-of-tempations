@@ -33,3 +33,12 @@ test('mode submissions retain Event identity and Tablet filters by that Event', 
   assert.match(setup, /item\.sessionCode === selectedEvent\?\.room_code/);
   assert.match(setup, /PajamaIntake\.filter\(\{\}/);
 });
+
+
+test('Admin exposes the public participation link for a selected Event', () => {
+  const adminInterest = read('../src/components/admin/AdminInterestParticipation.jsx');
+  assert.match(app, /path="\/deal"/);
+  assert.match(app, /path="\/deal\/:roomCode"/);
+  assert.match(adminInterest, /\/deal\/\$\{selectedEvent\.room_code\}/);
+  assert.match(adminInterest, /copyParticipationLink/);
+});
