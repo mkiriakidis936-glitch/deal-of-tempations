@@ -1,6 +1,6 @@
 import { getToken } from '@/api/base44Client';
 
-// Μετράει επισκέψεις στο /site. Δεν μετράει όταν είσαι συνδεδεμένη/ος (δηλαδή εσύ).
+// Μετράει επισκέψεις στις δημόσιες σελίδες /site και στα event pages. Δεν μετράει συνδεδεμένους χρήστες.
 export function trackVisit(path) {
   try {
     if (getToken()) return;
