@@ -1,6 +1,7 @@
 import ScreenWallpaper from '@/components/shared/ScreenWallpaper';
 import React from 'react';
 import { useGameSession } from '@/hooks/useGameSession';
+import { base44 } from '@/api/base44Client';
 import { getActiveSessionCode, setActiveSessionCode, subscribeActiveSession } from '@/lib/activeSession';
 const StopButton = React.lazy(() => import('@/components/comic/StopButton'));
 import ComicButton from '@/components/comic/ComicButton';
@@ -77,10 +78,26 @@ export default function Tablet() {
   }, [joinByCode]);
 
   async function startNewSession(data) {
+    const linkedEvent = data.dotEventId
+      ? (await base44.entities.DotEvent.filter({ id: data.dotEventId }, { limit: 1 })).items?.[0]
+      : null;
     const created = await createSession({
       ...data,
-      event: { title: String(data.mode || 'Game').replace(/_/g, ' ').toUpperCase(), sessionCode: data.sessionCode, createdFrom: 'game-setup', guests: [] },
+      event: {
+        title: linkedEvent?.title || String(data.mode || 'Game').replace(/_/g, ' ').toUpperCase(),
+        sessionCode: data.sessionCode,
+        dotEventId: linkedEvent?.id || '',
+        createdFrom: 'game-setup',
+        guests: [],
+      },
     });
+    if (linkedEvent) {
+      await base44.entities.DotEvent.update(linkedEvent.id, { gameSessionId: created.id, gameSessionCode: data.sessionCode, status: 'active' });
+      const { items: profiles } = await base44.entities.PlayerIntake.filter({ dotEventId: linkedEvent.id }, { limit: 500 });
+      await Promise.all((profiles || []).filter((profile) => profile.approved === true).map((profile) =>
+        base44.entities.PlayerIntake.update(profile.id, { sessionCode: data.sessionCode })
+      ));
+    }
     setActiveSessionCode(data.sessionCode);
     return created;
   }
