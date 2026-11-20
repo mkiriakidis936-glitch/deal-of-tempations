@@ -145,7 +145,6 @@ export default function AVControlRoom({ refreshKey = 0 }) {
       setCueRecord(nextCue);
       if (Array.isArray(nextCue?.queue) && nextCue.queue.length && Number.isInteger(nextCue.queueIndex)) {
         setQueueIndex(nextCue.queueIndex);
-        persist(metadata, queue, nextCue.queueIndex).catch(() => {});
       }
     }).catch(() => {});
     refreshCue();
