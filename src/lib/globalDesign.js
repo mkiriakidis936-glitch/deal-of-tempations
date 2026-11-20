@@ -10,6 +10,7 @@ export const GLOBAL_DESIGN_DEFAULTS = {
   heading: 'Cinzel',
   body: 'Cormorant Garamond',
   display: 'Cinzel Decorative',
+  ui: 'Inter',
 };
 
 function hexToHsl(hex) {
@@ -103,4 +104,5 @@ export function applySavedGlobalDesign(value) {
   root.style.setProperty('--font-heading', `'${design.heading}', Georgia, 'Times New Roman', serif`);
   root.style.setProperty('--font-body', `'${design.body}', Georgia, 'Times New Roman', serif`);
   root.style.setProperty('--font-display', `'${design.display}', Georgia, 'Times New Roman', serif`);
+  root.style.setProperty('--font-ui', `'${design.ui}', ui-sans-serif, system-ui, -apple-system, 'Helvetica Neue', Arial, sans-serif`);
 }

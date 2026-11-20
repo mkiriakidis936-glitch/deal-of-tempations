@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
-import { applySavedGlobalDesign, GLOBAL_DESIGN_KEY } from '@/lib/globalDesign';
+import { applySavedGlobalDesign, GLOBAL_DESIGN_DEFAULTS, GLOBAL_DESIGN_KEY } from '@/lib/globalDesign';
 
 export default function GlobalDesignProvider() {
   useEffect(() => {
@@ -9,7 +9,7 @@ export default function GlobalDesignProvider() {
     window.addEventListener('admin-global-design-updated', apply);
     const unsubscribe = base44.entities.AppSetting.subscribe((event) => {
       if (!active || event?.data?.key !== GLOBAL_DESIGN_KEY) return;
-      if (event.type === 'delete') return;
+      if (event.type === 'delete') { applySavedGlobalDesign(GLOBAL_DESIGN_DEFAULTS); return; }
       if (event.data?.value) applySavedGlobalDesign(event.data.value);
     });
     base44.entities.AppSetting.filter({ key: GLOBAL_DESIGN_KEY }, { limit: 1 })

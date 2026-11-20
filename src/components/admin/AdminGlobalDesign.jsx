@@ -68,7 +68,7 @@ export default function AdminGlobalDesign() {
           ))}
         </div>
         {[
-          ['heading', 'Γραμματοσειρά τίτλων'], ['body', 'Γραμματοσειρά κειμένου'], ['display', 'Γραμματοσειρά display'],
+          ['heading', 'Γραμματοσειρά τίτλων'], ['body', 'Γραμματοσειρά κειμένου'], ['display', 'Γραμματοσειρά display'], ['ui', 'Γραμματοσειρά περιβάλλοντος'],
         ].map(([key, label]) => (
           <label key={key} className="block text-xs font-bold">{label}
             <select className="mt-1 w-full rounded border border-border bg-background p-2" value={value[key]} onChange={(event) => change(key, event.target.value)}>

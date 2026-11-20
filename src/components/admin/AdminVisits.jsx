@@ -16,7 +16,7 @@ export default function AdminVisits() {
   const [err, setErr] = useState(null);
 
   const load = useCallback(async () => {
-    try { setS(await request('GET', '/api/visits/stats?path=/site')); setErr(null); }
+    try { setS(await request('GET', '/api/visits/stats?path=all')); setErr(null); }
     catch (e) { setErr(e.message); }
   }, []);
 
@@ -32,7 +32,7 @@ export default function AdminVisits() {
       <ComicPanel className="bg-card flex items-center justify-between gap-2 flex-wrap">
         <div>
           <div className="font-heading text-xl text-primary">📈 ΕΠΙΣΚΕΨΕΙΣ ΣΤΗΝ ΙΣΤΟΣΕΛΙΔΑ</div>
-          <div className="text-xs text-foreground/70">Μετράει 1 επίσκεψη ανά άτομο ανά 30 λεπτά. Δεν μετράει bots ούτε εσένα όταν είσαι συνδεδεμένη/ος.</div>
+          <div className="text-xs text-foreground/70">Συγκεντρώνει όλες τις δημόσιες σελίδες και τα event pages. Μετράει 1 επίσκεψη ανά άτομο και σελίδα ανά 30 λεπτά.</div>
         </div>
         <ComicButton variant="dark" size="sm" onClick={load}>🔄 Ανανέωση</ComicButton>
       </ComicPanel>
@@ -40,7 +40,7 @@ export default function AdminVisits() {
       {err && <div className="text-sm font-bold text-red-400">{err}</div>}
 
       <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-        <Stat label="ΣΥΝΟΛΟ ΕΠΙΣΚΕΨΕΩΝ" value={s?.views} />
+        <Stat label="ΣΥΝΟΛΟ ΕΠΙΣΚΕΨΕΩΝ ΙΣΤΟΣΕΛΙΔΑΣ" value={s?.views} />
         <Stat label="ΜΟΝΑΔΙΚΟΙ ΕΠΙΣΚΕΠΤΕΣ" value={s?.visitors} />
         <Stat label="ΣΗΜΕΡΑ" value={s?.today} />
         <Stat label="ΤΕΛΕΥΤΑΙΕΣ 7 ΜΕΡΕΣ" value={s?.week} />

@@ -96,7 +96,8 @@ export function visitRoutes() {
 
   // GET /api/visits/stats?path=/site — μόνο admin
   r.get('/stats', requireAdmin, async (req, res) => {
-    const path = isTrackedPath(String(req.query.path || '')) ? String(req.query.path) : '/site';
+    const requestedPath = String(req.query.path || 'all');
+    const path = requestedPath === 'all' ? 'all' : (isTrackedPath(requestedPath) ? requestedPath : '/site');
     const tz = 'Europe/Athens';
     const [totals] = (await query(
       `SELECT
@@ -106,18 +107,18 @@ export function visitRoutes() {
          count(*) FILTER (WHERE created_date > now() - interval '7 days')::int AS week,
          count(*) FILTER (WHERE created_date > now() - interval '30 days')::int AS month,
          count(DISTINCT visitor) FILTER (WHERE created_date > now() - interval '30 days')::int AS visitors_month
-       FROM page_views WHERE path = $1`, [path, tz],
+       FROM page_views WHERE (($1 = 'all' AND path LIKE '/site%') OR path = $1)`, [path, tz],
     )).rows;
     const days = (await query(
       `SELECT to_char(d, 'YYYY-MM-DD') AS day, coalesce(c.n, 0)::int AS views
        FROM generate_series(((now() AT TIME ZONE $2)::date - 29)::timestamp, (now() AT TIME ZONE $2)::date::timestamp, interval '1 day') d
        LEFT JOIN (
-         SELECT (created_date AT TIME ZONE $2)::date AS day, count(*) AS n FROM page_views WHERE path = $1 GROUP BY 1
+         SELECT (created_date AT TIME ZONE $2)::date AS day, count(*) AS n FROM page_views WHERE (($1 = 'all' AND path LIKE '/site%') OR path = $1) GROUP BY 1
        ) c ON c.day = d::date
        ORDER BY d`, [path, tz],
     )).rows;
     const refs = (await query(
-      `SELECT ref, count(*)::int AS views FROM page_views WHERE path = $1 AND ref IS NOT NULL GROUP BY ref ORDER BY views DESC LIMIT 6`, [path],
+      `SELECT ref, count(*)::int AS views FROM page_views WHERE (($1 = 'all' AND path LIKE '/site%') OR path = $1) AND ref IS NOT NULL GROUP BY ref ORDER BY views DESC LIMIT 6`, [path],
     )).rows;
     const pages = (await query(
       `SELECT path, count(*)::int AS views, count(DISTINCT visitor)::int AS visitors
