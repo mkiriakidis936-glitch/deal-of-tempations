@@ -4,7 +4,7 @@ import { useSearchParams } from 'react-router-dom';
 import { base44, request } from '@/api/base44Client';
 import { setActiveSessionCode, subscribeActiveSession } from '@/lib/activeSession';
 import {
-  LayoutDashboard, Inbox, Ticket, BarChart3, Gamepad2, Radio, Clapperboard, Video, Users, Award, Layers, Drama,
+  LayoutDashboard, Inbox, Ticket, BarChart3, Gamepad2, Radio, AudioLines, Clapperboard, Video, Users, Award, Layers, Drama,
   Images, Globe, Mail, FileText, Link2, History, Film, HardDrive, LifeBuoy, Settings, CalendarDays, Bell, Search, RefreshCw,
 } from 'lucide-react';
 import AdminNav, { AdminTabBar } from '@/components/admin/AdminNav';
@@ -38,6 +38,7 @@ const AdminVisits = lazy(() => import('@/components/admin/AdminVisits'));
 const AdminDigitalInvitations = lazy(() => import('@/components/admin/AdminDigitalInvitations'));
 const AdminPublicSubmissions = lazy(() => import('@/components/admin/AdminPublicSubmissions'));
 const AdminProduction = lazy(() => import('@/components/admin/AdminProduction'));
+const AdminAVControlRoom = lazy(() => import('@/components/admin/AdminAVControlRoom'));
 import { createInitialState } from '@/lib/gameLogic';
 
 const NAV_GROUPS = [
@@ -66,6 +67,7 @@ const NAV_GROUPS = [
     label: '03 · Παραγωγή εκπομπής',
     tabs: [
       { id: 'production', label: 'Χώρος παραγωγής', icon: Video },
+      { id: 'av', label: 'LIVE AV Control Room', icon: AudioLines },
     ],
   },
   {
@@ -324,6 +326,8 @@ export default function Admin() {
         return <AdminContentHub />;
       case 'production':
         return <AdminProduction sessions={sessions} selectedSession={activeSession} onSelect={selectSession} />;
+      case 'av':
+        return <AdminAVControlRoom />;
       case 'editor':
         return <AdminContent />;
       case 'achievements':
