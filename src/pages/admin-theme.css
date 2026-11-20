@@ -36,25 +36,25 @@
   --hairline: 0 0% 100%;
   --shadow-color: 0 0% 0%;
 
-  --adm-font: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Inter', system-ui, sans-serif;
-  --adm-font-display: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', system-ui, sans-serif;
+  --adm-font: var(--font-body, -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Inter', system-ui, sans-serif);
+  --adm-font-display: var(--font-heading, var(--font-display, -apple-system, BlinkMacSystemFont, 'Inter', system-ui, sans-serif));
 
-  --adm-gold: #E8C26B;
-  --adm-gold-hi: #F5DC9A;
-  --adm-gold-soft: rgba(232, 194, 107, 0.14);
-  --adm-gold-line: rgba(232, 194, 107, 0.45);
+  --adm-gold: hsl(var(--primary));
+  --adm-gold-hi: color-mix(in srgb, hsl(var(--primary)) 72%, white);
+  --adm-gold-soft: color-mix(in srgb, hsl(var(--primary)) 14%, transparent);
+  --adm-gold-line: color-mix(in srgb, hsl(var(--primary)) 45%, transparent);
 
-  --adm-text: #F5F5F7;
-  --adm-text-2: rgba(235, 235, 245, 0.64);
-  --adm-text-3: rgba(235, 235, 245, 0.38);
-  --adm-line: rgba(255, 255, 255, 0.10);
-  --adm-line-strong: rgba(255, 255, 255, 0.18);
-  --adm-fill: rgba(255, 255, 255, 0.05);
-  --adm-fill-2: rgba(255, 255, 255, 0.09);
-  --adm-fill-3: rgba(255, 255, 255, 0.14);
-  --adm-glass: rgba(28, 28, 30, 0.68);
-  --adm-glass-thick: rgba(22, 22, 24, 0.88);
-  --adm-hi: rgba(255, 255, 255, 0.10);
+  --adm-text: hsl(var(--foreground));
+  --adm-text-2: color-mix(in srgb, hsl(var(--foreground)) 64%, transparent);
+  --adm-text-3: color-mix(in srgb, hsl(var(--foreground)) 38%, transparent);
+  --adm-line: color-mix(in srgb, hsl(var(--foreground)) 10%, transparent);
+  --adm-line-strong: color-mix(in srgb, hsl(var(--foreground)) 18%, transparent);
+  --adm-fill: color-mix(in srgb, hsl(var(--foreground)) 5%, transparent);
+  --adm-fill-2: color-mix(in srgb, hsl(var(--foreground)) 9%, transparent);
+  --adm-fill-3: color-mix(in srgb, hsl(var(--foreground)) 14%, transparent);
+  --adm-glass: color-mix(in srgb, hsl(var(--card)) 88%, transparent);
+  --adm-glass-thick: color-mix(in srgb, hsl(var(--card)) 96%, transparent);
+  --adm-hi: color-mix(in srgb, hsl(var(--foreground)) 10%, transparent);
   --adm-spring: cubic-bezier(0.32, 0.72, 0, 1);
   color-scheme: dark;
 }
