@@ -7,13 +7,14 @@ import { GAME_MODES } from '@/data/gameConfig';
 
 const KEY = 'digital_invitations';
 const TARGETS = [
-  { path: '/forms', label: 'Ενιαία Φόρμα Συμμετοχής — όλα τα Modes' },
+  { path: '/deal', label: 'Mini-Site — Δήλωση ενδιαφέροντος / συμμετοχής' },
+  { path: '/forms', label: 'Ενιαία Φόρμα Modes' },
 ];
 
 function isAllowedInvitationPath(value) {
   try {
     const pathname = new URL(value, window.location.origin).pathname;
-    return pathname === '/forms' || pathname.startsWith('/vip/');
+    return pathname === '/forms' || pathname === '/deal' || pathname.startsWith('/deal/') || pathname.startsWith('/vip/');
   } catch {
     return false;
   }
@@ -32,8 +33,8 @@ export default function AdminDigitalInvitations() {
   const [vipBusy, setVipBusy] = useState(false);
   const [vipMessage, setVipMessage] = useState('');
   const [vipGameMode, setVipGameMode] = useState('classic');
-  const [sessions, setSessions] = useState([]);
-  const [sessionCode, setSessionCode] = useState('');
+  const [events, setEvents] = useState([]);
+  const [selectedEventId, setSelectedEventId] = useState('');
 
   useEffect(() => {
     base44.entities.AppSetting.filter({ key: KEY }, { limit: 1 }).then(async ({ items: rows }) => {
@@ -48,8 +49,18 @@ export default function AdminDigitalInvitations() {
       }
     }).catch((e) => setMessage(e.message));
     loadVipInvitations();
-    base44.entities.GameSession.filter({}, { sort: '-created_date', limit: 100 }).then(({ items: rows }) => setSessions(rows || [])).catch((e) => setVipMessage(e.message || 'Δεν φορτώθηκαν τα Events.'));
+    loadEvents();
+    const offEvents = base44.entities.DotEvent.subscribe(() => loadEvents());
+    return () => offEvents?.();
   }, []);
+
+  async function loadEvents() {
+    try {
+      const { items: rows } = await base44.entities.DotEvent.filter({}, { sort: '-created_date', limit: 200 });
+      setEvents(rows || []);
+      setSelectedEventId((current) => current || rows?.find((event) => !['closing', 'completed'].includes(event.status))?.id || '');
+    } catch (e) { setVipMessage(e.message || 'Δεν φορτώθηκαν τα Events.'); }
+  }
 
   async function loadVipInvitations() {
     try {
@@ -73,8 +84,9 @@ export default function AdminDigitalInvitations() {
   const add = () => {
     const cleanTitle = title.trim();
     if (!cleanTitle) return;
-    const linkedPath = sessionCode ? `${target}${target.includes('?') ? '&' : '?'}event=${encodeURIComponent(sessionCode)}` : target;
-    const next = [...items, { id: makeId(), title: cleanTitle, path: linkedPath, sessionCode: sessionCode || '', createdAt: new Date().toISOString() }];
+    const selectedEvent = events.find((event) => event.id === selectedEventId);
+    const linkedPath = target === '/deal' && selectedEvent ? `/deal/${selectedEvent.room_code}` : target;
+    const next = [...items, { id: makeId(), title: cleanTitle, path: linkedPath, dotEventId: selectedEvent?.id || '', createdAt: new Date().toISOString() }];
     save(next).then(() => setTitle(''));
   };
 
@@ -82,7 +94,8 @@ export default function AdminDigitalInvitations() {
     setVipBusy(true);
     setVipMessage('');
     try {
-      const invitation = await request('POST', '/api/entities/vip-invitations', { gameMode: vipGameMode, sessionCode: sessionCode || null });
+      if (!selectedEventId) throw new Error('Επίλεξε πρώτα ένα Event.');
+      const invitation = await request('POST', '/api/entities/vip-invitations', { gameMode: vipGameMode, dotEventId: selectedEventId });
       setVipInvitations((current) => [invitation, ...current]);
       setVipMessage('Η VIP πρόσκληση δημιουργήθηκε και είναι έτοιμη για αποστολή.');
     } catch (e) { setVipMessage(e.message || 'Δεν δημιουργήθηκε η VIP πρόσκληση.'); }
@@ -178,8 +191,8 @@ export default function AdminDigitalInvitations() {
       <ComicButton disabled={vipBusy} onClick={createVipInvitation}>＋ ΔΗΜΙΟΥΡΓΙΑ ΕΤΟΙΜΗΣ VIP ΠΡΟΣΚΛΗΣΗΣ</ComicButton>
       {vipMessage && <div className="text-sm font-bold text-foreground">{vipMessage}</div>}
       <label className="block space-y-1 text-sm font-bold text-[#E8C26B]">ΣΥΝΔΕΣΗ ΜΕ ΠΑΙΧΝΙΔΙ<select value={vipGameMode} onChange={(e) => setVipGameMode(e.target.value)} className="w-full rounded-lg border border-[#b99a45]/50 bg-black px-3 py-3 text-sm text-[#f4e6bd]">{GAME_MODES.map((mode) => <option key={mode.id} value={mode.id}>{mode.name}</option>)}</select></label>
-      <label className="block space-y-1 text-sm font-bold text-[#E8C26B]">ΣΥΝΔΕΣΗ ΜΕ EVENT<select value={sessionCode} onChange={(e) => setSessionCode(e.target.value)} className="w-full rounded-lg border border-[#b99a45]/50 bg-black px-3 py-3 text-sm text-[#f4e6bd]"><option value="">Χωρίς σύνδεση με Event</option>{sessions.map((session) => <option key={session.id} value={session.sessionCode}>{session.event?.title || session.mode} · {session.sessionCode}</option>)}</select></label>
-      <p className="text-xs text-foreground/55">Η πρόσκληση και οι απαντήσεις της συνδέονται με το επιλεγμένο Event.</p>
+      <label className="block space-y-1 text-sm font-bold text-[#E8C26B]">ΣΥΝΔΕΣΗ ΜΕ EVENT<select value={selectedEventId} onChange={(e) => setSelectedEventId(e.target.value)} className="w-full rounded-lg border border-[#b99a45]/50 bg-black px-3 py-3 text-sm text-[#f4e6bd]"><option value="">Επίλεξε Event</option>{events.filter((event) => !['closing', 'completed'].includes(event.status)).map((event) => <option key={event.id} value={event.id}>{event.title} · {event.room_code}</option>)}</select></label>
+      <p className="text-xs text-foreground/55">Η πρόσκληση συνδέεται με το Event πριν δημιουργηθεί GameSession.</p>
     </ComicPanel>
 
     {vipInvitations.map((invitation) => {
@@ -191,6 +204,7 @@ export default function AdminDigitalInvitations() {
             <div className="font-heading text-lg text-[#E8C26B]">VIP ΠΡΟΣΚΛΗΣΗ</div>
             <div className="text-xs text-foreground/60">{new Date(invitation.created_date).toLocaleString('el-GR')}</div>
             <div className="text-xs text-[#E8C26B]">Παιχνίδι: {GAME_MODES.find((mode) => mode.id === invitation.gameMode)?.name || invitation.gameMode || 'ΚΛΑΣΣΙΚΗ'}</div>
+            <div className="text-xs text-foreground/60">Event: {invitation.eventTitle || '—'} · {invitation.roomCode || '—'}</div>
           </div>
           <span className={invitation.active ? 'rounded-full border border-[#b99a45] px-3 py-1 text-xs text-[#E8C26B]' : 'rounded-full border border-white/20 px-3 py-1 text-xs text-foreground/50'}>
             {invitation.active ? 'ΕΝΕΡΓΗ' : 'ΑΝΕΝΕΡΓΗ'}
