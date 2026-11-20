@@ -1,19 +1,32 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import ComicPanel from '@/components/comic/ComicPanel';
 import ComicButton from '@/components/comic/ComicButton';
 import { HIDDEN_ROLES, FOOTWEAR_LEVELS, TOENAIL_PERKS, getPenaltyLadder } from '@/data/gameConfig';
 
 export default function AdminPlayers({ sessions, selectedSession, onSelect, onUpdate }) {
   const [edits, setEdits] = useState({});
+  const dirtyFields = useRef({});
 
+  // Κάθε νεότερο SSE snapshot περνά στο Admin χωρίς να σβήνει τις τοπικές,
+  // μη αποθηκευμένες αλλαγές του χρήστη.
   useEffect(() => {
-    if (selectedSession) {
-      const players = selectedSession.state?.players || [];
-      const initial = {};
-      players.forEach((p) => { initial[p.id] = { ...p }; });
-      setEdits(initial);
-    }
-  }, [selectedSession?.id]);
+    if (!selectedSession) return;
+    const incoming = selectedSession.state?.players || [];
+    setEdits((current) => {
+      const next = {};
+      for (const player of incoming) {
+        const dirty = dirtyFields.current[player.id] || new Set();
+        next[player.id] = { ...player };
+        for (const field of dirty) {
+          if (current[player.id] && field in current[player.id]) next[player.id][field] = current[player.id][field];
+        }
+      }
+      return next;
+    });
+    dirtyFields.current = Object.fromEntries(
+      Object.entries(dirtyFields.current).filter(([id]) => incoming.some((player) => player.id === id))
+    );
+  }, [selectedSession?.id, selectedSession?.state, selectedSession?.updated_date]);
 
   if (!selectedSession) {
     return (
@@ -32,59 +45,47 @@ export default function AdminPlayers({ sessions, selectedSession, onSelect, onUp
   const isArrestHeist = mode === 'arrest_heist';
 
   function editField(playerId, field, value) {
+    dirtyFields.current[playerId] ||= new Set();
+    dirtyFields.current[playerId].add(field);
     setEdits((prev) => ({
       ...prev,
       [playerId]: { ...prev[playerId], [field]: value },
     }));
   }
 
-  async function saveAll() {
-    const updatedPlayers = players.map((p) => edits[p.id] || p);
-    const newState = { ...state, players: updatedPlayers };
-    await onUpdate(selectedSession.id, newState);
+  async function savePlayerChanges(playerIds = players.map((player) => player.id)) {
+    const updates = [];
+    for (const playerId of playerIds) {
+      const dirty = dirtyFields.current[playerId];
+      if (!dirty?.size) continue;
+      const fields = {};
+      for (const field of dirty) fields[field] = edits[playerId]?.[field];
+      if (Object.keys(fields).length) updates.push({ id: playerId, ...fields });
+    }
+    if (!updates.length) return;
+    await onUpdate(selectedSession.id, { players: updates });
+    for (const player of updates) delete dirtyFields.current[player.id];
   }
 
-  async function savePlayer(playerId) {
-    const updatedPlayers = players.map((p) => p.id === playerId ? edits[playerId] : p);
-    const newState = { ...state, players: updatedPlayers };
-    await onUpdate(selectedSession.id, newState);
-  }
+  async function saveAll() { await savePlayerChanges(); }
+  async function savePlayer(playerId) { await savePlayerChanges([playerId]); }
 
-  async function forceStage(newStage) {
-    const newState = { ...state, stage: newStage };
-    await onUpdate(selectedSession.id, newState);
-  }
-
-  async function toggleStop() {
-    const newState = { ...state, stopActive: !state.stopActive };
-    await onUpdate(selectedSession.id, newState);
-  }
-
-  async function clearBomb() {
-    const newState = { ...state, bombEvent: null };
-    await onUpdate(selectedSession.id, newState);
-  }
+  async function forceStage(newStage) { await onUpdate(selectedSession.id, { stage: newStage }); }
+  async function toggleStop() { await onUpdate(selectedSession.id, { stopActive: !state.stopActive }); }
+  async function clearBomb() { await onUpdate(selectedSession.id, { bombEvent: null }); }
 
   async function resetAllPenalties() {
-    const updatedPlayers = players.map((p) => ({ ...p, penaltyStep: 0, immunity: false }));
-    const newState = { ...state, players: updatedPlayers };
-    await onUpdate(selectedSession.id, newState);
-    setEdits((prev) => {
-      const next = { ...prev };
-      Object.keys(next).forEach((id) => { next[id] = { ...next[id], penaltyStep: 0, immunity: false }; });
-      return next;
-    });
+    await onUpdate(selectedSession.id, { players: players.map((p) => ({ id: p.id, penaltyStep: 0, immunity: false })) });
+    players.forEach((p) => { if (dirtyFields.current[p.id]) { dirtyFields.current[p.id].delete('penaltyStep'); dirtyFields.current[p.id].delete('immunity'); } });
   }
 
   async function giveAllImmunity() {
-    const updatedPlayers = players.map((p) => ({ ...p, immunity: true }));
-    const newState = { ...state, players: updatedPlayers };
-    await onUpdate(selectedSession.id, newState);
-    setEdits((prev) => {
-      const next = { ...prev };
-      Object.keys(next).forEach((id) => { next[id] = { ...next[id], immunity: true }; });
-      return next;
-    });
+    await onUpdate(selectedSession.id, { players: players.map((p) => ({ id: p.id, immunity: true })) });
+    players.forEach((p) => dirtyFields.current[p.id]?.delete('immunity'));
+  }
+
+  async function setPajamaSaboteur(playerId) {
+    await onUpdate(selectedSession.id, { pajama: { saboteurId: playerId || null } });
   }
 
   return (
@@ -209,7 +210,7 @@ export default function AdminPlayers({ sessions, selectedSession, onSelect, onUp
                   </div>
                 )}
 
-                {/* Role (classic only) */}
+                {/* Οι κρυφοί ρόλοι ανήκουν στο Classic. */}
                 {mode === 'classic' && (
                   <div>
                     <label className="font-bold block mb-1">🎭 Ρόλος</label>
@@ -249,7 +250,7 @@ export default function AdminPlayers({ sessions, selectedSession, onSelect, onUp
                   </select>
                 </div>
 
-                {/* Team (marathon/arrest) */}
+                {/* Ομάδες Marathon / Arrest & Heist */}
                 {(isMarathon || isArrestHeist) && (
                   <div>
                     <label className="font-bold block mb-1">👥 Ομάδα</label>
@@ -266,6 +267,20 @@ export default function AdminPlayers({ sessions, selectedSession, onSelect, onUp
                   </div>
                 )}
               </div>
+
+              {mode === 'pajama' && (
+                <div className="mb-3">
+                  <label className="font-bold block mb-1 text-xs">🎭 Ρόλος Pajama · Saboteur</label>
+                  <select
+                    value={state.pajama?.saboteurId || ''}
+                    onChange={(e) => setPajamaSaboteur(e.target.value)}
+                    className="w-full max-w-sm border-2 border-border rounded px-2 py-1 text-xs"
+                  >
+                    <option value="">— Χωρίς ανάθεση —</option>
+                    {players.map((player) => <option key={player.id} value={player.id}>{player.name}</option>)}
+                  </select>
+                </div>
+              )}
 
               {/* Toggles */}
               <div className="flex gap-2 flex-wrap mt-3">
