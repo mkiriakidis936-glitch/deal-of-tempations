@@ -30,6 +30,7 @@ const PajamaInvite = lazy(() => import('@/pages/PajamaInvite'));
 const ModeForm = lazy(() => import('@/pages/ModeForm'));
 const Intake = lazy(() => import('@/pages/Intake'));
 const EventPortal = lazy(() => import('@/pages/EventPortal'));
+const DealPage = lazy(() => import('@/pages/DealPage'));
 
 // Game-master screens (tablet + admin) need an admin account.
 const RequireAdmin = ({ children }) => {
@@ -94,6 +95,8 @@ const AuthenticatedApp = () => {
       <Route path="/modes-form" element={<ModeForm />} />
       <Route path="/intake" element={<Intake />} />
       <Route path="/portal" element={<EventPortal />} />
+      <Route path="/deal" element={<DealPage />} />
+      <Route path="/deal/:roomCode" element={<DealPage />} />
       <Route path="/gift-unlock" element={<GiftUnlock />} />
       <Route path="/site" element={<Site />} />
       <Route path="/production-consent" element={<ProductionConsent />} />
