@@ -1,4 +1,5 @@
 import React from 'react';
+import { createPortal } from 'react-dom';
 
 // Ενιαία κομμάτια διεπαφής (iOS 27 · μαύρο & χρυσό). Όλες οι νέες οθόνες χτίζονται από εδώ.
 const cx = (...parts) => parts.filter(Boolean).join(' ');
@@ -92,4 +93,57 @@ export function SafetyBar({ safeWord, onStop, stopped, children }) {
       <Button variant="danger" block onClick={onStop} disabled={stopped}>{stopped ? '⏸ Όλα σταμάτησαν' : '⏹ ΣΤΟΠ — δεν είμαι καλά'}</Button>
     </div>
   );
+}
+
+// ---------- TV ----------
+export function TvScreen({ className = '', children }) {
+  return <div className={cx('ui-tv ui-tv-stack', className)}>{children}</div>;
+}
+
+export function TvBar({ live = true, title, meta, right }) {
+  return (
+    <div className="ui-tv-bar">
+      {live && <span className="ui-tv-live">● LIVE</span>}
+      {title && <span className="ui-tv-title ui-tv-title--gold" style={{ fontSize: 'calc(var(--tv-unit) * 2)' }}>{title}</span>}
+      {meta && <span className="ui-tv-muted">{meta}</span>}
+      {right && <span className="ml-auto flex items-center gap-3">{right}</span>}
+    </div>
+  );
+}
+
+export function TvLeaderboard({ rows }) {
+  return (
+    <div className="ui-tv-board">
+      {rows.map((row, index) => (
+        <div key={row.id} className={cx('ui-tv-row', index === 0 && 'ui-tv-row--lead')}>
+          <span className="ui-tv-row__rank">{index + 1}</span>
+          <span className="ui-tv-row__name">{row.name}</span>
+          {row.extra}
+          <span className="ui-tv-row__value">{row.value}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ---------- Tablet: μπάρα εργαλείων ----------
+// <Dock /> μία φορά ανά οθόνη· <DockItem order={n}> από οποιοδήποτε component μπαίνει μέσα της.
+// Αν δεν υπάρχει μπάρα, το DockItem εμφανίζεται εκεί που δηλώθηκε (fallbackClassName).
+let dockElement = null;
+const dockListeners = new Set();
+const setDock = (el) => { dockElement = el; dockListeners.forEach((fn) => fn(el)); };
+
+export function Dock() {
+  return <nav ref={setDock} className="ui-dock" aria-label="Εργαλεία παραγωγής" />;
+}
+
+export function DockItem({ order = 0, fallbackClassName = '', children }) {
+  const [target, setTarget] = React.useState(dockElement);
+  React.useEffect(() => {
+    setTarget(dockElement);
+    dockListeners.add(setTarget);
+    return () => { dockListeners.delete(setTarget); };
+  }, []);
+  if (target) return createPortal(<span style={{ order, display: 'inline-flex' }}>{children}</span>, target);
+  return fallbackClassName ? <div className={fallbackClassName}>{children}</div> : null;
 }

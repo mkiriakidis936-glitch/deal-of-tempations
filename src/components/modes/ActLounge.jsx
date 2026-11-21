@@ -139,9 +139,9 @@ export default function ActLounge({ ctx, state, onFinish }) {
             const sq = SQUARE_TYPES[type];
             const here = players.filter((p) => (pos[p.id] || 0) === i);
             return (
-              <div key={i} className="relative flex aspect-square flex-col items-center justify-center rounded-lg text-center" style={{ background: `${sq.color}1f`, border: `1px solid ${sq.color}${here.length ? '' : '66'}` }} title={sq.text}>
+              <div key={i} className="relative flex h-[68px] flex-col items-center justify-center rounded-lg text-center" style={{ background: `${sq.color}1f`, border: `1px solid ${sq.color}${here.length ? '' : '66'}` }} title={sq.text}>
                 <span className="text-lg leading-none">{sq.icon}</span>
-                <span className="hidden text-[9px] leading-tight opacity-70 sm:block">{sq.name}</span>
+                <span className="hidden text-[11px] leading-tight opacity-70 sm:block">{sq.name}</span>
                 <span className="mt-0.5 flex flex-wrap justify-center gap-0.5">
                   {here.map((p) => <b key={p.id} className="rounded px-1 text-[10px]" style={{ background: p.id === cur?.id ? '#E8C26B' : '#fff', color: '#000' }}>{(p.name || '?')[0]}</b>)}
                 </span>
@@ -240,7 +240,7 @@ export default function ActLounge({ ctx, state, onFinish }) {
                   {s.cuffs !== 'none' && <span className="rounded-full bg-red-500/20 px-2 text-xs">⛓️ {s.cuffs === 'back' ? 'χειροπέδες πίσω' : 'partner cuffs'}</span>}
                 </div>
                 <div className="mt-1 text-xs opacity-70">Δέσιμο: {r.name} — {r.text}</div>
-                <div className="mt-2 flex flex-wrap gap-1.5 text-xs">
+                <div className="ui-btn-group-sm mt-2 flex flex-wrap gap-1.5">
                   <Btn onClick={() => upd((x) => ({ stars: Math.min(5, x.stars + 1) }), `⭐ ${p.name} +1 Wanted`)}>+⭐</Btn>
                   <Btn onClick={() => upd((x) => ({ stars: Math.max(1, x.stars - 1) }))}>−⭐</Btn>
                   <Btn onClick={() => upd((x) => ({ loot: x.loot + 1000 }))}>+1.000€</Btn>

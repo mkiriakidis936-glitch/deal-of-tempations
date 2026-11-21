@@ -196,8 +196,9 @@ export default function TVScreen() {
 
   if (loading) {
     return (
-      <div className="min-h-screen comic-dots-dark flex items-center justify-center text-foreground">
-        <div className="font-heading text-5xl comic-pulse text-primary">ΦΟΡΤΩΣΗ...</div>
+      <div className="ui-tv min-h-screen flex flex-col items-center justify-center gap-6" style={{ background: 'var(--ui-bg)' }}>
+        <img src="/icons/icon-192.png" alt="" className="h-28 w-28 rounded-[30px]" />
+        <div className="ui-tv-muted">Σύνδεση…</div>
       </div>
     );
   }
@@ -206,7 +207,7 @@ export default function TVScreen() {
     return (
       <>
         <PajamaRevealOverlay />
-        <SessionJoin onJoin={joinByCode} loading={loading} title="📺 TV — ΣΥΝΔΕΣΗ" />
+        <SessionJoin onJoin={joinByCode} loading={loading} title="Σύνδεση TV" />
       </>
     );
   }
@@ -223,7 +224,7 @@ export default function TVScreen() {
   const ahLeaderB = state.players?.find((p) => p.team === 'B' && p.isLeader);
 
   return (
-    <div className={`dot-tv-shell min-h-screen comic-dots-dark text-foreground flex flex-col ${fullscreen ? 'dot-tv-fullscreen' : ''}`}>
+    <div className={`dot-tv-shell ui-tv min-h-screen text-foreground flex flex-col ${fullscreen ? 'dot-tv-fullscreen' : ''}`}>
       <ScreenWallpaper src={ART.wallpaperTv} />
       {!IS_PREVIEW && <SoundUnlock variant="screen" />}
       <div className="fixed inset-0 -z-10 pointer-events-none opacity-20">
@@ -232,10 +233,10 @@ export default function TVScreen() {
       {state.stopActive && <div className="fixed inset-0 z-[100] bg-destructive/90 flex items-center justify-center text-center pointer-events-auto"><div className="font-heading text-7xl text-white">⏸ ΣΤΟΠ</div></div>}
       <TVExperienceLayer sessionCode={session.sessionCode} mode={state.mode} playerCount={state.players?.length || 0} stage={state.stage} online={networkOnline} fullscreen={fullscreen} onToggleFullscreen={toggleFullscreen} event={currentEvent} />
       {(state.absoluteInterrogation?.active || state.interrogationVerdict || state.bailoutAuction?.active || state.blackBribe || state.sacrificeWheel || state.bailoutOutcome) && (
-        <div className="fixed bottom-4 left-4 z-50 max-w-sm w-[min(92vw,24rem)] comic-panel bg-background/95 border-2 border-primary p-3 space-y-2">
-          {state.absoluteInterrogation?.active && <div><b className="text-primary">⚖️ ABSOLUTE INTERROGATION · {state.absoluteInterrogation.step + 1}/3</b><div className="text-sm">{state.absoluteInterrogation.questions?.[state.absoluteInterrogation.step]}</div></div>}
-          {state.interrogationVerdict && <div><b className="text-primary">{state.interrogationVerdict.label}</b><div className="text-xs">{state.interrogationVerdict.release ? '+5.000€ · 1 Pass Card' : 'Ποινή ×' + state.interrogationVerdict.penaltyMultiplier + ' · Sensory Lock'}</div></div>}
-          {state.bailoutAuction?.active && <div><b className="text-primary">🔨 BAILOUT AUCTION LIVE</b><div className="text-xs">Μυστικές προσφορές: {Object.keys(state.bailoutAuction.bids || {}).length}</div></div>}
+        <div className="ui-card ui-card--gold fixed bottom-16 left-4 z-50 max-w-md w-[min(92vw,28rem)] space-y-2">
+          {state.absoluteInterrogation?.active && <div><b style={{ color: 'var(--ui-gold)' }}>⚖️ ABSOLUTE INTERROGATION · {state.absoluteInterrogation.step + 1}/3</b><div className="text-sm">{state.absoluteInterrogation.questions?.[state.absoluteInterrogation.step]}</div></div>}
+          {state.interrogationVerdict && <div><b style={{ color: 'var(--ui-gold)' }}>{state.interrogationVerdict.label}</b><div className="text-xs">{state.interrogationVerdict.release ? '+5.000€ · 1 Pass Card' : 'Ποινή ×' + state.interrogationVerdict.penaltyMultiplier + ' · Sensory Lock'}</div></div>}
+          {state.bailoutAuction?.active && <div><b style={{ color: 'var(--ui-gold)' }}>🔨 BAILOUT AUCTION LIVE</b><div className="text-xs">Μυστικές προσφορές: {Object.keys(state.bailoutAuction.bids || {}).length}</div></div>}
           {state.blackBribe && <div className="text-xs">💰 BLACK BRIBE: {state.players?.find((p) => p.id === state.blackBribe.playerId)?.name} → {state.players?.find((p) => p.id === state.blackBribe.targetId)?.name} · 20′</div>}
           {state.sacrificeWheel && <div className="text-xs">🎡 SACRIFICE WHEEL: {state.sacrificeWheel.choice === 'sacrifice' ? 'Θυσία · 15′ · Top 3 ×2' : 'Άρνηση · αφαίρεση μεγαλύτερου ποσού'}</div>}
           {state.bailoutOutcome && <div className="text-xs">🔓 BAILOUT: {state.bailoutOutcome.released ? 'Άμεση απελευθέρωση' : 'Επιπλέον 15′ · Sensory Lock'}</div>}
@@ -263,9 +264,7 @@ export default function TVScreen() {
       <GiftCodeTV state={state} />
       <BlitzOverlay blitz={state.blitz} />
       {state.testMode && (
-        <div className="fixed top-10 left-4 z-40 comic-boom bg-tarot-royal text-tarot-gold px-3 py-1.5 text-sm font-heading">
-          🧪 TEST MODE
-        </div>
+        <div className="fixed top-10 left-4 z-40"><span className="ui-badge ui-badge--gold">🧪 Δοκιμαστική λειτουργία</span></div>
       )}
 
       {state.syncTimer && (
@@ -275,14 +274,14 @@ export default function TVScreen() {
       )}
 
       <div className={`dot-tv-stage flex-1 flex flex-col ${fullscreen ? 'p-2' : 'p-4 pt-16 pb-16'}`}>
-        <div className="max-w-7xl mx-auto w-full flex-1 flex flex-col gap-3">
+        <div className="mx-auto w-full max-w-[min(96vw,2600px)] flex-1 flex flex-col gap-3">
 
 
           {state.bombEvent && (
-            <div className="comic-panel bg-destructive p-4 text-center comic-strobe">
+            <div className="ui-card ui-card--danger text-center">
               <div className="text-6xl mb-1">💣</div>
-              <div className="font-heading text-4xl text-foreground comic-text-stroke">ΒΟΜΒΑ ΣΕ ΕΞΕΛΙΞΗ</div>
-              <div className="text-lg text-foreground/80">
+              <div className="ui-tv-title ui-tv-title--red">Βόμβα σε εξέλιξη</div>
+              <div className="ui-tv-text">
                 Στόχος: {state.players.find((p) => p.id === state.bombEvent.targetId)?.name || '—'}
               </div>
             </div>
@@ -291,13 +290,16 @@ export default function TVScreen() {
 
           <div className="flex-1 flex items-center justify-center">
             {state.stage === 0 && !isPajama ? (
-              <div className="text-center space-y-4">
-                <div className="font-heading text-5xl comic-text-stroke text-primary">DEAL OF TEMPTATION</div>
-                <div className="font-heading text-xl text-foreground/70">Αναμονή έναρξης...</div>
-                <div className="flex justify-center">
-                  <SessionQRCode sessionCode={session.sessionCode} size={200} />
+              <div className="ui-card flex w-full max-w-[min(88vw,1700px)] items-center gap-12 p-12">
+                <div className="flex-1 space-y-4 text-left">
+                  <div className="ui-tv-eyebrow ui-tv-eyebrow--gold">Deal of Temptation</div>
+                  <div className="ui-tv-title ui-tv-title--xl">Αναμονή έναρξης</div>
+                  <div className="ui-tv-text">Σκανάρετε το QR με το κινητό σας για να μπείτε στο παιχνίδι.</div>
+                  <div className="ui-tv-muted">Κωδικός: <b className="ui-tv-num" style={{ color: 'var(--ui-gold)' }}>{session.sessionCode}</b> · Ο Game Master ετοιμάζει το παιχνίδι στο Tablet.</div>
                 </div>
-                <div className="text-sm text-foreground/50">Ο Game Master ετοιμάζει το παιχνίδι στο Tablet</div>
+                <div className="shrink-0">
+                  <SessionQRCode sessionCode={session.sessionCode} size={300} />
+                </div>
               </div>
             ) : isNew ? (
               <ModeTV state={state} />

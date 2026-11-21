@@ -69,8 +69,8 @@ export default function AdminOverview({ sessions = [], loading = false, onNaviga
         <h2 className="adm-hero-title">Κέντρο ελέγχου</h2>
         <p className="adm-hero-text">Η κεντρική εικόνα της εφαρμογής. Άμεση πρόσβαση στις βασικές λειτουργίες και στην τρέχουσα κατάσταση των παρτίδων.</p>
         <div className="adm-hero-actions">
-          <button type="button" onClick={() => onNavigate('modes')} className="adm-btn adm-btn--primary">ΔΙΑΧΕΙΡΙΣΗ MODES →</button>
-          <button type="button" onClick={() => onNavigate('sessions')} className="adm-btn">ΠΡΟΒΟΛΗ ΠΑΡΤΙΔΩΝ</button>
+          <button type="button" onClick={() => onNavigate('modes')} className="adm-btn adm-btn--primary">Διαχείριση modes →</button>
+          <button type="button" onClick={() => onNavigate('sessions')} className="adm-btn">Προβολή παρτίδων</button>
         </div>
       </div>
     </section>

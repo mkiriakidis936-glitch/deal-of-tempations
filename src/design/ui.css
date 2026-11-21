@@ -136,3 +136,83 @@
 /* ---------- Χρονόμετρο ---------- */
 .ui-timer { font-family: var(--ui-mono); font-variant-numeric: tabular-nums; font-weight: 700; color: var(--ui-gold-hi); }
 .ui-timer--danger { color: var(--ui-red); }
+
+/* =========================================================
+   TV — ίδιο σύστημα, μεγέθη για ανάγνωση από απόσταση.
+   Όλα κλιμακώνονται με το πλάτος της οθόνης (720p → 4K).
+   ========================================================= */
+.ui-tv {
+  --tv-unit: clamp(10px, 0.9vw, 34px);
+  --ui-radius: calc(var(--tv-unit) * 1.4);
+  --ui-radius-lg: calc(var(--tv-unit) * 1.8);
+  --ui-pad: calc(var(--tv-unit) * 1.6);
+  --ui-gap: calc(var(--tv-unit) * 1.2);
+  color: var(--ui-text);
+  font-family: var(--ui-font);
+}
+.ui-tv .ui-card { padding: var(--ui-pad); }
+.ui-tv-stack { display: flex; flex-direction: column; gap: var(--ui-gap); width: 100%; }
+
+.ui-tv-eyebrow { font-size: calc(var(--tv-unit) * 1.1); font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase; color: var(--ui-text-2); }
+.ui-tv-eyebrow--gold { color: var(--ui-gold); }
+.ui-tv-eyebrow--red { color: var(--ui-red); }
+.ui-tv-title { font-family: var(--ui-font-display); font-size: calc(var(--tv-unit) * 3.4); line-height: 1.05; font-weight: 800; letter-spacing: -0.02em; color: var(--ui-text); }
+.ui-tv-title--gold { color: var(--ui-gold-hi); }
+.ui-tv-title--red { color: var(--ui-red); }
+.ui-tv-title--xl { font-size: calc(var(--tv-unit) * 6); }
+.ui-tv-text { font-size: calc(var(--tv-unit) * 1.8); line-height: 1.3; color: var(--ui-text); }
+.ui-tv-muted { font-size: calc(var(--tv-unit) * 1.4); line-height: 1.35; color: var(--ui-text-2); }
+.ui-tv-num { font-family: var(--ui-mono); font-variant-numeric: tabular-nums; font-weight: 700; }
+
+/* LIVE μπάρα */
+.ui-tv-bar {
+  display: flex; flex-wrap: wrap; align-items: center; gap: calc(var(--tv-unit) * 1.2);
+  padding: calc(var(--tv-unit) * 0.9) calc(var(--tv-unit) * 1.4);
+  background: var(--ui-surface); border: 1px solid rgba(255,255,255,0.08); border-radius: var(--ui-radius);
+}
+.ui-tv-live { padding: calc(var(--tv-unit) * 0.3) calc(var(--tv-unit) * 0.8); border-radius: 8px; background: var(--ui-red); color: #fff; font-weight: 800; letter-spacing: 0.18em; font-size: calc(var(--tv-unit) * 1.1); }
+.ui-tv-pill { padding: calc(var(--tv-unit) * 0.3) calc(var(--tv-unit) * 0.9); border-radius: 999px; border: 1px solid rgba(232,194,107,0.5); color: var(--ui-gold); font-family: var(--ui-mono); font-size: calc(var(--tv-unit) * 1.4); }
+
+/* Πίνακας κατάταξης */
+.ui-tv-board { display: grid; gap: calc(var(--tv-unit) * 0.6); }
+.ui-tv-row {
+  display: flex; align-items: center; gap: calc(var(--tv-unit) * 1);
+  padding: calc(var(--tv-unit) * 0.7) calc(var(--tv-unit) * 1.1);
+  background: var(--ui-surface); border-radius: var(--ui-radius); border: 1px solid transparent;
+  font-size: calc(var(--tv-unit) * 1.6);
+}
+.ui-tv-row--lead { border-color: rgba(232,194,107,0.6); background: #17140C; }
+.ui-tv-row__rank { width: calc(var(--tv-unit) * 2); text-align: center; color: var(--ui-text-2); font-variant-numeric: tabular-nums; }
+.ui-tv-row__name { flex: 1; min-width: 0; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ui-tv-row__value { font-family: var(--ui-mono); font-variant-numeric: tabular-nums; color: var(--ui-gold); }
+
+/* Πλήρης οθόνη ειδήσεων (breaking) — στατική, χωρίς κίνηση */
+.ui-tv-takeover {
+  position: fixed; inset: 0; z-index: 80; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: calc(var(--tv-unit) * 1.6); padding: calc(var(--tv-unit) * 4); text-align: center; background: #000;
+}
+
+/* Κάτω ticker */
+.ui-tv-ticker {
+  position: fixed; inset-inline: 0; bottom: 0; z-index: 60; display: flex; align-items: center; gap: calc(var(--tv-unit) * 1.4);
+  overflow: hidden; padding: calc(var(--tv-unit) * 0.6) calc(var(--tv-unit) * 1.4);
+  background: #0b0b0c; border-top: 1px solid rgba(232,194,107,0.4); font-size: calc(var(--tv-unit) * 1.4);
+}
+
+/* Στην TV δεν υπάρχουν αναβοσβησίματα: οι παλιές κλάσεις κίνησης σβήνουν. */
+.ui-tv .comic-pulse, .ui-tv .comic-strobe, .ui-tv .animate-pulse, .ui-tv .comic-pop, .ui-tv .comic-slide-in { animation: none !important; }
+
+/* =========================================================
+   Tablet — μπάρα εργαλείων κάτω (ένα σημείο για όλα τα κουμπιά παραγωγής)
+   ========================================================= */
+.ui-dock {
+  position: fixed; inset-inline: 0; bottom: 0; z-index: 65;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 10px 12px calc(env(safe-area-inset-bottom, 0px) + 10px);
+  background: #000; border-top: 0.5px solid var(--ui-separator);
+  overflow-x: auto; white-space: nowrap; scrollbar-width: none;
+}
+.ui-dock::-webkit-scrollbar { display: none; }
+.ui-dock .ui-btn { min-height: 44px; padding: 0 14px; font-size: 15px; flex: none; text-decoration: none; }
+.ui-dock-spacer { height: calc(env(safe-area-inset-bottom, 0px) + 76px); }
+.ui-btn--sm, .ui-btn-group-sm .ui-btn { min-height: 40px; padding: 0 14px; font-size: 15px; }

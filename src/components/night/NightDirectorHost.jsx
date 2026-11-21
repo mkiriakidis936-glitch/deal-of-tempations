@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import ComicPanel from '@/components/comic/ComicPanel';
 import ComicButton from '@/components/comic/ComicButton';
+import { DockItem } from '@/design/ui';
 import { DURATIONS, INTENSITIES, createNight, pickTwist, agendaMessages } from '@/lib/nightDirector';
 
 // Κουμπί + πάνελ του Σκηνοθέτη στο tablet. Δουλεύει πάνω από κάθε mode.
@@ -44,12 +45,9 @@ export default function NightDirectorHost({ state, updateState }) {
 
   return (
     <>
-      <button
-        onClick={() => setOpen(true)}
-        className="fixed bottom-20 left-3 z-[60] comic-boom bg-tarot-royal text-tarot-gold px-3 py-2 font-heading text-sm"
-      >
-        🎭 ΣΚΗΝΟΘΕΤΗΣ
-      </button>
+      <DockItem order={1} fallbackClassName="fixed bottom-20 left-3 z-[60]">
+        <button type="button" onClick={() => setOpen(true)} className="ui-btn">🎭 Σκηνοθέτης</button>
+      </DockItem>
       {open && (
         <div className="fixed inset-0 z-[75] bg-background/85 flex items-center justify-center p-4" onClick={() => setOpen(false)}>
           <div onClick={(e) => e.stopPropagation()} className="max-w-2xl w-full space-y-3 max-h-[90vh] overflow-y-auto">

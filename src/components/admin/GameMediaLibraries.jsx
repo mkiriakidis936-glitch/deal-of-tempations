@@ -154,7 +154,7 @@ export default function GameMediaLibraries({ value = {}, files = [], onSave, onR
             </div>
             <div className="flex flex-wrap gap-2">
               <input ref={(element) => { uploadInputs.current[mode.id] = element; }} type="file" accept="image/*,.jpg,.jpeg,.png,.webp,.gif,.avif,.svg,.heic" hidden disabled={!!busy} onChange={(event) => uploadPhotoToMode(mode.id, event.target.files?.[0])} aria-label={`Ανέβασμα φωτογραφίας από υπολογιστή για ${mode.label}`} />
-              <button type="button" disabled={!!busy} onClick={() => uploadInputs.current[mode.id]?.click()} className="rounded-lg bg-primary px-3 py-2 text-xs font-bold text-white disabled:opacity-40">Ανέβασμα από υπολογιστή εδώ</button>
+              <button type="button" disabled={!!busy} onClick={() => uploadInputs.current[mode.id]?.click()} className="rounded-lg bg-primary px-3 py-2 text-xs font-bold text-black disabled:opacity-40">Ανέβασμα από υπολογιστή εδώ</button>
               <select aria-label={`Υπάρχουσα φωτογραφία για ${mode.label}`}  className={inputClass} value={existingPhoto[mode.id] || ''} onChange={(event) => setExistingPhoto((current) => ({ ...current, [mode.id]: event.target.value }))}>
                 <option value="">Επιλογή από τις ανεβασμένες εικόνες</option>
                 {photos.map((file) => <option key={file.url} value={file.url}>{file.name}</option>)}
@@ -192,7 +192,7 @@ export default function GameMediaLibraries({ value = {}, files = [], onSave, onR
             {MODES.map((mode) => <option key={mode.id} value={mode.id}>{mode.label}</option>)}
           </select>
           <input aria-label="Σημείο παιχνιδιού" className={inputClass} value={assignmentPoint} onChange={(event) => setAssignmentPoint(event.target.value)} placeholder="Σημείο παιχνιδιού / Round / Scene" />
-          <button type="button" disabled={!!busy || !selectedAssignmentFile || !assignmentPoint.trim()} onClick={addAssignment} className="rounded-lg bg-primary px-3 py-2 text-xs font-bold text-white">Σύνδεση</button>
+          <button type="button" disabled={!!busy || !selectedAssignmentFile || !assignmentPoint.trim()} onClick={addAssignment} className="rounded-lg bg-primary px-3 py-2 text-xs font-bold text-black">Σύνδεση</button>
         </div>
         {assignments.length ? (
           <div className="space-y-2">

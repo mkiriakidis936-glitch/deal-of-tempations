@@ -51,6 +51,7 @@ const FinalDeal = React.lazy(() => import('@/components/tablet/FinalDeal'));
 const ControlRoom = React.lazy(() => import('@/components/tablet/ControlRoom'));
 const BlackmailMarket = React.lazy(() => import('@/components/tablet/BlackmailMarket'));
 const NightDirectorHost = React.lazy(() => import('@/components/night/NightDirectorHost'));
+import { DockItem } from '@/design/ui';
 import { useSyncTimerAutoFire } from '@/hooks/useSyncTimerAutoFire';
 import { calculateMostWanted, getWantedLevel } from '@/lib/gameLogic';
 import { base44 } from '@/api/base44Client';
@@ -375,20 +376,12 @@ export default function Tablet() {
   function renderProductionControls() {
     return (
       <>
-        <button
-          onClick={() => setOverlay('controlroom')}
-          className="fixed bottom-24 right-3 z-[65] comic-boom bg-tarot-royal text-tarot-gold px-3 py-2 font-heading text-xs shadow-xl"
-        >
-          ΚΕΝΤΡΟ ΕΛΕΓΧΟΥ
-        </button>
-        <a
-          href={`/tv?code=${encodeURIComponent(session.sessionCode)}`}
-          target="_blank"
-          rel="noreferrer"
-          className="fixed bottom-36 left-3 z-[65] comic-boom bg-background/90 border border-primary/60 text-primary px-3 py-2 font-heading text-xs shadow-xl"
-        >
-          ΠΡΟΕΠΙΣΚΟΠΗΣΗ TV ↗
-        </a>
+        <DockItem order={0} fallbackClassName="fixed bottom-36 left-3 z-[65]">
+          <a href={`/tv?code=${encodeURIComponent(session.sessionCode)}`} target="_blank" rel="noreferrer" className="ui-btn">📺 TV ↗</a>
+        </DockItem>
+        <DockItem order={5} fallbackClassName="fixed bottom-24 right-3 z-[65]">
+          <button type="button" onClick={() => setOverlay('controlroom')} className="ui-btn ui-btn--primary">🎛️ Κέντρο ελέγχου</button>
+        </DockItem>
         {overlay === 'controlroom' && (
           <ControlRoom
             state={displayState}

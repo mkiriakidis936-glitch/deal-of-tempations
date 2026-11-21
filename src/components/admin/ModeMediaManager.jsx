@@ -145,7 +145,7 @@ export default function ModeMediaManager({ value = {}, files = [], onSave, onRef
         onChange={(event) => uploadToField(field, event.target.files?.[0], item)}
         aria-label={`Ανέβασμα από υπολογιστή: ${label}`}
       />
-      <button type="button" disabled={disabled || !!busy} onClick={() => triggerUpload(field)} className="rounded-lg bg-primary px-3 py-2 text-xs font-bold text-white disabled:opacity-40">
+      <button type="button" disabled={disabled || !!busy} onClick={() => triggerUpload(field)} className="rounded-lg bg-primary px-3 py-2 text-xs font-bold text-black disabled:opacity-40">
         Ανέβασμα από υπολογιστή
       </button>
       <span className="text-[10px] text-foreground/50">Αναμενόμενο: {expectedNameFor(selected, field, item) || (field === 'trailer' ? 'MP4 / WEBM / MOV' : 'εικόνα')}</span>

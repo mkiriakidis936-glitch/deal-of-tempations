@@ -400,3 +400,73 @@
 @media (forced-colors: active) {
   .adm-navitem[aria-current="page"], .adm-tab[aria-selected="true"] { outline: 2px solid Highlight; }
 }
+
+/* =========================================================
+   Admin πάνω στο ενιαίο design system (src/design/ui.css)
+   Επίπεδο iOS: χωρίς blur, διαβαθμίσεις, σκιές ή κινήσεις — λιγότερη GPU σε MacBook & iPhone.
+   ========================================================= */
+:root:has(#admin-root) {
+  --adm-text: var(--ui-text);
+  --adm-text-2: var(--ui-text-2);
+  --adm-text-3: var(--ui-text-3);
+  --adm-gold: var(--ui-gold);
+  --adm-gold-hi: var(--ui-gold-hi);
+  --adm-gold-soft: var(--ui-gold-soft);
+  --adm-glass: var(--ui-surface);
+  --adm-glass-thick: var(--ui-surface);
+  --adm-fill: rgba(255, 255, 255, 0.05);
+  --adm-fill-2: var(--ui-surface-2);
+  --adm-fill-3: var(--ui-surface-3);
+  --adm-font: var(--ui-font);
+  --adm-font-display: var(--ui-font-display);
+}
+#admin-root { background: var(--ui-bg) !important; background-image: none !important; font-family: var(--ui-font); }
+#admin-root *, #admin-root *::before, #admin-root *::after {
+  -webkit-backdrop-filter: none !important; backdrop-filter: none !important;
+  animation: none !important; transition: none !important;
+}
+#admin-root :where(.comic-panel, .comic-panel-sm, .comic-boom, [class^="adm-"], [class*=" adm-"]) { background-image: none !important; box-shadow: none !important; }
+#admin-root *:active { transform: none !important; }
+.adm-hero-art { display: none !important; }
+
+/* Επιφάνειες = ui-card */
+#admin-root .comic-panel, #admin-root .comic-panel-sm,
+.adm-header, .adm-sidebar, .adm-sessionbar, .adm-hero, .adm-card, .adm-sheet, .adm-more, .adm-tabbar {
+  background-color: var(--ui-surface) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+#admin-root .comic-panel .comic-panel, #admin-root .comic-panel .comic-panel-sm, .adm-tile, .adm-quick, .adm-metric {
+  background-color: var(--ui-surface-2) !important; border: 1px solid transparent !important;
+}
+
+/* Κουμπιά = ui-btn */
+#admin-root .comic-boom, .adm-btn, .adm-pill {
+  border-radius: 999px !important; text-transform: none !important; letter-spacing: -0.005em !important;
+  font-family: var(--ui-font) !important; font-weight: 600 !important;
+  background-color: var(--ui-surface-2) !important; border: 1px solid transparent !important; color: var(--ui-text) !important;
+}
+#admin-root .comic-boom { font-size: 14px !important; min-height: 38px; }
+#admin-root .comic-boom:hover, .adm-btn:hover, .adm-pill:hover { background-color: var(--ui-surface-3) !important; filter: none !important; }
+#admin-root .comic-boom[class~="bg-primary"], #admin-root .comic-boom[class*="tarot-parchment"], .adm-btn--primary {
+  background-color: var(--ui-gold) !important; color: #000 !important;
+}
+#admin-root .comic-boom[class~="bg-primary"]:hover, .adm-btn--primary:hover { background-color: var(--ui-gold-hi) !important; }
+#admin-root .comic-boom[class*="tarot-crimson"], #admin-root .comic-boom[class*="bg-red"], #admin-root .comic-boom[class*="bg-destructive"] {
+  background-color: var(--ui-red) !important; color: #fff !important;
+}
+#admin-root .comic-boom[class*="tarot-forest"], #admin-root .comic-boom[class*="bg-emerald"], #admin-root .comic-boom[class*="bg-green"] {
+  background-color: var(--ui-green) !important; color: #000 !important;
+}
+#admin-root .comic-boom[class*="tarot-forest"] *, #admin-root .comic-boom[class*="bg-emerald"] * { color: #000 !important; }
+
+/* Πλοήγηση: ενεργό στοιχείο = χρυσό απαλό, όχι διαβάθμιση */
+.adm-navitem[aria-current="page"], .adm-tab[aria-selected="true"] {
+  background: var(--ui-gold-soft) !important; color: var(--ui-gold-hi) !important; border-color: transparent !important;
+}
+.adm-navitem[aria-current="page"] svg, .adm-tab[aria-selected="true"] svg { color: var(--ui-gold) !important; }
+.adm-mark { box-shadow: none !important; }
+#admin-root nav button[aria-current="page"], #admin-root .adm-navitem[aria-current="page"], #admin-root .adm-tab[aria-selected="true"] {
+  background: var(--ui-gold-soft) !important; color: var(--ui-gold-hi) !important; box-shadow: none !important;
+}
+#admin-root nav button[aria-current="page"] *, #admin-root .adm-tab[aria-selected="true"] * { color: inherit !important; }
+#admin-root nav button[aria-current="page"] svg { color: var(--ui-gold) !important; }

@@ -2,6 +2,7 @@ import React from 'react';
 import GameCard from '@/components/shared/GameCard';
 import { SQUARE_TYPES, LOUNGE_FINALE, restraintFor, TICKLE_TOOLS } from '@/data/modes/loungeContent';
 import { stars, rulesForGame } from '@/components/modes/ActLounge';
+import { TvScreen, TvBar, TvLeaderboard } from '@/design/ui';
 
 const money = (n) => `${Math.round(Number(n) || 0).toLocaleString('el-GR')}€`;
 
@@ -21,13 +22,13 @@ export default function LoungeTV({ state }) {
   if (lg.queen || mg.loungeQueen) {
     const queen = nameOf(lg.queen || mg.loungeQueen);
     return (
-      <div className="flex min-h-[70vh] flex-col items-center justify-center gap-6 text-center text-white">
-        <div className="text-sm tracking-[0.5em] text-[#E8C26B]">VIP VAULT CERTIFICATE</div>
+      <TvScreen className="min-h-[70vh] items-center justify-center text-center">
+        <div className="ui-tv-eyebrow ui-tv-eyebrow--gold">VIP Vault Certificate</div>
         <div className="text-8xl">👑</div>
-        <div className="font-display text-6xl text-[#F7E3A8]">{queen}</div>
-        <div className="text-2xl">{LOUNGE_FINALE.crown}</div>
-        <p className="max-w-3xl text-lg text-white/75">{LOUNGE_FINALE.reward}</p>
-      </div>
+        <div className="ui-tv-title ui-tv-title--xl ui-tv-title--gold">{queen}</div>
+        <div className="ui-tv-text">{LOUNGE_FINALE.crown}</div>
+        <p className="ui-tv-muted max-w-4xl">{LOUNGE_FINALE.reward}</p>
+      </TvScreen>
     );
   }
 
@@ -46,28 +47,26 @@ export default function LoungeTV({ state }) {
   const clock = new Date(now).toLocaleTimeString('el-GR', { hour: '2-digit', minute: '2-digit' });
 
   return (
-    <div className="relative space-y-4 pb-24 text-white">
-      <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-white/10 bg-black px-4 py-3">
-        <span className="rounded-md bg-[#FF453A] px-3 py-1 text-sm font-black tracking-[0.2em] text-white">● LIVE</span>
-        <span className="font-display text-2xl tracking-[0.08em] text-[#F7E3A8]">{(RULES.title || 'PAJAMA HEIST & ARREST').toUpperCase()}</span>
-        <span className="text-sm text-white/60">Γύρος {lg.round || 1} · Φάση {(lg.phase || 0) + 1}/{RULES.phases.length} · {phase?.name}</span>
-        <span className="ml-auto font-mono text-2xl">{clock}</span>
-        <span className="rounded-md border border-[#E8C26B]/50 px-3 py-1 font-mono text-lg text-[#E8C26B]">LOOT {money(totalLoot)}</span>
-      </div>
+    <TvScreen className="relative pb-10">
+      <TvBar
+        title={(RULES.title || 'PAJAMA HEIST & ARREST').toUpperCase()}
+        meta={`Γύρος ${lg.round || 1} · Φάση ${(lg.phase || 0) + 1}/${RULES.phases.length} · ${phase?.name || ''}`}
+        right={<><span className="ui-tv-num ui-tv-text">{clock}</span><span className="ui-tv-pill">ΛΕΙΑ {money(totalLoot)}</span></>}
+      />
 
       {breaking && (
-        <div className="fixed inset-0 z-[80] flex flex-col items-center justify-center bg-black/95 p-10 text-center" style={{ borderTop: `12px solid ${breaking.color}`, borderBottom: `12px solid ${breaking.color}` }}>
-          <div className="rounded-md px-4 py-1 text-xl font-black tracking-[0.35em]" style={{ background: breaking.color, color: '#000' }}>{breaking.kicker}</div>
-          <div className="mt-6 font-display text-[9rem] leading-none" style={{ color: breaking.color }}>{breaking.title}</div>
-          <div className="mt-6 max-w-4xl text-3xl text-white/85">{breaking.sub}</div>
+        <div className="ui-tv-takeover" style={{ borderTop: `12px solid ${breaking.color}`, borderBottom: `12px solid ${breaking.color}` }}>
+          <div className="ui-tv-live" style={{ background: breaking.color, color: '#000' }}>{breaking.kicker}</div>
+          <div className="ui-tv-title" style={{ fontSize: 'calc(var(--tv-unit) * 10)', color: breaking.color }}>{breaking.title}</div>
+          <div className="ui-tv-text max-w-5xl">{breaking.sub}</div>
         </div>
       )}
 
       {lg.alert && now < lg.alert.until && (
-        <div className="rounded-2xl border-2 border-[#FF453A] bg-[#2a0b09] p-5 text-center">
-          <div className="font-display text-5xl text-[#FF453A]">{lg.alert.title}</div>
-          <div className="mt-2 text-2xl">{lg.alert.text}</div>
-          <div className="mt-2 font-mono text-4xl">{Math.ceil((lg.alert.until - now) / 1000)}″</div>
+        <div className="ui-card ui-card--danger text-center">
+          <div className="ui-tv-title ui-tv-title--red">{lg.alert.title}</div>
+          <div className="ui-tv-text mt-2">{lg.alert.text}</div>
+          <div className="ui-tv-num ui-tv-title mt-2">{Math.ceil((lg.alert.until - now) / 1000)}″</div>
         </div>
       )}
 
@@ -77,81 +76,76 @@ export default function LoungeTV({ state }) {
           const here = players.filter((p) => (pos[p.id] || 0) === i);
           const last = lg.lastRoll && (pos[lg.lastRoll.pid] || 0) === i && now - lg.lastRoll.at < 8000;
           return (
-            <div key={i} className="flex aspect-[4/3] flex-col items-center justify-center rounded-xl text-center" style={{ background: `${sq.color}22`, border: `2px solid ${last ? '#fff' : `${sq.color}88`}` }}>
-              <div className="text-3xl">{sq.icon}</div>
-              <div className="text-xs opacity-80">{sq.name}</div>
+            <div key={i} className="flex flex-col items-center justify-center rounded-xl text-center" style={{ height: '10.5vh', background: `${sq.color}22`, border: `2px solid ${last ? '#fff' : `${sq.color}88`}` }}>
+              <div style={{ fontSize: 'calc(var(--tv-unit) * 2)' }}>{sq.icon}</div>
+              <div className="ui-tv-muted" style={{ fontSize: 'calc(var(--tv-unit) * 0.95)' }}>{sq.name}</div>
               <div className="mt-1 flex flex-wrap justify-center gap-1">{here.map((p) => <span key={p.id} className="rounded-md px-1.5 text-sm font-bold" style={{ background: p.id === cur?.id ? '#E8C26B' : '#fff', color: '#000' }}>{p.name.slice(0, 3)}</span>)}</div>
             </div>
           );
         })}
       </div>
-      {lg.lastRoll && now - lg.lastRoll.at < 15000 && <div className="text-center text-3xl">🎲 {nameOf(lg.lastRoll.pid)} έφερε <b className="text-[#E8C26B]">{lg.lastRoll.d}</b> → {SQUARE_TYPES[lg.lastRoll.square]?.icon} {SQUARE_TYPES[lg.lastRoll.square]?.name}</div>}
+      {lg.lastRoll && now - lg.lastRoll.at < 15000 && <div className="text-center ui-tv-text">🎲 {nameOf(lg.lastRoll.pid)} έφερε <b className="text-[#E8C26B]">{lg.lastRoll.d}</b> → {SQUARE_TYPES[lg.lastRoll.square]?.icon} {SQUARE_TYPES[lg.lastRoll.square]?.name}</div>}
 
-      <div className="grid gap-4 lg:grid-cols-[1fr_1.1fr]">
-        <div className="space-y-2">
-          {[...players].sort((a, b) => (stats[b.id]?.stars || 0) - (stats[a.id]?.stars || 0)).map((p) => {
-            const s = stats[p.id] || { stars: 1, loot: 0, footwear: 4 };
-            return (
-              <div key={p.id} className="flex items-center gap-3 rounded-xl border border-white/10 bg-[#111] px-3 py-2">
-                <b className="w-28 truncate text-lg">{p.id === lg.chief ? '👮 ' : ''}{p.name}</b>
-                <span className="font-mono text-xl text-[#E8C26B]">{stars(s.stars)}</span>
-                <span className="text-lg">{'🩴'.repeat(Math.min(2, s.footwear))}{'🧦'.repeat(Math.max(0, s.footwear - 2))}{s.footwear === 0 ? '🦶' : ''}</span>
-                <span className="ml-auto font-mono text-lg">{money(s.loot)}</span>
-                {s.cuffs && s.cuffs !== 'none' && <span>⛓️</span>}
-                {s.immune && <span>🛡️</span>}
-              </div>
-            );
-          })}
+      <div className="grid gap-4 grid-cols-[1fr_1.1fr]">
+        <div className="space-y-3">
+        {cur && (
+          <div className="flex items-stretch overflow-hidden rounded-2xl border border-[#E8C26B]/50 bg-black">
+            <div className="flex items-center px-4 ui-tv-eyebrow" style={{ background: 'var(--ui-gold)', color: '#000' }}>Στη σειρά</div>
+            <div className="px-5 py-2">
+              <div className="ui-tv-text font-bold">{cur.name}</div>
+              <div className="ui-tv-muted">{cur.id === lg.chief ? '👮 Αστυνόμος' : 'Φυγάς'} · <span style={{ color: 'var(--ui-gold)' }}>{stars(curStats.stars)}</span> · {money(curStats.loot)}</div>
+            </div>
+          </div>
+        )}
+        <TvLeaderboard rows={[...players].sort((a, b) => (stats[b.id]?.stars || 0) - (stats[a.id]?.stars || 0)).map((p) => {
+          const s = stats[p.id] || { stars: 1, loot: 0, footwear: 4 };
+          return {
+            id: p.id,
+            name: `${p.id === lg.chief ? '👮 ' : ''}${p.name}`,
+            extra: <span className="flex items-center gap-3"><span style={{ color: 'var(--ui-gold)' }}>{stars(s.stars)}</span><span>{'🩴'.repeat(Math.min(2, s.footwear))}{'🧦'.repeat(Math.max(0, s.footwear - 2))}{s.footwear === 0 ? '🦶' : ''}</span>{s.cuffs && s.cuffs !== 'none' && <span>⛓️</span>}{s.immune && <span>🛡️</span>}</span>,
+            value: money(s.loot),
+          };
+        })} />
         </div>
 
         <div className="space-y-3">
           {lg.card && <GameCard variant="tv" kicker={lg.card.market ? 'Μαύρη Αγορά' : 'Κάρτα Εντάλματος'} corner={nameOf(lg.card.pid)} icon={lg.card.market ? '🕶️' : '📜'} image={lg.card.image} title={lg.card.title} text={lg.card.text} footLeft={lg.card.secs ? `⏱ ${lg.card.secs}″` : ''} />}
           {lg.interro && (
-            <div className="rounded-2xl border-2 border-[#FF453A] bg-[#140606] p-6 text-center">
-              <div className="text-sm tracking-[0.4em] text-[#FF453A]">ΑΣΤΥΝΟΜΙΑ · ΑΝΑΚΡΙΣΗ {lg.interro.idx + 1}/3</div>
-              <div className="mt-2 text-2xl">{nameOf(lg.interro.pid)} — {restraintFor(stats[lg.interro.pid]?.stars).name}</div>
-              <div className="mt-4 font-display text-4xl leading-tight">{lg.interro.questions[lg.interro.idx]}</div>
-              <div className="mt-3 text-lg opacity-75">Shot or Truth · οι υπόλοιπες ψηφίζουν κρυφά στο κινητό</div>
+            <div className="ui-card ui-card--danger space-y-3 text-center">
+              <div className="ui-tv-eyebrow ui-tv-eyebrow--red">Αστυνομία · Ανάκριση {lg.interro.idx + 1}/3</div>
+              <div className="ui-tv-text">{nameOf(lg.interro.pid)} — {restraintFor(stats[lg.interro.pid]?.stars).name}</div>
+              <div className="ui-tv-title">{lg.interro.questions[lg.interro.idx]}</div>
+              <div className="ui-tv-muted">Shot or Truth · οι υπόλοιπες ψηφίζουν κρυφά στο κινητό</div>
             </div>
           )}
           {lg.tickle && (
-            <div className="rounded-2xl border-2 border-[#FF375F] bg-[#14060a] p-6 text-center">
-              <div className="font-display text-4xl text-[#FF375F]">🪶 ΠΑΓΙΔΑ ΓΕΛΙΟΥ</div>
-              <div className="mt-2 text-2xl">{nameOf(lg.tickle.pid)} · {lg.tickle.secs}″ · {TICKLE_TOOLS.join(' → ')}</div>
-              <div className="mt-2 text-xl opacity-80">Ο Κανόνας της Σιωπής: χωρίς δυνατό γέλιο!</div>
+            <div className="ui-card ui-card--danger space-y-2 text-center">
+              <div className="ui-tv-title ui-tv-title--red">🪶 Παγίδα Γέλιου</div>
+              <div className="ui-tv-text">{nameOf(lg.tickle.pid)} · {lg.tickle.secs}″ · {TICKLE_TOOLS.join(' → ')}</div>
+              <div className="ui-tv-muted">Ο Κανόνας της Σιωπής: χωρίς δυνατό γέλιο!</div>
             </div>
           )}
           {lg.verdict && now - lg.verdict.at < 20000 && (
-            <div className="rounded-2xl border-2 border-[#E8C26B] p-5 text-center"><div className="font-display text-4xl text-[#E8C26B]">{lg.verdict.title}</div><div className="text-xl">{nameOf(lg.verdict.pid)} — {lg.verdict.text}</div></div>
+            <div className="ui-card ui-card--gold text-center"><div className="ui-tv-title ui-tv-title--gold">{lg.verdict.title}</div><div className="ui-tv-text mt-2">{nameOf(lg.verdict.pid)} — {lg.verdict.text}</div></div>
           )}
           {lg.finale && (
-            <div className="rounded-2xl border-2 border-[#E8C26B] bg-[#120f05] p-6 text-center">
-              <div className="font-display text-5xl text-[#E8C26B]">👑 {LOUNGE_FINALE.title}</div>
-              <div className="mt-3 font-mono text-6xl">{Math.max(0, LOUNGE_FINALE.seconds - Math.floor((now - lg.finale.startedAt) / 1000))}″</div>
-              <div className="mt-3 text-xl">Λύσε τον 4ψήφιο γρίφο στο κινητό σου!</div>
-              {lg.finale.winner && <div className="mt-3 text-3xl text-[#F7E3A8]">🔓 {nameOf(lg.finale.winner)} έλυσε πρώτη!</div>}
+            <div className="ui-card ui-card--gold space-y-3 text-center">
+              <div className="ui-tv-title ui-tv-title--gold">👑 {LOUNGE_FINALE.title}</div>
+              <div className="ui-tv-num ui-tv-title--xl ui-tv-title">{Math.max(0, LOUNGE_FINALE.seconds - Math.floor((now - lg.finale.startedAt) / 1000))}″</div>
+              <div className="ui-tv-text">Λύσε τον 4ψήφιο γρίφο στο κινητό σου!</div>
+              {lg.finale.winner && <div className="ui-tv-title ui-tv-title--gold">🔓 {nameOf(lg.finale.winner)} έλυσε πρώτη!</div>}
             </div>
           )}
-          {!lg.card && !lg.interro && !lg.tickle && !lg.finale && <div className="rounded-2xl border border-white/10 p-6 text-center text-2xl opacity-80">🎲 {cur?.name}: ρίξε το ζάρι από το κινητό σου!</div>}
+          {!lg.card && !lg.interro && !lg.tickle && !lg.finale && <div className="ui-card text-center ui-tv-text">🎲 <b>{cur?.name}</b>: ρίξε το ζάρι από το κινητό σου!</div>}
         </div>
       </div>
 
-      {cur && (
-        <div className="fixed bottom-14 left-6 z-[60] flex items-stretch overflow-hidden rounded-xl border border-[#E8C26B]/50 bg-black">
-          <div className="bg-[#E8C26B] px-4 py-2 text-sm font-black tracking-[0.25em] text-black">ΣΤΗ ΣΕΙΡΑ</div>
-          <div className="px-4 py-2">
-            <div className="text-2xl font-bold">{cur.name}</div>
-            <div className="text-sm text-white/70">{cur.id === lg.chief ? '👮 Police Chief' : 'Fugitive'} · <span className="text-[#E8C26B]">{stars(curStats.stars)}</span> · {money(curStats.loot)}</div>
-          </div>
-        </div>
-      )}
-
-      <div className="fixed inset-x-0 bottom-0 z-[60] flex items-center gap-4 overflow-hidden border-t border-[#E8C26B]/40 bg-[#0b0b0c] px-4 py-2">
-        <span className="shrink-0 rounded bg-[#FF453A] px-2 py-0.5 text-xs font-black tracking-widest">ΤΩΡΑ</span>
-        <div className="flex min-w-0 gap-6 whitespace-nowrap text-lg">
+      <div className="ui-tv-ticker">
+        <span className="ui-tv-live shrink-0">ΤΩΡΑ</span>
+        <div className="flex min-w-0 gap-6 whitespace-nowrap">
           {ticker.length ? ticker.map((text, index) => <span key={index} className={`shrink-0 ${index ? 'text-white/55' : 'text-white'}`}>{text}</span>) : <span className="text-white/55">Η εκπομπή ξεκινά…</span>}
         </div>
       </div>
-    </div>
+    </TvScreen>
   );
 }
