@@ -216,3 +216,10 @@
 .ui-dock .ui-btn { min-height: 44px; padding: 0 14px; font-size: 15px; flex: none; text-decoration: none; }
 .ui-dock-spacer { height: calc(env(safe-area-inset-bottom, 0px) + 76px); }
 .ui-btn--sm, .ui-btn-group-sm .ui-btn { min-height: 40px; padding: 0 14px; font-size: 15px; }
+
+/* =========================================================
+   Site & φόρμες — επίπεδο iOS χωρίς λάμψεις
+   ========================================================= */
+[class*="shadow-[0"], [class*="shadow-[inset"], .shadow-sm, .shadow, .shadow-md, .shadow-lg, .shadow-xl, .shadow-2xl { box-shadow: none !important; }
+.cinv-btn { background: var(--ui-gold) !important; background-image: none !important; color: #000 !important; box-shadow: none !important; text-shadow: none !important; }
+.cinv-btn:hover { background: var(--ui-gold-hi) !important; }
