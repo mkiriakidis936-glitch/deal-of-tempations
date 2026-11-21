@@ -50,6 +50,7 @@ export default function ModeShell({ modeId, ctx, state, act, children, onQR, onE
           </button>
         )}
         <button onClick={() => setShowLog(true)} className="ui-btn">📜 Ιστορικό</button>
+        {ctx.setMg && <button onClick={() => ctx.setMg({ tvSfxOff: !mg.tvSfxOff })} className="ui-btn" aria-pressed={!mg.tvSfxOff}>{mg.tvSfxOff ? '🔇 Ήχοι TV' : '🔊 Ήχοι TV'}</button>}
       </DockItem>
       <DockItem order={9}>
         {onEnd && (

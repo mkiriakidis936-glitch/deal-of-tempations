@@ -1,8 +1,27 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
+import { tvStingers } from '@/lib/tvStingers';
+import { tvSfx } from '@/lib/modeKit';
 import GameCard from '@/components/shared/GameCard';
 import { SQUARE_TYPES, LOUNGE_FINALE, restraintFor, TICKLE_TOOLS } from '@/data/modes/loungeContent';
 import { stars, rulesForGame } from '@/components/modes/ActLounge';
 import { TvScreen, TvBar, TvLeaderboard } from '@/design/ui';
+
+const PARAMS = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : new URLSearchParams();
+const IS_PREVIEW = PARAMS.get('preview') === '1';
+// Πολλές οθόνες: /tv?code=…&view=scores (κατάταξη) ή view=board (ταμπλό). Χωρίς view = κύρια οθόνη.
+export const TV_VIEW = ['scores', 'board'].includes(PARAMS.get('view')) ? PARAMS.get('view') : 'main';
+
+// Παίζει τα τηλεοπτικά stingers όταν αλλάζει κάτι στο ταμπλό (όχι στο πρώτο άνοιγμα, όχι σε προεπισκόπηση, όχι σε ΣΤΟΠ).
+export function useTvStingers(lounge, { muted = false } = {}) {
+  const prev = useRef(null);
+  useEffect(() => {
+    const before = prev.current;
+    prev.current = lounge || {};
+    if (!before || muted || IS_PREVIEW || TV_VIEW !== 'main') return;
+    const events = tvStingers(before, lounge || {});
+    events.forEach((name, i) => setTimeout(() => tvSfx[name]?.(), i * 120));
+  }, [lounge, muted]);
+}
 
 const money = (n) => `${Math.round(Number(n) || 0).toLocaleString('el-GR')}€`;
 
@@ -16,6 +35,7 @@ export default function LoungeTV({ state }) {
   const cur = players.length ? players[(lg.turn || 0) % players.length] : null;
   const totalLoot = players.reduce((sum, p) => sum + (stats[p.id]?.loot || 0), 0);
   const now = Date.now();
+  useTvStingers(lg, { muted: !!(mg.tvSfxOff || state.stopActive || mg.stop) });
   const RULES = rulesForGame(state.mode, lg);
   const phase = RULES.phases[Math.min(lg.phase || 0, RULES.phases.length - 1)];
 
@@ -47,7 +67,7 @@ export default function LoungeTV({ state }) {
   const clock = new Date(now).toLocaleTimeString('el-GR', { hour: '2-digit', minute: '2-digit' });
 
   return (
-    <TvScreen className="relative pb-10">
+    <TvScreen className="relative pb-10" style={TV_VIEW === 'scores' ? { '--tv-unit': 'clamp(12px, 1.1vw, 42px)' } : undefined}>
       <TvBar
         title={(RULES.title || 'PAJAMA HEIST & ARREST').toUpperCase()}
         meta={`Γύρος ${lg.round || 1} · Φάση ${(lg.phase || 0) + 1}/${RULES.phases.length} · ${phase?.name || ''}`}
@@ -70,23 +90,24 @@ export default function LoungeTV({ state }) {
         </div>
       )}
 
-      <div className="grid grid-cols-7 gap-2">
+      {TV_VIEW !== 'scores' && <div className="grid grid-cols-7 gap-2">
         {RULES.board.map((type, i) => {
           const sq = SQUARE_TYPES[type];
           const here = players.filter((p) => (pos[p.id] || 0) === i);
           const last = lg.lastRoll && (pos[lg.lastRoll.pid] || 0) === i && now - lg.lastRoll.at < 8000;
           return (
-            <div key={i} className="flex flex-col items-center justify-center rounded-xl text-center" style={{ height: '10.5vh', background: `${sq.color}22`, border: `2px solid ${last ? '#fff' : `${sq.color}88`}` }}>
+            <div key={i} className="flex flex-col items-center justify-center rounded-xl text-center" style={{ height: TV_VIEW === 'board' ? '21vh' : '10.5vh', background: `${sq.color}22`, border: `2px solid ${last ? '#fff' : `${sq.color}88`}` }}>
               <div style={{ fontSize: 'calc(var(--tv-unit) * 2)' }}>{sq.icon}</div>
               <div className="ui-tv-muted" style={{ fontSize: 'calc(var(--tv-unit) * 0.95)' }}>{sq.name}</div>
               <div className="mt-1 flex flex-wrap justify-center gap-1">{here.map((p) => <span key={p.id} className="rounded-md px-1.5 text-sm font-bold" style={{ background: p.id === cur?.id ? '#E8C26B' : '#fff', color: '#000' }}>{p.name.slice(0, 3)}</span>)}</div>
             </div>
           );
         })}
-      </div>
+      </div>}
+      {TV_VIEW === 'board' && cur && <div className="text-center ui-tv-title">🎲 Στη σειρά: <span className="ui-tv-title--gold">{cur.name}</span></div>}
       {lg.lastRoll && now - lg.lastRoll.at < 15000 && <div className="text-center ui-tv-text">🎲 {nameOf(lg.lastRoll.pid)} έφερε <b className="text-[#E8C26B]">{lg.lastRoll.d}</b> → {SQUARE_TYPES[lg.lastRoll.square]?.icon} {SQUARE_TYPES[lg.lastRoll.square]?.name}</div>}
 
-      <div className="grid gap-4 grid-cols-[1fr_1.1fr]">
+      {TV_VIEW !== 'board' && <div className={`grid gap-4 ${TV_VIEW === 'scores' ? 'grid-cols-1' : 'grid-cols-[1fr_1.1fr]'}`}>
         <div className="space-y-3">
         {cur && (
           <div className="flex items-stretch overflow-hidden rounded-2xl border border-[#E8C26B]/50 bg-black">
@@ -138,7 +159,7 @@ export default function LoungeTV({ state }) {
           )}
           {!lg.card && !lg.interro && !lg.tickle && !lg.finale && <div className="ui-card text-center ui-tv-text">🎲 <b>{cur?.name}</b>: ρίξε το ζάρι από το κινητό σου!</div>}
         </div>
-      </div>
+      </div>}
 
       <div className="ui-tv-ticker">
         <span className="ui-tv-live shrink-0">ΤΩΡΑ</span>

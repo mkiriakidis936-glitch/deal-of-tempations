@@ -146,6 +146,42 @@ function tone(freq, dur, type = 'sine', vol = 0.15, when = 0) {
     o.stop(t + dur + 0.02);
   } catch { /* ο browser μπλόκαρε τον ήχο */ }
 }
+function sweep(from, to, dur, type = 'sine', vol = 0.15, when = 0) {
+  try {
+    const c = ac();
+    const o = c.createOscillator();
+    const g = c.createGain();
+    o.type = type;
+    const t = c.currentTime + when;
+    o.frequency.setValueAtTime(from, t);
+    o.frequency.exponentialRampToValueAtTime(to, t + dur);
+    g.gain.setValueAtTime(vol, t);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    o.connect(g);
+    g.connect(c.destination);
+    o.start(t);
+    o.stop(t + dur + 0.02);
+  } catch { /* ο browser μπλόκαρε τον ήχο */ }
+}
+const chord = (notes, dur, type, vol, when = 0) => notes.forEach((f) => tone(f, dur, type, vol, when));
+
+// Τηλεοπτικά stingers για την TV: σύντομα, χωρίς αρχεία, ελάχιστη CPU.
+export const tvSfx = {
+  dice() { [0, 0.07, 0.14, 0.21, 0.3].forEach((w, i) => tone(1200 + i * 140, 0.04, 'square', 0.05, w)); tone(523, 0.25, 'triangle', 0.14, 0.42); },
+  loot() { tone(1318, 0.09, 'triangle', 0.13, 0.5); tone(1760, 0.22, 'triangle', 0.13, 0.6); },
+  card() { [784, 988, 1175, 1568].forEach((f, i) => tone(f, 0.28, 'triangle', 0.09, i * 0.07)); },
+  market() { sweep(220, 110, 0.6, 'sawtooth', 0.08); chord([220, 262, 311], 0.5, 'triangle', 0.06, 0.15); },
+  arrest() { [0, 0.45, 0.9].forEach((w) => { sweep(700, 1100, 0.22, 'square', 0.06, w); sweep(1100, 700, 0.22, 'square', 0.06, w + 0.22); }); tone(70, 0.6, 'sine', 0.3); },
+  truth() { chord([523, 659, 784], 0.5, 'triangle', 0.09); chord([659, 784, 1047], 0.8, 'triangle', 0.09, 0.35); },
+  lie() { chord([392, 466], 0.4, 'sawtooth', 0.07); chord([311, 370], 0.9, 'sawtooth', 0.07, 0.35); tone(60, 0.7, 'sine', 0.25, 0.35); },
+  alert() { [0, 0.3, 0.6].forEach((w) => tone(880, 0.18, 'square', 0.07, w)); },
+  tickle() { [0, 0.12, 0.24, 0.36].forEach((w, i) => tone(1400 + (i % 2) * 300, 0.08, 'sine', 0.07, w)); },
+  finale() { [0, 0.25, 0.5, 0.75, 1, 1.15, 1.3, 1.45].forEach((w) => tone(90, 0.12, 'sine', 0.25, w)); chord([392, 494, 587], 1.2, 'triangle', 0.08, 1.6); },
+  winner() { chord([523, 659, 784], 0.3, 'triangle', 0.1); chord([587, 740, 880], 0.3, 'triangle', 0.1, 0.25); chord([659, 831, 988, 1319], 1.1, 'triangle', 0.1, 0.5); },
+  crown() { [523, 659, 784, 1047].forEach((f, i) => tone(f, 0.35, 'triangle', 0.11, i * 0.16)); chord([523, 659, 784, 1047], 1.6, 'triangle', 0.09, 0.7); },
+  round() { tone(440, 0.15, 'triangle', 0.1); tone(660, 0.3, 'triangle', 0.1, 0.15); },
+};
+
 export const sfx = {
   alarm() { [0, 0.4, 0.8, 1.2].forEach((w, i) => tone(i % 2 ? 440 : 660, 0.34, 'sawtooth', 0.12, w)); },
   horn() { tone(180, 0.9, 'sawtooth', 0.2); tone(185, 0.9, 'square', 0.1); },

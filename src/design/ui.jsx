@@ -96,8 +96,8 @@ export function SafetyBar({ safeWord, onStop, stopped, children }) {
 }
 
 // ---------- TV ----------
-export function TvScreen({ className = '', children }) {
-  return <div className={cx('ui-tv ui-tv-stack', className)}>{children}</div>;
+export function TvScreen({ className = '', style, children }) {
+  return <div className={cx('ui-tv ui-tv-stack', className)} style={style}>{children}</div>;
 }
 
 export function TvBar({ live = true, title, meta, right }) {

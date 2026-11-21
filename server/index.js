@@ -9,6 +9,7 @@ import { mediaRoutes, mediaStatic } from './media.js';
 import { pushRoutes } from './push.js';
 import { visitRoutes } from './visits.js';
 import { backupRoutes, startAutoBackup } from './backup.js';
+import { cameraRoutes } from './camera.js';
 
 const app = express();
 app.set('trust proxy', 1); // Railway terminates TLS in front of us
@@ -65,6 +66,7 @@ app.use('/api/functions', functionRoutes());
 app.use('/api/media', mediaRoutes());
 app.use('/api/push', pushRoutes());
 app.use('/api/visits', visitRoutes());
+app.use('/api/camera', cameraRoutes());
 app.use('/media', mediaStatic);
 app.use('/api', (_req, res) => res.status(404).json({ error: 'Not found' }));
 
