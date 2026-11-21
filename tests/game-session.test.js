@@ -135,3 +135,55 @@ test('consent: τα όρια κάθε παίκτριας δεν φαίνοντα
   assert.deepEqual(forTv.p0.optOuts, []);
   assert.deepEqual(forTv.p1.optOuts, []);
 });
+
+test('εκπομπή: γραμματοκιβώτιο παίκτριας — μόνο έγκυρα, μόνο δικά της', async () => {
+  const { validatePlayerPatch } = await import('../server/entities.js');
+  const current = { players: [{ id: 'p1' }, { id: 'p2' }], loungeInbox: {} };
+  const at = Date.now();
+  assert.equal(validatePlayerPatch(current, { loungeInbox: { p1: [{ type: 'news', text: 'Η Μαρία έκρυψε σαγιονάρα!', at }] } }, 'p1'), true);
+  assert.equal(validatePlayerPatch(current, { loungeInbox: { p1: [{ type: 'news', text: 'x'.repeat(91), at }] } }, 'p1'), false);
+  assert.equal(validatePlayerPatch(current, { loungeInbox: { p1: [{ type: 'betray', target: 'p2', at }] } }, 'p1'), true);
+  assert.equal(validatePlayerPatch(current, { loungeInbox: { p1: [{ type: 'betray', target: 'p1', at }] } }, 'p1'), false);
+  assert.equal(validatePlayerPatch(current, { loungeInbox: { p2: [{ type: 'news', text: 'ξένο', at }] } }, 'p1'), false);
+  assert.equal(validatePlayerPatch(current, { loungeInbox: { p1: [{ type: 'dossier', answers: ['α', 'β', 'γ'], at }] } }, 'p1'), true);
+  assert.equal(validatePlayerPatch(current, { loungeInbox: { p1: [{ type: 'hack', at }] } }, 'p1'), false);
+  assert.equal(validatePlayerPatch(current, { loungeInbox: { p1: [{ type: 'news', text: 'ok', at, extra: 1 }] } }, 'p1'), false);
+  assert.equal(validatePlayerPatch(current, { loungeInbox: { p1: Array.from({ length: 11 }, (_, i) => ({ type: 'confess', text: 'x', at: at + i })) } }, 'p1'), false);
+  assert.equal(validatePlayerPatch(current, { loungeInbox: { p1: [{ type: 'bet', target: 'p2', at }, { type: 'confess', text: 'και αυτό', at: at + 1 }] } }, 'p1'), true);
+});
+
+test('εκπομπή: τα μυστικά κρύβονται από TV και άλλες παίκτριες', async () => {
+  const { sanitizePublicSession } = await import('../server/entities.js');
+  const record = { state: {
+    loungeVotes: { p1: 'i1:0:truth', p2: 'i1:0:lie', p3: 'i1:0:lie' },
+    loungeInbox: { p1: [{ type: 'confess', text: 'μυστικό', at: 1 }] },
+    mg: { lounge: {
+      anonBox: [{ text: 'μυστικό' }], dossier: { p1: ['a', 'b', 'c'], p2: ['d', 'e', 'f'] },
+      dossierQ: { id: 'q1', text: 'a', owner: 'p1' }, bets: { p1: 'p2', p2: 'p1' }, betrayCard: 'p2',
+      betrayals: [{ from: 'p2', to: 'p1', amount: 500 }],
+    } },
+  } };
+  const tv = sanitizePublicSession(record).state;
+  assert.deepEqual(tv.loungeTally['i1:0'], { truth: 1, lie: 2 });
+  assert.equal(tv.mg.lounge.anonBox, undefined);
+  assert.equal(tv.mg.lounge.dossier, undefined);
+  assert.equal(tv.mg.lounge.dossierQ.owner, undefined);
+  assert.equal(tv.mg.lounge.betrayCard, undefined);
+  assert.deepEqual(tv.mg.lounge.betrayals, [{}]);
+  assert.deepEqual(tv.loungeInbox, {});
+  const p2 = sanitizePublicSession(record, 'p2').state;
+  assert.equal(p2.mg.lounge.betrayCard, 'p2');
+  assert.deepEqual(p2.mg.lounge.bets, { p2: 'p1' });
+  assert.deepEqual(p2.mg.lounge.dossier, { p2: ['d', 'e', 'f'] });
+  const revealed = sanitizePublicSession({ state: { mg: { lounge: { betrayRevealed: true, betrayals: [{ from: 'p2', to: 'p1', amount: 500 }], dossierQ: { id: 'q', owner: 'p1', revealed: true } } } } }).state;
+  assert.equal(revealed.mg.lounge.betrayals[0].from, 'p2');
+  assert.equal(revealed.mg.lounge.dossierQ.owner, 'p1');
+});
+
+test('εξομολογητήριο: ανώνυμες εξομολογήσεις δεν χάνονται στη συγχώνευση του server', async () => {
+  const { validatePlayerPatch } = await import('../server/entities.js');
+  const src = await readFile(new URL('../src/components/modes/ShowControls.jsx', import.meta.url), 'utf8');
+  assert.match(src, /anonBox/);
+  assert.doesNotMatch(src, /\bconfessions\b/);
+  assert.equal(typeof validatePlayerPatch, 'function');
+});

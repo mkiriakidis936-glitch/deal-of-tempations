@@ -62,15 +62,38 @@ async function openLive(reason) {
   const signature = JSON.stringify(subs);
   const params = new URLSearchParams({ subs: signature });
   if (getToken()) {
-    try { params.set('ticket', (await request('POST', '/api/entities/stream-ticket')).ticket); } catch { /* ανώνυμη σύνδεση */ }
+    try {
+      params.set('ticket', (await request('POST', '/api/entities/stream-ticket')).ticket);
+    } catch (error) {
+      // Συσκευή admin: ΠΟΤΕ ανώνυμη σύνδεση (θα έπαιρνε φιλτραρισμένα δεδομένα και θα τα έγραφε πίσω).
+      // Μόνο αν δεν είναι admin (401/403, δηλαδή δεν μπορεί και να γράψει) συνεχίζει ανώνυμα· αλλιώς ξαναδοκιμάζει.
+      if (![401, 403].includes(error?.status)) {
+        live.retry = Math.min(live.retry + 1, 5);
+        live.timerSince = Date.now();
+        live.timer = setTimeout(() => openLive(reason === 'change' ? 'error' : reason), 1000 * live.retry);
+        return;
+      }
+    }
   }
   if (JSON.stringify([...subscriptions.values()].map(({ entity, sessionCode, playerId }) => ({ entity, ...(sessionCode ? { sessionCode } : {}), ...(playerId ? { playerId } : {}) }))) !== signature) return;
   live.pending?.close();
   const es = new EventSource(`${API_URL}/api/entities/multi/stream?${params.toString()}`);
   live.pending = es;
+  live.pendingSince = Date.now();
   live.signature = signature;
+  es.addEventListener('ping', () => { if (live.es === es) live.lastSeen = Date.now(); });
+  // Ο server κλείνει (redeploy): ξανασύνδεση σε λίγο, στον νέο server.
+  es.addEventListener('bye', () => {
+    es.close();
+    if (live.es === es) live.es = null;
+    if (live.pending === es) live.pending = null;
+    if (live.timer) clearTimeout(live.timer);
+    live.timerSince = Date.now();
+    live.timer = setTimeout(() => openLive('error'), 1500);
+  });
   es.addEventListener('ready', () => {
     if (live.pending !== es) return;
+    live.lastSeen = Date.now();
     const previous = live.es;
     live.es = es;
     live.pending = null;
@@ -82,6 +105,7 @@ async function openLive(reason) {
   });
   es.onmessage = (msg) => {
     if (live.es !== es) return;
+    live.lastSeen = Date.now();
     let event;
     try { event = JSON.parse(msg.data); } catch { return; }
     subscriptions.forEach((sub) => { if (matches(sub, event)) emitTo(sub, event); });
@@ -92,6 +116,7 @@ async function openLive(reason) {
     if (live.es === es) live.es = null;
     if (live.timer || !subscriptions.size) return;
     live.retry = Math.min(live.retry + 1, 5);
+    live.timerSince = Date.now();
     live.timer = setTimeout(() => openLive('error'), 1000 * live.retry);
   };
 }
@@ -121,12 +146,33 @@ function subscribeEntity(name, callback, options = {}) {
   };
 }
 
+// Κατάσταση ζωντανής σύνδεσης (για ένδειξη υγείας και διάγνωση).
+export function realtimeHealth() {
+  return { state: live.es ? ['connecting', 'open', 'closed'][live.es.readyState] : 'none', pending: !!live.pending, lastSeen: live.lastSeen || 0, retrying: !!live.timer, retry: live.retry, subscriptions: subscriptions.size };
+}
+
 if (typeof window !== 'undefined') {
+  window.__dtRealtime = realtimeHealth;
   const wake = () => {
     if (!subscriptions.size) return;
     if (!live.es || live.es.readyState === 2) openLive('wake');
   };
   window.addEventListener('online', wake);
+  // Φύλακας: αν δεν ακουστεί σφυγμός για 40″ (κομμένο WiFi, redeploy, «κοιμισμένη» σύνδεση), ξανασυνδέεται.
+  setInterval(() => {
+    if (!subscriptions.size) return;
+    // Σύνδεση που «κρέμεται» (ούτε ανοίγει ούτε αποτυγχάνει) πάνω από 20″: ξεκινά από την αρχή.
+    if (live.pending && Date.now() - (live.pendingSince || 0) > 20000) { live.pending.close(); live.pending = null; }
+    if (live.pending) return;
+    // Χρονοδιακόπτης επανασύνδεσης που «κόλλησε» (π.χ. κρυμμένη καρτέλα): τον παρακάμπτουμε μετά από 30″.
+    if (live.timer && Date.now() - (live.timerSince || 0) < 30000) return;
+    if (!live.es || live.es.readyState === 2 || (live.lastSeen && Date.now() - live.lastSeen > 40000)) {
+      if (live.timer) { clearTimeout(live.timer); live.timer = null; }
+      live.es?.close();
+      live.es = null;
+      openLive('wake');
+    }
+  }, 10000);
   document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') wake(); });
 }
 

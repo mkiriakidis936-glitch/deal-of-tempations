@@ -112,19 +112,33 @@ const deepMerge = (target, patch, field = '', allowClear = false) => {
   return merged;
 };
 
+const INBOX_KEYS = new Set(['type', 'at', 'text', 'target', 'qid', 'answers']);
+const shortText = (value, max) => typeof value === 'string' && value.trim().length > 0 && value.length <= max;
+export function isValidInboxEntry(entry, validTarget) {
+  if (!isObject(entry) || !Number.isFinite(entry.at) || Object.keys(entry).some((key) => !INBOX_KEYS.has(key))) return false;
+  switch (entry.type) {
+    case 'news': return shortText(entry.text, 90);
+    case 'confess': return shortText(entry.text, 200);
+    case 'betray': case 'bet': return validTarget(entry.target);
+    case 'guess': return validTarget(entry.target) && typeof entry.qid === 'string' && /^[A-Za-z0-9_-]{1,40}$/.test(entry.qid);
+    case 'dossier': return Array.isArray(entry.answers) && entry.answers.length === 3 && entry.answers.every((answer) => shortText(answer, 80));
+    default: return false;
+  }
+}
+
 export function validatePlayerPatch(current, patch, playerId) {
   if (!isObject(patch) || !Object.keys(patch).length) return false;
   const allowed = new Set([
     'mobileVotes', 'electricChairVotes', 'juryTrial', 'grandJury', 'privateMessages',
     'sealedVotes', 'miniGameVolunteers', 'miniGameVotes', 'miniGameRatings',
     'snitchVotes', 'history', 'timeCapsule', 'lastWish', 'midnightPact',
-    'pajama', 'mg', 'players', 'absoluteInterrogation', 'bailoutAuction', 'loungeVotes',
+    'pajama', 'mg', 'players', 'absoluteInterrogation', 'bailoutAuction', 'loungeVotes', 'loungeInbox',
   ]);
   if (Object.keys(patch).some((key) => !allowed.has(key))) return false;
   const player = (current.players || []).find((item) => item.id === playerId);
   if (!player) return false;
 
-  const ownMaps = ['mobileVotes', 'electricChairVotes', 'miniGameVolunteers', 'miniGameVotes', 'miniGameRatings', 'snitchVotes', 'timeCapsule', 'loungeVotes'];
+  const ownMaps = ['mobileVotes', 'electricChairVotes', 'miniGameVolunteers', 'miniGameVotes', 'miniGameRatings', 'snitchVotes', 'timeCapsule', 'loungeVotes', 'loungeInbox'];
   if ('loungeVotes' in patch && !/^[A-Za-z0-9_-]{1,40}:[0-9]:(truth|lie)$/.test(String(patch.loungeVotes?.[playerId] || ''))) return false;
   for (const key of ownMaps) {
     if (key in patch && !onlyOwnMapEntryChanged(current[key] || {}, patch[key] || {}, playerId)) return false;
@@ -135,6 +149,11 @@ export function validatePlayerPatch(current, patch, playerId) {
     if (key in patch && patch[key]?.[playerId] !== undefined && !validTarget(patch[key][playerId])) return false;
   }
   if ('miniGameVolunteers' in patch && patch.miniGameVolunteers?.[playerId] !== true) return false;
+  // Γραμματοκιβώτιο εκπομπής: breaking news, εξομολόγηση, προδοσία, στοίχημα, φάκελος υπόπτου, μαντεψιά.
+  if ('loungeInbox' in patch) {
+    const list = patch.loungeInbox?.[playerId];
+    if (!Array.isArray(list) || !list.length || list.length > 10 || !list.every((entry) => isValidInboxEntry(entry, validTarget))) return false;
+  }
   if ('miniGameRatings' in patch && patch.miniGameRatings?.[playerId] !== undefined &&
       (!Number.isInteger(patch.miniGameRatings[playerId]) || patch.miniGameRatings[playerId] < 1 || patch.miniGameRatings[playerId] > 5)) return false;
   if ('timeCapsule' in patch) {
@@ -369,7 +388,32 @@ export function sanitizePublicSession(record, playerId = null) {
   };
 
   if ('privateMessages' in state) state.privateMessages = ownMap(state.privateMessages);
-  if ('loungeVotes' in state) state.loungeVotes = countOnlyMap(state.loungeVotes);
+  if ('loungeVotes' in state) {
+    // Δημόσια μόνο τα σύνολα ανά ερώτηση (για τη live μπάρα στην TV) — όχι ποια ψήφισε τι.
+    const tally = {};
+    for (const value of Object.values(isObject(state.loungeVotes) ? state.loungeVotes : {})) {
+      const [id, idx, answer] = String(value).split(':');
+      if (!id || !['truth', 'lie'].includes(answer)) continue;
+      const key = `${id}:${idx}`;
+      tally[key] = tally[key] || { truth: 0, lie: 0 };
+      tally[key][answer] += 1;
+    }
+    state.loungeTally = tally;
+    state.loungeVotes = countOnlyMap(state.loungeVotes);
+  }
+  if ('loungeInbox' in state) state.loungeInbox = ownMap(state.loungeInbox);
+  if (isObject(state.mg?.lounge)) {
+    const lg = { ...state.mg.lounge };
+    // Μυστικά της εκπομπής: φαίνονται μόνο στο Tablet (admin) ή στην ίδια την παίκτρια.
+    lg.anonBox = undefined;
+    lg.dossier = playerId && isObject(lg.dossier) && lg.dossier[playerId] ? { [playerId]: lg.dossier[playerId] } : undefined;
+    lg.dossierGuesses = undefined;
+    if (isObject(lg.dossierQ) && !lg.dossierQ.revealed) lg.dossierQ = { ...lg.dossierQ, owner: undefined };
+    lg.bets = ownMap(lg.bets);
+    lg.betrayCard = playerId && lg.betrayCard === playerId ? playerId : undefined;
+    if (!lg.betrayRevealed && Array.isArray(lg.betrayals)) lg.betrayals = lg.betrayals.map(() => ({}));
+    state.mg = { ...state.mg, lounge: lg };
+  }
   if (state.mg?.lounge?.finale?.code) state.mg = { ...state.mg, lounge: { ...state.mg.lounge, finale: { ...state.mg.lounge.finale, code: undefined } } };
   if (state.pajama && isObject(state.pajama)) {
     state.pajama = {
@@ -475,6 +519,19 @@ function buildWhere(entity, q, params) {
 const streams = new Map(); // entity -> Set<{ res, sessionCode, playerId, isPublic }>
 const playerPresence = new Map(); // sessionCode -> Map<playerId, lastSeenAt>
 const PLAYER_PRESENCE_TTL_MS = 45_000;
+// Τερματισμός server (π.χ. redeploy): λέμε σε όλες τις συσκευές να ξανασυνδεθούν και κλείνουμε τις ζωντανές συνδέσεις,
+// αλλιώς θα έμεναν «κολλημένες» σε έναν server που δεν παίρνει πια αλλαγές.
+export function closeAllStreams() {
+  const seen = new Set();
+  for (const set of streams.values()) for (const subscriber of set) {
+    if (seen.has(subscriber.res)) continue;
+    seen.add(subscriber.res);
+    try { subscriber.res.write('event: bye\ndata: restart\n\n'); subscriber.res.end(); } catch { /* ήδη κλειστή */ }
+  }
+  streams.clear();
+  return seen.size;
+}
+
 function broadcast(entity, event) {
   const set = streams.get(entity);
   if (!set) return;
@@ -497,9 +554,10 @@ setInterval(() => {
   for (const set of streams.values()) for (const subscriber of set) {
     if (seen.has(subscriber.res)) continue;
     seen.add(subscriber.res);
-    subscriber.res.write(': ping\n\n');
+    // Σφυγμός: οι συσκευές τον ακούν και, αν σταματήσει, ξανασυνδέονται μόνες τους.
+    subscriber.res.write(`event: ping\ndata: ${Date.now()}\n\n`);
   }
-}, 25000).unref();
+}, 15000).unref();
 
 
 
@@ -1306,6 +1364,9 @@ export function entityRoutes() {
     try { subs = JSON.parse(String(req.query.subs || '[]')); } catch { return res.status(400).json({ error: 'Invalid subscriptions' }); }
     if (!Array.isArray(subs) || !subs.length || subs.length > 60) return res.status(400).json({ error: 'Invalid subscriptions' });
     const admin = isAdmin(req);
+    // Εισιτήριο admin που έχει ήδη χρησιμοποιηθεί/λήξει (π.χ. αυτόματη επανασύνδεση του browser):
+    // ΔΕΝ γίνεται σιωπηλά ανώνυμη σύνδεση — απορρίπτεται, ώστε η συσκευή να ζητήσει νέο εισιτήριο.
+    if (req.query.ticket && !admin) return res.status(401).json({ error: 'Stream ticket expired' });
     const accepted = [];
     for (const item of subs) {
       const entity = String(item?.entity || '');
@@ -1341,6 +1402,7 @@ export function entityRoutes() {
 
   // --- realtime stream (EventSource can't send headers; admins authenticate with a one-time ?ticket= from POST /api/entities/stream-ticket) ---
   r.get('/:entity/stream', guard('read'), async (req, res) => {
+    if (req.query.ticket && !isAdmin(req)) return res.status(401).json({ error: 'Stream ticket expired' });
     let sessionCode = null;
     let playerId = null;
     if (req.entity === 'GameSession') {

@@ -1,5 +1,6 @@
 import ScreenWallpaper from '@/components/shared/ScreenWallpaper';
 import TVCamera from '@/components/tv/TVCamera';
+import TVDrama from '@/components/tv/TVDrama';
 import SoundUnlock from '@/components/shared/SoundUnlock';
 import ModeTV from '@/components/modes/ModeTV';
 import TVExperienceLayer from '@/components/tv/TVExperienceLayer';
@@ -247,6 +248,7 @@ export default function TVScreen() {
       <TutorialTV tutorial={state.tutorialDemo} />
       <GameDurationClock state={state} corner />
       <TVProductionOutput sessionCode={session.sessionCode} />
+      <TVDrama drama={state.mg?.drama} muted={IS_PREVIEW || !!state.mg?.tvSfxOff} />
       {!IS_PREVIEW && <TVCamera sessionCode={session.sessionCode} camera={state.camera} hidden={!!(state.stopActive || state.mg?.stop)} />}
       <TVLaunchVideos
         sessionCode={session.sessionCode}

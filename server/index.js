@@ -3,7 +3,7 @@ import path from 'node:path';
 import fs from 'node:fs';
 import { migrate, pool } from './db.js';
 import { attachUser, authRoutes, issueStreamTicket, requireAdmin } from './auth.js';
-import { entityRoutes } from './entities.js';
+import { entityRoutes, closeAllStreams } from './entities.js';
 import { functionRoutes } from './functions.js';
 import { mediaRoutes, mediaStatic } from './media.js';
 import { pushRoutes } from './push.js';
@@ -140,5 +140,10 @@ startAutoBackup();
 process.on('unhandledRejection', (error) => console.error('[server] μη χειρισμένο σφάλμα:', error?.message || error));
 
 for (const sig of ['SIGTERM', 'SIGINT']) {
-  process.on(sig, () => server.close(() => pool.end().then(() => process.exit(0))));
+  process.on(sig, () => {
+    closeAllStreams();
+    server.closeAllConnections?.();
+    server.close(() => pool.end().catch(() => {}).then(() => process.exit(0)));
+    setTimeout(() => process.exit(0), 5000).unref();
+  });
 }

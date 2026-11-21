@@ -1,4 +1,6 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import { TvScreen, TvBar } from '@/design/ui';
+import { tvSfx } from '@/lib/modeKit';
 import { Panel, Btn } from '@/components/modes/ModeShell';
 import { CONSENT_OPTIONS, consentOf, allConfirmed } from '@/lib/consent';
 import { timerStart } from '@/lib/modeTimer';
@@ -127,34 +129,46 @@ const RULES = [
   { icon: '🍹', title: 'Αλκοόλ προαιρετικό', text: 'Τα ποτά είναι πάντα προαιρετικά και υπάρχει μη αλκοολούχα επιλογή.' },
 ];
 
+// TV: «Πριν την εκπομπή» — οι διαγωνιζόμενες εμφανίζονται μία-μία καθώς επιβεβαιώνουν από το κινητό.
+const PREVIEW = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('preview') === '1';
 export function ConsentTV({ state }) {
   const mg = state.mg || {};
   const players = state.players || [];
+  const ready = players.filter((p) => consentOf(mg, p.id).confirmed);
+  const count = useRef(null);
+  useEffect(() => {
+    if (count.current !== null && ready.length > count.current && !PREVIEW) tvSfx.card();
+    count.current = ready.length;
+  }, [ready.length]);
+  const clock = new Date().toLocaleTimeString('el-GR', { hour: '2-digit', minute: '2-digit' });
   return (
-    <div className="w-full max-w-6xl mx-auto p-4 space-y-6 text-white">
-      <div className="text-center">
-        <div className="text-xs tracking-[.4em]" style={{ color: '#E8C26B' }}>DEAL OF TEMPTATION</div>
-        <div className="font-display text-5xl sm:text-7xl mt-2" style={{ color: '#F7E3A8' }}>Πρώτα η ασφάλεια</div>
+    <TvScreen className="mx-auto max-w-[min(96vw,2600px)] p-4">
+      <TvBar live={false} title="ΣΕ ΛΙΓΟ · DEAL OF TEMPTATION" meta={`Έτοιμες ${ready.length}/${players.length}`} right={<span className="ui-tv-num ui-tv-text">{clock}</span>} />
+      <div className="text-center space-y-2">
+        <div className="ui-tv-eyebrow ui-tv-eyebrow--gold">Απόψε στην εκπομπή</div>
+        <div className="ui-tv-title ui-tv-title--xl">Οι διαγωνιζόμενες</div>
+        <div className="ui-tv-muted">Κάθε παίκτρια εμφανίζεται μόλις επιβεβαιώσει τα όριά της στο κινητό.</div>
       </div>
-      <div className="grid sm:grid-cols-2 gap-4">
-        {RULES.map((rule) => (
-          <div key={rule.title} className="rounded-2xl p-6" style={{ background: 'rgba(232,194,107,.07)', border: '1px solid rgba(232,194,107,.4)' }}>
-            <div className="text-4xl">{rule.icon}</div>
-            <div className="font-heading text-2xl mt-2" style={{ color: '#F7E3A8' }}>{rule.title}</div>
-            <p className="text-lg opacity-85 mt-1">{rule.text}</p>
-          </div>
-        ))}
-      </div>
-      <div className="flex flex-wrap justify-center gap-3">
-        {players.map((p) => {
+      <div className="grid gap-4" style={{ gridTemplateColumns: `repeat(${Math.min(4, Math.max(1, players.length))}, minmax(0, 1fr))` }}>
+        {players.map((p, i) => {
           const ok = consentOf(mg, p.id).confirmed;
           return (
-            <span key={p.id} className="rounded-full px-5 py-2 text-lg font-heading" style={{ background: ok ? 'rgba(232,194,107,.18)' : 'rgba(255,255,255,.06)', border: `1px solid ${ok ? '#E8C26B' : 'rgba(255,255,255,.25)'}`, color: ok ? '#F7E3A8' : '#bbb' }}>
-              {ok ? '✓' : '⏳'} {p.name}
-            </span>
+            <div key={p.id} className={`ui-card text-center space-y-2 ${ok ? 'ui-card--gold' : ''}`} style={ok ? undefined : { opacity: 0.45 }}>
+              <div className="ui-tv-eyebrow">Διαγωνιζόμενη #{i + 1}</div>
+              <div className="ui-tv-title" style={ok ? { color: 'var(--ui-gold-hi)' } : undefined}>{ok ? p.name : '???'}</div>
+              <div className="ui-tv-muted">{ok ? '✓ Έτοιμη για τη ληστεία' : '⏳ Ετοιμάζεται…'}</div>
+            </div>
           );
         })}
       </div>
-    </div>
+      <div className="grid gap-3" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))' }}>
+        {RULES.map((rule) => (
+          <div key={rule.title} className="ui-card">
+            <div className="ui-tv-text font-bold">{rule.icon} {rule.title}</div>
+            <div className="ui-tv-muted mt-1">{rule.text}</div>
+          </div>
+        ))}
+      </div>
+    </TvScreen>
   );
 }

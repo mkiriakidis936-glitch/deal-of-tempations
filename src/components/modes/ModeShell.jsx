@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { modeMeta, ACT_META } from '@/data/modes/modeRegistry';
 import { fmt, timerLeft, useTick, setGameStopActive } from '@/lib/modeKit';
 import GameDurationClock from '@/components/shared/GameDurationClock';
-import { Dock, DockItem } from '@/design/ui';
+import { Dock, DockItem, Card, Button, Input } from '@/design/ui';
 
 // Κοινό περίβλημα όλων των νέων modes: τίτλος, χρονόμετρο, ΣΤΟΠ για όλες, ημερολόγιο γεγονότων.
 export default function ModeShell({ modeId, ctx, state, act, children, onQR, onEnd, showTimer = true }) {
@@ -50,6 +50,7 @@ export default function ModeShell({ modeId, ctx, state, act, children, onQR, onE
           </button>
         )}
         <button onClick={() => setShowLog(true)} className="ui-btn">📜 Ιστορικό</button>
+        {ctx.setMg && <DramaButton onSend={(text) => ctx.setMg({ drama: { text, at: Date.now(), until: Date.now() + 15000 } })} />}
         {ctx.setMg && <button onClick={() => ctx.setMg({ tvSfxOff: !mg.tvSfxOff })} className="ui-btn" aria-pressed={!mg.tvSfxOff}>{mg.tvSfxOff ? '🔇 Ήχοι TV' : '🔊 Ήχοι TV'}</button>}
       </DockItem>
       <DockItem order={9}>
@@ -139,5 +140,27 @@ export function Btn({ children, color = 'bg-secondary', className = '', ...props
     <button type="button" className={`ui-btn select-none ${variant ? `ui-btn--${variant}` : ''} ${className}`} {...props}>
       {children}
     </button>
+  );
+}
+
+// «Δραματική στιγμή»: η TV σκοτεινιάζει και δείχνει μια ανακοίνωση με ήχο σασπένς.
+function DramaButton({ onSend }) {
+  const [open, setOpen] = useState(false);
+  const [text, setText] = useState('');
+  return (
+    <>
+      <button type="button" className="ui-btn" onClick={() => setOpen(true)}>🎭 Δραματική στιγμή</button>
+      {open && (
+        <div className="fixed inset-0 z-[80] flex items-end justify-center bg-black/80 p-3 sm:items-center" onClick={() => setOpen(false)}>
+          <Card className="w-full max-w-md space-y-3" onClick={(e) => e.stopPropagation()}>
+            <div className="ui-title" style={{ fontSize: 22 }}>🎭 Δραματική στιγμή</div>
+            <div className="ui-subtitle" style={{ fontSize: 14 }}>Η TV σκοτεινιάζει και δείχνει την ανακοίνωσή σου για 15″.</div>
+            <Input value={text} maxLength={120} autoFocus onChange={(e) => setText(e.target.value)} placeholder="π.χ. Κάποια ανάμεσά σας λέει ψέματα…" />
+            <Button variant="primary" block disabled={!text.trim()} onClick={() => { onSend(text.trim()); setText(''); setOpen(false); }}>Στην TV τώρα</Button>
+            <Button variant="ghost" block onClick={() => setOpen(false)}>Άκυρο</Button>
+          </Card>
+        </div>
+      )}
+    </>
   );
 }

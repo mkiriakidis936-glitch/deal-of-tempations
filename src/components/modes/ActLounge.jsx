@@ -8,6 +8,7 @@ import { SQUARE_TYPES,
 } from '@/data/modes/loungeContent';
 
 import * as E from '@/lib/boardEngine';
+import ShowControls from '@/components/modes/ShowControls';
 import { LOUNGE_RULES } from '@/data/modes/loungeContent';
 import { customModeById, isCustomMode, rulesFromCustom } from '@/lib/customModes';
 
@@ -104,7 +105,7 @@ export default function ActLounge({ ctx, state, onFinish }) {
       return;
     }
     if (action.type === 'lounge_mission_done' && lg.mission?.pid === action.playerId) {
-      save({ mission: null, stats: withStat(action.playerId, (s) => ({ loot: s.loot + 1000 })) }, `🩴 ${nameOf(action.playerId)} ολοκλήρωσε το Slipper Snatch · +1.000€`);
+      commit({ ...E.bump(lg, action.playerId, { missions: 1 }), mission: null, stats: withStat(action.playerId, (s) => ({ loot: s.loot + 1000 })) }, `🩴 ${nameOf(action.playerId)} ολοκλήρωσε το Slipper Snatch · +1.000€`);
       setMg({ playerAction: null });
     }
   }, [mg.playerAction?.at]);  
@@ -118,6 +119,7 @@ export default function ActLounge({ ctx, state, onFinish }) {
 
   return (
     <div className="space-y-3">
+      <ShowControls state={state} lg={lg} players={players} RULES={RULES} commit={commit} log={log} nameOf={nameOf} />
       <Panel>
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
           {RULES.phases.map((p, i) => (
@@ -207,7 +209,7 @@ export default function ActLounge({ ctx, state, onFinish }) {
         <Panel accent="#E8C26B"><div className="text-center"><div className="font-heading text-xl">{lg.verdict.title} · {nameOf(lg.verdict.pid)}</div><p className="text-sm">{lg.verdict.text}</p></div></Panel>
       )}
 
-      {lg.tickle && <TicklePanel key={lg.tickle.at} tickle={lg.tickle} name={nameOf(lg.tickle.pid)} onDone={(ok) => save({ tickle: null, ...(ok ? {} : { stats: withStat(lg.tickle.pid, (s) => ({ footwear: Math.max(0, s.footwear - 1), stars: Math.min(5, s.stars + 1) })) }) }, `🪶 ${nameOf(lg.tickle.pid)}: ${ok ? 'άντεξε σιωπηλά!' : 'γέλασε — +1⭐ −1 κάλτσα'}`)} />}
+      {lg.tickle && <TicklePanel key={lg.tickle.at} tickle={lg.tickle} name={nameOf(lg.tickle.pid)} onDone={(ok) => save({ tickle: null, tally: E.bump(lg, lg.tickle.pid, ok ? { ticklesHeld: 1 } : { ticklesLost: 1 }).tally, ...(ok ? {} : { stats: withStat(lg.tickle.pid, (s) => ({ footwear: Math.max(0, s.footwear - 1), stars: Math.min(5, s.stars + 1) })) }) }, `🪶 ${nameOf(lg.tickle.pid)}: ${ok ? 'άντεξε σιωπηλά!' : 'γέλασε — +1⭐ −1 κάλτσα'}`)} />}
 
       {lg.finale && (
         <Panel title={`👑 ${LOUNGE_FINALE.title}`} accent="#E8C26B">

@@ -3,6 +3,7 @@ import GameCard from '@/components/shared/GameCard';
 import { SQUARE_TYPES, restraintFor, LOUNGE_FINALE } from '@/data/modes/loungeContent';
 import { stars, rulesForGame } from '@/components/modes/ActLounge';
 import { Card, Button, ButtonRow, Stats, Badge, Input } from '@/design/ui';
+import ShowMobile from '@/components/modes/ShowMobile';
 
 const money = (n) => `${Math.round(Number(n) || 0).toLocaleString('el-GR')}€`;
 
@@ -24,6 +25,7 @@ export default function LoungeMobile({ state, me, sendAction, updateState }) {
   const board = rulesForGame(state.mode, lg).board;
   const footwear = `${'🩴'.repeat(Math.min(2, s.footwear))}${'🧦'.repeat(Math.max(0, s.footwear - 2))}` || '🦶';
 
+  if (lg.ceremony) return <ShowMobile state={state} me={me} updateState={updateState} />;
   if (lg.queen || mg.loungeQueen) {
     const queen = lg.queen || mg.loungeQueen;
     return (
@@ -90,6 +92,8 @@ export default function LoungeMobile({ state, me, sendAction, updateState }) {
       )}
 
       {lg.tickle && <Card tone="danger" className="text-center">{lg.tickle.pid === me.id ? '🪶 Παγίδα Γέλιου: μη γελάσεις δυνατά!' : `🪶 Παγίδα Γέλιου για ${nameOf(lg.tickle.pid)}`}</Card>}
+
+      <ShowMobile state={state} me={me} updateState={updateState} />
 
       {lg.finale && (
         <Card tone="gold" className="space-y-3">

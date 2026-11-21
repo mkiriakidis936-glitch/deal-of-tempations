@@ -66,3 +66,11 @@ test('server: σφάλμα βάσης ή μη χειρισμένο promise δε�
   assert.match(read('server/db.js'), /pool\.on\('error'/);
   assert.match(read('server/index.js'), /unhandledRejection/);
 });
+
+test('realtime: χρησιμοποιημένο εισιτήριο admin δεν γίνεται σιωπηλά ανώνυμη σύνδεση', () => {
+  const server = read('server/entities.js');
+  assert.match(server, /if \(req\.query\.ticket && !admin\) return res\.status\(401\)/);
+  const client = read('src/api/base44Client.js');
+  assert.match(client, /\[401, 403\]\.includes\(error\?\.status\)/);
+  assert.match(client, /event: ping|addEventListener\('ping'/);
+});

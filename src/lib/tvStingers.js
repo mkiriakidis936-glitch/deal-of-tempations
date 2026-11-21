@@ -1,6 +1,6 @@
 // Ποιο τηλεοπτικό «stinger» πρέπει να παίξει, συγκρίνοντας την προηγούμενη με την τωρινή κατάσταση του ταμπλό.
 // Καθαρή συνάρτηση (χωρίς browser), ώστε να ελέγχεται με tests.
-export const STINGERS = ['dice', 'loot', 'card', 'market', 'arrest', 'truth', 'lie', 'alert', 'tickle', 'finale', 'winner', 'crown', 'round'];
+export const STINGERS = ['dice', 'loot', 'card', 'market', 'arrest', 'truth', 'lie', 'alert', 'tickle', 'finale', 'winner', 'crown', 'round', 'golden', 'confess', 'weather', 'dossier', 'news', 'drama'];
 
 export function tvStingers(prev = {}, next = {}) {
   const out = [];
@@ -22,5 +22,12 @@ export function tvStingers(prev = {}, next = {}) {
   if (changed((s) => s.finale?.winner)) out.push('winner');
   if (changed((s) => s.queen)) out.push('crown');
   if (changed((s) => s.round) && prev.round != null) out.push('round');
+  if (changed((s) => s.golden?.at)) out.push('golden');
+  if (changed((s) => s.onAir?.at)) out.push('confess');
+  if (changed((s) => s.weatherAt)) out.push('weather');
+  if (changed((s) => s.dossierQ?.id)) out.push('dossier');
+  if (changed((s) => s.dossierQ?.revealed) && next.dossierQ?.revealed) out.push('winner');
+  if (changed((s) => s.news?.[0]?.key || s.news?.[0]?.id)) out.push('news');
+  if (changed((s) => s.ceremony?.at)) out.push(next.ceremony?.revealed ? 'winner' : 'card');
   return out;
 }

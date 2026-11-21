@@ -180,6 +180,12 @@ export const tvSfx = {
   winner() { chord([523, 659, 784], 0.3, 'triangle', 0.1); chord([587, 740, 880], 0.3, 'triangle', 0.1, 0.25); chord([659, 831, 988, 1319], 1.1, 'triangle', 0.1, 0.5); },
   crown() { [523, 659, 784, 1047].forEach((f, i) => tone(f, 0.35, 'triangle', 0.11, i * 0.16)); chord([523, 659, 784, 1047], 1.6, 'triangle', 0.09, 0.7); },
   round() { tone(440, 0.15, 'triangle', 0.1); tone(660, 0.3, 'triangle', 0.1, 0.15); },
+  golden() { [1047, 1319, 1568, 2093].forEach((f, i) => tone(f, 0.5, 'sine', 0.08, i * 0.09)); sweep(400, 1600, 0.8, 'triangle', 0.05, 0.1); },
+  confess() { tone(330, 0.9, 'sine', 0.12); tone(415, 0.9, 'sine', 0.08, 0.3); },
+  weather() { [523, 659, 784, 659].forEach((f, i) => tone(f, 0.18, 'triangle', 0.1, i * 0.18)); },
+  dossier() { tone(196, 0.5, 'sawtooth', 0.06); tone(233, 0.5, 'sawtooth', 0.06, 0.5); tone(185, 0.9, 'sawtooth', 0.06, 1); },
+  news() { [0, 0.12, 0.24].forEach((w) => tone(1568, 0.08, 'square', 0.05, w)); tone(784, 0.4, 'triangle', 0.1, 0.4); },
+  drama() { tone(55, 2.2, 'sine', 0.3); sweep(110, 220, 2, 'sawtooth', 0.04); tone(880, 0.6, 'sine', 0.05, 1.8); },
 };
 
 export const sfx = {

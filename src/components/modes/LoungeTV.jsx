@@ -1,10 +1,12 @@
 import React, { useEffect, useRef } from 'react';
 import { tvStingers } from '@/lib/tvStingers';
+import { tallyVotes } from '@/lib/boardEngine';
 import { tvSfx } from '@/lib/modeKit';
 import GameCard from '@/components/shared/GameCard';
 import { SQUARE_TYPES, LOUNGE_FINALE, restraintFor, TICKLE_TOOLS } from '@/data/modes/loungeContent';
 import { stars, rulesForGame } from '@/components/modes/ActLounge';
 import { TvScreen, TvBar, TvLeaderboard } from '@/design/ui';
+import { GoldenBand, VoteBar, DossierCard, OnAirTakeover, WeatherTakeover, CeremonyTakeover, newsTicker } from '@/components/modes/ShowTV';
 
 const PARAMS = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : new URLSearchParams();
 const IS_PREVIEW = PARAMS.get('preview') === '1';
@@ -39,7 +41,7 @@ export default function LoungeTV({ state }) {
   const RULES = rulesForGame(state.mode, lg);
   const phase = RULES.phases[Math.min(lg.phase || 0, RULES.phases.length - 1)];
 
-  if (lg.queen || mg.loungeQueen) {
+  if ((lg.queen || mg.loungeQueen) && !lg.ceremony) {
     const queen = nameOf(lg.queen || mg.loungeQueen);
     return (
       <TvScreen className="min-h-[70vh] items-center justify-center text-center">
@@ -63,7 +65,7 @@ export default function LoungeTV({ state }) {
       : roll
         ? { kicker: `🎲 ${nameOf(roll.pid)}`, title: String(roll.d), sub: `${SQUARE_TYPES[roll.square]?.icon} ${SQUARE_TYPES[roll.square]?.name} — ${SQUARE_TYPES[roll.square]?.text}`, color: SQUARE_TYPES[roll.square]?.color || '#E8C26B' }
         : null;
-  const ticker = (mg.log || []).slice(0, 6).map((entry) => entry.text);
+  const ticker = [...newsTicker(lg, nameOf), ...(mg.log || []).slice(0, 6).map((entry) => entry.text)].slice(0, 8);
   const clock = new Date(now).toLocaleTimeString('el-GR', { hour: '2-digit', minute: '2-digit' });
 
   return (
@@ -74,6 +76,10 @@ export default function LoungeTV({ state }) {
         right={<><span className="ui-tv-num ui-tv-text">{clock}</span><span className="ui-tv-pill">ΛΕΙΑ {money(totalLoot)}</span></>}
       />
 
+      <GoldenBand lg={lg} now={now} />
+      <OnAirTakeover lg={lg} now={now} />
+      <WeatherTakeover lg={lg} players={players} now={now} startedAt={state.gameStartedAt} />
+      <CeremonyTakeover lg={lg} />
       {breaking && (
         <div className="ui-tv-takeover" style={{ borderTop: `12px solid ${breaking.color}`, borderBottom: `12px solid ${breaking.color}` }}>
           <div className="ui-tv-live" style={{ background: breaking.color, color: '#000' }}>{breaking.kicker}</div>
@@ -130,6 +136,7 @@ export default function LoungeTV({ state }) {
         </div>
 
         <div className="space-y-3">
+          <DossierCard lg={lg} nameOf={nameOf} />
           {lg.card && <GameCard variant="tv" kicker={lg.card.market ? 'Μαύρη Αγορά' : 'Κάρτα Εντάλματος'} corner={nameOf(lg.card.pid)} icon={lg.card.market ? '🕶️' : '📜'} image={lg.card.image} title={lg.card.title} text={lg.card.text} footLeft={lg.card.secs ? `⏱ ${lg.card.secs}″` : ''} />}
           {lg.interro && (
             <div className="ui-card ui-card--danger space-y-3 text-center">
@@ -137,6 +144,7 @@ export default function LoungeTV({ state }) {
               <div className="ui-tv-text">{nameOf(lg.interro.pid)} — {restraintFor(stats[lg.interro.pid]?.stars).name}</div>
               <div className="ui-tv-title">{lg.interro.questions[lg.interro.idx]}</div>
               <div className="ui-tv-muted">Shot or Truth · οι υπόλοιπες ψηφίζουν κρυφά στο κινητό</div>
+              <VoteBar tally={state.loungeTally?.[`${lg.interro.id}:${lg.interro.idx}`] || tallyVotes(state.loungeVotes, `${lg.interro.id}:${lg.interro.idx}`)} />
             </div>
           )}
           {lg.tickle && (

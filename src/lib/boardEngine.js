@@ -30,6 +30,18 @@ export function createBoard(players, def, { rng = Math.random, now = Date.now() 
 
 export const statOf = (lg, def, pid) => ({ ...defaultStats(def), ...(lg.stats?.[pid] || {}) });
 
+// Στατιστικά βραδιάς ανά παίκτρια (για βραβεία, highlights, δελτίο, ρεκόρ). Μόνο αθροίσματα.
+export const tallyOf = (lg, pid) => ({ ...(lg.tally?.[pid] || {}) });
+export function bump(lg, pid, delta) {
+  if (!pid) return lg;
+  const current = tallyOf(lg, pid);
+  for (const [key, value] of Object.entries(delta)) {
+    if (key === 'lootPeak') current.lootPeak = Math.max(current.lootPeak || 0, value);
+    else current[key] = (current[key] || 0) + value;
+  }
+  return { ...lg, tally: { ...(lg.tally || {}), [pid]: current } };
+}
+
 export function updateStat(lg, def, pid, change) {
   const current = statOf(lg, def, pid);
   const patch = typeof change === 'function' ? change(current) : change;
@@ -37,8 +49,19 @@ export function updateStat(lg, def, pid, change) {
   next.stars = clamp(next.stars, def.minStars ?? 1, def.maxStars ?? 5);
   next.footwear = clamp(next.footwear, 0, def.footwearMax ?? 4);
   next.loot = Math.max(0, Math.round(next.loot));
-  return { ...lg, stats: { ...(lg.stats || {}), [pid]: next } };
+  const lootDiff = next.loot - current.loot;
+  const starDiff = next.stars - current.stars;
+  const footDiff = next.footwear - current.footwear;
+  const delta = { lootPeak: next.loot };
+  if (lootDiff > 0) delta.lootIn = lootDiff;
+  if (lootDiff < 0) delta.lootOut = -lootDiff;
+  if (starDiff > 0) delta.starsUp = starDiff;
+  if (footDiff < 0) delta.footLost = -footDiff;
+  return bump({ ...lg, stats: { ...(lg.stats || {}), [pid]: next } }, pid, delta);
 }
+
+// Χρυσό λεπτό: όσο είναι ενεργό, κάθε κέρδος λείας από τετράγωνα/κάρτες μετράει διπλό.
+export const isGolden = (lg, now = Date.now()) => !!(lg.golden && now < lg.golden.until);
 
 export const currentPlayer = (lg, players) => (players.length ? players[(lg.turn || 0) % players.length] : null);
 export const isBusy = (lg) => !!(lg.card || lg.interro || lg.tickle || lg.finale);
@@ -53,6 +76,8 @@ export function drawCard(lg, def, pid, { rng = Math.random, now = Date.now() } =
 }
 
 export function startInterrogation(lg, def, pid, { rng = Math.random, now = Date.now() } = {}) {
+  lg = bump(lg, pid, { arrests: 1 });
+  if (!lg.firstArrest) lg = { ...lg, firstArrest: { pid, at: now } };
   return { ...lg, interro: { id: `i${now.toString(36)}`, at: now, pid, idx: 0, questions: shuffleWith(rng, def.questions).slice(0, 3), answers: {} } };
 }
 
@@ -78,7 +103,9 @@ export function applyRoll(lg, players, def, { d, rng = Math.random, now = Date.n
   const to = (from + dice) % size;
   const type = def.board[to];
   const effect = def.squares[type]?.effect || {};
-  let next = { ...lg, pos: { ...(lg.pos || {}), [player.id]: to }, lastRoll: { pid: player.id, d: dice, square: type, at: now }, turn: ((lg.turn || 0) + 1) % players.length };
+  let next = { ...lg, pos: { ...(lg.pos || {}), [player.id]: to }, lastRoll: { pid: player.id, d: dice, square: type, at: now, golden: isGolden(lg, now) }, turn: ((lg.turn || 0) + 1) % players.length };
+  next = bump(next, player.id, { rolls: 1, ...(dice === 6 ? { sixes: 1 } : {}), ...(dice === 1 ? { ones: 1 } : {}) });
+  const golden = isGolden(lg, now) ? 2 : 1;
   if (from + dice >= size && def.passStartBonus) next = updateStat(next, def, player.id, (s) => ({ loot: s.loot + def.passStartBonus }));
 
   const immune = statOf(next, def, player.id).immune;
@@ -86,7 +113,10 @@ export function applyRoll(lg, players, def, { d, rng = Math.random, now = Date.n
     next = updateStat(next, def, player.id, { immune: false });
     return { lounge: next, event: { pid: player.id, d: dice, square: type, immuneUsed: true } };
   }
-  if (effect.loot) next = updateStat(next, def, player.id, (s) => ({ loot: s.loot + effect.loot }));
+  if (effect.loot) {
+    next = updateStat(next, def, player.id, (s) => ({ loot: s.loot + effect.loot * golden }));
+    if (golden > 1) next = bump(next, player.id, { goldenLoot: effect.loot });
+  }
   if (effect.stars) next = updateStat(next, def, player.id, (s) => ({ stars: s.stars + effect.stars }));
   if (effect.footwear) next = updateStat(next, def, player.id, (s) => ({ footwear: s.footwear + effect.footwear }));
   if (effect.immune) next = updateStat(next, def, player.id, { immune: true });
@@ -103,16 +133,17 @@ export function resolveCard(lg, def, ok) {
   if (!card) return lg;
   const reward = def.cardReward || { loot: 1000 };
   const penalty = def.cardPenalty || { stars: 1, footwear: -1 };
+  const golden = isGolden(lg) ? 2 : 1;
   const next = ok
-    ? updateStat(lg, def, card.pid, (s) => ({ loot: s.loot + (reward.loot || 0) }))
-    : updateStat(lg, def, card.pid, (s) => ({ stars: s.stars + (penalty.stars || 0), footwear: s.footwear + (penalty.footwear || 0) }));
+    ? bump(updateStat(lg, def, card.pid, (s) => ({ loot: s.loot + (reward.loot || 0) * golden })), card.pid, { cardsDone: 1 })
+    : bump(updateStat(lg, def, card.pid, (s) => ({ stars: s.stars + (penalty.stars || 0), footwear: s.footwear + (penalty.footwear || 0) })), card.pid, { cardsRefused: 1 });
   return { ...next, card: null };
 }
 
 export function payBribe(lg, def) {
   const card = lg.card;
   if (!card) return lg;
-  return { ...updateStat(lg, def, card.pid, (s) => ({ loot: Math.floor(s.loot / 2), immune: true })), card: null };
+  return { ...bump(updateStat(lg, def, card.pid, (s) => ({ loot: Math.floor(s.loot / 2), immune: true })), card.pid, { bribes: 1 }), card: null };
 }
 
 export function tallyVotes(votes, key) {
@@ -135,6 +166,7 @@ export function answerInterrogation(lg, def, answer, { now = Date.now() } = {}) 
   const it = lg.interro;
   if (!it || !['truth', 'lie'].includes(answer)) return { lounge: lg, verdict: null };
   const answers = { ...it.answers, [it.idx]: answer };
+  lg = bump(lg, it.pid, answer === 'truth' ? { truths: 1 } : { lies: 1 });
   if (it.idx < 2) return { lounge: { ...lg, interro: { ...it, idx: it.idx + 1, answers } }, verdict: null };
   const key = verdictFor(answers);
   const verdict = { key, pid: it.pid, ...(def.verdicts?.[key] || {}), at: now };
