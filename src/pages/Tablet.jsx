@@ -53,6 +53,8 @@ const BlackmailMarket = React.lazy(() => import('@/components/tablet/BlackmailMa
 const NightDirectorHost = React.lazy(() => import('@/components/night/NightDirectorHost'));
 import { DockItem } from '@/design/ui';
 import LiveCameraControl from '@/components/tablet/LiveCameraControl';
+import ConnectionHealth from '@/components/tablet/ConnectionHealth';
+import ConnectionBanner from '@/components/shared/ConnectionBanner';
 import { useSyncTimerAutoFire } from '@/hooks/useSyncTimerAutoFire';
 import { calculateMostWanted, getWantedLevel } from '@/lib/gameLogic';
 import { base44 } from '@/api/base44Client';
@@ -382,6 +384,8 @@ export default function Tablet() {
           <a href={`/tv?code=${encodeURIComponent(session.sessionCode)}&view=scores`} target="_blank" rel="noreferrer" className="ui-btn" title="Δεύτερη οθόνη: μεγάλη κατάταξη">🖥️ 2η οθόνη ↗</a>
         </DockItem>
         <LiveCameraControl sessionCode={session.sessionCode} camera={state?.camera} updateState={trackedUpdate} />
+        <ConnectionHealth sessionCode={session.sessionCode} players={state?.players || []} />
+        <ConnectionBanner />
         <DockItem order={5} fallbackClassName="fixed bottom-24 right-3 z-[65]">
           <button type="button" onClick={() => setOverlay('controlroom')} className="ui-btn ui-btn--primary">🎛️ Κέντρο ελέγχου</button>
         </DockItem>

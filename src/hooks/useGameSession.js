@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
+import { isRetryableError, setPendingWrites } from '@/lib/connectionStatus';
 
 export function useGameSession({ autoLoad = true } = {}) {
   const [session, setSession] = useState(null);
@@ -14,6 +15,58 @@ export function useGameSession({ autoLoad = true } = {}) {
   const refreshRef = useRef(null);
   const viewerRef = useRef(null);
   viewerRef.current = viewerPlayerId;
+  // Ουρά αλλαγών που δεν στάλθηκαν (έπεσε το WiFi / επανεκκίνηση server). Στέλνονται με τη σειρά μόλις γίνει δυνατό.
+  const queueRef = useRef([]);
+  const flushingRef = useRef(false);
+  const retryTimerRef = useRef(null);
+
+  const applyServer = useCallback((updated, targetSessionId) => {
+    if (updated?.state && sessionRef.current?.id === targetSessionId) {
+      sessionRef.current = updated;
+      stateRef.current = updated.state;
+      setSession(updated);
+      setState(updated.state);
+    }
+  }, []);
+
+  const flushQueue = useCallback(async () => {
+    if (flushingRef.current) return;
+    flushingRef.current = true;
+    if (retryTimerRef.current) { clearTimeout(retryTimerRef.current); retryTimerRef.current = null; }
+    try {
+      while (queueRef.current.length) {
+        const item = queueRef.current[0];
+        try {
+          const updated = await base44.entities.GameSession.update(item.targetSessionId, item.payload);
+          queueRef.current.shift();
+          setPendingWrites(queueRef.current.length);
+          if (!queueRef.current.length) applyServer(updated, item.targetSessionId);
+        } catch (e) {
+          if (isRetryableError(e)) {
+            retryTimerRef.current = setTimeout(() => { retryTimerRef.current = null; flushQueue(); }, 3000);
+            return;
+          }
+          // Η αλλαγή απορρίφθηκε οριστικά (π.χ. δεν ισχύει πια): πετιέται, συνεχίζουμε με τις επόμενες.
+          queueRef.current.shift();
+          setPendingWrites(queueRef.current.length);
+          console.error('Queued update rejected', e);
+        }
+      }
+    } finally {
+      flushingRef.current = false;
+    }
+  }, [applyServer]);
+
+  useEffect(() => {
+    const retry = () => { if (queueRef.current.length) flushQueue(); };
+    window.addEventListener('online', retry);
+    document.addEventListener('visibilitychange', retry);
+    return () => {
+      window.removeEventListener('online', retry);
+      document.removeEventListener('visibilitychange', retry);
+      if (retryTimerRef.current) clearTimeout(retryTimerRef.current);
+    };
+  }, [flushQueue]);
 
   useEffect(() => {
     if (!autoLoad) { setLoading(false); return; }
@@ -72,15 +125,25 @@ export function useGameSession({ autoLoad = true } = {}) {
       payload.sessionCode = targetSessionCode;
       payload.playerId = playerId;
     }
+    // Αν υπάρχουν ήδη αλλαγές σε αναμονή, η νέα μπαίνει πίσω τους (ώστε να μείνει η σωστή σειρά).
+    if (queueRef.current.length) {
+      queueRef.current.push({ targetSessionId, payload });
+      setPendingWrites(queueRef.current.length);
+      flushQueue();
+      return true;
+    }
     try {
       const updated = await base44.entities.GameSession.update(targetSessionId, payload);
-      if (updated?.state && sessionRef.current?.id === targetSessionId) {
-        sessionRef.current = updated;
-        stateRef.current = updated.state;
-        setSession(updated);
-        setState(updated.state);
-      }
+      applyServer(updated, targetSessionId);
     } catch (e) {
+      if (isRetryableError(e)) {
+        // Χωρίς σύνδεση: κρατάμε την αλλαγή στην οθόνη και τη στέλνουμε μόλις επανέλθει το δίκτυο.
+        queueRef.current.push({ targetSessionId, payload });
+        setPendingWrites(queueRef.current.length);
+        retryTimerRef.current = retryTimerRef.current || setTimeout(() => { retryTimerRef.current = null; flushQueue(); }, 2000);
+        console.warn('Update queued until the connection returns', e?.message);
+        return true;
+      }
       if (sessionRef.current?.id === targetSessionId) {
         stateRef.current = sessionRef.current?.state || previousState || {};
         setState(stateRef.current);
@@ -88,7 +151,7 @@ export function useGameSession({ autoLoad = true } = {}) {
       console.error('Failed to update state; local state was reverted', e);
       return false;
     }
-  }, []);
+  }, [applyServer, flushQueue]);
 
   const createSession = useCallback(async (sessionData) => {
     const operation = ++operationRef.current;

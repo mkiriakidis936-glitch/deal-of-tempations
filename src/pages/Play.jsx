@@ -11,6 +11,7 @@ import { getActiveSessionCode, subscribeActiveSession } from '@/lib/activeSessio
 import ComicPanel from '@/components/comic/ComicPanel';
 import PlayerCard from '@/components/shared/PlayerCard';
 import SessionJoin from '@/components/shared/SessionJoin';
+import ConnectionBanner from '@/components/shared/ConnectionBanner';
 import { Page, Header, Card, Button, List, Row, Badge } from '@/design/ui';
 import DecibelMeter from '@/components/comic/DecibelMeter';
 import MobileMiniGame from '@/components/play/MobileMiniGame';
@@ -173,6 +174,7 @@ function PlayInner() {
   if (isNewMode(state.mode) && myPlayer) {
     return (
       <>
+      <ConnectionBanner />
       <ModeMobile
         state={state}
         me={myPlayer}
@@ -193,6 +195,7 @@ function PlayInner() {
   if (state.mode === 'pajama' && myPlayer) {
     return (
       <>
+      <ConnectionBanner />
       <PajamaMobile
         pj={state.pajama || {}}
         players={state.players || []}
@@ -232,6 +235,7 @@ function PlayInner() {
 
   return (
     <div className="ui-page" style={{ paddingBottom: 32 }}>
+      <ConnectionBanner />
       {state.stopActive && <div className="fixed inset-0 z-[100] bg-destructive/85 flex items-center justify-center text-center pointer-events-auto"><div className="font-heading text-5xl text-white">⏸ ΣΤΟΠ</div></div>}
       <div className="max-w-md mx-auto space-y-3">
         <div className="sticky top-0 z-20 -mx-4 px-4 py-2" style={{ background: 'var(--ui-bg)' }}>
