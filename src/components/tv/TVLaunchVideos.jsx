@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 export default function TVLaunchVideos({ sessionCode, welcomeSrc, countdownSrc, countdownStartedAt }) {
   const [active, setActive] = useState('idle');
@@ -36,14 +36,30 @@ export default function TVLaunchVideos({ sessionCode, welcomeSrc, countdownSrc, 
   };
 
   const src = active === 'welcome' ? welcomeSrc : active === 'countdown' ? countdownSrc : '';
+  const videoRef = useRef(null);
+  const finishRef = useRef(finish);
+  finishRef.current = finish;
+
+  // Ξεκινά με ήχο· αν ο browser το μπλοκάρει, παίζει σε σίγαση. Αν δεν ξεκινήσει σε 12″, κλείνει μόνο του για να μην κολλήσει η TV.
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!src || !video) return undefined;
+    let started = false;
+    const onPlaying = () => { started = true; };
+    video.addEventListener('playing', onPlaying);
+    video.play().catch(() => { video.muted = true; video.play().catch(() => {}); });
+    const guard = setTimeout(() => { if (!started) finishRef.current(); }, 12000);
+    return () => { clearTimeout(guard); video.removeEventListener('playing', onPlaying); };
+  }, [src, active]);
+
   if (!src) return null;
 
   return (
     <div className="fixed inset-0 z-[95] flex items-center justify-center bg-black" onClick={finish}>
       <video
         key={active + src}
+        ref={videoRef}
         src={src}
-        autoPlay
         playsInline
         controls
         preload="auto"

@@ -14,7 +14,9 @@ export async function validateContent(file, ext) {
       case '.gif': return ascii(0, 3) === 'GIF';
       case '.webp': return ascii(0, 4) === 'RIFF' && ascii(8, 12) === 'WEBP';
       case '.avif': return ascii(4, 8) === 'ftyp';
-      case '.mp4': case '.mov': case '.m4a': return ascii(4, 8) === 'ftyp';
+      // MP4/MOV του iPhone ξεκινούν με ftyp· παλαιότερα QuickTime με wide/moov/mdat/free.
+      case '.mp4': case '.m4v': case '.m4a': return ascii(4, 8) === 'ftyp';
+      case '.mov': return ['ftyp', 'moov', 'wide', 'mdat', 'free', 'skip', 'pnot'].includes(ascii(4, 8));
       case '.webm': return b[0] === 0x1a && b[1] === 0x45 && b[2] === 0xdf && b[3] === 0xa3;
       case '.ogg': return ascii(0, 4) === 'OggS';
       case '.wav': return ascii(0, 4) === 'RIFF' && ascii(8, 12) === 'WAVE';

@@ -23,7 +23,7 @@ const KEEP = { auto: 14, manual: 20, 'pre-restore': 5 };
 const MEDIA_KEEP = 3;
 const MEDIA_MAX_TOTAL = 2 * 1024 * 1024 * 1024;
 const MEDIA_MAX_FILE = 300 * 1024 * 1024;
-const mediaNameIsSafe = (name) => /^[A-Za-z0-9._-]+\.(jpg|jpeg|png|webp|gif|avif|mp4|webm|mov)$/i.test(name);
+const mediaNameIsSafe = (name) => /^[A-Za-z0-9._-]+\.(jpg|jpeg|png|webp|gif|avif|svg|mp4|m4v|webm|mov|mp3|wav|ogg|m4a|aac)$/i.test(name);
 const writeText = (buffer, value, offset, length) => buffer.write(String(value), offset, length, 'utf8');
 const writeOctal = (buffer, value, offset, length) => buffer.write(String(Math.max(0, value).toString(8).padStart(length - 1, '0')) + '\0', offset, length, 'ascii');
 

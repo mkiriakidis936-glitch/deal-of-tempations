@@ -1,7 +1,7 @@
 import React from 'react';
 
 // slot = id του σημείου στο brandArt/FILM (χρησιμοποιείται από την «Αλλαγή φωτογραφιών» στις σελίδες)
-export default function VideoFilm({ src, poster, className = '', slot }) {
+export default function VideoFilm({ src, poster, className = '', slot, onError }) {
   return (
     <video
       className={className}
@@ -13,6 +13,8 @@ export default function VideoFilm({ src, poster, className = '', slot }) {
       loop
       playsInline
       preload="metadata"
+      disablePictureInPicture
+      onError={onError}
     />
   );
 }

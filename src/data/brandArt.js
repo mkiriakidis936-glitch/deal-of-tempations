@@ -1,3 +1,4 @@
+import { isVideoUrl } from '@/lib/mediaKind';
 import { PHOTO_SPOT_IDS, MODE_COVER_SLOTS } from '@/data/mediaSlots';
 import { MEDIA_MODES } from '@/data/modes/modeRegistry';
 
@@ -93,7 +94,7 @@ export function applyMediaOverrides(o = {}) {
   for (const key of Object.keys(MEDIA_FOCAL_POINTS)) delete MEDIA_FOCAL_POINTS[key];
   Object.assign(MEDIA_FOCAL_POINTS, o.libraryFocalPoints && typeof o.libraryFocalPoints === 'object' ? o.libraryFocalPoints : {});
   const str = (v) => (typeof v === 'string' && v ? v : null);
-  const isVideo = (v) => /\.(mp4|webm|mov)(?:[?#]|$)/i.test(v || '');
+  const isVideo = isVideoUrl;
   const clearPhotos = !!(o.clearAllPhotos || o.clearAllMedia);
   const emptySlots = Array.isArray(o.emptySlots) ? o.emptySlots : [];
 

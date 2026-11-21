@@ -9,9 +9,9 @@ import { useGameSession } from '@/hooks/useGameSession';
 import { request } from '@/api/base44Client';
 import { getActiveSessionCode, subscribeActiveSession } from '@/lib/activeSession';
 import ComicPanel from '@/components/comic/ComicPanel';
-import ComicButton from '@/components/comic/ComicButton';
 import PlayerCard from '@/components/shared/PlayerCard';
 import SessionJoin from '@/components/shared/SessionJoin';
+import { Page, Header, Card, Button, List, Row, Badge } from '@/design/ui';
 import DecibelMeter from '@/components/comic/DecibelMeter';
 import MobileMiniGame from '@/components/play/MobileMiniGame';
 import QRScanner from '@/components/play/QRScanner';
@@ -128,20 +128,22 @@ function PlayInner() {
 
   if (loading) {
     return (
-      <div className="min-h-screen comic-dots flex items-center justify-center">
-        <div className="font-heading text-3xl comic-pulse text-primary">ΦΟΡΤΩΣΗ...</div>
-      </div>
+      <Page center>
+        <div className="flex flex-col items-center gap-4">
+          <img src="/icons/icon-192.png" alt="" className="h-20 w-20 rounded-[22px]" />
+          <div className="ui-subtitle">Σύνδεση…</div>
+        </div>
+      </Page>
     );
   }
 
   if ((!session || !state) && endedCode) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center gap-5 p-6 text-center">
-        <img src="/icons/icon-192.png" alt="" className="h-20 w-20 rounded-[22px]" />
-        <div className="font-heading text-3xl text-primary">Το παιχνίδι ολοκληρώθηκε</div>
-        <p className="max-w-xs text-sm text-foreground/70">Ευχαριστούμε που έπαιξες! Τα αποτελέσματα φαίνονται στην κεντρική οθόνη.</p>
-        <button type="button" onClick={() => { setEndedCode(''); getActiveSessionCode().then((code) => { if (code && code !== endedCode) joinByCode(code); }); }} className="rounded-full bg-primary px-6 py-3 font-bold text-primary-foreground">Σύνδεση σε νέο παιχνίδι</button>
-      </div>
+      <Page center>
+        <div className="flex justify-center"><img src="/icons/icon-192.png" alt="" className="h-20 w-20 rounded-[22px]" /></div>
+        <Header eyebrow="Τέλος βραδιάς" title="Το παιχνίδι ολοκληρώθηκε" gold subtitle="Ευχαριστούμε που έπαιξες! Τα αποτελέσματα φαίνονται στην κεντρική οθόνη." />
+        <Button variant="primary" block onClick={() => { setEndedCode(''); getActiveSessionCode().then((code) => { if (code && code !== endedCode) joinByCode(code); }); }}>Σύνδεση σε νέο παιχνίδι</Button>
+      </Page>
     );
   }
 
@@ -210,49 +212,34 @@ function PlayInner() {
 
   if (!selectedPlayerId) {
     return (
-      <div className="min-h-screen comic-dots p-3">
-        <div className="max-w-md mx-auto space-y-4">
-          <ComicPanel className="bg-primary text-center py-3">
-            <div className="font-heading text-2xl text-tarot-dark">📱 DEAL OF TEMPTATION</div>
-            <div className="text-xs font-bold text-tarot-dark/80">Κωδικός: {session.sessionCode}</div>
-          </ComicPanel>
-          <ComicPanel className="bg-card">
-            <div className="font-heading text-xl mb-3 text-center text-primary">ΠΟΙΑ ΕΙΣΑΙ;</div>
-            <div className="grid grid-cols-2 gap-3">
-              {state.players?.map((p) => (
-                <button
-                  key={p.id}
-                  onClick={() => selectPlayer(p.id)}
-                  className="comic-panel-sm p-4 flex flex-col items-center gap-2 bg-secondary hover:bg-primary/20 transition-colors"
-                >
-                  <div
-                    className="w-14 h-14 rounded-full border-2 border-border flex items-center justify-center font-heading text-2xl text-white"
-                    style={{ backgroundColor: getPlayerColor(p.id) }}
-                  >
-                    {p.name?.charAt(0)?.toUpperCase()}
-                  </div>
-                  <span className="font-heading text-lg text-foreground">{p.name}</span>
-                </button>
-              ))}
-            </div>
-          </ComicPanel>
-        </div>
-      </div>
+      <Page>
+        <Header eyebrow="Deal of Temptation" title="Ποια είσαι;" subtitle="Διάλεξε το όνομά σου για να μπεις στο παιχνίδι." right={<Badge tone="gold">{session.sessionCode}</Badge>} />
+        <List>
+          {state.players?.map((p) => (
+            <Row
+              key={p.id}
+              onClick={() => selectPlayer(p.id)}
+              left={<span className="ui-avatar" style={{ width: 40, height: 40, fontSize: 17, background: getPlayerColor(p.id), color: '#fff' }}>{p.name?.charAt(0)?.toUpperCase()}</span>}
+              title={p.name}
+              value="›"
+            />
+          ))}
+        </List>
+        {!state.players?.length && <Card><div className="ui-subtitle text-center">Δεν έχουν προστεθεί ακόμα παίκτριες.</div></Card>}
+      </Page>
     );
   }
 
   return (
-    <div className="min-h-screen comic-dots p-3 pb-8">
+    <div className="ui-page" style={{ paddingBottom: 32 }}>
       {state.stopActive && <div className="fixed inset-0 z-[100] bg-destructive/85 flex items-center justify-center text-center pointer-events-auto"><div className="font-heading text-5xl text-white">⏸ ΣΤΟΠ</div></div>}
       <div className="max-w-md mx-auto space-y-3">
-        <div className="sticky top-0 z-20 -mx-3 px-3 py-2 comic-dots border-b-2 border-border">
+        <div className="sticky top-0 z-20 -mx-4 px-4 py-2" style={{ background: 'var(--ui-bg)' }}>
           <ComicPanel className="bg-card">
             <PlayerCard player={myPlayer} showRole compact />
           </ComicPanel>
           {isMyTurn && (
-            <div className="bg-destructive text-foreground text-center font-heading text-lg comic-pulse mt-1 rounded-lg border-2 border-border">
-              🔴 ΣΕΙΡΑ ΣΟΥ!
-            </div>
+            <Button variant="primary" block className="mt-2" style={{ pointerEvents: 'none' }}>🔴 Σειρά σου!</Button>
           )}
         </div>
 
@@ -415,9 +402,9 @@ function PlayInner() {
           </>
         )}
 
-        <ComicButton variant="white" size="sm" onClick={() => { setSelectedPlayerId(null); if (session?.sessionCode) { localStorage.removeItem(`dot_player_${session.sessionCode}`); joinByCode(session.sessionCode); } }} className="w-full">
-          🔄 ΑΛΛΑΓΗ ΠΑΙΚΤΡΙΑΣ
-        </ComicButton>
+        <List>
+          <Row left="🔄" title="Αλλαγή παίκτριας" value="›" onClick={() => { setSelectedPlayerId(null); if (session?.sessionCode) { localStorage.removeItem(`dot_player_${session.sessionCode}`); joinByCode(session.sessionCode); } }} />
+        </List>
       </div>
     </div>
   );

@@ -21,7 +21,8 @@ export default function SoundUnlock({ variant = 'pill' }) {
     <button
       type="button"
       onClick={unlockAudio}
-      className="fixed left-1/2 top-3 z-[300] -translate-x-1/2 rounded-full border border-[#E8C26B]/50 bg-[#1C1C1E] px-4 py-2 text-sm font-semibold text-white"
+      style={{ bottom: "calc(env(safe-area-inset-bottom, 0px) + 150px)" }}
+      className="fixed right-4 z-[300] rounded-full border border-[#E8C26B]/50 bg-[#1C1C1E] px-4 py-2 text-sm font-semibold text-white"
     >
       🔊 Πάτα για ήχο
     </button>

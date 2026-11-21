@@ -2,11 +2,12 @@ import React, { useRef, useState } from 'react';
 import { MEDIA_MODES, MODE_MEDIA_SECTIONS } from '@/data/modes/modeRegistry';
 import { MODE_COVERS } from '@/data/brandArt';
 import { uploadMedia } from '@/lib/media';
+import { IMAGE_ACCEPT, VIDEO_ACCEPT } from '@/lib/mediaKind';
 
 const emptyMode = { hero: '', cover: '', sections: [], gallery: [], cards: [], trailer: '' };
 const inputClass = 'rounded-lg border border-border bg-background px-3 py-2 text-sm';
-const imageAccept = '.jpg,.jpeg,.png,.webp,.gif,.avif,.svg,.heic';
-const videoAccept = '.mp4,.webm,.mov';
+const imageAccept = IMAGE_ACCEPT;
+const videoAccept = VIDEO_ACCEPT;
 
 function Thumb({ src, video = false, className = '' }) {
   if (!src) return <div className={`flex items-center justify-center rounded-lg bg-black/30 text-xs text-foreground/45 ${className}`}>Χωρίς αρχείο</div>;

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import ComicPanel from '@/components/comic/ComicPanel';
+import { Page, Header, Card, Badge } from '@/design/ui';
 
 const HINTS = [
   'Το τραπέζι στρώνεται. Κανείς δεν ξέρει τι κρατάει ο διπλανός.',
@@ -21,25 +21,13 @@ export default function WaitingRoom({ sessionCode }) {
   }, []);
 
   return (
-    <div className="min-h-screen comic-dots flex items-center justify-center p-4">
-      <div className="text-center space-y-4 max-w-md w-full">
-        <ComicPanel className="bg-primary text-center py-6">
-          <div className="font-heading text-3xl text-tarot-dark">DEAL OF TEMPTATION</div>
-          <div className="text-sm font-bold text-tarot-dark/80 mt-1">Κωδικός: {sessionCode}</div>
-        </ComicPanel>
-
-        <div className="text-6xl comic-pulse">⏳</div>
-        <div className="font-heading text-2xl text-primary">Αναμονή έναρξης...</div>
-
-        <ComicPanel className="bg-card comic-pop">
-          <div className="text-xs font-bold tracking-widest text-primary mb-2">ΨΙΘΥΡΟΣ</div>
-          <p key={index} className="font-body text-lg text-foreground/80 comic-slide-in min-h-[72px] flex items-center justify-center">
-            «{HINTS[index]}»
-          </p>
-        </ComicPanel>
-
-        <div className="text-xs text-foreground/50 font-body">Η σύνδεση κρατιέται — μείνε σε αυτή τη σελίδα.</div>
-      </div>
-    </div>
+    <Page center>
+      <div className="flex justify-center"><img src="/icons/icon-192.png" alt="" className="h-20 w-20 rounded-[22px]" /></div>
+      <Header eyebrow="Deal of Temptation" title="Αναμονή έναρξης" subtitle="Η σύνδεση κρατιέται — μείνε σε αυτή τη σελίδα." right={<Badge tone="gold">{sessionCode}</Badge>} />
+      <Card tone="gold">
+        <div className="ui-eyebrow mb-2" style={{ color: 'var(--ui-gold)' }}>Ψίθυρος</div>
+        <p className="min-h-[72px] text-[17px] leading-snug">«{HINTS[index]}»</p>
+      </Card>
+    </Page>
   );
 }

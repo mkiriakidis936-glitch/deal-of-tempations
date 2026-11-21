@@ -30,3 +30,14 @@ test('SVG: δέχεται καθαρό, απορρίπτει script / on* / fore
   assert.equal(await validateContent(write('s2.svg', '<svg onload="x()" xmlns="http://www.w3.org/2000/svg"></svg>'), '.svg'), false);
   assert.equal(await validateContent(write('s3.svg', `${head}<foreignObject></foreignObject></svg>`), '.svg'), false);
 });
+
+test('βίντεο iPhone: MOV με παλιά κεφαλίδα QuickTime και M4V γίνονται δεκτά', async () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'dt-media-'));
+  const atom = (type) => Buffer.concat([Buffer.from([0, 0, 0, 8]), Buffer.from(type, 'latin1'), Buffer.alloc(24)]);
+  const file = (name, buf) => { const p = path.join(dir, name); fs.writeFileSync(p, buf); return p; };
+  assert.equal(await validateContent(file('w.mov', atom('wide')), '.mov'), true);
+  assert.equal(await validateContent(file('m.mov', atom('moov')), '.mov'), true);
+  assert.equal(await validateContent(file('v.m4v', atom('ftyp')), '.m4v'), true);
+  assert.equal(await validateContent(file('x.mov', Buffer.from('not a video at all, really not')), '.mov'), false);
+  assert.equal(await validateContent(file('y.mp4', atom('wide')), '.mp4'), false);
+});

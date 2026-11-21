@@ -19,7 +19,7 @@ const MAX_MB = Number(process.env.MAX_UPLOAD_MB) || 300;
 const MAX_BYTES = MAX_MB * 1024 * 1024;
 const KINDS = {
   '.jpg': 'image', '.jpeg': 'image', '.png': 'image', '.webp': 'image', '.gif': 'image', '.avif': 'image', '.svg': 'graphic',
-  '.mp4': 'video', '.webm': 'video', '.mov': 'video',
+  '.mp4': 'video', '.m4v': 'video', '.webm': 'video', '.mov': 'video',
   '.mp3': 'audio', '.wav': 'audio', '.ogg': 'audio', '.m4a': 'audio', '.aac': 'audio',
 };
 fs.mkdirSync(UPLOAD_DIR, { recursive: true });
@@ -40,6 +40,8 @@ export const mediaStatic = [
     immutable: true,
     setHeaders: (res, file) => {
       res.setHeader('X-Content-Type-Options', 'nosniff');
+      // MOV/M4V του iPhone είναι ίδιο format με το MP4· ως video/mp4 παίζουν και σε Chrome, Android και Smart TV.
+      if (/\.(mov|m4v)$/i.test(file)) res.setHeader('Content-Type', 'video/mp4');
       if (/\.svg$/i.test(file)) res.setHeader('Content-Security-Policy', "default-src 'none'; style-src 'unsafe-inline'; img-src data:; sandbox");
       if (path.basename(file).startsWith('published-')) res.setHeader('Cache-Control', 'no-store, max-age=0');
     },
@@ -98,7 +100,7 @@ export function mediaRoutes() {
     const original = path.basename(String(req.query.name || ''));
     const ext = path.extname(original).toLowerCase();
     const kind = KINDS[ext];
-    if (!kind) return res.status(415).json({ error: 'Μη υποστηριζόμενος τύπος. Επιτρέπονται: JPG, PNG, WEBP, GIF, AVIF, SVG, MP4, WEBM, MOV, MP3, WAV, OGG, M4A, AAC.' });
+    if (!kind) return res.status(415).json({ error: 'Μη υποστηριζόμενος τύπος. Επιτρέπονται: JPG, PNG, WEBP, GIF, AVIF, SVG, MP4, M4V, WEBM, MOV, MP3, WAV, OGG, M4A, AAC.' });
     if (Number(req.headers['content-length'] || 0) > MAX_BYTES) return res.status(413).json({ error: `Το αρχείο ξεπερνά τα ${MAX_MB}MB.` });
 
     const name = `${Date.now().toString(36)}-${crypto.randomBytes(3).toString('hex')}-${slugOf(path.basename(original, ext))}${ext}`;
@@ -220,6 +222,7 @@ export function mediaRoutes() {
     if (!fs.existsSync(file) || !kindOf(name)) return res.status(404).json({ error: 'Το αρχείο δεν βρέθηκε.' });
     res.setHeader('Cache-Control', 'private, no-store');
     res.setHeader('X-Content-Type-Options', 'nosniff');
+    if (/\.(mov|m4v)$/i.test(name)) res.type('video/mp4');
     return res.sendFile(file);
   });
 

@@ -1,4 +1,5 @@
 import React from 'react';
+import MediaSpot from '@/components/shared/MediaSpot';
 
 export default function GameCard({
   title,
@@ -23,11 +24,11 @@ export default function GameCard({
           <span className="truncate">{kicker || 'Deal of Temptation'}</span>
           {corner && <span>{corner}</span>}
         </header>
-        {image ? (
-          <div className="dt-card__media"><img src={image} alt="" loading="lazy" decoding="async" /></div>
-        ) : (
-          <div className="dt-card__emblem" aria-hidden="true">{icon || '🗝️'}</div>
-        )}
+        <MediaSpot
+          src={image}
+          wrapClassName="dt-card__media"
+          fallback={<div className="dt-card__emblem" aria-hidden="true">{icon || '🗝️'}</div>}
+        />
         <div className="dt-card__body">
           {title && <h3 className="dt-card__title">{title}</h3>}
           {text && <p className="dt-card__text">{text}</p>}

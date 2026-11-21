@@ -101,8 +101,13 @@ export default function TVProductionOutput({ sessionCode }) {
         acknowledge(targetCue, 'ready');
         return;
       }
+      // Αν ο browser της TV μπλοκάρει τον ήχο, το βίντεο παίζει σε σίγαση αντί να μείνει παγωμένο.
       media.play().catch((err) => {
-        acknowledge(targetCue, 'error', err?.message || 'Ο browser απέρριψε την αναπαραγωγή.');
+        if (err?.name !== 'NotAllowedError') { acknowledge(targetCue, 'error', err?.message || 'Ο browser απέρριψε την αναπαραγωγή.'); return; }
+        media.muted = true;
+        media.play()
+          .then(() => acknowledge(targetCue, 'playing', 'Παίζει σε σίγαση — πάτα μία φορά στην TV για ήχο.'))
+          .catch((retryError) => acknowledge(targetCue, 'error', retryError?.message || 'Ο browser απέρριψε την αναπαραγωγή.'));
       });
     }
   }, [cue, acknowledge]);

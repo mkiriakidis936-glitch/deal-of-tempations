@@ -1,0 +1,138 @@
+/* DEAL OF TEMPTATION — Design System (iOS 27 · μαύρο & χρυσό · χωρίς εφέ)
+   Ένα σύνολο tokens και έτοιμων κομματιών για όλες τις οθόνες. Τα κομμάτια ζουν στο src/design/ui.jsx. */
+
+:root {
+  /* Επιφάνειες */
+  --ui-bg: #000000;
+  --ui-surface: #1C1C1E;
+  --ui-surface-2: #2C2C2E;
+  --ui-surface-3: #3A3A3C;
+  --ui-separator: rgba(84, 84, 88, 0.6);
+
+  /* Κείμενο */
+  --ui-text: #F5F1E8;
+  --ui-text-2: rgba(235, 235, 245, 0.66);
+  --ui-text-3: rgba(235, 235, 245, 0.42);
+
+  /* Χρώματα */
+  --ui-gold: #E8C26B;
+  --ui-gold-hi: #F7E3A8;
+  --ui-gold-soft: rgba(232, 194, 107, 0.14);
+  --ui-red: #FF453A;
+  --ui-red-soft: rgba(255, 69, 58, 0.14);
+  --ui-green: #30D158;
+  --ui-green-soft: rgba(48, 209, 88, 0.14);
+
+  /* Σχήματα & ρυθμός */
+  --ui-radius-sm: 12px;
+  --ui-radius: 18px;
+  --ui-radius-lg: 26px;
+  --ui-gap: 12px;
+  --ui-pad: 16px;
+  --ui-tap: 50px;
+
+  /* Τυπογραφία */
+  --ui-font: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Inter', 'Segoe UI', system-ui, sans-serif;
+  --ui-font-display: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', system-ui, sans-serif;
+  --ui-mono: ui-monospace, 'SF Mono', Menlo, monospace;
+}
+
+/* ---------- Σελίδα ---------- */
+.ui-page {
+  min-height: 100dvh;
+  background: var(--ui-bg);
+  color: var(--ui-text);
+  font-family: var(--ui-font);
+  padding: calc(env(safe-area-inset-top, 0px) + 12px) 16px calc(env(safe-area-inset-bottom, 0px) + 140px);
+}
+.ui-page--center { display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.ui-stack { display: flex; flex-direction: column; gap: var(--ui-gap); width: 100%; max-width: 460px; margin-inline: auto; }
+
+/* ---------- Τίτλοι ---------- */
+.ui-eyebrow { font-size: 12px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ui-text-2); }
+.ui-title { font-family: var(--ui-font-display); font-size: 30px; line-height: 1.12; font-weight: 700; letter-spacing: -0.02em; color: var(--ui-text); }
+.ui-title--gold { color: var(--ui-gold-hi); }
+.ui-subtitle { font-size: 15px; line-height: 1.4; color: var(--ui-text-2); }
+.ui-section-title { padding: 0 4px; font-size: 13px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: var(--ui-text-2); }
+
+/* ---------- Κάρτα / πάνελ ---------- */
+.ui-card {
+  background: var(--ui-surface);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--ui-radius-lg);
+  padding: var(--ui-pad);
+  color: var(--ui-text);
+}
+.ui-card--gold { border-color: rgba(232, 194, 107, 0.55); background: #17140C; }
+.ui-card--danger { border-color: rgba(255, 69, 58, 0.6); background: #1A0B0A; }
+.ui-card--flush { padding: 0; overflow: hidden; }
+
+/* ---------- Κουμπιά ---------- */
+.ui-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  min-height: var(--ui-tap); padding: 0 20px; border-radius: 999px; border: 0;
+  font-family: var(--ui-font); font-size: 17px; font-weight: 600; letter-spacing: -0.01em;
+  background: var(--ui-surface-2); color: var(--ui-text); cursor: pointer;
+  -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+}
+.ui-btn:disabled { opacity: 0.38; cursor: default; }
+.ui-btn:active:not(:disabled) { opacity: 0.72; }
+.ui-btn--primary { background: var(--ui-gold); color: #000; }
+.ui-btn--danger { background: var(--ui-red); color: #fff; }
+.ui-btn--success { background: var(--ui-green); color: #000; }
+.ui-btn--ghost { background: transparent; color: var(--ui-gold); }
+.ui-btn--block { width: 100%; }
+.ui-btn--xl { min-height: 72px; font-size: 22px; font-weight: 800; border-radius: var(--ui-radius-lg); }
+.ui-btn-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(0, 1fr)); gap: 10px; }
+
+/* ---------- Λίστα (iOS grouped) ---------- */
+.ui-list { background: var(--ui-surface); border-radius: var(--ui-radius); overflow: hidden; }
+.ui-row {
+  display: flex; align-items: center; gap: 12px; min-height: 52px; padding: 10px 16px;
+  border-bottom: 0.5px solid var(--ui-separator); color: var(--ui-text); text-align: left; width: 100%; background: transparent;
+}
+.ui-row:last-child { border-bottom: 0; }
+.ui-row__title { flex: 1; min-width: 0; font-size: 17px; }
+.ui-row__value { font-size: 17px; color: var(--ui-text-2); font-variant-numeric: tabular-nums; }
+.ui-row--button { cursor: pointer; }
+.ui-row--button:active { background: var(--ui-surface-2); }
+
+/* ---------- Στατιστικά ---------- */
+.ui-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(0, 1fr)); gap: 10px; }
+.ui-stat { background: var(--ui-surface); border-radius: var(--ui-radius); padding: 12px 14px; }
+.ui-stat__label { font-size: 12px; font-weight: 600; color: var(--ui-text-2); text-transform: uppercase; letter-spacing: 0.04em; }
+.ui-stat__value { margin-top: 2px; font-family: var(--ui-font-display); font-size: 24px; font-weight: 700; color: var(--ui-text); font-variant-numeric: tabular-nums; }
+.ui-stat__value--gold { color: var(--ui-gold); }
+.ui-stat__value--sm { font-size: 17px; line-height: 30px; white-space: nowrap; overflow: hidden; text-overflow: clip; }
+
+/* ---------- Ετικέτες ---------- */
+.ui-badge { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 999px; font-size: 13px; font-weight: 600; background: var(--ui-surface-2); color: var(--ui-text); }
+.ui-badge--gold { background: var(--ui-gold-soft); color: var(--ui-gold); }
+.ui-badge--red { background: var(--ui-red-soft); color: var(--ui-red); }
+.ui-badge--green { background: var(--ui-green-soft); color: var(--ui-green); }
+
+/* ---------- Πεδία ---------- */
+.ui-input {
+  width: 100%; min-height: var(--ui-tap); padding: 0 16px; border-radius: var(--ui-radius-sm);
+  border: 1px solid rgba(255, 255, 255, 0.12); background: var(--ui-surface-2); color: var(--ui-text);
+  font-family: var(--ui-font); font-size: 17px; outline: none;
+}
+.ui-input:focus { border-color: var(--ui-gold); }
+.ui-input--code { text-align: center; font-family: var(--ui-mono); font-size: 30px; letter-spacing: 0.35em; text-transform: uppercase; }
+
+/* ---------- Avatar ---------- */
+.ui-avatar { display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; background: var(--ui-gold-soft); color: var(--ui-gold); font-weight: 700; flex: none; }
+
+/* ---------- Σταθερή μπάρα ασφαλείας (κάτω) ---------- */
+.ui-safety-bar {
+  position: fixed; inset-inline: 0; bottom: 0; z-index: 70;
+  padding: 10px 16px calc(env(safe-area-inset-bottom, 0px) + 10px);
+  background: #000; border-top: 0.5px solid var(--ui-separator);
+  display: flex; flex-direction: column; gap: 8px; align-items: stretch;
+}
+.ui-safety-bar__word { text-align: center; font-size: 13px; color: var(--ui-text-2); }
+.ui-safety-bar__word b { color: var(--ui-red); }
+
+/* ---------- Χρονόμετρο ---------- */
+.ui-timer { font-family: var(--ui-mono); font-variant-numeric: tabular-nums; font-weight: 700; color: var(--ui-gold-hi); }
+.ui-timer--danger { color: var(--ui-red); }

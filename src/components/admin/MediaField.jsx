@@ -1,7 +1,9 @@
 import React, { useRef, useState } from 'react';
 import { uploadMedia } from '@/lib/media';
+import { IMAGE_ACCEPT, mediaKindOf } from '@/lib/mediaKind';
+import MediaSpot from '@/components/shared/MediaSpot';
 
-export default function MediaField({ value, onChange, accept = 'image/*' }) {
+export default function MediaField({ value, onChange, accept = IMAGE_ACCEPT }) {
   const input = useRef(null);
   const [progress, setProgress] = useState(null);
   const [error, setError] = useState('');
@@ -24,8 +26,9 @@ export default function MediaField({ value, onChange, accept = 'image/*' }) {
 
   return (
     <div className="flex items-center gap-3 rounded-lg border border-border p-2">
-      <div className="h-16 w-12 shrink-0 overflow-hidden rounded-md bg-black">
-        {value ? <img src={value} alt="" className="h-full w-full object-cover" /> : <div className="flex h-full items-center justify-center text-[10px] text-foreground/40">—</div>}
+      <div className="relative h-16 w-12 shrink-0 overflow-hidden rounded-md bg-black">
+        <MediaSpot src={value} controls={false} className="h-full w-full object-cover" fallback={<div className="flex h-full items-center justify-center text-[10px] text-foreground/40">{value ? '⚠️' : '—'}</div>} />
+        {mediaKindOf(value) === 'video' && <span className="absolute bottom-0.5 right-0.5 rounded bg-black/80 px-1 text-[9px] text-white">▶</span>}
       </div>
       <div className="min-w-0 flex-1 space-y-1">
         <div className="flex flex-wrap gap-2">

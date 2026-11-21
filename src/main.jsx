@@ -1,6 +1,7 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import '@/app.css'
+import '@/design/ui.css'
 import '@/lib/push' // πιάνει νωρίς το «Εγκατάσταση εφαρμογής» του browser
 import { loadMedia, subscribeMediaRefresh } from '@/lib/media'
 import { loadCustomModes } from '@/lib/customModes'

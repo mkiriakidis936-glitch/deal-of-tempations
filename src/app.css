@@ -2643,7 +2643,7 @@ button:active:not(:disabled), a:active, [role="button"]:active { opacity: .72; }
   color: var(--dt-card-accent, var(--flat-gold));
 }
 .dt-card__media { flex: 0 0 auto; height: 170px; margin: 0 14px; border-radius: 12px; overflow: hidden; background: #000; }
-.dt-card__media img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.dt-card__media img, .dt-card__media video { width: 100%; height: 100%; object-fit: cover; display: block; }
 .dt-card__emblem {
   flex: 0 0 auto; margin: 4px auto 6px; width: 64px; height: 64px; border-radius: 50%;
   display: flex; align-items: center; justify-content: center; font-size: 30px;

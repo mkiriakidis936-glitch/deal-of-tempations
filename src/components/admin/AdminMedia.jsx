@@ -10,8 +10,7 @@ import GameMediaLibraries from '@/components/admin/GameMediaLibraries';
 import AdminMediaPreview from '@/components/admin/AdminMediaPreview';
 import { MEDIA_KEY, fetchOverrides, uploadMedia, listMedia, deleteMedia, deleteAllMedia } from '@/lib/media';
 
-const MEDIA_ACCEPT = 'image/*,video/*,audio/*,.jpg,.jpeg,.png,.webp,.gif,.avif,.heic,.svg,.mp4,.webm,.mov,.mp3,.wav,.ogg,.m4a,.aac';
-const isVideoFile = (url) => /\.(mp4|webm|mov)(?:[?#]|$)/i.test(url || '');
+import { MEDIA_ACCEPT, VIDEO_ACCEPT, isVideoUrl as isVideoFile } from '@/lib/mediaKind';
 const containsUrl = (value, url) => typeof value === 'string'
   ? value === url
   : Array.isArray(value)
@@ -497,7 +496,7 @@ export default function AdminMedia() {
                 {src ? <Thumb src={src} video className="w-full aspect-video rounded" /> : <div className="w-full aspect-video rounded bg-black/40 flex items-center justify-center text-xs text-foreground/50">Δεν έχει ανέβει βίντεο</div>}
                 <div className="flex flex-wrap gap-2">
                   <select aria-label={`Βίντεο για ${slot.label}`} value="" disabled={!!busy} onChange={(e) => { if (e.target.value) assignMediaToSlot(e.target.value, slot.id); }} className="w-full rounded-lg border border-border bg-background px-2 py-2 text-xs"><option value="">Σύνδεση βίντεο από κεντρική βιβλιοθήκη…</option>{library.filter((file) => file.kind === 'video').map((file) => <option key={file.url} value={file.url}>{file.name}</option>)}</select>
-                  {directUploadControl(`video-slot-${slot.id}`, 'video/mp4,video/webm,video/quicktime,.mp4,.webm,.mov', (url, ov) => ({ ...ov, [slot.id]: url }))}
+                  {directUploadControl(`video-slot-${slot.id}`, VIDEO_ACCEPT, (url, ov) => ({ ...ov, [slot.id]: url }))}
                   {src && <ComicButton size="sm" variant="dark" disabled={!!busy} onClick={() => run(slot.id, () => save({ ...ov, [slot.id]: undefined }), 'Το βίντεο αφαιρέθηκε ✓')}>🗑 Αφαίρεση</ComicButton>}
                 </div>
                 <Progress id={slot.id} />
@@ -584,7 +583,7 @@ export default function AdminMedia() {
               )}
             </div>
             <Progress id={g.id} />
-            {!requiredCount && directUploadControl(`gallery-${g.id}`, video ? 'video/mp4,video/webm,video/quicktime,.mp4,.webm,.mov' : 'image/*', (url, base) => ({ ...base, [g.id]: [...(Array.isArray(base[g.id]) ? base[g.id] : listOf(g.id)), url] }), video ? 'Ανέβασμα βίντεο εδώ' : 'Ανέβασμα εικόνας εδώ')}
+            {!requiredCount && directUploadControl(`gallery-${g.id}`, video ? VIDEO_ACCEPT : 'image/*', (url, base) => ({ ...base, [g.id]: [...(Array.isArray(base[g.id]) ? base[g.id] : listOf(g.id)), url] }), video ? 'Ανέβασμα βίντεο εδώ' : 'Ανέβασμα εικόνας εδώ')}
             {requiredCount ? (
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
                 {Array.from({ length: requiredCount }, (_, index) => {
