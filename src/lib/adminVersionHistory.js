@@ -6,6 +6,7 @@ export const VERSIONED_SETTINGS = [
   { key: 'admin_form_questions', label: 'Ερωτήσεις φορμών' },
   { key: 'admin_custom_scenarios', label: 'Σενάρια παιχνιδιού' },
   { key: 'achievement_definitions', label: 'Επιτεύγματα' },
+  { key: 'custom_board_modes', label: 'Δικά σου modes (κατασκευαστής)' },
 ];
 
 const LIMIT = 30;

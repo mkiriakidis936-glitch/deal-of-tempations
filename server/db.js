@@ -13,6 +13,11 @@ export const pool = new Pool({
   ssl: /railway\.internal|localhost|127\.0\.0\.1/.test(process.env.DATABASE_URL) ? false : { rejectUnauthorized: false },
 });
 
+// Ένα σφάλμα σε αδρανή σύνδεση (επανεκκίνηση βάσης, πρόβλημα δικτύου) δεν πρέπει να ρίχνει όλο τον server.
+pool.on('error', (error) => {
+  console.error('[db] σφάλμα σύνδεσης βάσης — ο server συνεχίζει:', error.message);
+});
+
 export const query = (text, params) => pool.query(text, params);
 
 // Runs on every boot; all statements are idempotent.

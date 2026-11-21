@@ -1,7 +1,7 @@
 import React from 'react';
 import GameCard from '@/components/shared/GameCard';
-import { LOUNGE_BOARD, SQUARE_TYPES, LOUNGE_PHASES, LOUNGE_FINALE, restraintFor, TICKLE_TOOLS } from '@/data/modes/loungeContent';
-import { stars } from '@/components/modes/ActLounge';
+import { SQUARE_TYPES, LOUNGE_FINALE, restraintFor, TICKLE_TOOLS } from '@/data/modes/loungeContent';
+import { stars, rulesForGame } from '@/components/modes/ActLounge';
 
 const money = (n) => `${Math.round(Number(n) || 0).toLocaleString('el-GR')}€`;
 
@@ -15,7 +15,8 @@ export default function LoungeTV({ state }) {
   const cur = players.length ? players[(lg.turn || 0) % players.length] : null;
   const totalLoot = players.reduce((sum, p) => sum + (stats[p.id]?.loot || 0), 0);
   const now = Date.now();
-  const phase = LOUNGE_PHASES[lg.phase || 0];
+  const RULES = rulesForGame(state.mode, lg);
+  const phase = RULES.phases[Math.min(lg.phase || 0, RULES.phases.length - 1)];
 
   if (lg.queen || mg.loungeQueen) {
     const queen = nameOf(lg.queen || mg.loungeQueen);
@@ -48,8 +49,8 @@ export default function LoungeTV({ state }) {
     <div className="relative space-y-4 pb-24 text-white">
       <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-white/10 bg-black px-4 py-3">
         <span className="rounded-md bg-[#FF453A] px-3 py-1 text-sm font-black tracking-[0.2em] text-white">● LIVE</span>
-        <span className="font-display text-2xl tracking-[0.08em] text-[#F7E3A8]">PAJAMA HEIST & ARREST</span>
-        <span className="text-sm text-white/60">Γύρος {lg.round || 1} · Φάση {(lg.phase || 0) + 1}/4 · {phase?.name}</span>
+        <span className="font-display text-2xl tracking-[0.08em] text-[#F7E3A8]">{(RULES.title || 'PAJAMA HEIST & ARREST').toUpperCase()}</span>
+        <span className="text-sm text-white/60">Γύρος {lg.round || 1} · Φάση {(lg.phase || 0) + 1}/{RULES.phases.length} · {phase?.name}</span>
         <span className="ml-auto font-mono text-2xl">{clock}</span>
         <span className="rounded-md border border-[#E8C26B]/50 px-3 py-1 font-mono text-lg text-[#E8C26B]">LOOT {money(totalLoot)}</span>
       </div>
@@ -71,7 +72,7 @@ export default function LoungeTV({ state }) {
       )}
 
       <div className="grid grid-cols-7 gap-2">
-        {LOUNGE_BOARD.map((type, i) => {
+        {RULES.board.map((type, i) => {
           const sq = SQUARE_TYPES[type];
           const here = players.filter((p) => (pos[p.id] || 0) === i);
           const last = lg.lastRoll && (pos[lg.lastRoll.pid] || 0) === i && now - lg.lastRoll.at < 8000;

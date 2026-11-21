@@ -1,7 +1,7 @@
 {
   "name": "deal-of-temptation",
   "private": true,
-  "version": "4.1.0",
+  "version": "4.3.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -10,7 +10,8 @@
     "start": "node server/index.js",
     "lint": "eslint . --quiet",
     "lint:fix": "eslint . --fix",
-    "test": "node --test"
+    "test": "node --test",
+    "test:e2e": "node scripts/e2e-night.mjs"
   },
   "dependencies": {
     "@hello-pangea/dnd": "^17.0.0",

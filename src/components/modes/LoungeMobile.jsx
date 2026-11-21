@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import GameCard from '@/components/shared/GameCard';
-import { SQUARE_TYPES, LOUNGE_BOARD, restraintFor, LOUNGE_FINALE } from '@/data/modes/loungeContent';
-import { stars } from '@/components/modes/ActLounge';
+import { SQUARE_TYPES, restraintFor, LOUNGE_FINALE } from '@/data/modes/loungeContent';
+import { stars, rulesForGame } from '@/components/modes/ActLounge';
 
 const money = (n) => `${Math.round(Number(n) || 0).toLocaleString('el-GR')}€`;
 
@@ -20,6 +20,7 @@ export default function LoungeMobile({ state, me, sendAction, updateState }) {
   const myVote = String(state.loungeVotes?.[me.id] || '');
   const voted = voteKey && myVote.startsWith(`${voteKey}:`);
   const now = Date.now();
+  const board = rulesForGame(state.mode, lg).board;
 
   if (lg.queen || mg.loungeQueen) {
     const queen = lg.queen || mg.loungeQueen;
@@ -40,7 +41,7 @@ export default function LoungeMobile({ state, me, sendAction, updateState }) {
         </div>
         <div className="mt-1 text-sm">{'🩴'.repeat(Math.min(2, s.footwear))}{'🧦'.repeat(Math.max(0, s.footwear - 2))}{s.footwear === 0 ? ' 🦶 Barefoot Target' : ''}{s.immune ? ' · 🛡️ ασυλία' : ''}{s.cuffs !== 'none' ? ' · ⛓️ χειροπέδες' : ''}</div>
         <div className="mt-1 text-xs opacity-70">{lg.chief === me.id ? '👮 Είσαι ο Αστυνόμος αυτού του γύρου — φοράς το κλειδί!' : `Fugitive · Αστυνόμος: ${nameOf(lg.chief)}`}</div>
-        <div className="mt-1 text-xs opacity-60">Δέσιμο επιπέδου: {restraintFor(s.stars).name} · Θέση: {SQUARE_TYPES[LOUNGE_BOARD[lg.pos?.[me.id] || 0]]?.name}</div>
+        <div className="mt-1 text-xs opacity-60">Δέσιμο επιπέδου: {restraintFor(s.stars).name} · Θέση: {SQUARE_TYPES[board[lg.pos?.[me.id] || 0]]?.name}</div>
       </div>
 
       {lg.alert && now < lg.alert.until && <div className="rounded-2xl border-2 border-[#FF453A] p-3 text-center"><b className="text-[#FF453A]">{lg.alert.title}</b><div className="text-sm">{lg.alert.text}</div></div>}

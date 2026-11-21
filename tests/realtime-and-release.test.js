@@ -61,3 +61,8 @@ test('εικονίδια: νέο λογότυπο DT για εφαρμογή, Si
   assert.ok(fs.existsSync(path.join(root, 'public/splash/iphone-17-pro.jpg')));
   assert.ok(fs.existsSync(path.join(root, 'public/manifest-play.webmanifest')));
 });
+
+test('server: σφάλμα βάσης ή μη χειρισμένο promise δεν ρίχνει τον server', () => {
+  assert.match(read('server/db.js'), /pool\.on\('error'/);
+  assert.match(read('server/index.js'), /unhandledRejection/);
+});

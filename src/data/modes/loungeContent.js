@@ -114,17 +114,52 @@ export const LOUNGE_SAFETY = 'SAFETY LOCK ENGAGED: Αναμονή για ομό�
 
 // Ταμπλό 21 τετραγώνων (κυκλικό)
 export const SQUARE_TYPES = {
-  start: { icon: '🏁', name: 'Αφετηρία', color: '#E8C26B', text: 'Πέρασμα από την αφετηρία: +1.000€ Loot.' },
-  loot: { icon: '💰', name: 'Λεία', color: '#F0B85A', text: 'Βρήκες λεία: +2.000€.' },
-  warrant: { icon: '📜', name: 'Ένταλμα', color: '#FF9F0A', text: 'Ένταλμα: τραβάς κάρτα από το deck των 36.' },
-  police: { icon: '🚔', name: 'Αστυνομία', color: '#FF453A', text: 'Συλλαμβάνεσαι: +1 ⭐ και Ανάκριση με 3 αλήθειες.' },
-  safehouse: { icon: '🏠', name: 'Κρησφύγετο', color: '#30D158', text: 'Ασυλία για τον επόμενο γύρο και επιστροφή 1 σαγιονάρας/κάλτσας.' },
-  market: { icon: '🕶️', name: 'Μαύρη Αγορά', color: '#BF5AF2', text: 'Black Bribe: δίνεις 50% του Loot για να περάσει η επόμενη ποινή σου σε άλλη.' },
-  glitch: { icon: '⚡', name: 'Αναταραχή', color: '#64D2FF', text: 'Τυχαίο γεγονός: Distraction Alert, Slipper Snatch ή Τροχός της Κόλασης.' },
-  tickle: { icon: '🪶', name: 'Παγίδα Γέλιου', color: '#FF375F', text: 'Γαργάλημα 45″ με Decibel Meter. Barefoot Target = διπλάσιο.' },
+  start: { icon: '🏁', name: 'Αφετηρία', color: '#E8C26B', text: 'Πέρασμα από την αφετηρία: +1.000€ Loot.', effect: { loot: 1000 } },
+  loot: { icon: '💰', name: 'Λεία', color: '#F0B85A', text: 'Βρήκες λεία: +2.000€.', effect: { loot: 2000 } },
+  warrant: { icon: '📜', name: 'Ένταλμα', color: '#FF9F0A', text: 'Ένταλμα: τραβάς κάρτα από το deck των 36.', effect: { card: true } },
+  police: { icon: '🚔', name: 'Αστυνομία', color: '#FF453A', text: 'Συλλαμβάνεσαι: +1 ⭐ και Ανάκριση με 3 αλήθειες.', effect: { stars: 1, interrogate: true, immunityBlocks: true } },
+  safehouse: { icon: '🏠', name: 'Κρησφύγετο', color: '#30D158', text: 'Ασυλία για τον επόμενο γύρο και επιστροφή 1 σαγιονάρας/κάλτσας.', effect: { immune: true, footwear: 1 } },
+  market: { icon: '🕶️', name: 'Μαύρη Αγορά', color: '#BF5AF2', text: 'Black Bribe: δίνεις 50% του Loot για να περάσει η επόμενη ποινή σου σε άλλη.', effect: { market: true } },
+  glitch: { icon: '⚡', name: 'Αναταραχή', color: '#64D2FF', text: 'Τυχαίο γεγονός: Distraction Alert, Slipper Snatch ή Τροχός της Κόλασης.', effect: { random: true } },
+  tickle: { icon: '🪶', name: 'Παγίδα Γέλιου', color: '#FF375F', text: 'Γαργάλημα 45″ με Decibel Meter. Barefoot Target = διπλάσιο.', effect: { tickle: true, immunityBlocks: true } },
 };
 export const LOUNGE_BOARD = [
   'start', 'loot', 'warrant', 'glitch', 'police', 'loot', 'tickle',
   'warrant', 'market', 'safehouse', 'warrant', 'loot', 'police', 'glitch',
   'tickle', 'warrant', 'loot', 'market', 'police', 'warrant', 'safehouse',
 ];
+
+// Ορισμός για την κοινή παιχνιδομηχανή (src/lib/boardEngine.js)
+export const LOUNGE_RULES = {
+  board: LOUNGE_BOARD,
+  squares: SQUARE_TYPES,
+  cards: LOUNGE_CARDS,
+  questions: INTERROGATION_QUESTIONS,
+  verdicts: LOUNGE_VERDICTS,
+  phases: LOUNGE_PHASES,
+  hellWheel: HELL_WHEEL,
+  startLoot: 5000,
+  startStars: 1,
+  minStars: 1,
+  maxStars: 5,
+  footwearMax: 4,
+  passStartBonus: 1000,
+  tickleSeconds: TICKLE_SECONDS,
+  cardReward: { loot: 1000 },
+  cardPenalty: { stars: 1, footwear: -1 },
+  glitchEvents: ['distraction', 'snatch', 'wheel'],
+  finaleRiddle: [
+    '1ο ψηφίο: ο γύρος που παίζεται τώρα (το τελευταίο ψηφίο)',
+    '2ο ψηφίο: όλα τα Wanted αστέρια μαζί (το τελευταίο ψηφίο)',
+    '3ο ψηφίο: πόσες παίκτριες παίζουν',
+    '4ο ψηφίο: πόσες είναι Barefoot Targets (χωρίς σαγιονάρες/κάλτσες)',
+  ],
+  texts: {
+    distractionTitle: 'DISTRACTION ALERT!',
+    distraction: 'Οι ελεύθερες Fugitives έχουν 20″ να κλέψουν το κλειδί από τον λαιμό του Αστυνόμου!',
+    snatch: 'Έχεις 30″ να βγάλεις αθόρυβα τη μία σαγιονάρα της διπλανής σου!',
+    wheelTitle: 'Ο ΤΡΟΧΟΣ ΤΗΣ ΚΟΛΑΣΗΣ',
+    marketTitle: 'Μαύρη Αγορά · The Black Bribe',
+    market: 'Πλήρωσε 50% του Loot σου στην Τράπεζα για να μεταφέρεις την επόμενη ποινή σου σε συμπαίκτρια — ή προχώρα.',
+  },
+};

@@ -4,9 +4,11 @@ import AdminBoardSquares from '@/components/admin/AdminBoardSquares';
 import AdminCards from '@/components/admin/AdminCards';
 import AdminModes from '@/components/admin/AdminModes';
 import AdminPajama from '@/components/admin/AdminPajama';
+import AdminModeBuilder from '@/components/admin/AdminModeBuilder';
 import { repairSanitizedContent } from '@/lib/repairContent';
 
 const SUB_TABS = [
+  { id: 'builder', label: '🛠️ Κατασκευαστής modes' },
   { id: 'new_modes', label: '✨ Ψηφιακά Modes' },
   { id: 'classic', label: '🎲 Κλασικό' },
   { id: 'marathon', label: '🏆 Marathon' },
@@ -63,6 +65,7 @@ export default function AdminContentHub() {
       {sub === 'cards' && <AdminCards />}
       {sub === 'pajama' && <AdminPajama />}
       {sub === 'new_modes' && <AdminModes />}
+      {sub === 'builder' && <AdminModeBuilder />}
       {sub === 'all' && <AdminContent />}
       {['classic', 'marathon', 'arrest_heist', 'special'].includes(sub) && (
         <AdminContent key={sub} modeFilter={sub} />

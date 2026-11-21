@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client'
 import '@/app.css'
 import '@/lib/push' // πιάνει νωρίς το «Εγκατάσταση εφαρμογής» του browser
 import { loadMedia, subscribeMediaRefresh } from '@/lib/media'
+import { loadCustomModes } from '@/lib/customModes'
 
 // PWA + push: service worker (μόνο στο deploy, όχι στο npm run dev)
 if (import.meta.env.PROD && 'serviceWorker' in navigator) {
@@ -36,7 +37,7 @@ function Root({ App }) {
   return <App key={rev} />;
 }
 
-loadMedia().finally(async () => {
+Promise.allSettled([loadMedia(), Promise.race([loadCustomModes(), new Promise((resolve) => setTimeout(resolve, 4000))])]).finally(async () => {
   let App
   try { ({ default: App } = await appPromise) } catch { reloadForNewBuild(); return }
   ReactDOM.createRoot(document.getElementById('root')).render(<Root App={App} />)

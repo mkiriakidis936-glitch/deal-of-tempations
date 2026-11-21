@@ -135,6 +135,8 @@ server.headersTimeout = 65 * 1000;
 server.keepAliveTimeout = 65 * 1000;
 startAutoBackup();
 
+process.on('unhandledRejection', (error) => console.error('[server] μη χειρισμένο σφάλμα:', error?.message || error));
+
 for (const sig of ['SIGTERM', 'SIGINT']) {
   process.on(sig, () => server.close(() => pool.end().then(() => process.exit(0))));
 }

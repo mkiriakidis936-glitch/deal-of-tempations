@@ -117,3 +117,18 @@ npm run dev                 # frontend στο :5173 (proxy προς το API)
 - Όρισε στο hosting τη μεταβλητή `PUBLIC_URL` (π.χ. `https://dealoftemptation.gr`) ώστε τα προεπισκόπηση-links (WhatsApp/Viber) να δείχνουν σωστή διεύθυνση και εικόνα (`/og-image.jpg`).
 - Δημόσιες σελίδες: `/site`, `/promo`, `/forms`, `/vip/:token`, `/gift-unlock`, `/play`, `/tv`. Τα `/`, `/admin` και οι ιδιωτικές ενότητες ζητούν σύνδεση διαχειριστή.
 - Το `robots.txt` επιτρέπει ευρετηρίαση μόνο σε `/site` και `/promo`.
+
+## Έλεγχοι
+
+```bash
+npm test          # γρήγορα tests (κανόνες, μηχανή ταμπλό, ασφάλεια)
+npm run lint
+```
+
+Τεστ ολόκληρης βραδιάς πάνω σε server που τρέχει (π.χ. τοπικά με `npm run dev:server`):
+
+```bash
+E2E_BASE_URL=http://localhost:3000 E2E_ADMIN_EMAIL=you@example.com E2E_ADMIN_PASSWORD=... npm run test:e2e
+```
+
+Δημιουργεί μόνο δοκιμαστικά δεδομένα με πρόθεμα «E2E» και τα σβήνει στο τέλος.
