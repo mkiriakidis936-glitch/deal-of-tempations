@@ -41,6 +41,31 @@ export default function AdminEventManager() {
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState('');
   const [savingId, setSavingId] = useState('');
+  const [newTitle, setNewTitle] = useState('');
+  const [newType, setNewType] = useState('one_night');
+  const [creating, setCreating] = useState(false);
+
+  async function createEvent() {
+    setCreating(true);
+    setMessage('');
+    try {
+      let roomCode = '';
+      for (let attempt = 0; attempt < 12 && !roomCode; attempt += 1) {
+        const candidate = Array.from({ length: 4 }, () => 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'[Math.floor(Math.random() * 32)]).join('');
+        const { items } = await base44.entities.DotEvent.filter({ room_code: candidate }, { limit: 1 });
+        if (!items?.length) roomCode = candidate;
+      }
+      if (!roomCode) throw new Error('Δεν δημιουργήθηκε μοναδικός κωδικός.');
+      await base44.entities.DotEvent.create({ title: newTitle.trim() || (newType === 'villa_48h' ? '48H VILLA' : 'ONE NIGHT'), type: newType, status: 'prep', phase: 'arrival', room_code: roomCode, notes: '', interestIds: [], expectedCount: 0 });
+      setNewTitle('');
+      setMessage(`Δημιουργήθηκε νέο Event με κωδικό ${roomCode}.`);
+      await loadEvents();
+    } catch (error) {
+      setMessage(error.message || 'Δεν δημιουργήθηκε το Event.');
+    } finally {
+      setCreating(false);
+    }
+  }
 
   async function loadEvents() {
     try {
@@ -84,12 +109,19 @@ export default function AdminEventManager() {
     <div className="space-y-4">
       <ComicPanel className="bg-card space-y-2">
         <h2 className="font-heading text-2xl text-primary">ΔΙΑΧΕΙΡΙΣΗ EVENT</h2>
-        <p className="text-sm text-foreground/70">Το Event είναι οργανωτικό επίπεδο. Η δημιουργία του δεν ξεκινά αυτόματα GameSession.</p>
+        <div className="flex flex-wrap gap-2">
+          <input value={newTitle} onChange={(e) => setNewTitle(e.target.value)} placeholder="Τίτλος (π.χ. Βραδιά Σαββάτου)" className="min-w-0 flex-1 rounded-lg border border-border bg-background px-3 py-2 text-sm" />
+          <select value={newType} onChange={(e) => setNewType(e.target.value)} className="rounded-lg border border-border bg-background px-3 py-2 text-sm">
+            <option value="one_night">ONE NIGHT</option>
+            <option value="villa_48h">48H VILLA</option>
+          </select>
+          <ComicButton size="sm" disabled={creating} onClick={createEvent}>{creating ? 'Δημιουργία…' : '+ ΝΕΟ EVENT'}</ComicButton>
+        </div>
       </ComicPanel>
 
       {message && <ComicPanel className="bg-secondary p-3"><p role="status" className="text-sm">{message}</p></ComicPanel>}
       {loading ? <ComicPanel>Φόρτωση Events…</ComicPanel> : events.length === 0 ? (
-        <ComicPanel className="text-center text-sm text-foreground/60">Δεν υπάρχει ακόμη Event. Δημιούργησε Event από τις δηλώσεις ενδιαφέροντος.</ComicPanel>
+        <ComicPanel className="text-center text-sm text-foreground/60">Δεν υπάρχει ακόμη Event. Πάτα «+ ΝΕΟ EVENT» ή δημιούργησέ το από τις δηλώσεις ενδιαφέροντος.</ComicPanel>
       ) : events.map((event) => {
         const phases = PHASES[event.type] || [];
         const url = `${window.location.origin}/deal/${event.room_code}`;

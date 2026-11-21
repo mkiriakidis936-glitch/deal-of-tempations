@@ -317,7 +317,7 @@ export default function TVScreen() {
         </div>
       </div>
 
-      <TVTicker items={formattedHistory.slice(0, 4)} />
+      {state.mode !== 'marathon_4h' && <TVTicker items={formattedHistory.slice(0, 4)} />}
     </div>
   );
 }

@@ -29,7 +29,8 @@ export default function AdminCustomScenarios() {
     const selectedMode = NEW_MODES.find((mode) => mode.id === editing?.modeId);
     const keys = selectedMode?.acts || [];
     return COLLECTIONS.filter((collection) => {
-      if (editing?.modeId === 'pedi_extended' || editing?.modeId === 'marathon_4h') return /Pedi-Glam|Act 1|Act 2|Act 4|Marathon/i.test(collection.group);
+      if (editing?.modeId === 'pedi_extended') return /Pedi-Glam|Act 1|Act 2|Act 4/i.test(collection.group);
+      if (editing?.modeId === 'marathon_4h') return /Pajama Heist & Arrest/i.test(collection.group);
       if (editing?.modeId === 'lockdown') return /Pajama Lockdown/i.test(collection.group);
       if (editing?.modeId === 'beach_bar') return /Beach Bar/i.test(collection.group);
       return keys.length > 0;

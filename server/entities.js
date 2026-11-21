@@ -10,7 +10,7 @@ export const ENTITIES = [
   'Achievement', 'AppSetting', 'BacheloretteIntake', 'BlackmailVault', 'Chronicle', 'GameContent',
   'DotEvent', 'GameSession', 'GameSessionSnapshot', 'Haunting', 'Interest', 'InvitationRSVP', 'Memorial', 'Participation', 'PajamaContent', 'PajamaIntake',
   'PlayerIntake', 'PlayerPresence', 'PlayerProfile', 'SessionArchive', 'VIPInvitation', 'VIPInvitationSubmission',
-  'PublicFormSubmission', 'ShowProduction', 'ProductionConsent', 'ProductionCue',
+  'PublicFormSubmission', 'VIPAccessSession', 'ShowProduction', 'ProductionConsent', 'ProductionCue',
 ];
 
 // Who may do what. Default for every operation is "public" (the phones/TV
@@ -37,6 +37,7 @@ const rules = {
   Achievement:        { create: ADMIN, update: ADMIN, delete: ADMIN },
   // configuration / content: everybody reads, only admins change
   AppSetting:     { create: ADMIN, update: ADMIN, delete: ADMIN },
+  VIPAccessSession: { read: ADMIN, create: ADMIN, update: ADMIN, delete: ADMIN },
   GameContent:    { create: ADMIN, update: ADMIN, delete: ADMIN },
   PajamaContent:  { create: ADMIN, update: ADMIN, delete: ADMIN },
   // Private game records and player profiles are visible only to administrators.
@@ -117,13 +118,14 @@ export function validatePlayerPatch(current, patch, playerId) {
     'mobileVotes', 'electricChairVotes', 'juryTrial', 'grandJury', 'privateMessages',
     'sealedVotes', 'miniGameVolunteers', 'miniGameVotes', 'miniGameRatings',
     'snitchVotes', 'history', 'timeCapsule', 'lastWish', 'midnightPact',
-    'pajama', 'mg', 'players', 'absoluteInterrogation', 'bailoutAuction',
+    'pajama', 'mg', 'players', 'absoluteInterrogation', 'bailoutAuction', 'loungeVotes',
   ]);
   if (Object.keys(patch).some((key) => !allowed.has(key))) return false;
   const player = (current.players || []).find((item) => item.id === playerId);
   if (!player) return false;
 
-  const ownMaps = ['mobileVotes', 'electricChairVotes', 'miniGameVolunteers', 'miniGameVotes', 'miniGameRatings', 'snitchVotes', 'timeCapsule'];
+  const ownMaps = ['mobileVotes', 'electricChairVotes', 'miniGameVolunteers', 'miniGameVotes', 'miniGameRatings', 'snitchVotes', 'timeCapsule', 'loungeVotes'];
+  if ('loungeVotes' in patch && !/^[A-Za-z0-9_-]{1,40}:[0-9]:(truth|lie)$/.test(String(patch.loungeVotes?.[playerId] || ''))) return false;
   for (const key of ownMaps) {
     if (key in patch && !onlyOwnMapEntryChanged(current[key] || {}, patch[key] || {}, playerId)) return false;
   }
@@ -285,6 +287,7 @@ export function validatePlayerPatch(current, patch, playerId) {
       'board_roll', 'board_route', 'board_complete', 'board_pass',
       'midnight_pass', 'lockdown_exit_code', 'morning_clue', 'morning_code',
       'beach_checkin', 'beach_finale_response', 'beach_freeze_loser', 'beach_wheel_spin', 'beach_wheel_done', 'beach_wheel_again', 'beach_truth_response',
+      'lounge_code', 'lounge_mission_done', 'lounge_roll',
     ]);
     let validAction = Object.keys(next).length === 1 && isObject(action) &&
       action.playerId === playerId && actionTypes.has(action.type) && Number.isFinite(action.at);
@@ -294,6 +297,7 @@ export function validatePlayerPatch(current, patch, playerId) {
     if (validAction && action.type === 'lockdown_exit_code') validAction = /^\d{4}$/.test(String(action.code || ''));
     if (validAction && action.type === 'morning_clue') validAction = Number.isInteger(action.index) && action.index >= 0 && action.index < 4;
     if (validAction && action.type === 'morning_code') validAction = /^\d{4}$/.test(String(action.code || ''));
+    if (validAction && action.type === 'lounge_code') validAction = /^\d{4}$/.test(String(action.code || ''));
     // Consent check-in: κάθε παίκτρια γράφει ΜΟΝΟ τη δική της καταχώρηση, και μόνο πριν ξεκινήσει το παιχνίδι.
     const consentPlayers = next.consent?.players;
     const consentPatch = Object.keys(next).length === 1 && isObject(next.consent) && Object.keys(next.consent).length === 1 &&
@@ -365,6 +369,8 @@ export function sanitizePublicSession(record, playerId = null) {
   };
 
   if ('privateMessages' in state) state.privateMessages = ownMap(state.privateMessages);
+  if ('loungeVotes' in state) state.loungeVotes = countOnlyMap(state.loungeVotes);
+  if (state.mg?.lounge?.finale?.code) state.mg = { ...state.mg, lounge: { ...state.mg.lounge, finale: { ...state.mg.lounge.finale, code: undefined } } };
   if (state.pajama && isObject(state.pajama)) {
     state.pajama = {
       ...state.pajama,
@@ -768,6 +774,71 @@ export function entityRoutes() {
     } finally { client.release(); }
   });
 
+  // VIP Access: κωδικός από VIP_ACCESS_CODE (Railway) ή κρυπτογραφημένος από Admin → Ρυθμίσεις.
+  const vipHash = (value) => crypto.createHash('sha256').update(String(value || '')).digest('hex');
+  const vipFails = new Map();
+  const vipLocked = (ip) => { const b = vipFails.get(ip); return !!b && Date.now() - b.startedAt < 15 * 60_000 && b.count >= 8; };
+  const vipFail = (ip) => {
+    const now = Date.now(); let b = vipFails.get(ip);
+    if (!b || now - b.startedAt >= 15 * 60_000) { b = { startedAt: now, count: 0 }; vipFails.set(ip, b); }
+    b.count += 1;
+  };
+  const expectedVipHash = async () => {
+    if (process.env.VIP_ACCESS_CODE) return vipHash(process.env.VIP_ACCESS_CODE);
+    const { rows } = await query("SELECT value FROM server_secrets WHERE key = 'vip_access_code_hash' LIMIT 1");
+    return String(rows[0]?.value || '');
+  };
+  r.get('/vip-access/code', requireAdmin, async (_req, res, next) => {
+    try { return res.json({ configured: !!(await expectedVipHash()), fromEnvironment: !!process.env.VIP_ACCESS_CODE }); } catch (error) { return next(error); }
+  });
+  r.post('/vip-access/code', requireAdmin, async (req, res, next) => {
+    try {
+      const code = String(req.body?.code || '').trim();
+      if (code.length < 4) return res.status(400).json({ error: 'Ο κωδικός πρέπει να έχει τουλάχιστον 4 χαρακτήρες.' });
+      await query("INSERT INTO server_secrets (key, value) VALUES ('vip_access_code_hash', $1) ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value", [vipHash(code)]);
+      await query("UPDATE records SET data = data || '{\"active\":false}'::jsonb WHERE entity = 'VIPAccessSession'");
+      return res.json({ success: true });
+    } catch (error) { return next(error); }
+  });
+  const requireVipSession = async (req, res, next) => {
+    try {
+      const token = String(req.headers.authorization || '').replace(/^Bearer\s+/i, '');
+      if (!token || token.length < 32) return res.status(401).json({ error: 'Απαιτείται VIP πρόσβαση.' });
+      const { rows } = await query("SELECT id, data FROM records WHERE entity = 'VIPAccessSession' AND data->>'tokenHash' = $1 AND data->>'active' = 'true' LIMIT 1", [vipHash(token)]);
+      const session = rows[0];
+      if (!session || Date.parse(session.data.expiresAt || 0) <= Date.now()) return res.status(401).json({ error: 'Η VIP πρόσβαση έληξε. Ξεκλείδωσε ξανά.' });
+      req.vipSession = { id: session.id, data: session.data };
+      return next();
+    } catch (error) { return next(error); }
+  };
+  r.post('/vip-access/unlock', async (req, res, next) => {
+    try {
+      const ip = req.ip || req.socket.remoteAddress || 'unknown';
+      if (vipLocked(ip)) return res.status(429).json({ error: 'Πολλές αποτυχημένες προσπάθειες. Δοκίμασε ξανά σε 15 λεπτά.' });
+      const expected = await expectedVipHash();
+      if (!expected) return res.status(503).json({ error: 'Δεν έχει οριστεί κωδικός VIP. Όρισέ τον στο Admin → Ρυθμίσεις.' });
+      const a = Buffer.from(vipHash(String(req.body?.code || '').trim()));
+      const b = Buffer.from(expected);
+      if (a.length !== b.length || !crypto.timingSafeEqual(a, b)) { vipFail(ip); return res.status(401).json({ error: 'Ο κωδικός VIP δεν είναι σωστός.' }); }
+      const token = crypto.randomBytes(32).toString('base64url');
+      const expiresAt = new Date(Date.now() + 12 * 60 * 60 * 1000).toISOString();
+      await query("INSERT INTO records (id, entity, data) VALUES ($1, 'VIPAccessSession', $2)", [crypto.randomUUID(), JSON.stringify({ tokenHash: vipHash(token), active: true, expiresAt, createdAt: new Date().toISOString() })]);
+      return res.json({ token, expiresAt });
+    } catch (error) { return next(error); }
+  });
+  r.get('/vip-access/vault', requireVipSession, async (_req, res, next) => {
+    try {
+      const { rows } = await query("SELECT data FROM records WHERE entity = 'VIPInvitationSubmission' AND data->>'approved' = 'true' ORDER BY updated_date DESC LIMIT 200");
+      const profiles = rows.map(({ data }) => ({
+        displayName: data.displayName || data.name || '',
+        intensity: Number(data.answers?.intensity || data.intensity) || 3,
+        preferences: Object.entries(data.answers?.activityPreferences || {}).filter(([, value]) => value === 'yes').map(([key]) => key),
+        boundaries: Array.isArray(data.answers?.safetyBoundaries) ? data.answers.safetyBoundaries : [],
+      })).filter((profile) => profile.displayName);
+      return res.json({ profiles });
+    } catch (error) { return next(error); }
+  });
+
   r.get('/vip-invitations/:token', async (req, res, next) => {
     try {
       const token = String(req.params.token || '');
@@ -786,7 +857,7 @@ export function entityRoutes() {
         id: rows[0].id,
         title: rows[0].data.title || 'VIP INVITATION',
         gameTitle: rows[0].data.gameTitle || 'DEAL OF TEMPTATION',
-        gameMode: rows[0].data.gameMode || 'classic',
+        gameMode: rows[0].data.gameMode || '',
         dotEventId: rows[0].data.dotEventId || '',
         roomCode: rows[0].data.roomCode || '',
         eventTitle: rows[0].data.eventTitle || '',

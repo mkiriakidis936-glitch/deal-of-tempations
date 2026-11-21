@@ -103,10 +103,10 @@ npm run dev                 # frontend στο :5173 (proxy προς το API)
 
 - `lockdown` — PAJAMA LOCKDOWN 18+.
 - `beach_bar` — BEACH BAR HOME LOCKDOWN.
+- `marathon_4h` — PAJAMA HEIST & ARREST: The Ultimate Lounge Lockdown (105′, ταμπλό 21 τετραγώνων· αντικατέστησε το παλιό Pajama Marathon 4H, το id παραμένει για συμβατότητα).
 
 Η καταχώριση και τα βασικά στοιχεία τους ορίζονται στο `src/data/modes/modeRegistry.js`. Το περιεχόμενο των modes βρίσκεται στο `src/data/modes/`, ο κοινός μηχανισμός χρονόμετρων/STOP/ήχων και το state στο `src/lib/modeKit.js`, ενώ οι οθόνες Tablet, TV και Mobile βρίσκονται στο `src/components/modes/`.
 
-Οι παλιές ονομασίες `pedi_extended` και `marathon_4h` δεν αποτελούν καταχωρισμένα ψηφιακά modes στο σημερινό registry.
 
 ### Φόρμα, περιεχόμενο και Admin
 - Η ενιαία δημόσια φόρμα συμμετοχής είναι η `/forms`. Η καλεσμένη επιλέγει ακριβώς ένα Mode ανά υποβολή και οι αιτήσεις διαχειρίζονται από τις αντίστοιχες ενότητες του Admin.

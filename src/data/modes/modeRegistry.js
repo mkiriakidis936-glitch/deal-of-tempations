@@ -46,14 +46,14 @@ export const NEW_MODES = [
   },
   {
     id: 'marathon_4h',
-    name: 'PAJAMA MARATHON 4H',
-    icon: '🏆',
-    desc: 'Τετράωρη εμπειρία τεσσάρων πράξεων: Pedi-Glam, Midnight ASMR, Pajama Lockdown 60 λεπτών και VIP Vault με Coffee Riddle.',
+    name: 'PAJAMA HEIST & ARREST',
+    icon: '🚔',
+    desc: 'The Ultimate Lounge Lockdown: ταμπλό 21 τετραγώνων, Αστυνόμος & Fugitives, Wanted αστέρια, Loot, σαγιονάρες/κάλτσες ως άμυνα, χειροπέδες, ανάκριση με μυστική ψηφοφορία, Decibel Meter και φινάλε Barefoot Escape. 18+.',
     min: 3,
-    max: 8,
-    acts: ['board', 'midnight', 'lockdown', 'morning'],
-    actDurations: { board: 90, midnight: 45, lockdown: 60, morning: 45 },
-    minutes: 240,
+    max: 10,
+    acts: ['lounge'],
+    actDurations: { lounge: 105 },
+    minutes: 105,
   },
 
 ];
@@ -93,6 +93,7 @@ export const ACT_META = {
   lockdown: { title: 'Pajama Lockdown (18+)', minutes: 60 },
   morning: { title: 'Act 4 · Extended Morning Escape & VIP Vault', minutes: 45 },
   beach: { title: 'Beach Bar Home Lockdown', minutes: 150 },
+  lounge: { title: 'The Ultimate Lounge Lockdown', minutes: 105 },
 };
 
 

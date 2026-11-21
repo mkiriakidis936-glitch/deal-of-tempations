@@ -3,6 +3,7 @@ import ComicPanel from '@/components/comic/ComicPanel';
 import ComicButton from '@/components/comic/ComicButton';
 import AdminSettingVersionHistory from '@/components/admin/AdminSettingVersionHistory';
 import MediaField from '@/components/admin/MediaField';
+import CardPreviewPair, { cardFromItem } from '@/components/admin/CardPreviewPair';
 import { saveAdminSettingVersion } from '@/lib/adminVersionHistory';
 import { NEW_MODES } from '@/data/modes/modeRegistry';
 import { COLLECTIONS, defaultsOf, fetchModesRecord, saveModesContent } from '@/lib/modesContentStore';
@@ -130,9 +131,14 @@ export default function AdminModes() {
           {list.map((item, i) => (
             <div key={i} className="border-2 border-border/40 rounded-lg p-2.5 bg-secondary/40 space-y-2">
               <div className="text-[11px] opacity-60">#{i + 1}</div>
-              {col.strings
-                ? <textarea rows={3} className={inp} value={item} onChange={(e) => setItem(i, e.target.value)} />
-                : col.fields.map((f) => renderField(item, f, (v) => setItem(i, v)))}
+              <div className="grid gap-3 lg:grid-cols-2">
+                <div className="space-y-2">
+                  {col.strings
+                    ? <textarea rows={3} className={inp} value={item} onChange={(e) => setItem(i, e.target.value)} />
+                    : col.fields.map((f) => renderField(item, f, (v) => setItem(i, v)))}
+                </div>
+                <CardPreviewPair card={cardFromItem(item, col.label)} />
+              </div>
               <div className="flex gap-2">
                 <ComicButton size="sm" variant="dark" disabled={i === 0} onClick={() => move(i, -1)}>▲</ComicButton>
                 <ComicButton size="sm" variant="dark" disabled={i === list.length - 1} onClick={() => move(i, 1)}>▼</ComicButton>
@@ -147,22 +153,6 @@ export default function AdminModes() {
           </div>
         </ComicPanel>
       )}
-      <ComicPanel className="bg-card space-y-2">
-        <div className="font-heading text-sm text-primary">ΖΩΝΤΑΝΗ ΠΡΟΕΠΙΣΚΟΠΗΣΗ · ΠΕΡΙΕΧΟΜΕΝΟ ΠΑΙΧΝΙΔΙΟΥ</div>
-        <div className="text-[10px] text-foreground/50">Προεπισκόπηση της λίστας όπως είναι τώρα στο εργαλείο επεξεργασίας — οι αλλαγές εμφανίζονται πριν από την αποθήκευση.</div>
-        <div className="text-xs font-bold">{col?.label || 'Περιεχόμενο'} · {list.length} στοιχεία</div>
-        <div className="grid sm:grid-cols-2 gap-2">
-          {list.map((item, index) => {
-            const title = typeof item === 'string' ? item : (item.title || item.name || item.say || item.app || item.label || item.question || ('Στοιχείο ' + (index + 1)));
-            const body = typeof item === 'string' ? '' : (item.text || item.desc || item.where || item.hint || item.question || '');
-            return <div key={item.id || index} className="rounded-lg border border-primary/30 bg-secondary/40 p-3 space-y-1">
-              <div className="text-[10px] text-primary/70">#{index + 1}</div>
-              <div className="font-heading">{title}</div>
-              {body && <div className="text-xs text-foreground/70 whitespace-pre-wrap">{body}</div>}
-            </div>;
-          })}
-        </div>
-      </ComicPanel>
       <AdminSettingVersionHistory settingKey="modes_content" onRestore={(value) => { setSaved(value || {}); setList(value?.[sel] || defaultsOf(sel)); }} />
     </div>
   );

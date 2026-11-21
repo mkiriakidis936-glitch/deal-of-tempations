@@ -287,7 +287,7 @@ export function initialMg(modeId, extra = {}) {
   };
   // Ψηφιακά modes: consent check-in πριν ξεκινήσει το παιχνίδι + τυχαίος Exit Code ανά συνεδρία.
   if (['pedi_glam', 'pedi_extended', 'lockdown', 'beach_bar', 'marathon_4h'].includes(modeId)) base.consentRequired = true;
-  if (modeId === 'lockdown' || modeId === 'marathon_4h') base.exitCode = extra.exitCode || randomExitCode();
+  if (modeId === 'lockdown') base.exitCode = extra.exitCode || randomExitCode();
   return base;
 }
 

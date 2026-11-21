@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import ComicButton from '@/components/comic/ComicButton';
+import CardPreviewPair from '@/components/admin/CardPreviewPair';
 
 const inputCls = 'w-full px-2 py-1.5 rounded bg-slate-950/60 border border-pink-500/30 text-pink-50 text-sm focus:outline-none';
 
@@ -52,15 +53,7 @@ export default function PajamaCardEditor({ row, onSave, onDelete }) {
       </div>
 
       <div className="pt-1">
-        <div className="text-[10px] uppercase tracking-widest text-pink-300/70 mb-1">Προεπισκόπηση TV</div>
-        <div className="rounded-xl border border-fuchsia-500/40 bg-fuchsia-950/80 p-3">
-          <div className="text-[10px] uppercase text-pink-300">{row.categoryId?.replace('_', ' ')}</div>
-          {draft.title && <div className="font-heading text-lg text-pink-100">{draft.title}</div>}
-          <p className="text-sm text-pink-50 font-body leading-snug">{draft.text || 'Κείμενο κάρτας...'}</p>
-          <div className="text-[10px] text-pink-300/80 mt-1">
-            {draft.scored ? `+${draft.success} / −${draft.fail}` : 'χωρίς σκορ'}{draft.timer ? ` · ${draft.timer}″` : ''}
-          </div>
-        </div>
+        <CardPreviewPair card={{ title: draft.title, text: draft.text || 'Κείμενο κάρτας...', kicker: row.categoryId?.replace('_', ' ') || 'Pajama', icon: '🩴', secs: draft.timer || undefined, reward: draft.scored ? `${draft.success} / −${draft.fail}` : null }} />
       </div>
     </div>
   );

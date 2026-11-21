@@ -2,6 +2,7 @@ import { base44 } from '@/api/base44Client';
 import * as EXT from '@/data/modes/extendedContent';
 import * as LD from '@/data/modes/lockdownContent';
 import * as BB from '@/data/modes/beachBarContent';
+import * as LG from '@/data/modes/loungeContent';
 
 // Λίστες περιεχομένου των νέων modes που επεξεργάζονται από Admin → 🎮 Νέα Modes.
 // Οι αλλαγές αποθηκεύονται στο AppSetting (key modes_content) και εφαρμόζονται "επί τόπου" στις λίστες.
@@ -39,6 +40,12 @@ export const COLLECTIONS = [
   { id: 'beach_missions', group: '🍹 Beach Bar Lockdown', label: 'Flip-Flop Heist αποστολές', arr: BB.FLIPFLOP_MISSIONS, blank: { id: '', title: '', text: '', mins: 5, reward: 'point' }, fields: [T('title', 'Τίτλος'), A('text', 'Κείμενο'), N('mins', 'Λεπτά διορίας'), { key: 'reward', label: 'Ανταμοιβή', type: 'select', options: [['point', '1 πόντος'], ['immunity', 'Ασυλία']] }, I()] },
   { id: 'shot_truth', group: '🍹 Beach Bar Lockdown', label: 'Shot & Truth ερωτήσεις', arr: BB.SHOT_TRUTH, strings: true },
   { id: 'freeze_commands', group: '🍹 Beach Bar Lockdown', label: 'Freeze εντολές', arr: BB.FREEZE_COMMANDS, strings: true },
+  { id: 'lounge_cards', group: '🚔 Pajama Heist & Arrest', label: 'Deck 36 καρτών', arr: LG.LOUNGE_CARDS, blank: { id: '', title: '', text: '' }, fields: [T('title', 'Τίτλος'), A('text', 'Κείμενο'), N('secs', 'Χρονόμετρο (δευτ.)'), I()] },
+  { id: 'lounge_questions', group: '🚔 Pajama Heist & Arrest', label: 'Ερωτήσεις ανάκρισης 18+', arr: LG.INTERROGATION_QUESTIONS, strings: true },
+  { id: 'lounge_mechanics', group: '🚔 Pajama Heist & Arrest', label: 'Μηχανισμοί (σαγιονάρες, χειροπέδες)', arr: LG.LOUNGE_MECHANICS, fixedItems: true, blank: {}, fields: [T('title', 'Τίτλος'), A('text', 'Κείμενο')] },
+  { id: 'lounge_restraints', group: '🚔 Pajama Heist & Arrest', label: 'Κλιμάκωση δεσιμάτων (αστέρια)', arr: LG.RESTRAINT_LEVELS, fixedItems: true, blank: {}, fields: [T('name', 'Όνομα'), A('text', 'Περιγραφή')] },
+  { id: 'lounge_phases', group: '🚔 Pajama Heist & Arrest', label: 'Φάσεις βραδιάς', arr: LG.LOUNGE_PHASES, fixedItems: true, blank: {}, fields: [T('name', 'Όνομα'), N('minutes', 'Λεπτά'), A('text', 'Περιγραφή')] },
+  { id: 'lounge_hell_wheel', group: '🚔 Pajama Heist & Arrest', label: 'Τροχός της Κόλασης', arr: LG.HELL_WHEEL, strings: true },
 ];
 
 const DEFAULTS = Object.fromEntries(COLLECTIONS.map((c) => [c.id, JSON.parse(JSON.stringify(c.arr))]));
@@ -103,6 +110,7 @@ export function applyScenarioCollections(modeId, selectedIds = []) {
     if (modeId === 'pedi_extended') return /Pedi-Glam|Act 1|Act 2|Act 4|Marathon/i.test(collection.group);
     if (modeId === 'lockdown') return /Pajama Lockdown/i.test(collection.group);
     if (modeId === 'beach_bar') return /Beach Bar/i.test(collection.group);
+    if (modeId === 'marathon_4h') return /Pajama Heist & Arrest/i.test(collection.group);
     return false;
   });
   const snapshots = [];

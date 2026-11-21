@@ -118,7 +118,7 @@ SITE_EVENTS.push(
   { id: 'pedi_extended', label: '💅 PAJAMA PEDI-GLAM EXTENDED' },
   { id: 'lockdown', label: '🚨 PAJAMA LOCKDOWN' },
   { id: 'beachbar', label: '🍹 BEACH BAR HOME LOCKDOWN' },
-  { id: 'marathon4h', label: '🏆 PAJAMA MARATHON 4H' },
+  { id: 'marathon4h', label: '🚔 PAJAMA HEIST & ARREST' },
 );
 
 Object.assign(DEFAULT_SITE, {
@@ -209,34 +209,34 @@ Object.assign(DEFAULT_SITE, {
     faq: modeFaq('Εκτεταμένη ψηφιακή εμπειρία Pedi-Glam με κάρτες, mini-games και χρονόμετρα.', '2–2,5 ώρες.')
   },
   marathon4h: {
-    tab: 'Pajama Marathon 4H',
-    overline: 'Pajama Marathon 4H · 18+',
-    titleLines: ['PAJAMA', 'MARATHON 4H'],
-    tagline: 'Τέσσερις πράξεις σε μία τετράωρη εμπειρία.',
+    tab: 'Pajama Heist & Arrest',
+    overline: 'The Ultimate Lounge Lockdown · 18+',
+    titleLines: ['PAJAMA HEIST', '& ARREST'],
+    tagline: 'Αστυνόμος, Fugitives, χειροπέδες, σαγιονάρες και ένα ταμπλό που δεν συγχωρεί.',
     date: '',
     cta: { label: 'ΚΛΕΙΣΕ ΘΕΣΗ', path: '/forms?mode=marathon_4h' },
     scenarioKicker: 'Το παιχνίδι',
-    scenarioTitle: 'ΤΙ ΕΙΝΑΙ ΤΟ PAJAMA MARATHON 4H',
+    scenarioTitle: 'ΤΙ ΕΙΝΑΙ ΤΟ PAJAMA HEIST & ARREST',
     scenario: [
-      'Μία ενιαία εμπειρία τεσσάρων ωρών με τέσσερις διαδοχικές πράξεις.',
-      'Act 1: Pedi-Glam. Act 2: Midnight ASMR.',
-      'Act 3: Pajama Lockdown 60 λεπτών. Act 4: VIP Vault με Coffee Riddle.'
+      'Ζωντανή τηλεοπτική παραγωγή σε 3 οθόνες: TV με ταμπλό 21 τετραγώνων, Tablet διευθύντριας και τα κινητά σας.',
+      'Σε κάθε γύρο μία γίνεται Police Chief με το κλειδί των χειροπέδων· οι υπόλοιπες είναι Fugitives.',
+      'Wanted αστέρια, Loot, σαγιονάρες και κάλτσες ως «ζωές», ανάκριση με μυστική ψηφοφορία, Decibel Meter και το μεγάλο φινάλε The Barefoot Escape.'
     ],
-    highlights: ['4 ώρες', '4 διαδοχικές πράξεις', 'Lockdown 60 λεπτών', 'VIP Vault & Coffee Riddle'],
+    highlights: ['105 λεπτά', 'Ταμπλό 21 τετραγώνων', 'Deck 36 καρτών', 'Ανάκριση & Decibel Meter', 'Barefoot Escape & στέμμα'],
     videoKicker: 'Η εμπειρία',
-    videoTitle: 'PAJAMA MARATHON 4H',
+    videoTitle: 'PAJAMA HEIST & ARREST',
     programKicker: 'Ροή παιχνιδιού',
-    programTitle: 'ΤΕΣΣΕΡΙΣ ΠΡΑΞΕΙΣ',
-    programNote: 'Συνολική διάρκεια 4 ώρες.',
+    programTitle: 'ΤΕΣΣΕΡΙΣ ΦΑΣΕΙΣ',
+    programNote: 'Συνολική διάρκεια 105 λεπτά.',
     program: [
-      { roman: 'I', title: 'Pedi-Glam', subtitle: '', meta: '90′', group: '', lines: ['Act 1 · Pedi-Glam.'] },
-      { roman: 'II', title: 'Midnight ASMR', subtitle: '', meta: '', group: '', lines: ['Act 2 · Midnight ASMR.'] },
-      { roman: 'III', title: 'Pajama Lockdown', subtitle: '', meta: '60′', group: '', lines: ['Act 3 · Escape Room με τετραψήφιο κωδικό.'] },
-      { roman: 'IV', title: 'VIP Vault', subtitle: '', meta: '', group: '', lines: ['Act 4 · VIP Vault και Coffee Riddle.'] }
+      { roman: 'I', title: 'Warm-up & Slipper Grabbing', subtitle: '', meta: '15′', group: '', lines: ['Dress code, πρώτοι γύροι, κλοπές σαγιονάρας.'] },
+      { roman: 'II', title: 'The Handcuff Escalation', subtitle: '', meta: '30′', group: '', lines: ['Χειροπέδες, συνένοχοι και η καρέκλα ανάκρισης.'] },
+      { roman: 'III', title: 'The Lockdown & Decibel Torture', subtitle: '', meta: '45′', group: '', lines: ['Βαριά δεσίματα και γαργάλημα με Decibel Meter.'] },
+      { roman: 'IV', title: 'The Barefoot Escape & Crown', subtitle: '', meta: '15′', group: '', lines: ['Γρίφος στα κινητά και στέψη της βασίλισσας.'] }
     ],
-    info: modeInfo('Πιτζάμες και άνετα ρούχα.', 'Κινητό με φόρτιση.'),
-    participation: 'Κλειστή λίστα, 18+. Στη φόρμα δηλώνεις τα όριά σου.',
-    faq: modeFaq('Τετράωρη εμπειρία τεσσάρων πράξεων: Pedi-Glam, Midnight ASMR, Lockdown και VIP Vault.', '4 ώρες.')
+    info: modeInfo('Πιτζάμες, χοντρές πιτζαμοκάλτσες και υποχρεωτικά σαγιονάρες.', 'Κινητό με φόρτιση.'),
+    participation: 'Κλειστή λίστα, 18+. Στη φόρμα δηλώνεις τα όριά σου. Το ΣΤΟΠ και η λέξη ασφαλείας ισχύουν πάντα.',
+    faq: modeFaq('Παιχνίδι ταμπλό με ρόλους Αστυνόμου/Fugitives, Wanted αστέρια, χειροπέδες, ανάκριση και φινάλε Barefoot Escape.', '105 λεπτά.')
   },
   beachbar: {
     tab: 'Beach Bar Lockdown',

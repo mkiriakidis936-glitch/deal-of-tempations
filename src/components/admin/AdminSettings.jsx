@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import ComicPanel from '@/components/comic/ComicPanel';
 import AdminGlobalDesign from '@/components/admin/AdminGlobalDesign';
+import AdminVipCode from '@/components/admin/AdminVipCode';
 import AdminSettingVersionHistory from '@/components/admin/AdminSettingVersionHistory';
 import { APP_BUILD, APP_BUILT_AT, APP_VERSION, fetchServerVersion, isSameBuild, reloadToLatest } from '@/lib/appVersion';
 import { VERSIONED_SETTINGS } from '@/lib/adminVersionHistory';
@@ -55,6 +56,7 @@ export default function AdminSettings() {
   return (
     <div className="space-y-3">
       <VersionCard />
+      <AdminVipCode />
       <AdminGlobalDesign />
       <ComicPanel className="bg-card space-y-4">
         <div className="font-heading text-xl text-primary">Ιστορικό ρυθμίσεων</div>

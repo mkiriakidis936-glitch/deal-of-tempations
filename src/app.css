@@ -2537,7 +2537,7 @@ input[type="checkbox"], input[type="radio"], input[type="range"] { accent-color:
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.7));
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0.78));
 }
 body[data-wallpaper] {
   background: transparent !important;
@@ -2591,7 +2591,900 @@ html, body { background: var(--flat-bg) !important; }
 .adm-tabbar, .mode-timer, [class*="glass"] {
   box-shadow: none !important;
 }
-.comic-panel { background-color: var(--flat-surface) !important; border: 1px solid var(--glass-stroke) !important; }
+.comic-panel { background-color: var(--flat-surface) !important; border: 1px solid var(--glass-stroke) !important; color: #F5F1E8 !important; }
+
+/* Σκούρα γράμματα πάνω σε σκούρο/γκρι φόντο → λευκά. Μένουν σκούρα μόνο σε στοιχεία με δικό τους χρυσό/άσπρο/ανοιχτό φόντο. */
+:is(.text-black, .text-tarot-dark, .text-slate-900, .text-gray-900, .text-gray-800, .text-neutral-900, .text-zinc-900, .text-stone-900, .text-background, .text-primary-foreground):not(:is([class*="bg-primary"],[class*="bg-white"],[class*="bg-tarot-gold"],[class*="bg-amber"],[class*="bg-yellow"],[class*="bg-[#E8C26B]"],[class*="bg-[#F"],[class*="bg-[#f"],[class*="bg-emerald-"],[class*="bg-green-"],[class*="bg-lime"],[class*="bg-cyan"],[class*="bg-sky-"],[style*="background: #E8C26B"],[style*="background: rgb(232, 194, 107)"],[style*="#fff"],[style*="rgb(255, 255, 255)"]):not(.comic-panel)):not(:is([class*="bg-primary"],[class*="bg-white"],[class*="bg-tarot-gold"],[class*="bg-amber"],[class*="bg-yellow"],[class*="bg-[#E8C26B]"],[class*="bg-[#F"],[class*="bg-[#f"],[class*="bg-emerald-"],[class*="bg-green-"],[class*="bg-lime"],[class*="bg-cyan"],[class*="bg-sky-"],[style*="background: #E8C26B"],[style*="background: rgb(232, 194, 107)"],[style*="#fff"],[style*="rgb(255, 255, 255)"]):not(.comic-panel) *) {
+  color: #F5F1E8 !important;
+}
+.comic-boom:hover { transform: none !important; filter: brightness(1.14); border-color: rgba(232,194,107,.45) !important; }
+.comic-boom:active { transform: scale(.965) !important; filter: brightness(1.05); }
+.comic-boom:disabled, .comic-boom[disabled] { opacity: .38; filter: none; transform: none !important; }
+
+/* Primary (gold) */
+.comic-boom.bg-primary, .comic-boom.bg-tarot-gold, .comic-boom[class*="bg-primary"]:not([class*="bg-primary/"]) {
+  background: var(--gold-grad) !important;
+  border-color: rgba(255,244,205,.6) !important;
+  color: #000 !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.6), 0 10px 30px -10px rgba(232,194,107,.55) !important;
+}
+.comic-boom.bg-primary:hover { filter: brightness(1.06); box-shadow: inset 0 1px 0 rgba(255,255,255,.6), 0 14px 38px -10px rgba(232,194,107,.7) !important; }
+.comic-boom.bg-primary *, .comic-boom.bg-tarot-gold * { color: inherit; }
+/* Tinted gold */
+.comic-boom[class*="bg-primary/"] {
+  background: linear-gradient(180deg, rgba(232,194,107,.26), rgba(232,194,107,.12)) !important;
+  border-color: var(--gold-stroke) !important;
+  color: var(--gold-1) !important;
+}
+/* Destructive */
+.comic-boom.bg-destructive, .comic-boom[class*="bg-destructive"]:not([class*="bg-destructive/"]) {
+  background: linear-gradient(180deg, #FF6A60, #FF453A) !important;
+  border-color: rgba(255,160,152,.55) !important;
+  color: #fff !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.35), 0 10px 28px -10px rgba(255,69,58,.55) !important;
+}
+/* «White» (parchment) → iOS plain-light button */
+.comic-boom.bg-tarot-parchment, .comic-boom.bg-white {
+  background: linear-gradient(180deg, #FFFFFF, #E9E5DA) !important;
+  color: #000 !important; border-color: rgba(255,255,255,.7) !important;
+}
+/* Neutral glass variants (dark / wine / teal / forest / royal / crimson / sienna / secondary) */
+.comic-boom.bg-secondary, .comic-boom.bg-tarot-wine, .comic-boom.bg-tarot-teal, .comic-boom.bg-tarot-forest,
+.comic-boom.bg-tarot-royal, .comic-boom.bg-tarot-crimson, .comic-boom.bg-tarot-sienna, .comic-boom.bg-surface-2 {
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.12), rgba(255,255,255,.04)),
+    rgba(58,58,60,.55) !important;
+  color: #F5F1E8 !important;
+}
+/* Παλιό cyan/pink/emerald κουμπί → remapped ήδη σε χρυσό από το tailwind palette */
+
+button:focus-visible, a:focus-visible, [role="button"]:focus-visible,
+input:focus-visible, select:focus-visible, textarea:focus-visible {
+  outline: 2px solid rgba(232,194,107,.9) !important;
+  outline-offset: 3px !important;
+  border-radius: inherit;
+}
+
+/* ---------- 6 · INPUTS ---------- */
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]):not([type="file"]),
+select, textarea {
+  min-height: 46px;
+  border: 1px solid rgba(255,255,255,.09) !important;
+  border-radius: 16px !important;
+  background: rgba(255,255,255,.07) !important;
+  color: #F5F1E8 !important;
+  font-family: var(--font-ui);
+  caret-color: var(--gold-2);
+  box-shadow: inset 0 1px 2px rgba(0,0,0,.35) !important;
+  transition: border-color .2s ease, box-shadow .25s var(--ease-out), background-color .2s ease;
+}
+textarea { border-radius: 18px !important; }
+input::placeholder, textarea::placeholder { color: rgba(235,235,245,.34) !important; }
+input:focus, select:focus, textarea:focus {
+  outline: none !important;
+  border-color: rgba(232,194,107,.7) !important;
+  background: rgba(255,255,255,.09) !important;
+  box-shadow: 0 0 0 4px rgba(232,194,107,.16) !important;
+}
+input[type="checkbox"], input[type="radio"], input[type="range"] { accent-color: #E8C26B; }
+select option { background: #1C1C1E; color: #F5F1E8; }
+
+/* ---------- 7 · MOTION (spring) ---------- */
+.comic-slide-in { animation: ios-rise .5s var(--ease-spring) both; }
+.comic-pop { animation: ios-pop .45s var(--ease-spring) both; }
+.comic-pulse { animation: ios-breathe 3.2s ease-in-out infinite; }
+.comic-strobe { animation: ios-alert 1s ease-in-out infinite alternate; }
+@keyframes ios-rise { from { opacity: 0; transform: translateY(16px) scale(.985); } to { opacity: 1; transform: none; } }
+@keyframes ios-pop { from { opacity: 0; transform: scale(.94); } to { opacity: 1; transform: none; } }
+@keyframes ios-moment-in { from { opacity: 0; transform: translate(-50%, -46%) scale(.94); } to { opacity: 1; transform: translate(-50%, -50%) scale(1); } }
+@keyframes ios-breathe { 0%,100% { transform: scale(1); } 50% { transform: scale(1.018); } }
+@keyframes ios-alert { from { background-color: rgba(255,69,58,.85); } to { background-color: rgba(232,194,107,.85); } }
+
+/* ---------- 8 · PLAY (κινητό = iPhone app) ---------- */
+body.dot-mobile-experience {
+  background: #000 !important;
+  background-image: radial-gradient(120% 45% at 50% -8%, rgba(232,194,107,.13), transparent 60%) !important;
+}
+body.dot-mobile-experience .comic-panel, body.dot-mobile-experience .comic-panel-sm { border-radius: 24px !important; }
+
+/* Floating glass tab bar (MobileTabBar) */
+.ios-tabbar {
+  position: fixed;
+  left: 50%; transform: translateX(-50%);
+  bottom: max(14px, env(safe-area-inset-bottom));
+  z-index: 45;
+  display: flex; gap: 2px; padding: 6px;
+  width: min(calc(100vw - 28px), 440px);
+  border-radius: 999px;
+  border: 1px solid var(--glass-stroke);
+  background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.03)), rgba(24,24,26,.66);
+  -webkit-backdrop-filter: blur(18px) saturate(190%);
+  backdrop-filter: blur(18px) saturate(190%);
+  box-shadow: inset 0 1px 0 var(--glass-hi), 0 22px 50px -14px rgba(0,0,0,.9);
+}
+.ios-tab {
+  position: relative; flex: 1; min-width: 0;
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  padding: 8px 4px 7px; border-radius: 999px;
+  color: rgba(235,235,245,.6);
+  transition: color .25s ease, background-color .3s var(--ease-spring), transform .3s var(--ease-spring);
+}
+.ios-tab .ios-tab-icon { font-size: 1.28rem; line-height: 1; filter: grayscale(.35) opacity(.8); transition: filter .25s ease, transform .35s var(--ease-spring); }
+.ios-tab .ios-tab-label { font-size: .64rem; font-weight: 600; letter-spacing: .02em; }
+.ios-tab:active { transform: scale(.94); }
+.ios-tab[aria-selected="true"] {
+  color: var(--gold-1);
+  background: linear-gradient(180deg, rgba(232,194,107,.26), rgba(232,194,107,.10));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.16), inset 0 0 0 1px rgba(232,194,107,.30);
+}
+.ios-tab[aria-selected="true"] .ios-tab-icon { filter: none; transform: translateY(-1px) scale(1.06); }
+.ios-tab-spacer { height: calc(96px + env(safe-area-inset-bottom)); }
+
+/* Sticky player header = «Dynamic Island» στυλ */
+body.dot-mobile-experience .sticky.top-0 {
+  background: linear-gradient(180deg, #000 60%, rgba(0,0,0,0)) !important;
+  border-bottom: 0 !important;
+}
+
+/* ---------- 9 · MODES (ModeShell) ---------- */
+.mode-shell { background: #000 !important; }
+.mode-large-title {
+  font-family: var(--font-heading); font-weight: 800; letter-spacing: -0.03em;
+  background: var(--gold-text); -webkit-background-clip: text; background-clip: text; color: transparent;
+  text-shadow: none !important;
+}
+.mode-timer {
+  font-family: var(--font-display); font-weight: 700; letter-spacing: -0.03em; font-variant-numeric: tabular-nums;
+  padding: .15em .55em; border-radius: 999px;
+  border: 1px solid var(--gold-stroke);
+  background: linear-gradient(180deg, rgba(232,194,107,.18), rgba(232,194,107,.05)), var(--glass-1);
+  -webkit-backdrop-filter: blur(18px); backdrop-filter: blur(18px);
+  box-shadow: inset 0 1px 0 var(--glass-hi);
+  color: var(--gold-1) !important;
+}
+.mode-timer.is-danger { border-color: rgba(255,69,58,.6); background: linear-gradient(180deg, rgba(255,69,58,.30), rgba(255,69,58,.10)), var(--glass-1); color: #FF8A82 !important; }
+.mode-stop-overlay { background: rgba(10,0,0,.82) !important; -webkit-backdrop-filter: blur(18px) saturate(140%); backdrop-filter: blur(18px) saturate(140%); }
+
+/* ---------- 10 · TABLET / GAME MASTER ---------- */
+.admin-root { background: #000 !important; background-image: radial-gradient(110% 40% at 50% -10%, rgba(232,194,107,.10), transparent 62%) !important; }
+.admin-root nav[aria-label="Πλοήγηση διαχείρισης"] {
+  border-radius: 26px; padding: .5rem;
+  background: var(--glass-1); border: 1px solid var(--glass-stroke);
+  -webkit-backdrop-filter: blur(18px) saturate(180%); backdrop-filter: blur(18px) saturate(180%);
+}
+.admin-root nav[aria-label="Πλοήγηση διαχείρισης"] > div { border-bottom: 1px solid rgba(255,255,255,.06) !important; }
+.admin-root nav button {
+  border-radius: 14px !important; border-color: transparent !important;
+  background: transparent; color: rgba(245,241,232,.78);
+  font-weight: 600; letter-spacing: -0.005em;
+}
+.admin-root nav button:hover { background: rgba(255,255,255,.06) !important; color: #fff; }
+.admin-root nav button[aria-current="page"] {
+  background: var(--gold-grad) !important; color: #000 !important;
+  box-shadow: 0 8px 24px -10px rgba(232,194,107,.6), inset 0 1px 0 rgba(255,255,255,.55) !important;
+}
+.admin-root [role="tablist"] { background: rgba(255,255,255,.06); border-radius: 999px; padding: 4px; gap: 2px; }
+.admin-root [role="tab"] { border-radius: 999px !important; font-weight: 600; }
+.admin-root [role="tab"][aria-selected="true"], .admin-root [role="tablist"] button[aria-selected="true"] {
+  background: rgba(232,194,107,.20) !important; color: var(--gold-1) !important;
+  box-shadow: inset 0 0 0 1px rgba(232,194,107,.32), inset 0 1px 0 rgba(255,255,255,.16);
+}
+.admin-root table { border-collapse: separate; border-spacing: 0; }
+.admin-root th { color: rgba(232,194,107,.9); font-size: .68rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+.admin-root td, .admin-root th { border-color: rgba(255,255,255,.07) !important; }
+.admin-root tr:hover td { background: rgba(255,255,255,.03); }
+
+/* Tablet toolbar & floating GM tools */
+.fixed.bottom-3.left-3 > .ds-surface {
+  border-radius: 28px !important; background: var(--glass-thick) !important;
+  box-shadow: inset 0 1px 0 var(--glass-hi), 0 30px 70px -20px #000 !important;
+}
+.fixed.bottom-3.left-3 .comic-boom { min-height: 42px; font-size: .82rem; }
+
+/* ---------- 11 · TV (μεγάλη οθόνη) ---------- */
+.dot-tv-shell {
+  background:
+    radial-gradient(90% 55% at 50% -10%, rgba(232,194,107,.16), transparent 60%),
+    radial-gradient(70% 45% at 50% 112%, rgba(232,194,107,.09), transparent 65%),
+    #000 !important;
+}
+.dot-tv-orb-one { background: #E8C26B !important; opacity: .09 !important; }
+.dot-tv-orb-two { background: #C99B2E !important; opacity: .08 !important; }
+.dot-tv-grain { opacity: .05 !important; }
+.dot-tv-atmosphere { background: radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,.55) 100%) !important; }
+.dot-tv-shell .comic-panel, .dot-tv-shell .comic-panel-sm {
+  border-color: rgba(255,255,255,.12) !important;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.015) 40%, transparent),
+    rgba(22,22,24,.62) !important;
+  -webkit-backdrop-filter: blur(18px) saturate(180%); backdrop-filter: blur(18px) saturate(180%);
+}
+.dot-tv-hud {
+  padding: 10px 14px; border-radius: 999px;
+  border: 1px solid var(--glass-stroke);
+  background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.02)), rgba(20,20,22,.6);
+  -webkit-backdrop-filter: blur(18px) saturate(180%); backdrop-filter: blur(18px) saturate(180%);
+  box-shadow: inset 0 1px 0 var(--glass-hi), 0 20px 50px -20px #000;
+}
+.dot-tv-brand-mark { border-color: var(--gold-stroke) !important; color: var(--gold-2) !important; background: rgba(232,194,107,.08); box-shadow: 0 0 24px rgba(232,194,107,.18) !important; }
+.dot-tv-brand strong { color: #F5F1E8 !important; letter-spacing: .12em !important; }
+.dot-tv-fullscreen-button { border-radius: 999px; background: rgba(255,255,255,.08) !important; border-color: var(--glass-stroke) !important; color: var(--gold-1) !important; }
+.dot-tv-moment {
+  border-radius: 40px !important; border: 1px solid rgba(232,194,107,.45) !important;
+  background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.02)), rgba(14,14,16,.78) !important;
+  -webkit-backdrop-filter: blur(18px) saturate(190%); backdrop-filter: blur(18px) saturate(190%);
+  box-shadow: inset 0 1px 0 var(--glass-hi), 0 40px 120px -20px #000, 0 0 90px rgba(232,194,107,.18) !important;
+  animation: ios-moment-in .55s var(--ease-spring) both;
+}
+.dot-tv-moment strong { font-family: var(--font-display) !important; font-weight: 800 !important; letter-spacing: -0.02em !important; background: var(--gold-text); -webkit-background-clip: text; background-clip: text; color: transparent !important; text-shadow: none !important; }
+.dot-tv-moment-kicker { color: var(--gold-2) !important; letter-spacing: .2em !important; }
+
+/* ---------- 12 · SITE / INVITATION / PROMO (public) ---------- */
+.cinv-count {
+  border: 1px solid var(--gold-stroke) !important; border-radius: 28px !important;
+  background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.02)), rgba(18,18,20,.72) !important;
+  -webkit-backdrop-filter: blur(18px) saturate(180%); backdrop-filter: blur(18px) saturate(180%);
+  box-shadow: inset 0 1px 0 var(--glass-hi), 0 30px 80px -24px #000 !important;
+}
+.cinv-cl { color: var(--gold-2) !important; letter-spacing: .22em !important; }
+.cinv-btn {
+  border: 1px solid rgba(255,244,205,.6) !important; border-radius: 999px !important;
+  background: var(--gold-grad) !important; color: #000 !important; text-shadow: none !important;
+  font-family: var(--font-ui) !important; font-weight: 700 !important; letter-spacing: -0.005em !important; font-size: 1.15rem !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.6), 0 16px 50px -12px rgba(232,194,107,.6) !important;
+  animation: none !important; transition: transform .35s var(--ease-spring), filter .2s ease !important;
+}
+.cinv-btn:hover { filter: brightness(1.07); }
+.cinv-btn:active { transform: scale(.97); }
+.cinp { background: rgba(255,255,255,.07) !important; border: 1px solid rgba(255,255,255,.1) !important; border-radius: 18px !important; color: #F5F1E8 !important; }
+.cinp:focus { border-color: rgba(232,194,107,.7) !important; box-shadow: 0 0 0 4px rgba(232,194,107,.16) !important; }
+.cinv-sealglow { background: radial-gradient(circle, rgba(232,194,107,.45), transparent 65%) !important; }
+.cinv-line { color: #F5F1E8 !important; text-shadow: 0 0 40px rgba(232,194,107,.35) !important; }
+.promo-glow { animation: none !important; text-shadow: 0 0 40px rgba(232,194,107,.45) !important; }
+.film-frame { background: #000; }
+
+/* ---------- 13 · MISC ---------- */
+hr, .ds-rule { background: linear-gradient(90deg, transparent, rgba(232,194,107,.55), transparent) !important; border: 0 !important; height: 1px; box-shadow: none !important; }
+[data-radix-popper-content-wrapper] > * {
+  border-radius: 20px !important; border: 1px solid var(--glass-stroke) !important;
+  background: var(--glass-thick) !important;
+  -webkit-backdrop-filter: blur(18px) saturate(180%); backdrop-filter: blur(18px) saturate(180%);
+}
+img.rounded-full, .rounded-full { border-color: rgba(232,194,107,.35); }
+
+/* ---------- 14 · ACCESSIBILITY FALLBACKS ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .comic-slide-in, .comic-pop, .comic-pulse, .comic-strobe, .dot-tv-moment { animation: none !important; }
+  .comic-boom, .ios-tab, .comic-panel, .comic-panel-sm { transition: none !important; }
+}
+@media (prefers-reduced-transparency: reduce), (forced-colors: active) {
+  .comic-panel, .comic-panel-sm, .ds-surface, .comic-boom, .ios-tabbar, [role="dialog"], .dot-tv-hud, .dot-tv-moment, .cinv-count {
+    -webkit-backdrop-filter: none !important; backdrop-filter: none !important;
+    background: #141416 !important;
+  }
+}
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .comic-panel, .comic-panel-sm, .ds-surface, .ios-tabbar, [role="dialog"], .dot-tv-hud { background: #141416 !important; }
+}
+@media (max-width: 767px) {
+  .comic-panel { border-radius: 24px !important; padding: 14px; }
+  .comic-panel-sm { border-radius: 18px !important; }
+  .comic-boom { min-height: 48px; }
+}
+
+/* ===== visual-overhaul.css ===== */
+/* DEAL OF TEMPTATION — unified visual experience layer
+   Visual-only overrides. No application state, rules, content or interactions. */
+:root, .dark {
+  --background: 0 0% 0%;
+  --foreground: 42 34% 93%;
+  --card: 0 0% 7%;
+  --card-foreground: 42 34% 93%;
+  --popover: 0 0% 8%;
+  --popover-foreground: 42 34% 93%;
+  --primary: 43 72% 61%;
+  --primary-foreground: 0 0% 0%;
+  --secondary: 0 0% 12%;
+  --secondary-foreground: 42 28% 90%;
+  --muted: 0 0% 14%;
+  --muted-foreground: 38 14% 66%;
+  --accent: 42 55% 24%;
+  --accent-foreground: 42 35% 95%;
+  --destructive: 354 58% 48%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 42 28% 24%;
+  --input: 0 0% 11%;
+  --ring: 43 78% 65%;
+  --surface-1: 0 0% 5%;
+  --surface-2: 0 0% 9%;
+  --surface-3: 0 0% 14%;
+  --hairline: 42 38% 88%;
+  --shadow-color: 0 0% 0%;
+  --radius: .9rem;
+  color-scheme: dark;
+}
+html { background: #000000; }
+body {
+  color: #F5F1E8;
+  background:
+    radial-gradient(ellipse at 50% -18%, rgba(232, 194, 107, .10), transparent 48%),
+    radial-gradient(ellipse at 4% 48%, rgba(232, 194, 107, .05), transparent 36%),
+    radial-gradient(ellipse at 100% 100%, rgba(174, 132, 49, .075), transparent 34%),
+    #000000 !important;
+  background-attachment: scroll;
+  font-family: var(--font-ui);
+}
+h1, h2, h3, h4, h5 { text-wrap: balance; }
+::selection { background: rgba(218, 178, 91, .34); color: #fff8e9; }
+
+/* Shared luxury surfaces */
+.comic-dots, .comic-dots-dark {
+  background-color: #000000;
+  background-image:
+    radial-gradient(ellipse at 50% 0%, rgba(232, 194, 107, .11), transparent 58%),
+    radial-gradient(circle, rgba(230, 205, 150, .045) 1px, transparent 1px);
+  background-size: auto, 34px 34px;
+}
+.comic-panel, .comic-panel-sm, .ds-surface {
+  position: relative;
+  border: 1px solid rgba(213, 178, 105, .19) !important;
+  border-radius: 17px !important;
+  background:
+    linear-gradient(145deg, rgba(255,255,255,.045), transparent 42%),
+    linear-gradient(160deg, rgba(22, 22, 24, .96), rgba(10, 10, 12, .98)) !important;
+  box-shadow:
+    0 22px 58px rgba(0,0,0,.34),
+    0 1px 0 rgba(255,255,255,.045) inset,
+    0 0 28px rgba(232,194,107,.055) !important;
+}
+.comic-panel { padding: clamp(14px, 2vw, 22px); }
+.comic-panel-sm { border-radius: 13px !important; }
+.comic-panel:hover, .comic-panel-sm:hover {
+  border-color: rgba(220, 185, 108, .34) !important;
+}
+.ds-rule {
+  background: linear-gradient(90deg, transparent, rgba(218,181,103,.72), transparent) !important;
+  box-shadow: 0 0 12px rgba(218,181,103,.18);
+}
+.ds-eyebrow, .ds-label { letter-spacing: .22em; }
+.ds-title, .comic-text-stroke, .comic-text-stroke-thin {
+  text-shadow: 0 0 28px rgba(202,160,82,.16), 0 2px 18px rgba(0,0,0,.55);
+}
+
+/* Buttons: consistent metal / glass finish while preserving their handlers */
+button, [role="button"] {
+  -webkit-tap-highlight-color: transparent;
+}
+.comic-boom, button.comic-boom {
+  border: 1px solid rgba(218,181,103,.36) !important;
+  border-radius: 12px !important;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.09), transparent 52%),
+    linear-gradient(135deg, #242426, #141416 72%) !important;
+  color: #f4e8ce !important;
+  box-shadow: 0 9px 24px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,255,255,.10) !important;
+}
+.comic-boom:hover {
+  border-color: rgba(235,199,121,.78) !important;
+  box-shadow: 0 0 0 1px rgba(218,181,103,.12), 0 12px 30px rgba(0,0,0,.36), 0 0 24px rgba(202,160,82,.10) !important;
+}
+button:focus-visible, [role="button"]:focus-visible {
+  outline: 2px solid #e7c77d !important;
+  outline-offset: 3px !important;
+}
+button:disabled { filter: saturate(.55); }
+
+/* Forms and selectors */
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+select, textarea {
+  border-color: rgba(210,181,127,.22) !important;
+  border-radius: 11px !important;
+  background: rgba(10,8,15,.78) !important;
+  color: #f5eddf !important;
+  box-shadow: inset 0 1px 4px rgba(0,0,0,.24);
+}
+input::placeholder, textarea::placeholder { color: rgba(226,213,190,.42) !important; }
+input:focus, select:focus, textarea:focus {
+  border-color: rgba(225,190,112,.72) !important;
+  box-shadow: 0 0 0 3px rgba(218,181,103,.10), 0 0 20px rgba(218,181,103,.07) !important;
+}
+
+/* Game setup, mode tiles and the 24-space board: dimensional presentation */
+[class*="grid"] > button,
+[class*="grid"] > [role="button"],
+.game-board button, .game-board [role="button"],
+[data-game-board] button, [data-box], .game-square,
+.box-card, .vault-box, .case-box, .briefcase {
+  border-radius: 14px;
+  transition: border-color .22s ease, box-shadow .22s ease, filter .22s ease, transform .22s ease;
+}
+.game-board button, [data-game-board] button, [data-box],
+.game-square, .box-card, .vault-box, .case-box, .briefcase {
+  border: 1px solid rgba(219,183,106,.34);
+  box-shadow: 0 10px 24px rgba(0,0,0,.30), inset 0 1px 0 rgba(255,255,255,.09);
+}
+.game-board button:hover, [data-game-board] button:hover, [data-box]:hover,
+.game-square:hover, .box-card:hover, .vault-box:hover, .case-box:hover, .briefcase:hover {
+  filter: brightness(1.12);
+  box-shadow: 0 14px 30px rgba(0,0,0,.38), 0 0 22px rgba(218,181,103,.13), inset 0 1px 0 rgba(255,255,255,.13);
+}
+[class*="grid"] > button:hover, [class*="grid"] > [role="button"]:hover {
+  border-color: rgba(225,190,112,.52);
+}
+
+/* Tablet / Host control room */
+.admin-root {
+  background:
+    radial-gradient(ellipse at 50% -12%, rgba(232,194,107,.10), transparent 54%),
+    #000000 !important;
+}
+.admin-root .comic-panel, .admin-root .comic-panel-sm {
+  backdrop-filter: blur(12px);
+}
+.admin-root nav button, .admin-root [role="tab"] {
+  border-radius: 11px;
+  transition: background .2s ease, color .2s ease, border-color .2s ease;
+}
+.admin-root nav button:hover, .admin-root [role="tab"]:hover {
+  background: rgba(196,157,88,.10);
+}
+.admin-root table { border-collapse: separate; border-spacing: 0; }
+.admin-root th {
+  color: #d9bd83;
+  font-family: var(--font-ui);
+  font-size: .72rem;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+.admin-root td, .admin-root th { border-color: rgba(210,181,127,.13) !important; }
+
+/* TV / stage — richer depth, cleaner overlays */
+.dot-tv-shell {
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(232,194,107,.12), transparent 48%),
+    radial-gradient(ellipse at 50% 100%, rgba(206,164,82,.13), transparent 50%),
+    #000000 !important;
+}
+.dot-tv-shell .comic-panel, .dot-tv-shell .comic-panel-sm {
+  border-color: rgba(224,190,119,.26) !important;
+  background: linear-gradient(145deg, rgba(22,22,24,.94), rgba(10,10,12,.97)) !important;
+  backdrop-filter: blur(12px);
+}
+.dot-tv-moment {
+  border-color: rgba(231,197,125,.72);
+  box-shadow: 0 30px 100px rgba(0,0,0,.68), 0 0 90px rgba(232,194,107,.12), 0 0 38px rgba(218,181,103,.12), inset 0 1px 0 rgba(255,255,255,.10);
+}
+
+/* Mobile controller and touch surfaces */
+body.dot-mobile-experience {
+  background:
+    radial-gradient(ellipse at 50% -10%, rgba(232,194,107,.10), transparent 50%),
+    #000000 !important;
+}
+body.dot-mobile-experience .comic-panel,
+body.dot-mobile-experience .comic-panel-sm {
+  border-radius: 15px !important;
+}
+body.dot-mobile-experience button, body.dot-mobile-experience [role="button"] {
+  min-height: 42px;
+}
+@media (max-width: 760px) {
+  .comic-panel { padding: 14px; }
+  .dot-tv-shell .dot-tv-hud { backdrop-filter: blur(10px); }
+}
+@media (min-width: 1200px) {
+  .admin-root > div { max-width: 1440px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .comic-panel, .comic-panel-sm, .comic-boom,
+  [class*="grid"] > button, [data-box], .game-square {
+    transition: none !important;
+  }
+}
+
+
+/* ==========================================================================
+   iOS 27 DARK — complete visual system
+   Presentation-only layer. Gameplay, state, rules and event handlers untouched.
+   ========================================================================== */
+:root, .dark {
+  --background: 0 0% 0%;
+  --foreground: 40 25% 96%;
+  --card: 0 0% 7%;
+  --card-foreground: 40 25% 96%;
+  --popover: 0 0% 8%;
+  --popover-foreground: 40 25% 96%;
+  --primary: 42 76% 65%;
+  --primary-foreground: 0 0% 0%;
+  --secondary: 0 0% 12%;
+  --secondary-foreground: 40 25% 94%;
+  --muted: 0 0% 14%;
+  --muted-foreground: 40 7% 63%;
+  --accent: 42 55% 24%;
+  --accent-foreground: 40 30% 96%;
+  --destructive: 2 72% 58%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 0 0% 21%;
+  --input: 0 0% 11%;
+  --ring: 42 76% 65%;
+  --surface-1: 0 0% 5%;
+  --surface-2: 0 0% 9%;
+  --surface-3: 0 0% 14%;
+  --hairline: 40 25% 96%;
+  --shadow-color: 0 0% 0%;
+  --radius: 1.15rem;
+  color-scheme: dark;
+}
+html {
+  background: #000000 !important;
+  scroll-behavior: auto !important;
+}
+body, body.dot-mobile-experience {
+  color: #F5F1E8 !important;
+  background: #000000 !important;
+  background-image:
+    radial-gradient(ellipse at 50% -22%, rgba(232, 194, 107, .13), transparent 54%),
+    linear-gradient(180deg, #000000 0%, #000000 58%, #000000 100%) !important;
+  background-attachment: scroll !important;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", Inter, sans-serif !important;
+  font-size: 15px;
+  line-height: 1.5;
+  letter-spacing: -.012em;
+}
+h1, h2, h3, h4, h5 {
+  color: #F5F1E8 !important;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", Inter, sans-serif !important;
+  font-weight: 650 !important;
+  letter-spacing: -.035em !important;
+  line-height: 1.12 !important;
+}
+p, label, small, span { text-wrap: pretty; }
+::selection { background: rgba(232, 194, 107, .32); color: #fff; }
+* { scrollbar-color: #242426 transparent; }
+
+/* All existing surfaces become restrained, layered graphite materials. */
+.comic-dots, .comic-dots-dark {
+  background: transparent !important;
+  background-image: none !important;
+}
+.comic-panel, .comic-panel-sm, .ds-surface,
+.admin-root .comic-panel, .admin-root .comic-panel-sm,
+.dot-tv-shell .comic-panel, .dot-tv-shell .comic-panel-sm {
+  border: 1px solid rgba(255,255,255,.085) !important;
+  border-radius: 20px !important;
+  background: linear-gradient(155deg, rgba(34,34,42,.96), rgba(22,22,28,.98)) !important;
+  box-shadow: 0 12px 34px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.045) !important;
+  backdrop-filter: none !important;
+}
+.comic-panel { padding: clamp(16px, 2.1vw, 24px); }
+.comic-panel-sm { border-radius: 15px !important; }
+.comic-panel:hover, .comic-panel-sm:hover {
+  border-color: rgba(255,255,255,.11) !important;
+}
+.ds-rule {
+  height: 1px;
+  background: rgba(255,255,255,.10) !important;
+  box-shadow: none !important;
+}
+.ds-eyebrow, .ds-label {
+  color: #999999 !important;
+  font-family: -apple-system, BlinkMacSystemFont, Inter, sans-serif !important;
+  font-size: 10px !important;
+  font-weight: 650 !important;
+  letter-spacing: .13em !important;
+}
+.ds-title, .comic-text-stroke, .comic-text-stroke-thin {
+  color: #F5F1E8 !important;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", Inter, sans-serif !important;
+  font-weight: 700 !important;
+  letter-spacing: -.035em !important;
+  text-shadow: none !important;
+  -webkit-text-stroke: 0 !important;
+}
+.ds-lede { color: #B6B6C2 !important; }
+
+/* Native-feeling controls: clear hierarchy, generous touch targets. */
+button, [role="button"], input, select, textarea {
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", Inter, sans-serif !important;
+  -webkit-tap-highlight-color: transparent;
+}
+button, [role="button"] { border-radius: 13px; }
+.comic-boom, button.comic-boom {
+  min-height: 44px;
+  border: 1px solid rgba(232,194,107,.30) !important;
+  border-radius: 13px !important;
+  background: #E8C26B !important;
+  color: #000000 !important;
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  letter-spacing: .015em !important;
+  text-transform: none !important;
+  box-shadow: none !important;
+  background-image: none !important;
+}
+.comic-boom:hover, .comic-boom:active {
+  border-color: rgba(232,194,107,.4) !important;
+  background: #E8C26B !important;
+  box-shadow: none !important;
+  filter: brightness(1.04);
+  transform: none !important;
+}
+button:focus-visible, [role="button"]:focus-visible,
+input:focus-visible, select:focus-visible, textarea:focus-visible {
+  outline: 2px solid #E8C26B !important;
+  outline-offset: 3px !important;
+}
+button:disabled { opacity: .42; filter: none !important; }
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+select, textarea {
+  min-height: 44px;
+  border: 1px solid rgba(255,255,255,.10) !important;
+  border-radius: 12px !important;
+  background: #171719 !important;
+  color: #F5F1E8 !important;
+  box-shadow: none !important;
+}
+input::placeholder, textarea::placeholder { color: #888888 !important; }
+input:focus, select:focus, textarea:focus {
+  border-color: rgba(232,194,107,.7) !important;
+  box-shadow: 0 0 0 3px rgba(232,194,107,.12) !important;
+}
+
+/* Selected states, tabs, navigation and segmented controls. */
+[aria-selected="true"], [data-state="active"], [role="tab"][aria-selected="true"] {
+  border-color: rgba(232,194,107,.32) !important;
+  background-color: rgba(232,194,107,.17) !important;
+  color: #FFF1C7 !important;
+}
+.admin-root {
+  color: #F5F1E8 !important;
+  background: #000000 !important;
+}
+.admin-root nav button, .admin-root [role="tab"] {
+  min-height: 42px;
+  border: 1px solid transparent;
+  border-radius: 12px !important;
+  background: transparent;
+  color: #b6b6c2;
+  transition: none !important;
+}
+.admin-root nav button:hover, .admin-root [role="tab"]:hover {
+  background: rgba(255,255,255,.045) !important;
+  color: #f5f3fb !important;
+}
+.admin-root table { border-collapse: collapse !important; }
+.admin-root th {
+  color: #B6B6C2 !important;
+  font-family: -apple-system, BlinkMacSystemFont, Inter, sans-serif !important;
+  font-size: 10px !important;
+  font-weight: 700 !important;
+  letter-spacing: .11em !important;
+  text-transform: uppercase;
+}
+.admin-root td, .admin-root th { border-color: rgba(255,255,255,.075) !important; }
+
+/* Player, mode and board tiles retain their existing content and actions. */
+[class*="grid"] > button, [class*="grid"] > [role="button"],
+.game-board button, .game-board [role="button"],
+[data-game-board] button, [data-box], .game-square,
+.box-card, .vault-box, .case-box, .briefcase {
+  border-radius: 15px !important;
+  border-color: rgba(255,255,255,.10) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.035) !important;
+}
+.game-board button, [data-game-board] button, [data-box],
+.game-square, .box-card, .vault-box, .case-box, .briefcase {
+  background-color: #1C1C1E;
+}
+.game-board button:hover, [data-game-board] button:hover, [data-box]:hover,
+.game-square:hover, .box-card:hover, .vault-box:hover, .case-box:hover, .briefcase:hover,
+[class*="grid"] > button:hover, [class*="grid"] > [role="button"]:hover {
+  border-color: rgba(232,194,107,.35) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.045) !important;
+  filter: none !important;
+  transform: none !important;
+}
+.dot-tv-shell {
+  background: #000000 !important;
+  background-image: none !important;
+}
+.dot-tv-shell .comic-panel, .dot-tv-shell .comic-panel-sm {
+  background: #171719 !important;
+  border-color: rgba(255,255,255,.12) !important;
+  backdrop-filter: none !important;
+}
+.dot-tv-moment {
+  border-color: rgba(232,194,107,.45) !important;
+  box-shadow: 0 18px 60px rgba(0,0,0,.45) !important;
+}
+body.dot-mobile-experience .comic-panel,
+body.dot-mobile-experience .comic-panel-sm {
+  border-radius: 18px !important;
+}
+body.dot-mobile-experience button, body.dot-mobile-experience [role="button"] {
+  min-height: 44px;
+}
+
+/* Explicitly remove motion from every existing screen and interaction. */
+*, *::before, *::after {
+  animation: none !important;
+  transition: none !important;
+  scroll-behavior: auto !important;
+}
+.comic-boom:hover, .comic-boom:active,
+button:hover, [role="button"]:hover,
+[class*="grid"] > button:hover, [data-box]:hover,
+.game-square:hover, .box-card:hover, .vault-box:hover, .case-box:hover, .briefcase:hover {
+  transform: none !important;
+}
+
+/* ===== polish.css ===== */
+/* ==========================================================================
+   POLISH — τελικό γυάλισμα για Site / Tablet / TV / Κινητά (ΟΧΙ Admin: αυτό έχει δικό του θέμα).
+   Φορτώνεται μετά το visual-overhaul.css. Μόνο εμφάνιση.
+   ========================================================================== */
+
+/* 1 · Ζεστό μαύρο αντί για κρύο γκρι: τα panels/κάρτες/inputs ταιριάζουν με το χρυσό */
+:root, .dark {
+  --glass-1: rgba(19, 16, 11, 0.74);
+  --glass-2: rgba(30, 25, 16, 0.62);
+  --glass-thick: rgba(12, 10, 7, 0.86);
+  --glass-stroke: rgba(232, 194, 107, 0.20);
+  --glass-hi: rgba(255, 244, 205, 0.14);
+  --card: 40 14% 7%;
+  --popover: 40 14% 8%;
+  --secondary: 40 10% 12%;
+  --muted: 40 8% 14%;
+  --input: 40 10% 10%;
+  --border: 42 28% 24%;
+  --surface-1: 40 10% 5%;
+  --surface-2: 40 10% 9%;
+  --surface-3: 40 8% 14%;
+}
+.bg-card { background-color: rgba(19, 16, 11, 0.74) !important; }
+.bg-secondary { background-color: rgba(255, 236, 180, 0.06) !important; }
+
+/* Κουμπιά-κάψουλες: ζεστό γυαλί με χρυσό περίγραμμα (τα χρωματιστά/primary παραμένουν όπως ορίζονται) */
+.comic-boom:not([class*="bg-primary"]):not([class*="tarot-"]):not([class*="bg-destructive"]):not([class*="bg-emerald"]):not([class*="bg-red"]):not([class*="bg-amber"]) {
+  background:
+    linear-gradient(180deg, rgba(255, 236, 180, 0.10), rgba(255, 236, 180, 0.03)),
+    rgba(26, 21, 12, 0.72) !important;
+  border-color: rgba(232, 194, 107, 0.32) !important;
+}
+
+/* Απενεργοποιημένα κουμπιά: ευανάγνωστα, όχι «φάντασμα» */
+.comic-boom:disabled, .comic-boom[aria-disabled="true"] {
+  opacity: 1 !important;
+  filter: none !important;
+  color: rgba(243, 231, 196, 0.5) !important;
+  background: rgba(255, 244, 205, 0.05) !important;
+  border-color: rgba(232, 194, 107, 0.2) !important;
+  box-shadow: none !important;
+  cursor: not-allowed;
+}
+
+/* 2 · Μπάρα «ΕΝΑΡΞΗ ΠΑΙΧΝΙΔΙΟΥ» στο tablet: πριν ήταν διάφανη και έπεφτε πάνω στις φωτογραφίες */
+.dot-startbar {
+  position: sticky;
+  bottom: 0;
+  z-index: 30;
+  margin-top: 8px;
+  padding: 28px 16px calc(env(safe-area-inset-bottom, 0px) + 18px);
+  text-align: center;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.9) 34%, #000 100%);
+  pointer-events: none;
+}
+.dot-startbar > * { pointer-events: auto; }
+.dot-startbar-hint {
+  display: inline-block;
+  margin-top: 10px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #F3DFA6;
+  background: rgba(232, 194, 107, 0.1);
+  border: 1px solid rgba(232, 194, 107, 0.35);
+}
+
+/* 3 · Δευτερεύον κουμπί (π.χ. «ΔΕΣ ΤΗ ΣΥΛΛΟΓΗ»): περίγραμμα, όχι γεμάτο χρυσό — ιεραρχία σωστή δίπλα στο κύριο */
+.dot-btn-ghost {
+  min-height: 56px;
+  background: transparent !important;
+  border: 1px solid rgba(232, 194, 107, 0.55) !important;
+  color: #F3DFA6 !important;
+  box-shadow: none !important;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+.dot-btn-ghost:hover { background: rgba(232, 194, 107, 0.12) !important; border-color: #E8C26B !important; }
+.cinv-btn { min-height: 56px; }
+
+/* 4 · Πεδία σύνδεσης (TV / κινητά): ζεστό φόντο και καθαρό focus */
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="color"]), select, textarea {
+  background-color: rgba(255, 244, 205, 0.05);
+}
+
+/* 5 · Checkbox/radio στο χρώμα της εφαρμογής (πριν: μπλε του browser) */
+input[type="checkbox"], input[type="radio"], input[type="range"] { accent-color: #E8C26B; }
+
+/* ===== wallpaper.css ===== */
+/* Wallpaper οθόνης: ενεργό ΜΟΝΟ όταν υπάρχει εικόνα (body[data-wallpaper]). Χωρίς εικόνα, τίποτα δεν αλλάζει. */
+.dot-wallpaper {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+/* σκούρο «σεντόνι» για ευανάγνωστα κείμενα πάνω από οποιαδήποτε φωτογραφία */
+.dot-wallpaper::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0.78));
+}
+body[data-wallpaper] {
+  background: transparent !important;
+  background-image: none !important;
+}
+body[data-wallpaper] .comic-dots,
+body[data-wallpaper] .comic-dots-dark,
+body[data-wallpaper] .dot-tv-shell {
+  background: transparent !important;
+  background-image: none !important;
+}
+
+/* ===== ios-flat.css ===== */
+/* DEAL OF TEMPTATION — iOS flat layer (φορτώνεται τελευταίο).
+   Συμπαγείς επιφάνειες, χωρίς blur, χωρίς animations/transitions, ελάχιστες σκιές. */
+
+:root, .dark {
+  --glass-1: #1C1C1E;
+  --glass-2: #2C2C2E;
+  --glass-thick: #141416;
+  --glass-stroke: rgba(255, 255, 255, 0.10);
+  --glass-hi: rgba(255, 255, 255, 0.06);
+  --flat-bg: #000000;
+  --flat-surface: #1C1C1E;
+  --flat-surface-2: #2C2C2E;
+  --flat-surface-3: #3A3A3C;
+  --flat-separator: rgba(84, 84, 88, 0.65);
+  --flat-label-2: rgba(235, 235, 245, 0.62);
+  --flat-gold: #E8C26B;
+}
+
+*, *::before, *::after {
+  animation: none !important;
+  transition: none !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+  scroll-behavior: auto !important;
+}
+
+html, body { background: var(--flat-bg) !important; }
+
+/* Διακοσμητικά layers που υπήρχαν μόνο για εφέ */
+.cinv-mote, .promo-mote, .dot-tv-orb, .film-progress,
+.blur-3xl, .blur-2xl, .blur-xl, .blur-lg { display: none !important; }
+.cinv-line { opacity: 1 !important; filter: none !important; transform: none !important; }
+.film-slide.is-on img, .promo-zoom, .cinv-sealwrap { transform: none !important; }
+.cinv-beam { filter: none !important; opacity: .35 !important; }
+
+/* Συμπαγείς επιφάνειες αντί για γυαλί */
+.comic-panel, .adm-card, .adm-sheet, .adm-more, .adm-sessionbar, .adm-header, .adm-sidebar,
+.adm-tabbar, .mode-timer, [class*="glass"] {
+  box-shadow: none !important;
+}
+.comic-panel:not([class*="bg-primary"],[class*="bg-white"],[class*="bg-tarot-gold"],[class*="bg-amber"],[class*="bg-yellow"],[class*="bg-[#E8C26B]"],[class*="bg-[#F"],[class*="bg-[#f"],[class*="bg-emerald-"],[class*="bg-green-"],[class*="bg-lime"],[class*="bg-cyan"],[class*="bg-sky-"],[class*="bg-gradient"],[style*="background: #E8C26B"],[style*="background: rgb(232, 194, 107)"],[style*="#fff"],[style*="rgb(255, 255, 255)"]) { background-color: var(--flat-surface) !important; }
+.comic-panel { border: 1px solid var(--glass-stroke) !important; }
+
+/* Σκούρα γράμματα πάνω σε σκούρο/γκρι φόντο → λευκά. Μένουν σκούρα μόνο πάνω σε χρυσό/άσπρο/ανοιχτό φόντο. */
+:is(.text-black, .text-tarot-dark, .text-slate-900, .text-gray-900, .text-gray-800, .text-neutral-900, .text-zinc-900, .text-stone-900, .text-background):not([class*="bg-primary"],[class*="bg-white"],[class*="bg-tarot-gold"],[class*="bg-amber"],[class*="bg-yellow"],[class*="bg-[#E8C26B]"],[class*="bg-[#F"],[class*="bg-[#f"],[class*="bg-emerald-"],[class*="bg-green-"],[class*="bg-lime"],[class*="bg-cyan"],[class*="bg-sky-"],[class*="bg-gradient"],[style*="background: #E8C26B"],[style*="background: rgb(232, 194, 107)"],[style*="#fff"],[style*="rgb(255, 255, 255)"]):not(:is([class*="bg-primary"],[class*="bg-white"],[class*="bg-tarot-gold"],[class*="bg-amber"],[class*="bg-yellow"],[class*="bg-[#E8C26B]"],[class*="bg-[#F"],[class*="bg-[#f"],[class*="bg-emerald-"],[class*="bg-green-"],[class*="bg-lime"],[class*="bg-cyan"],[class*="bg-sky-"],[class*="bg-gradient"],[style*="background: #E8C26B"],[style*="background: rgb(232, 194, 107)"],[style*="#fff"],[style*="rgb(255, 255, 255)"]) *) {
+  color: #F5F1E8 !important;
+}
 .adm-tabbar { background: #121214 !important; border-top: 1px solid var(--flat-separator) !important; }
 .adm-overlay { background: rgba(0, 0, 0, 0.72) !important; }
 

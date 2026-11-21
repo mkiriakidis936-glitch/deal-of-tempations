@@ -15,23 +15,19 @@ const SITE_PAGES = [
   { path: '/site?event=pajama', label: 'Pajama' },
   { path: '/site?event=lockdown', label: 'Pajama Lockdown 18+' },
   { path: '/site?event=beachbar', label: 'Beach Bar Home Lockdown' },
+  { path: '/site?event=extended', label: 'Pedi-Glam Extended' },
+  { path: '/site?event=marathon4h', label: 'Pajama Heist & Arrest' },
   { path: '/promo', label: 'Promo' },
 ];
 
 const FORM_PAGES = [
-  { path: '/invitation', label: 'Πρόσκληση' },
-  { path: '/pajama-form', label: 'Pajama' },
-  { path: '/modes-form', label: 'Modes' },
-  { path: '/intake', label: 'Intake' },
   { path: '/forms', label: 'Δημόσιες φόρμες' },
-  { path: '/pajama-invite', label: 'Pajama invite' },
-  { path: '/vip-access', label: 'VIP Access' },
 ];
 
 export default function AdminMediaPreview() {
   const [active, setActive] = useState('site');
   const [sitePath, setSitePath] = useState('/site');
-  const [formPath, setFormPath] = useState('/invitation');
+  const [formPath, setFormPath] = useState('/forms');
   const selected = PREVIEWS.find((item) => item.id === active) || PREVIEWS[0];
   const path = active === 'site' ? sitePath : active === 'forms' ? formPath : selected.path;
   const title = active === 'site'

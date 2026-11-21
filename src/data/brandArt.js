@@ -38,7 +38,7 @@ export const ART = {
   extraPediGlam: '',
   wallpaperPhone: '',
   wallpaperTablet: '',
-  wallpaperTv: '',
+  wallpaperTv: `${BASE}8da1bee92_o8278mo8278mo827.jpeg`,
   patternSeamless: '',
 };
 
@@ -51,12 +51,19 @@ export const MODE_COVERS = {
   modeCover_lockdown: ART.vault,
   modeCover_beach_bar: ART.photoSlippers,
   modeCover_pedi_glam: ART.extraPediGlam || ART.photoPediGlam,
-  modeCover_marathon_4h: ART.party2,
+  modeCover_marathon_4h: ART.heist3,
 };
 
 // Ανεξάρτητη φωτογραφική ταυτότητα για καθένα από τα τέσσερα νέα Modes.
+const MODE_MEDIA_DEFAULTS = {
+  marathon_4h: {
+    hero: ART.heist5,
+    gallery: [ART.heist1, ART.heist3, ART.heist5, ART.heist7, ART.heist8, ART.heist10],
+  },
+};
+
 export const MODE_MEDIA = Object.fromEntries(MEDIA_MODES.map(({ id }) => [id, {
-  hero: '', cover: MODE_COVERS[`modeCover_${id}`] || '', sections: [], gallery: [], cards: [], trailer: '',
+  hero: MODE_MEDIA_DEFAULTS[id]?.hero || '', cover: MODE_COVERS[`modeCover_${id}`] || '', sections: [], gallery: [...(MODE_MEDIA_DEFAULTS[id]?.gallery || [])], cards: [], trailer: '',
 }]));
 
 export const PHOTO = {
@@ -101,10 +108,10 @@ export function applyMediaOverrides(o = {}) {
     const coverId = `modeCover_${id}`;
     const cover = saved.coverCleared === true ? '' : (str(saved.cover) || str(o[coverId]) || (clearPhotos ? '' : DEFAULTS[coverId]));
     MODE_MEDIA[id] = {
-      hero: str(saved.hero) || '',
+      hero: str(saved.hero) || (clearPhotos ? '' : MODE_MEDIA_DEFAULTS[id]?.hero || ''),
       cover,
       sections: Array.isArray(saved.sections) ? saved.sections : [],
-      gallery: Array.isArray(saved.gallery) ? Array.from({ length: 6 }, (_, index) => str(saved.gallery[index]) || '') : Array(6).fill(''),
+      gallery: Array.isArray(saved.gallery) ? Array.from({ length: 6 }, (_, index) => str(saved.gallery[index]) || '') : Array.from({ length: 6 }, (_, index) => (clearPhotos ? '' : MODE_MEDIA_DEFAULTS[id]?.gallery?.[index] || '')),
       cards: Array.isArray(saved.cards) ? saved.cards : [],
       trailer: str(saved.trailer) || '',
     };

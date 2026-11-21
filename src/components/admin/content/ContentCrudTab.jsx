@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import CardPreviewPair, { cardFromItem } from '@/components/admin/CardPreviewPair';
 import { base44 } from '@/api/base44Client';
 import ComicPanel from '@/components/comic/ComicPanel';
 import ComicButton from '@/components/comic/ComicButton';
-import CardPreview from '@/components/admin/content/CardPreview';
 
 function blankItem(fields) {
   const obj = {};
@@ -264,7 +264,7 @@ export default function ContentCrudTab({ category }) {
             {(shape === 'list' || shape === 'stringList') && (
               <div>
                 <div className="text-xs font-bold mb-1">👁️ Προεπισκόπηση</div>
-                <CardPreview category={category} data={editing.data} />
+                <CardPreviewPair card={cardFromItem(shape === 'stringList' ? (editing.data?.text || '') : editing.data, category)} />
               </div>
             )}
             </div>

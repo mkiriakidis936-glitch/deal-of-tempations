@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import GameCard from '@/components/shared/GameCard';
+import LoungeMobile from '@/components/modes/LoungeMobile';
 import { MODE_THEMES, modeMeta } from '@/data/modes/modeRegistry';
 import { EXTENDED_CHAOS_MARKET_CARDS, GATE_TOKENS, ROUTES } from '@/data/modes/extendedContent';
 import { EXIT_CODE, syncExitCode } from '@/data/modes/lockdownContent';
@@ -111,6 +112,8 @@ export default function ModeMobile({ state, me, updateState, onChangePlayer, ses
             <div className="text-xs opacity-70">Η επιλογή και η ολοκλήρωση ελέγχονται από το tablet. Μπορείς πάντα να ζητήσεις PASS ή STOP.</div>
           </div>
         )}
+
+        {act === 'lounge' && <LoungeMobile state={state} me={me} sendAction={sendAction} updateState={updateState} />}
 
         {mission && mission.status === 'active' && (
           <GameCard

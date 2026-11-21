@@ -5,6 +5,7 @@ import { EXT_END, EXT_ZONES, zoneOf, squareType, ROUTES } from '@/data/modes/ext
 import { EXIT_CODE, syncExitCode } from '@/data/modes/lockdownContent';
 import { consentPending } from '@/lib/consent';
 import { ConsentTV } from '@/components/modes/ConsentCheckIn';
+import LoungeTV from '@/components/modes/LoungeTV';
 import { fmt, timerLeft, useTick, setGameStopActive } from '@/lib/modeKit';
 
 // Τηλεόραση (/tv) για τα 4 νέα modes. Δεν δείχνει ποτέ κρυφές κάρτες, ερωτήσεις ψιθύρων ή μυστικές αποστολές.
@@ -36,7 +37,8 @@ export default function ModeTV({ state }) {
         {mg.timer && <div className={`font-display text-6xl sm:text-8xl tabular-nums ${left < 60 || surge ? 'comic-pulse' : ''}`} style={{ color: left < 60 || surge ? '#FF453A' : theme.accent2 }}>{fmt(left)}</div>}
       </div>
 
-      {mg.stop && <div className="rounded-xl p-6 text-center font-display text-5xl" style={{ background: '#5A1410' }}>⏸ ΣΤΟΠ — έλεγχος ότι όλες είναι ΟΚ</div>}
+      {mg.stop && <div className="rounded-xl p-6 text-center font-display text-5xl" style={{ background: '#5A1410' }}>⏸ SAFETY LOCK ENGAGED — αναμονή για ομόφωνη συναίνεση</div>}
+      {act === 'lounge' && <LoungeTV state={state} />}
       {surge && <div className="rounded-xl p-6 text-center font-display text-4xl animate-pulse" style={{ background: '#7A1A15' }}>MIDNIGHT PENALTY SURGE · +5′</div>}
       {mg.finishedAll && <div className="rounded-xl p-6 text-center font-display text-5xl" style={{ background: '#120F05', border: '2px solid #E8C26B', color: '#E8C26B' }}>🏆 {ranking[0]?.name} ΝΙΚΗΤΡΙΑ!</div>}
 

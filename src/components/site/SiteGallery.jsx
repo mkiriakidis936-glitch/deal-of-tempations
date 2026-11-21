@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { Image } from '@/components/ui/image';
 import { cn } from '@/lib/utils';
 import { HEIST_PHOTOS, PAJAMA_PHOTOS, MODE_MEDIA } from '@/data/brandArt';
 
@@ -12,7 +11,7 @@ const TABS = [
 
 export default function SiteGallery({ initialTab = 'all', eventId }) {
   const modeId = MODE_IDS[eventId];
-  const modePhotos = modeId ? (MODE_MEDIA[modeId]?.gallery || []) : [];
+  const modePhotos = modeId ? (MODE_MEDIA[modeId]?.gallery || []).filter(Boolean) : [];
   const [tab, setTab] = useState(initialTab);
   const photos = modeId ? modePhotos : (TABS.find((t) => t.id === tab) || TABS[0]).photos;
   if (modeId && !modePhotos.length) return null;
@@ -32,11 +31,10 @@ export default function SiteGallery({ initialTab = 'all', eventId }) {
             )}>{t.label}</button>
           ))}
         </div>}
-        <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
+        <div className="columns-2 md:columns-3 xl:columns-4 gap-3 sm:gap-4">
           {photos.map((src, index) => (
-            <div key={`${src}-${index}`} className="relative overflow-hidden rounded-xl border border-tarot-gold/20 aspect-[4/5] bg-[#111] group">
-              <Image src={src} fittingType="fill" className="w-full h-full object-cover object-center transition-transform duration-700 group-hover:scale-[1.04]" />
-              <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-background/45 to-transparent" />
+            <div key={`${src}-${index}`} className="mb-3 sm:mb-4 break-inside-avoid overflow-hidden rounded-xl border border-tarot-gold/20 bg-[#111]">
+              <img src={src} alt="" loading="lazy" decoding="async" className="block h-auto w-full" />
             </div>
           ))}
         </div>
