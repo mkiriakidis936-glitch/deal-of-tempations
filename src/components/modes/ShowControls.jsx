@@ -76,11 +76,12 @@ export default function ShowControls({ state, lg, players, RULES, commit, log, n
     const winners = Object.entries(lg.bets || {}).filter(([, target]) => target === lg.firstArrest.pid).map(([pid]) => pid);
     let next = { ...lg, betsPaid: true, betWinners: winners };
     for (const pid of winners) next = E.updateStat(next, RULES, pid, (s) => ({ loot: s.loot + BET_REWARD }));
-    commit(next, winners.length ? `🎯 Στοίχημα έναρξης: ${winners.map(nameOf).join(', ')} το μάντεψαν (+${money(BET_REWARD)})` : '🎯 Στοίχημα έναρξης: καμία δεν το μάντεψε');
+    commit(next, winners.length ? `🎯 Στοίχημα έναρξης: ${winners.map(nameOf).join(', ')} το ${winners.length === 1 ? 'μάντεψε' : 'μάντεψαν'} (+${money(BET_REWARD)})` : '🎯 Στοίχημα έναρξης: καμία δεν το μάντεψε');
   }, [lg.firstArrest?.at]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const set = (patch, text) => commit({ ...lgRef.current, ...patch }, text);
   const golden = E.isGolden(lg, now);
+  const paused = !!(state.stopActive || state.mg?.stop);
 
   function startGolden() {
     set({ golden: { at: Date.now(), until: Date.now() + 60000 } }, '✨ ΧΡΥΣΟ ΛΕΠΤΟ: για 60″ κάθε λεία μετράει διπλή!');
@@ -102,7 +103,7 @@ export default function ShowControls({ state, lg, players, RULES, commit, log, n
     const q = lg.dossierQ;
     if (!q) return;
     const winners = Object.entries(lg.dossierGuesses || {}).filter(([, target]) => target === q.owner).map(([pid]) => pid);
-    let next = { ...lg, dossierQ: { ...q, revealed: true, winners } };
+    let next = { ...lg, dossierQ: { ...q, revealed: true, revealedAt: Date.now(), winners } };
     for (const pid of winners) next = E.updateStat(next, RULES, pid, (s) => ({ loot: s.loot + DOSSIER_REWARD }));
     commit(next, `🗂️ Το είπε η ${nameOf(q.owner)}${winners.length ? ` · σωστές: ${winners.map(nameOf).join(', ')} (+${money(DOSSIER_REWARD)})` : ''}`);
   }
@@ -134,7 +135,8 @@ export default function ShowControls({ state, lg, players, RULES, commit, log, n
 
   // Υπενθυμίσεις σκηνοθέτη με βάση τον χρόνο από την έναρξη.
   const minutes = state.gameStartedAt ? (now - state.gameStartedAt) / 60000 : 0;
-  const cue = DIRECTOR_CUES.find((c) => minutes >= c.at && !(lg.cuesDone || []).includes(c.id));
+  // Η πιο πρόσφατη υπενθύμιση που δεν έχει γίνει (οι παλιότερες δεν «μπλοκάρουν» τις νέες).
+  const cue = [...DIRECTOR_CUES].reverse().find((c) => minutes >= c.at && !(lg.cuesDone || []).includes(c.id));
   const dossierReady = Object.keys(lg.dossier || {}).length;
   const ceremony = lg.ceremony;
   const award = ceremony?.awards?.[ceremony.step];
@@ -169,6 +171,8 @@ export default function ShowControls({ state, lg, players, RULES, commit, log, n
       )}
 
       <Panel title="🎬 Εκπομπή">
+        {paused && <div className="text-[14px] font-semibold" style={{ color: 'var(--ui-red)' }}>⏸ Το παιχνίδι είναι σε ΣΤΟΠ — τα εργαλεία εκπομπής ενεργοποιούνται μόλις συνεχίσει.</div>}
+        <fieldset disabled={paused} className="space-y-3" style={paused ? { opacity: 0.45 } : undefined}>
         <div className="flex flex-wrap gap-2">
           <Btn color="bg-amber-600" disabled={golden} onClick={startGolden}>{golden ? `✨ Χρυσό λεπτό · ${Math.ceil((lg.golden.until - now) / 1000)}″` : '✨ Χρυσό λεπτό'}</Btn>
           <Btn onClick={() => set({ weatherAt: Date.now() })}>📊 Δελτίο καιρού</Btn>
@@ -217,6 +221,7 @@ export default function ShowControls({ state, lg, players, RULES, commit, log, n
           {' · '}🎯 Στοιχήματα: {Object.keys(lg.bets || {}).length}{lg.betsPaid ? ' (πληρώθηκαν)' : ''}
           {' · '}🗂️ Φάκελοι: {dossierReady}/{players.length}
         </div>
+        </fieldset>
       </Panel>
     </>
   );

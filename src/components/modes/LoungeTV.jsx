@@ -6,6 +6,7 @@ import GameCard from '@/components/shared/GameCard';
 import { SQUARE_TYPES, LOUNGE_FINALE, restraintFor, TICKLE_TOOLS } from '@/data/modes/loungeContent';
 import { stars, rulesForGame } from '@/components/modes/ActLounge';
 import { TvScreen, TvBar, TvLeaderboard } from '@/design/ui';
+import GameDurationClock from '@/components/shared/GameDurationClock';
 import { GoldenBand, VoteBar, DossierCard, OnAirTakeover, WeatherTakeover, CeremonyTakeover, newsTicker } from '@/components/modes/ShowTV';
 
 const PARAMS = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : new URLSearchParams();
@@ -73,7 +74,7 @@ export default function LoungeTV({ state }) {
       <TvBar
         title={(RULES.title || 'PAJAMA HEIST & ARREST').toUpperCase()}
         meta={`Γύρος ${lg.round || 1} · Φάση ${(lg.phase || 0) + 1}/${RULES.phases.length} · ${phase?.name || ''}`}
-        right={<><span className="ui-tv-num ui-tv-text">{clock}</span><span className="ui-tv-pill">ΛΕΙΑ {money(totalLoot)}</span></>}
+        right={<><GameDurationClock state={state} inline /><span className="ui-tv-num ui-tv-text">{clock}</span><span className="ui-tv-pill">ΛΕΙΑ {money(totalLoot)}</span></>}
       />
 
       <GoldenBand lg={lg} now={now} />
@@ -136,7 +137,7 @@ export default function LoungeTV({ state }) {
         </div>
 
         <div className="space-y-3">
-          <DossierCard lg={lg} nameOf={nameOf} />
+          <DossierCard lg={lg} nameOf={nameOf} now={now} />
           {lg.card && <GameCard variant="tv" kicker={lg.card.market ? 'Μαύρη Αγορά' : 'Κάρτα Εντάλματος'} corner={nameOf(lg.card.pid)} icon={lg.card.market ? '🕶️' : '📜'} image={lg.card.image} title={lg.card.title} text={lg.card.text} footLeft={lg.card.secs ? `⏱ ${lg.card.secs}″` : ''} />}
           {lg.interro && (
             <div className="ui-card ui-card--danger space-y-3 text-center">

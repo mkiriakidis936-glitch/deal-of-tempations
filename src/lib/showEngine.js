@@ -5,6 +5,8 @@ const money = (n) => `${Math.round(Number(n) || 0).toLocaleString('el-GR')}€`;
 const t = (lg, pid) => lg.tally?.[pid] || {};
 const s = (lg, pid) => lg.stats?.[pid] || {};
 const nameOf = (players, pid) => players.find((p) => p.id === pid)?.name || '—';
+// Σωστός ενικός/πληθυντικός: n(1, 'σύλληψη', 'συλλήψεις') → «1 σύλληψη».
+const n = (value, one, many) => `${value} ${value === 1 ? one : many}`;
 
 // Η παίκτρια με τη μεγαλύτερη τιμή (μόνο αν > min). Ισοπαλία: σπάει με τη λεία.
 function topBy(lg, players, value, min = 0) {
@@ -19,28 +21,33 @@ function topBy(lg, players, value, min = 0) {
 
 export const AWARDS = [
   { id: 'loot', icon: '💰', title: 'Η Βασίλισσα της Λείας', line: (v) => `Τελείωσε με ${money(v)}`, pick: (lg, ps) => topBy(lg, ps, (id) => s(lg, id).loot || 0, -1) },
-  { id: 'wanted', icon: '🚔', title: 'Η πιο Καταζητούμενη', line: (v) => `${v} συλλήψεις μέσα σε μία βραδιά`, pick: (lg, ps) => topBy(lg, ps, (id) => t(lg, id).arrests || 0) },
-  { id: 'liar', icon: '🤥', title: 'Η Μεγαλύτερη Ψεύτρα', line: (v) => `${v} «ψέματα» στην ανάκριση`, pick: (lg, ps) => topBy(lg, ps, (id) => t(lg, id).lies || 0) },
-  { id: 'honest', icon: '😇', title: 'Η πιο Ειλικρινής', line: (v) => `${v} «αλήθειες» στην ανάκριση`, pick: (lg, ps) => topBy(lg, ps, (id) => t(lg, id).truths || 0) },
-  { id: 'daring', icon: '🔥', title: 'Η πιο Τολμηρή', line: (v) => `Ολοκλήρωσε ${v} κάρτες`, pick: (lg, ps) => topBy(lg, ps, (id) => t(lg, id).cardsDone || 0) },
-  { id: 'lucky', icon: '🎲', title: 'Το Χρυσό Χέρι', line: (v) => `${v} εξάρια στο ζάρι`, pick: (lg, ps) => topBy(lg, ps, (id) => t(lg, id).sixes || 0) },
-  { id: 'unlucky', icon: '🌧️', title: 'Η πιο Άτυχη στο Ζάρι', line: (v) => `${v} φορές έφερε άσσο`, pick: (lg, ps) => topBy(lg, ps, (id) => t(lg, id).ones || 0) },
+  { id: 'wanted', icon: '🚔', title: 'Η πιο Καταζητούμενη', line: (v) => `${n(v, 'σύλληψη', 'συλλήψεις')} μέσα σε μία βραδιά`, pick: (lg, ps) => topBy(lg, ps, (id) => t(lg, id).arrests || 0) },
+  { id: 'liar', icon: '🤥', title: 'Η Μεγαλύτερη Ψεύτρα', line: (v) => `${n(v, '«ψέμα»', '«ψέματα»')} στην ανάκριση`, pick: (lg, ps) => topBy(lg, ps, (id) => t(lg, id).lies || 0) },
+  { id: 'honest', icon: '😇', title: 'Η πιο Ειλικρινής', line: (v) => `${n(v, '«αλήθεια»', '«αλήθειες»')} στην ανάκριση`, pick: (lg, ps) => topBy(lg, ps, (id) => t(lg, id).truths || 0) },
+  { id: 'daring', icon: '🔥', title: 'Η πιο Τολμηρή', line: (v) => `Ολοκλήρωσε ${n(v, 'κάρτα', 'κάρτες')}`, pick: (lg, ps) => topBy(lg, ps, (id) => t(lg, id).cardsDone || 0) },
+  { id: 'lucky', icon: '🎲', title: 'Το Χρυσό Χέρι', line: (v) => `${n(v, 'εξάρι', 'εξάρια')} στο ζάρι`, pick: (lg, ps) => topBy(lg, ps, (id) => t(lg, id).sixes || 0) },
+  { id: 'unlucky', icon: '🌧️', title: 'Η πιο Άτυχη στο Ζάρι', line: (v) => `${n(v, 'φορά', 'φορές')} έφερε άσσο`, pick: (lg, ps) => topBy(lg, ps, (id) => t(lg, id).ones || 0) },
   { id: 'fall', icon: '📉', title: 'Η Μεγαλύτερη Πτώση', line: (v) => `Έχασε συνολικά ${money(v)}`, pick: (lg, ps) => topBy(lg, ps, (id) => t(lg, id).lootOut || 0) },
-  { id: 'barefoot', icon: '🦶', title: 'Η Ξυπόλυτη της Βραδιάς', line: (v) => `Έχασε ${v} σαγιονάρες/κάλτσες`, pick: (lg, ps) => topBy(lg, ps, (id) => t(lg, id).footLost || 0) },
-  { id: 'diplomat', icon: '🕶️', title: 'Η Διπλωμάτισσα', line: (v) => `Πλήρωσε ${v} φορές δωροδοκία`, pick: (lg, ps) => topBy(lg, ps, (id) => t(lg, id).bribes || 0) },
+  { id: 'barefoot', icon: '🦶', title: 'Η Ξυπόλυτη της Βραδιάς', line: (v) => `Έχασε ${n(v, 'σαγιονάρα/κάλτσα', 'σαγιονάρες/κάλτσες')}`, pick: (lg, ps) => topBy(lg, ps, (id) => t(lg, id).footLost || 0) },
+  { id: 'diplomat', icon: '🕶️', title: 'Η Διπλωμάτισσα', line: (v) => `Πλήρωσε ${n(v, 'φορά', 'φορές')} δωροδοκία`, pick: (lg, ps) => topBy(lg, ps, (id) => t(lg, id).bribes || 0) },
   { id: 'traitor', icon: '🗡️', title: 'Η Προδότρια', line: (v) => `Έκλεψε ${money(v)} στα κρυφά`, pick: (lg, ps) => topBy(lg, ps, (id) => (lg.betrayals || []).filter((b) => b.from === id).reduce((sum, b) => sum + (b.amount || 0), 0)) },
-  { id: 'clean', icon: '🕊️', title: 'Η Αθώα', line: () => 'Δεν συνελήφθη ούτε μία φορά', pick: (lg, ps) => {
+  { id: 'clean', icon: '🕊️', title: 'Η Αθώα', line: () => 'Δεν συνελήφθη ούτε μία φορά', pick: (lg, ps, taken = new Set()) => {
     const free = ps.filter((p) => !(t(lg, p.id).arrests > 0));
     if (!free.length || free.length === ps.length) return null;
-    return topBy(lg, free, (id) => (s(lg, id).loot || 0) + 1, 0);
+    // Αν αθώες είναι πολλές, προτιμάται όποια δεν έχει πάρει ήδη βραβείο.
+    const fresh = free.filter((p) => !taken.has(p.id));
+    return topBy(lg, fresh.length ? fresh : free, (id) => (s(lg, id).loot || 0) + 1, 0);
   } },
 ];
 
 // Όλα τα βραβεία που απονέμονται (ένα ανά κατηγορία, όσα έχουν νικήτρια).
 export function computeAwards(lg, players) {
+  const taken = new Set();
   return AWARDS.map((award) => {
-    const win = award.pick(lg, players);
-    return win ? { id: award.id, icon: award.icon, title: award.title, pid: win.pid, name: nameOf(players, win.pid), line: award.line(win.value) } : null;
+    const win = award.pick(lg, players, taken);
+    if (!win) return null;
+    taken.add(win.pid);
+    return { id: award.id, icon: award.icon, title: award.title, pid: win.pid, name: nameOf(players, win.pid), line: award.line(win.value) };
   }).filter(Boolean);
 }
 
@@ -56,13 +63,13 @@ export function highlights(lg, players) {
   const out = [];
   const peak = topBy(lg, players, (id) => t(lg, id).lootPeak || 0);
   if (peak) out.push({ icon: '💎', text: `Το μεγαλύτερο ποσό της βραδιάς: ${money(peak.value)} από ${nameOf(players, peak.pid)}` });
-  if (sum('arrests')) out.push({ icon: '🚔', text: `${sum('arrests')} συλλήψεις συνολικά` });
-  if (sum('lies')) out.push({ icon: '🤥', text: `${sum('lies')} ψέματα και ${sum('truths')} αλήθειες στις ανακρίσεις` });
-  if (sum('rolls')) out.push({ icon: '🎲', text: `${sum('rolls')} ζαριές · ${sum('sixes')} εξάρια · ${sum('ones')} άσσοι` });
+  if (sum('arrests')) out.push({ icon: '🚔', text: `${n(sum('arrests'), 'σύλληψη', 'συλλήψεις')} συνολικά` });
+  if (sum('lies')) out.push({ icon: '🤥', text: `${n(sum('lies'), 'ψέμα', 'ψέματα')} και ${n(sum('truths'), 'αλήθεια', 'αλήθειες')} στις ανακρίσεις` });
+  if (sum('rolls')) out.push({ icon: '🎲', text: `${n(sum('rolls'), 'ζαριά', 'ζαριές')} · ${n(sum('sixes'), 'εξάρι', 'εξάρια')} · ${n(sum('ones'), 'άσσος', 'άσσοι')}` });
   const fall = topBy(lg, players, (id) => t(lg, id).lootOut || 0);
   if (fall) out.push({ icon: '📉', text: `${nameOf(players, fall.pid)} έχασε ${money(fall.value)} μέσα στη βραδιά` });
   if (sum('goldenLoot')) out.push({ icon: '✨', text: `Το Χρυσό Λεπτό μοίρασε επιπλέον ${money(sum('goldenLoot'))}` });
-  if ((lg.betrayals || []).length) out.push({ icon: '🗡️', text: `${lg.betrayals.length} κρυφές προδοσίες` });
+  if ((lg.betrayals || []).length) out.push({ icon: '🗡️', text: `${n(lg.betrayals.length, 'κρυφή προδοσία', 'κρυφές προδοσίες')}` });
   if ((lg.news || []).length) out.push({ icon: '📰', text: `${lg.news.length} breaking news από τις παίκτριες` });
   if (lg.finale?.winner) out.push({ icon: '🔓', text: `${nameOf(players, lg.finale.winner)} έλυσε πρώτη τον γρίφο του φινάλε` });
   return out;
@@ -84,7 +91,7 @@ export function weatherReport(lg, players) {
       wanted && { icon: '🚨', text: `Πιο καταζητούμενη: ${nameOf(players, wanted.pid)}` },
       rich && { icon: '💰', text: `Πιο πλούσια: ${nameOf(players, rich.pid)} (${money(rich.value)})` },
       clean.length && clean.length < players.length ? { icon: '🕊️', text: `Ακόμα αθώες: ${clean.map((p) => p.name).join(', ')}` } : null,
-      bare ? { icon: '🦶', text: `${bare} ξυπόλυτες — προσοχή στις παγίδες γέλιου` } : null,
+      bare ? { icon: '🦶', text: `${n(bare, 'ξυπόλυτη', 'ξυπόλυτες')} — προσοχή στις παγίδες γέλιου` } : null,
     ].filter(Boolean),
   };
 }

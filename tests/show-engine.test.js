@@ -48,3 +48,13 @@ test('ο server αντικαθιστά (όχι ενώνει) τις λίστες
   assert.match(src, /news: \[\{ key: uid\(\)/);
   assert.match(src, /anonBox: \[\{ key: uid\(\)/);
 });
+
+test('βραβεία: σωστός ενικός και η «Αθώα» πάει σε όποια δεν έχει άλλο βραβείο', () => {
+  const players3 = [{ id: 'a', name: 'Άννα' }, { id: 'b', name: 'Βίκυ' }, { id: 'c', name: 'Γωγώ' }];
+  let lg = E.createBoard(players3, def);
+  lg = E.updateStat(lg, def, 'a', { loot: 9000 });
+  lg = E.startInterrogation(lg, def, 'c');
+  const awards = computeAwards(lg, players3);
+  assert.equal(awards.find((x) => x.id === 'wanted').line, '1 σύλληψη μέσα σε μία βραδιά');
+  assert.equal(awards.find((x) => x.id === 'clean').name, 'Βίκυ');
+});

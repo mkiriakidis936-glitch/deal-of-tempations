@@ -67,7 +67,12 @@ export default function ModeMobile({ state, me, updateState, onChangePlayer, ses
   const act = meta.acts[Math.min(mg.actIndex || 0, meta.acts.length - 1)];
   const isLockdown = act === 'lockdown';
   const left = timerLeft(mg.timer);
-  const ranking = [...players].sort((a, b) => ((mg.scores || {})[b.id] || 0) + ((mg.tokens || {})[b.id] || 0) - (((mg.scores || {})[a.id] || 0) + ((mg.tokens || {})[a.id] || 0)));
+  // Στο Heist η κατάταξη είναι με τη λεία· στα άλλα modes με πόντους + tokens.
+  const scoreOf = (id) => (act === 'lounge'
+    ? (mg.lounge?.stats?.[id]?.loot || 0)
+    : ((mg.scores || {})[id] || 0) + ((mg.tokens || {})[id] || 0));
+  const scoreLabel = (id) => (act === 'lounge' ? `${Math.round(scoreOf(id)).toLocaleString('el-GR')}€` : scoreOf(id));
+  const ranking = [...players].sort((a, b) => scoreOf(b.id) - scoreOf(a.id));
 
   // Consent check-in: πριν ξεκινήσει το παιχνίδι κάθε παίκτρια δηλώνει τα όριά της.
   if (consentPending(mg)) {
@@ -229,7 +234,7 @@ export default function ModeMobile({ state, me, updateState, onChangePlayer, ses
         <div className="ui-section-title">Βαθμολογία</div>
         <List>
           {ranking.map((p, i) => (
-            <Row key={p.id} left={<span className="w-5 text-center ui-subtitle">{i + 1}</span>} title={p.id === me.id ? <b>{p.name} (εσύ)</b> : p.name} value={((mg.scores || {})[p.id] || 0) + ((mg.tokens || {})[p.id] || 0)} />
+            <Row key={p.id} left={<span className="w-5 text-center ui-subtitle">{i + 1}</span>} title={p.id === me.id ? <b>{p.name} (εσύ)</b> : p.name} value={scoreLabel(p.id)} />
           ))}
         </List>
 

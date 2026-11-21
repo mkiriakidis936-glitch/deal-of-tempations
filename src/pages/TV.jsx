@@ -246,7 +246,7 @@ export default function TVScreen() {
       )}
       <PajamaRevealOverlay />
       <TutorialTV tutorial={state.tutorialDemo} />
-      <GameDurationClock state={state} corner />
+      {!isNewMode(state.mode) && <GameDurationClock state={state} corner />}
       <TVProductionOutput sessionCode={session.sessionCode} />
       <TVDrama drama={state.mg?.drama} muted={IS_PREVIEW || !!state.mg?.tvSfxOff} />
       {!IS_PREVIEW && <TVCamera sessionCode={session.sessionCode} camera={state.camera} hidden={!!(state.stopActive || state.mg?.stop)} />}

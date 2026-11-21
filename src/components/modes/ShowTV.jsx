@@ -34,9 +34,10 @@ export function VoteBar({ tally }) {
   );
 }
 
-export function DossierCard({ lg, nameOf }) {
+export function DossierCard({ lg, nameOf, now = Date.now() }) {
   const q = lg.dossierQ;
-  if (!q) return null;
+  // Μετά την αποκάλυψη μένει 20″ και μετά φεύγει, για να μην κρύβει την ανάκριση/κάρτες.
+  if (!q || (q.revealed && now - (q.revealedAt || 0) > 20000)) return null;
   return (
     <div className="ui-card ui-card--gold space-y-3 text-center">
       <div className="ui-tv-eyebrow ui-tv-eyebrow--gold">🗂️ Φάκελος υπόπτου</div>
