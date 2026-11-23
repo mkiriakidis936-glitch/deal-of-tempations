@@ -6,6 +6,8 @@ import { ART, DEFAULTS, applyMediaOverrides } from '@/data/brandArt';
 import { IMAGE_SLOTS, PHOTO_SPOTS, PHOTO_SPOT_IDS, VIDEO_SLOTS, MODE_COVER_SLOTS, GALLERIES, SURFACES } from '@/data/mediaSlots';
 import { MEDIA_MODES, MODE_MEDIA_SECTIONS } from '@/data/modes/modeRegistry';
 import ModeMediaManager from '@/components/admin/ModeMediaManager';
+import { GAME_SOUND_SLOTS, playSoundFile } from '@/lib/gameSounds';
+import { sfx, tvSfx } from '@/lib/modeKit';
 import AdminMediaPreview from '@/components/admin/AdminMediaPreview';
 import { MEDIA_KEY, fetchOverrides, uploadMedia, listMedia, deleteMedia, deleteAllMedia } from '@/lib/media';
 
@@ -44,15 +46,19 @@ function VideoThumb({ src, className = '', objectPosition = '50% 50%', onLoad, o
       if (activeVideoThumb === id) setActiveVideoThumb(null);
     };
   }, [id]);
+  // Πριν το πάτημα: πρώτο καρέ ως εικόνα (#t=0.1, δουλεύει και στο iPhone) + κουμπί ▶.
   if (!active) return (
-    <button type="button" onClick={() => setActiveVideoThumb(id)} aria-label="Άνοιγμα προεπισκόπησης βίντεο"
-      className={`relative flex items-center justify-center overflow-hidden bg-black/70 ${className}`}>
-      <span className="rounded-full border border-white/40 bg-black/70 px-4 py-2 text-xs font-bold text-white">▶ ΠΡΟΕΠΙΣΚΟΠΗΣΗ</span>
+    <button type="button" onClick={() => setActiveVideoThumb(id)} aria-label="Αναπαραγωγή βίντεο"
+      className={`relative flex items-center justify-center overflow-hidden bg-black ${className}`}>
+      <video src={`${src}#t=0.1`} muted playsInline preload="metadata" tabIndex={-1} aria-hidden="true" className="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-70" />
+      <span className="relative flex h-14 w-14 items-center justify-center rounded-full bg-black/70 text-2xl text-white ring-1 ring-white/40">▶</span>
     </button>
   );
+  // Με το πάτημα το βίντεο ξεκινά αμέσως (με ήχο, αφού το ζήτησε ο χρήστης).
   return (
     <div className={`relative overflow-hidden bg-black ${className}`}>
-      <video src={src} controls muted playsInline preload="none" onLoadedData={onLoad} onError={onError}
+      <video src={src} controls autoPlay playsInline preload="auto" onLoadedData={onLoad} onError={onError}
+        ref={(el) => { if (el && el.paused && !el.dataset.started) { el.dataset.started = '1'; el.play().catch(() => { el.muted = true; el.play().catch(() => {}); }); } }}
         style={{ objectPosition }} className="h-full w-full object-contain" />
       <button type="button" onClick={() => setActiveVideoThumb(null)}
         className="absolute right-1 top-1 rounded bg-black/80 px-2 py-1 text-[10px] text-white">Κλείσιμο</button>
@@ -62,9 +68,9 @@ function VideoThumb({ src, className = '', objectPosition = '50% 50%', onLoad, o
 
 function Thumb({ src, video, audio, className = '', objectPosition = '50% 50%', onLoad, onError }) {
   if (!src) return <div className={`bg-black/40 ${className}`} />;
-  if (audio) return <div className={`bg-black/30 flex items-center justify-center p-2 ${className}`}><audio src={src} controls preload="none" onCanPlay={onLoad} onError={onError} className="w-full" /></div>;
+  if (audio) return <div className={`bg-black/30 flex flex-col items-center justify-center gap-2 p-2 ${className}`}><span className="text-3xl" aria-hidden="true">🎵</span><audio src={src} controls preload="none" onCanPlay={onLoad} onError={onError} className="w-full" /></div>;
   if (video) return <VideoThumb src={src} className={className} objectPosition={objectPosition} onLoad={onLoad} onError={onError} />;
-  return <img src={src} alt="" loading="lazy" decoding="async" onLoad={onLoad} onError={onError} style={{ objectPosition }} className={`object-contain ${className}`} />;
+  return <img src={src} alt="" loading="lazy" decoding="async" onLoad={onLoad} onError={onError} style={{ objectPosition }} className={`object-cover ${className}`} />;
 }
 
 export default function AdminMedia() {
@@ -238,14 +244,7 @@ export default function AdminMedia() {
     if (!current.includes(url)) current.push(url);
     await save({ ...ov, [listId]: current });
   }, 'Το υπάρχον αρχείο προστέθηκε στη συλλογή ✓');
-  const assignLibraryImageToSlot = (url, slotId) => run(`slot-${url}`, async () => {
-    const category = ['poster', 'heistNight', 'photoHeistNight', 'extraHeistRoom', 'group', 'scene'].includes(slotId)
-      ? 'heist'
-      : ['party1', 'slipper', 'party2', 'vault', 'photoGame', 'photoSlippers', 'photoPediGlam', 'extraPediGlam'].includes(slotId)
-        ? 'pajama'
-        : 'branding';
-    await save({ ...ov, [slotId]: url, libraryCategories: { ...(ov.libraryCategories || {}), [url]: category } });
-  }, 'Η εικόνα ανατέθηκε στο σημείο ✓');
+
 
   const removeFile = (f) => {
     const used = isUsed(f.url);
@@ -372,10 +371,11 @@ export default function AdminMedia() {
     }, `${label}: οριστική διαγραφή από παντού ολοκληρώθηκε ✓`);
   };
 
+  const SURFACE_GROUP = { site: '🌐 Site', forms: '📝 Φόρμες', tablet: '📟 Tablet', tv: '📺 TV', mobile: '📱 Κινητό' };
   const missingMediaPoints = () => {
     const missing = [];
     const clearedImages = !!(ov.clearAllPhotos || ov.clearAllMedia);
-    for (const slot of PHOTO_SPOTS) {
+    for (const slot of PHOTO_SPOTS.filter((item) => !item.retired)) {
       const src = ov[slot.id] || (ov.emptySlots?.includes(slot.id) || clearedImages ? '' : DEFAULTS[slot.id]);
       if (!src) missing.push({ surface: slot.surfaces?.[0] || 'site', label: slot.label, where: slot.where });
     }
@@ -419,7 +419,7 @@ export default function AdminMedia() {
       <div className="grid grid-cols-1 gap-2 sm:grid-cols-3" role="tablist" aria-label="Ενότητες πολυμέσων">
         {[
           { id: 'modes', label: '🎮 MODE MEDIA CENTER', hint: 'Όλα ανά mode' },
-          { id: 'site', label: '🌐 Site & TV', hint: 'Σημεία, gallery, βίντεο έναρξης' },
+          { id: 'site', label: '🌐 Site, TV & ήχοι', hint: 'Σημεία, gallery, βίντεο, ήχοι' },
           { id: 'library', label: '🗂️ Βιβλιοθήκη', hint: 'Ανέβασμα & όλα τα αρχεία' },
         ].map((item) => (
           <button key={item.id} type="button" role="tab" aria-selected={section === item.id} onClick={() => { setSection(item.id); if (item.id !== 'site') setSurfaceFilter('all'); }}
@@ -462,7 +462,7 @@ export default function AdminMedia() {
       <ComicPanel className="bg-card space-y-3">
         <div className="font-heading text-lg">🖼️ ΠΟΛΥΜΕΣΑ ΑΝΑ ΣΗΜΕΙΟ</div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {PHOTO_SPOTS.filter((s) => showSurface(...(s.surfaces || []))).map((s) => {
+          {PHOTO_SPOTS.filter((s) => !s.retired && showSurface(...(s.surfaces || []))).map((s) => {
             const src = ov[s.id] || (ov.emptySlots?.includes(s.id) || ov.clearAllPhotos || ov.clearAllMedia ? '' : DEFAULTS[s.id]);
             return (
               <div key={s.id} className="border-2 border-border/40 rounded-lg p-2 bg-secondary/40">
@@ -703,85 +703,145 @@ export default function AdminMedia() {
       })}
       </>
       )}
+      <section className="space-y-3 rounded-3xl bg-[#1C1C1E] p-4 text-[#F5F1E8] sm:p-5">
+        <div>
+          <h3 className="text-base font-bold">🔊 Ήχοι παιχνιδιού</h3>
+          <p className="text-xs text-white/55">Ανέβασε δικό σου ήχο (MP3, M4A, WAV, OGG, AAC) για κάθε στιγμή. Όπου δεν βάλεις αρχείο, παίζει ο ενσωματωμένος ήχος.</p>
+        </div>
+        <div className="divide-y divide-white/10 rounded-2xl bg-black/30">
+          {GAME_SOUND_SLOTS.map((slot) => {
+            const url = ov.gameSounds?.[slot.id] || '';
+            const withSound = (base, value) => ({ ...base, gameSounds: { ...(base.gameSounds || {}), [slot.id]: value } });
+            const preview = () => {
+              if (url) { playSoundFile(url); return; }
+              const [group, name] = slot.id.split('.');
+              (group === 'tv' ? tvSfx : sfx)[name]?.();
+            };
+            return (
+              <div key={slot.id} className="flex flex-wrap items-center gap-2 p-3">
+                <button type="button" onClick={preview} aria-label={`Ακρόαση: ${slot.label}`} className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#E8C26B] text-sm font-black text-black">▶</button>
+                <div className="min-w-0 flex-1">
+                  <div className="truncate text-sm font-semibold">{slot.label}</div>
+                  <div className="truncate text-[11px] text-white/50">{url ? `🎵 ${decodeURIComponent(url.split('/').pop())}` : `Ενσωματωμένος · ${slot.where}`}</div>
+                </div>
+                <div className="flex w-full flex-wrap gap-1.5 sm:w-auto">
+                  {directUploadControl(`sound-${slot.id}`, 'audio/*,.mp3,.m4a,.wav,.ogg,.aac', (value, base) => withSound(base, value), url ? 'Αλλαγή' : '＋ Ήχος')}
+                  <select aria-label={`${slot.label} από βιβλιοθήκη`} value="" disabled={!!busy} onChange={(e) => { const value = e.target.value; if (value) run(`sound-pick-${slot.id}`, () => save(withSound(ov, value)), 'Ο ήχος συνδέθηκε ✓'); }} className="h-9 min-w-0 flex-1 rounded-full border border-white/10 bg-[#2C2C2E] px-3 text-xs sm:w-40 sm:flex-none">
+                    <option value="">Από βιβλιοθήκη…</option>
+                    {library.filter((file) => file.kind === 'audio').map((file) => <option key={file.url} value={file.url}>{file.name}</option>)}
+                  </select>
+                  {url && <button type="button" disabled={!!busy} onClick={() => run(`sound-reset-${slot.id}`, () => save(withSound(ov, '')), 'Επαναφορά στον ενσωματωμένο ήχο ✓')} className="h-9 rounded-full px-3 text-xs text-white/60 underline">Ενσωματωμένος</button>}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </section>
       </>)}
 
       {section === 'library' && (<>
-      {surfaceFilter !== 'preview' && (
-      <ComicPanel className="bg-card space-y-3">
-        <div className="font-heading text-lg">📋 ΑΝΑΦΟΡΑ ΚΕΝΩΝ ΣΗΜΕΙΩΝ</div>
-        <p className="text-xs text-foreground/60">Εμφανίζονται οι ελλείψεις της λίστας εικόνων και οι αριθμημένες galleries που δεν έχουν συμπληρωθεί.</p>
-        {missingMediaPoints().filter((item) => surfaceFilter === 'all' || item.surface === surfaceFilter).length === 0
-          ? <div className="rounded-lg border border-emerald-500/30 bg-emerald-500/5 p-3 text-sm">Δεν εντοπίστηκαν κενά σημεία στην επιλεγμένη κατηγορία.</div>
-          : <div className="grid sm:grid-cols-2 gap-2">
-              {missingMediaPoints().filter((item) => surfaceFilter === 'all' || item.surface === surfaceFilter).map((item, index) => (
-                <button key={item.surface + item.label + index} type="button" onClick={() => setSurfaceFilter(item.surface)} className="rounded-lg border border-border/60 bg-secondary/30 p-3 text-left">
-                  <div className="text-[10px] font-black text-primary">{SURFACES.find((surface) => surface.id === item.surface)?.label || item.surface}</div>
-                  <div className="mt-1 text-sm font-bold">{item.label}</div>
-                  <div className="mt-1 text-[11px] text-foreground/55">{item.where}</div>
-                </button>
-              ))}
-            </div>}
-      </ComicPanel>
-      )}
+      {surfaceFilter !== 'preview' && (() => {
+        const missing = missingMediaPoints();
+        const groups = missing.reduce((acc, item) => {
+          const prefix = item.label.includes(' — ') ? item.label.split(' — ')[0].trim() : '';
+          const mode = MEDIA_MODES.find((m) => m.name.toLowerCase() === prefix.toLowerCase());
+          const key = mode ? `${mode.icon || '🎮'} ${mode.name}` : (SURFACE_GROUP[item.surface] || 'Γενικά');
+          (acc[key] = acc[key] || []).push(item);
+          return acc;
+        }, {});
+        return (
+          <section className="rounded-3xl bg-[#1C1C1E] p-4 text-[#F5F1E8] sm:p-5">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <h3 className="text-base font-bold">📋 Κενά σημεία</h3>
+                <p className="text-xs text-white/55">{missing.length ? 'Πάτα σε μια ομάδα για να δεις τι λείπει.' : 'Όλα τα σημεία έχουν φωτογραφία ή βίντεο.'}</p>
+              </div>
+              <span className={`shrink-0 rounded-full px-3 py-1 text-sm font-bold ${missing.length ? 'bg-[#E8C26B]/15 text-[#F7E3A8]' : 'bg-[#30D158]/15 text-[#7BE495]'}`}>{missing.length || '✓'}</span>
+            </div>
+            {missing.length > 0 && (
+              <div className="mt-3 divide-y divide-white/10 rounded-2xl bg-black/30">
+                {Object.entries(groups).map(([name, items]) => (
+                  <details key={name} className="group px-3">
+                    <summary className="flex min-h-[48px] cursor-pointer list-none items-center justify-between gap-2 text-sm font-semibold">
+                      <span className="truncate">{name}</span>
+                      <span className="flex shrink-0 items-center gap-2 text-xs text-white/55">{items.length} <span className="transition-transform group-open:rotate-90">›</span></span>
+                    </summary>
+                    <ul className="space-y-1.5 pb-3">
+                      {items.map((item, index) => (
+                        <li key={item.label + index} className="rounded-xl bg-white/5 px-3 py-2">
+                          <div className="text-sm">{item.label.includes(' — ') ? item.label.split(' — ').slice(1).join(' — ') : item.label}</div>
+                          <div className="text-[11px] text-white/50">{item.where}</div>
+                        </li>
+                      ))}
+                    </ul>
+                  </details>
+                ))}
+              </div>
+            )}
+          </section>
+        );
+      })()}
 
       {surfaceFilter !== 'preview' && (
-      <ComicPanel className="bg-card space-y-3">
-        <div className="flex items-center justify-between gap-2 flex-wrap"><div className="font-heading text-lg">🗂️ ΑΡΧΕΙΑ ΚΕΝΤΡΙΚΗΣ ΒΙΒΛΙΟΘΗΚΗΣ ({library.length})</div><ComicButton size="sm" disabled={!!busy} onClick={() => pick('library', 'library', libraryOne, undefined, surfaceFilter)}>＋ ΠΡΟΣΘΗΚΗ ΑΡΧΕΙΟΥ</ComicButton></div>
-        <input type="search" value={librarySearch} onChange={(e) => setLibrarySearch(e.target.value)} placeholder="Αναζήτηση αρχείων…" className="w-full rounded-lg border-2 border-border bg-background px-3 py-2 text-sm" />
-        <p className="text-[11px] text-foreground/60">Οργάνωσε φωτογραφίες, γραφικά, βίντεο και ήχους σε Heist, Pajama ή Εταιρική ταυτότητα. Η διαγραφή αφαιρεί το αρχείο οριστικά.</p>
-        <div className="space-y-2">
-          <div className="text-xs font-bold text-foreground/65">ΤΥΠΟΣ ΑΡΧΕΙΟΥ</div>
-          <div className="flex flex-wrap gap-2">
-            {[{ id: 'all', label: 'Όλα' }, { id: 'image', label: 'Εικόνες' }, { id: 'video', label: 'Βίντεο' }, { id: 'audio', label: 'Ήχοι' }].map((kind) => (
-              <ComicButton key={kind.id} size="sm" variant={libraryKindFilter === kind.id ? 'default' : 'dark'} disabled={!!busy} onClick={() => setLibraryKindFilter(kind.id)}>{kind.label}</ComicButton>
-            ))}
-          </div>
-          <div className="text-xs font-bold text-foreground/65">ΟΜΑΔΑ ΑΡΧΕΙΟΥ</div>
-          <div className="flex flex-wrap gap-2">
-            {[{ id: 'all', label: 'Όλα' }, ...LIBRARY_CATEGORIES].map((c) => (
-              <ComicButton key={c.id} size="sm" variant={libraryFilter === c.id ? 'default' : 'dark'} disabled={!!busy} onClick={() => setLibraryFilter(c.id)}>{c.label}</ComicButton>
-            ))}
-          </div>
+      <section className="space-y-3 rounded-3xl bg-[#1C1C1E] p-4 text-[#F5F1E8] sm:p-5">
+        <div className="flex items-center justify-between gap-2">
+          <h3 className="text-base font-bold">🗂️ Αρχεία <span className="font-normal text-white/50">· {library.length}</span></h3>
+          <button type="button" disabled={!!busy} onClick={() => pick('library', 'library', libraryOne, undefined, surfaceFilter)} className="h-10 shrink-0 rounded-full bg-[#E8C26B] px-4 text-sm font-bold text-black">＋ Ανέβασμα</button>
         </div>
-        <div className="flex flex-wrap gap-2">
-          {[
-            { id: 'all', label: 'Όλα τα αρχεία' },
-            { id: 'unused', label: 'Δεν χρησιμοποιούνται' },
-            { id: 'broken', label: 'Σφάλμα φόρτωσης' },
-          ].map((item) => <ComicButton key={item.id} size="sm" variant={libraryStatusFilter === item.id ? 'default' : 'dark'} disabled={!!busy} onClick={() => setLibraryStatusFilter(item.id)}>{item.label}</ComicButton>)}
-        </div>
-        {!library.length && <div className="text-xs text-foreground/60">Δεν έχεις ανεβάσει ακόμα αρχεία.</div>}
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2">
-          {library.filter((f) => (libraryKindFilter === 'all' || f.kind === libraryKindFilter || (libraryKindFilter === 'image' && f.kind === 'graphic')) && (libraryFilter === 'all' || categoryOf(f.url) === libraryFilter) && (surfaceFilter === 'all' || getFileSurfaces(f.url).includes(surfaceFilter)) && (libraryStatusFilter === 'all' || (libraryStatusFilter === 'unused' && !isUsed(f.url)) || (libraryStatusFilter === 'broken' && fileLoadStatus[f.url] === 'error')) && f.name.toLowerCase().includes(librarySearch.toLowerCase())).map((f) => (
-            <div key={f.name} className="admin-media-library-card border-2 border-border/40 rounded overflow-hidden bg-secondary/40">
-              <Thumb video={f.kind === 'video'} audio={f.kind === 'audio'} src={f.url} objectPosition={ov.libraryFocalPoints?.[f.url] || '50% 50%'} onLoad={() => setFileLoadStatus((v) => ({ ...v, [f.url]: 'ok' }))} onError={() => setFileLoadStatus((v) => ({ ...v, [f.url]: 'error' }))} className="w-full aspect-square" />
-              <div className="p-1 text-[10px] leading-tight break-all">{f.name.replace(/^[a-z0-9]+-[a-f0-9]{6}-/, '')}<br />{mb(f.size)}<br />Κατάσταση: {fileLoadStatus[f.url] === 'error' ? '⚠ Σφάλμα φόρτωσης' : fileLoadStatus[f.url] === 'ok' ? (isUsed(f.url) ? `Σε χρήση · ${getFileSurfaces(f.url).map((id) => SURFACES.find((s) => s.id === id)?.label || id).join(', ') || 'Εντοπισμένη αντιστοίχιση'}` : 'Δεν χρησιμοποιείται') : 'Έλεγχος φόρτωσης…'}</div>
-              {<div className="p-1 space-y-1">
-                <div className="text-[10px] text-foreground/60">Κατηγορία εφαρμογής</div>
-                <select value={ov.librarySurfaces?.[f.url] || 'auto'} disabled={!!busy} onChange={(e) => setLibrarySurface(f.url, e.target.value)} className="w-full rounded bg-black/50 border border-border/50 p-1 text-[10px]">
-                  <option value="auto">Αυτόματη αντιστοίχιση</option>
-                  {SURFACES.map((surface) => <option key={surface.id} value={surface.id}>{surface.label}</option>)}
-                </select>
-                <div className="text-[10px] text-foreground/60">Ομάδα αρχείου</div>
-                <select value={categoryOf(f.url)} disabled={!!busy} onChange={(e) => setLibraryCategory(f.url, e.target.value)} className="w-full rounded bg-black/50 border border-border/50 p-1 text-xs">
-                  {LIBRARY_CATEGORIES.map((c) => <option key={c.id} value={c.id}>{c.label}</option>)}
-                </select>
-                {(f.kind === 'image' || f.kind === 'graphic') && <>
-                  <div className="text-[10px] text-foreground/60">Σημείο εστίασης</div>
-                  <select value={ov.libraryFocalPoints?.[f.url] || '50% 50%'} disabled={!!busy} onChange={(e) => setLibraryFocalPoint(f.url, e.target.value)} className="w-full rounded bg-black/50 border border-border/50 p-1 text-[10px]">
-                    <option value="50% 50%">Κέντρο</option><option value="50% 0%">Πάνω</option><option value="50% 100%">Κάτω</option><option value="0% 50%">Αριστερά</option><option value="100% 50%">Δεξιά</option>
-                  </select>
-                  <select defaultValue="" disabled={!!busy} onChange={(e) => { if (e.target.value) assignLibraryImageToSlot(f.url, e.target.value); e.target.value = ''; }} className="w-full rounded bg-black/50 border border-border/50 p-1 text-[10px]">
-                    <option value="">Ανάθεση σε σημείο εφαρμογής…</option>
-                    {IMAGE_SLOTS.map((slot) => <option key={slot.id} value={slot.id}>{slot.label} — {(slot.surfaces || []).map((id) => SURFACES.find((surface) => surface.id === id)?.label || id).join(' / ')}</option>)}
-                  </select>
-                </>}
-              </div>}
-              <button disabled={!!busy} onClick={() => removeFile(f)} className="w-full text-xs py-2.5 bg-black/50 text-red-400 disabled:opacity-30">🗑 Διαγραφή</button>
-            </div>
+        <input type="search" value={librarySearch} onChange={(e) => setLibrarySearch(e.target.value)} placeholder="Αναζήτηση αρχείων…" className="h-11 w-full rounded-full border border-white/10 bg-black/40 px-4 text-sm" />
+        <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none] sm:mx-0 sm:flex-wrap sm:px-0">
+          {[{ id: 'all', label: 'Όλα' }, { id: 'image', label: '🖼️ Εικόνες' }, { id: 'video', label: '🎬 Βίντεο' }, { id: 'audio', label: '🎵 Ήχοι' }].map((kind) => (
+            <button key={kind.id} type="button" onClick={() => setLibraryKindFilter(kind.id)} aria-pressed={libraryKindFilter === kind.id}
+              className={`h-9 shrink-0 rounded-full px-4 text-xs font-semibold ${libraryKindFilter === kind.id ? 'bg-[#E8C26B] text-black' : 'bg-[#2C2C2E] text-white/80'}`}>{kind.label}</button>
+          ))}
+          {[{ id: 'unused', label: 'Αχρησιμοποίητα' }, { id: 'broken', label: '⚠ Σφάλματα' }].map((item) => (
+            <button key={item.id} type="button" onClick={() => setLibraryStatusFilter(libraryStatusFilter === item.id ? 'all' : item.id)} aria-pressed={libraryStatusFilter === item.id}
+              className={`h-9 shrink-0 rounded-full px-4 text-xs font-semibold ${libraryStatusFilter === item.id ? 'bg-[#E8C26B] text-black' : 'bg-[#2C2C2E] text-white/80'}`}>{item.label}</button>
           ))}
         </div>
-      </ComicPanel>
+        <select value={libraryFilter} onChange={(e) => setLibraryFilter(e.target.value)} aria-label="Ομάδα αρχείων" className="h-10 w-full rounded-full border border-white/10 bg-[#2C2C2E] px-4 text-sm sm:w-72">
+          <option value="all">Όλες οι ομάδες</option>
+          {LIBRARY_CATEGORIES.map((c) => <option key={c.id} value={c.id}>{c.label}</option>)}
+        </select>
+        {!library.length && <div className="rounded-2xl border border-dashed border-white/15 p-6 text-center text-sm text-white/55">Δεν έχεις ανεβάσει ακόμα αρχεία.</div>}
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+          {library.filter((f) => (libraryKindFilter === 'all' || f.kind === libraryKindFilter || (libraryKindFilter === 'image' && f.kind === 'graphic')) && (libraryFilter === 'all' || categoryOf(f.url) === libraryFilter) && (surfaceFilter === 'all' || getFileSurfaces(f.url).includes(surfaceFilter)) && (libraryStatusFilter === 'all' || (libraryStatusFilter === 'unused' && !isUsed(f.url)) || (libraryStatusFilter === 'broken' && fileLoadStatus[f.url] === 'error')) && f.name.toLowerCase().includes(librarySearch.toLowerCase())).map((f) => {
+            const status = fileLoadStatus[f.url] === 'error' ? { text: '⚠ Σφάλμα', cls: 'bg-[#FF453A]/20 text-[#FF8A80]' } : isUsed(f.url) ? { text: 'Σε χρήση', cls: 'bg-[#30D158]/15 text-[#7BE495]' } : { text: 'Αχρησιμοποίητο', cls: 'bg-white/10 text-white/60' };
+            const kindLabel = f.kind === 'video' ? 'Βίντεο' : f.kind === 'audio' ? 'Ήχος' : f.kind === 'graphic' ? 'Γραφικό' : 'Εικόνα';
+            return (
+              <div key={f.name} className="admin-media-library-card overflow-hidden rounded-2xl bg-black/30">
+                <Thumb video={f.kind === 'video'} audio={f.kind === 'audio'} src={f.url} objectPosition={ov.libraryFocalPoints?.[f.url] || '50% 50%'} className="aspect-square w-full"
+                  onLoad={() => setFileLoadStatus((v) => ({ ...v, [f.url]: 'ok' }))} onError={() => setFileLoadStatus((v) => ({ ...v, [f.url]: 'error' }))} />
+                <div className="space-y-1.5 p-2.5">
+                  <div className="line-clamp-2 break-all text-xs font-semibold" title={f.name}>{f.name.replace(/^[a-z0-9]+-[a-f0-9]{6}-/, '').replace(/^\d{10,}-/, '')}</div>
+                  <div className="flex flex-wrap items-center gap-1 text-[10px]">
+                    <span className="text-white/50">{kindLabel} · {mb(f.size)}</span>
+                    <span className={`rounded-full px-2 py-0.5 font-semibold ${status.cls}`}>{status.text}</span>
+                  </div>
+                  <details className="text-xs">
+                    <summary className="cursor-pointer list-none py-1 text-[#E8C26B]">Ρυθμίσεις ›</summary>
+                    <div className="space-y-1.5 pt-1">
+                      <select value={categoryOf(f.url)} disabled={!!busy} onChange={(e) => setLibraryCategory(f.url, e.target.value)} aria-label="Ομάδα αρχείου" className="h-9 w-full rounded-xl bg-[#2C2C2E] px-2 text-xs">
+                        {LIBRARY_CATEGORIES.map((c) => <option key={c.id} value={c.id}>{c.label}</option>)}
+                      </select>
+                      <select value={ov.librarySurfaces?.[f.url] || 'auto'} disabled={!!busy} onChange={(e) => setLibrarySurface(f.url, e.target.value)} aria-label="Πού εμφανίζεται" className="h-9 w-full rounded-xl bg-[#2C2C2E] px-2 text-xs">
+                        <option value="auto">Οθόνη: αυτόματα</option>
+                        {SURFACES.map((surface) => <option key={surface.id} value={surface.id}>Οθόνη: {surface.label}</option>)}
+                      </select>
+                      {(f.kind === 'image' || f.kind === 'graphic') && (
+                        <select value={ov.libraryFocalPoints?.[f.url] || '50% 50%'} disabled={!!busy} onChange={(e) => setLibraryFocalPoint(f.url, e.target.value)} aria-label="Σημείο εστίασης" className="h-9 w-full rounded-xl bg-[#2C2C2E] px-2 text-xs">
+                          <option value="50% 50%">Εστίαση: κέντρο</option><option value="50% 0%">Εστίαση: πάνω</option><option value="50% 100%">Εστίαση: κάτω</option><option value="0% 50%">Εστίαση: αριστερά</option><option value="100% 50%">Εστίαση: δεξιά</option>
+                        </select>
+                      )}
+                      <button type="button" disabled={!!busy} onClick={() => removeFile(f)} className="h-9 w-full rounded-xl bg-[#FF453A]/15 text-xs font-semibold text-[#FF8A80]">🗑 Διαγραφή αρχείου</button>
+                    </div>
+                  </details>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </section>
       )}
       </>)}
     </div>

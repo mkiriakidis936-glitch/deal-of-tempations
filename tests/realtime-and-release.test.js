@@ -74,3 +74,14 @@ test('realtime: χρησιμοποιημένο εισιτήριο admin δεν �
   assert.match(client, /\[401, 403\]\.includes\(error\?\.status\)/);
   assert.match(client, /event: ping|addEventListener\('ping'/);
 });
+
+test('ενημέρωση λογισμικού: ο server δίνει τις σημειώσεις μόνο της ζητούμενης έκδοσης', async () => {
+  const { releaseNotesFor } = await import('../server/releaseNotes.js');
+  const md = '# Ιστορικό\n\n## 6.1.0\n- Νέο Α\n- Νέο Β\n\n## 6.0.0\n- Παλιό\n';
+  assert.equal(releaseNotesFor(md, '6.1.0'), '- Νέο Α\n- Νέο Β');
+  assert.equal(releaseNotesFor(md, '6.0.0'), '- Παλιό');
+  assert.equal(releaseNotesFor(md, '6.1'), '', 'δεν ταιριάζει μισό νούμερο έκδοσης');
+  assert.equal(releaseNotesFor('', '6.1.0'), '');
+  const real = read('CHANGELOG.md');
+  assert.ok(releaseNotesFor(real, JSON.parse(read('package.json')).version).length > 0, 'η τρέχουσα έκδοση έχει σημειώσεις στο CHANGELOG');
+});

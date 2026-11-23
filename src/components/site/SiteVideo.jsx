@@ -22,7 +22,7 @@ export default function SiteVideo({ c, eventId }) {
         </div>
         {isModeDetail && !trailer ? null : trailer || siteTrailer ? (
           <div className="overflow-hidden rounded-2xl border border-tarot-gold/25 bg-black shadow-[0_24px_70px_rgba(0,0,0,.35)]">
-            <video src={trailer || siteTrailer} controls playsInline preload="metadata" className="w-full aspect-video object-contain bg-black" />
+            <video src={`${trailer || siteTrailer}#t=0.1`} controls playsInline preload="metadata" className="w-full aspect-video object-contain bg-black" />
           </div>
         ) : (
           <div className="relative overflow-hidden rounded-2xl border border-tarot-gold/25 bg-black shadow-[0_24px_70px_rgba(0,0,0,.35)]">
@@ -31,7 +31,7 @@ export default function SiteVideo({ c, eventId }) {
         )}
         {extraVideos.length > 0 && (
           <div className="grid sm:grid-cols-2 gap-4 mt-5">
-            {extraVideos.map((src) => <div key={src} className="overflow-hidden rounded-xl border border-tarot-gold/20 bg-black"><video src={src} controls playsInline preload="metadata" className="w-full aspect-video bg-black object-contain" /></div>)}
+            {extraVideos.map((src) => <div key={src} className="overflow-hidden rounded-xl border border-tarot-gold/20 bg-black"><video src={`${src}#t=0.1`} controls playsInline preload="metadata" className="w-full aspect-video bg-black object-contain" /></div>)}
           </div>
         )}
       </div>

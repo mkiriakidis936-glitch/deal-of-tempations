@@ -10,6 +10,7 @@ import { pushRoutes } from './push.js';
 import { visitRoutes } from './visits.js';
 import { backupRoutes, startAutoBackup } from './backup.js';
 import { cameraRoutes } from './camera.js';
+import { releaseNotesFor } from './releaseNotes.js';
 
 const app = express();
 app.set('trust proxy', 1); // Railway terminates TLS in front of us
@@ -36,7 +37,9 @@ const startedAt = new Date().toISOString();
 app.get('/api/version', (_req, res) => {
   let info = { version: PACKAGE_VERSION, build: 'dev', builtAt: '' };
   try { info = { ...info, ...JSON.parse(fs.readFileSync(path.resolve(import.meta.dirname, '..', 'dist', 'version.json'), 'utf8')) }; } catch { /* χωρίς build */ }
-  res.set('Cache-Control', 'no-store').json({ ...info, serverStartedAt: startedAt });
+  let notes = '';
+  try { notes = releaseNotesFor(fs.readFileSync(path.resolve(import.meta.dirname, '..', 'CHANGELOG.md'), 'utf8'), info.version); } catch { /* χωρίς CHANGELOG */ }
+  res.set('Cache-Control', 'no-store').json({ ...info, notes, serverStartedAt: startedAt });
 });
 
 app.get('/api/production/privacy', async (req, res) => {

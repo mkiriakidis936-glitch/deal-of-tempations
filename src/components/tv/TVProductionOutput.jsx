@@ -4,6 +4,7 @@ import { base44, request } from '@/api/base44Client';
 export default function TVProductionOutput({ sessionCode }) {
   const [cue, setCue] = useState(null);
   const [error, setError] = useState('');
+  const [needsTap, setNeedsTap] = useState(false);
   const videoRef = useRef(null);
   const audioRef = useRef(null);
   const lastCommandRef = useRef('');
@@ -94,8 +95,19 @@ export default function TVProductionOutput({ sessionCode }) {
       if (media && Number.isFinite(cue.volume)) media.volume = Math.max(0, Math.min(1, cue.volume));
       acknowledge(targetCue, 'ready');
     } else if (command === 'mute' || command === 'unmute') {
-      if (media) media.muted = command === 'mute';
-      acknowledge(targetCue, 'ready');
+      if (media && command === 'mute') { media.muted = true; acknowledge(targetCue, 'ready'); }
+      else if (media) {
+        // Χωρίς άγγιγμα στην TV ο browser παγώνει το βίντεο όταν βγαίνει από σίγαση: τότε μένει σε σίγαση και ζητά ένα πάτημα.
+        const wasPlaying = !media.paused;
+        media.muted = false;
+        const resume = wasPlaying ? media.play() : Promise.resolve();
+        resume.then(() => { setNeedsTap(false); acknowledge(targetCue, 'ready'); }).catch(() => {
+          media.muted = true;
+          if (wasPlaying) media.play().catch(() => {});
+          setNeedsTap(true);
+          acknowledge(targetCue, 'ready', 'Η TV χρειάζεται ένα πάτημα για ήχο.');
+        });
+      } else acknowledge(targetCue, 'ready');
     } else if (command === 'play') {
       if (!media) {
         acknowledge(targetCue, 'ready');
@@ -105,6 +117,7 @@ export default function TVProductionOutput({ sessionCode }) {
       media.play().catch((err) => {
         if (err?.name !== 'NotAllowedError') { acknowledge(targetCue, 'error', err?.message || 'Ο browser απέρριψε την αναπαραγωγή.'); return; }
         media.muted = true;
+        setNeedsTap(true);
         media.play()
           .then(() => acknowledge(targetCue, 'playing', 'Παίζει σε σίγαση — πάτα μία φορά στην TV για ήχο.'))
           .catch((retryError) => acknowledge(targetCue, 'error', retryError?.message || 'Ο browser απέρριψε την αναπαραγωγή.'));
@@ -135,6 +148,10 @@ export default function TVProductionOutput({ sessionCode }) {
       </div>
       <div className="absolute left-4 top-4 rounded-full bg-black/70 px-3 py-2 text-xs" role="status">{error || cue.playbackError || cue.playbackStatus || 'LIVE OUTPUT'}</div>
       <button type="button" onClick={() => acknowledge(cue, 'closed')} className="absolute right-4 top-4 rounded-lg border border-white/40 bg-black/75 px-4 py-2 text-sm font-bold">ΚΛΕΙΣΙΜΟ</button>
+      {needsTap && isMedia && (
+        <button type="button" onClick={() => { const media = cue.kind === 'video' ? videoRef.current : audioRef.current; if (!media) return; media.muted = false; media.play().then(() => { setNeedsTap(false); acknowledge(cue, 'playing'); }).catch(() => {}); }}
+          className="absolute bottom-[8vh] left-1/2 -translate-x-1/2 rounded-full bg-[#E8C26B] px-[3vw] py-[1.5vw] text-[2vw] font-black text-black shadow-2xl">🔊 Πάτα για ήχο</button>
+      )}
     </section>
   );
 }

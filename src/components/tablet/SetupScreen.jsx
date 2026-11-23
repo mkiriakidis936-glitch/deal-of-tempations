@@ -334,7 +334,7 @@ export default function SetupScreen({ onStart }) {
           )}
           {modeVideos.length > 0 && (
             <div className="grid gap-3 px-4 pb-4 sm:grid-cols-2">
-              {modeVideos.map((src) => <video key={src} src={src} controls playsInline preload="metadata" className="aspect-video w-full rounded-2xl bg-black" />)}
+              {modeVideos.map((src) => <video key={src} src={`${src}#t=0.1`} controls playsInline preload="metadata" className="aspect-video w-full rounded-2xl bg-black" />)}
             </div>
           )}
         </section>

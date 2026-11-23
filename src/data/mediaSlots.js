@@ -37,7 +37,7 @@ export const PHOTO_SPOTS = [
   { id: 'tv', label: 'TV — οθόνη αναμονής', where: '13_tv.jpg — εικόνα οθόνης αναμονής TV', surfaces: ['tv'] },
   { id: 'promo', label: 'Promo', where: 'Promo, hero', surfaces: ['site'] },
   { id: 'invitation', label: 'Εικόνα teaser πρόσκλησης', where: '15_invitation.jpg — εικόνα teaser πρόσκλησης', surfaces: ['forms'] },
-  { id: 'pajama', label: 'Pajama invitation — φόντο', where: '16_pajama.jpg — φόντο Pajama πρόσκλησης', surfaces: ['forms'] },
+  { id: 'pajama', label: 'Pajama invitation — φόντο', where: '16_pajama.jpg — φόντο Pajama πρόσκλησης', surfaces: ['forms'], retired: true },
 ];
 export const PHOTO_SPOT_IDS = PHOTO_SPOTS.map((v) => v.id);
 

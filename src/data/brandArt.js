@@ -1,6 +1,7 @@
 import { isVideoUrl } from '@/lib/mediaKind';
 import { PHOTO_SPOT_IDS, MODE_COVER_SLOTS } from '@/data/mediaSlots';
 import { MEDIA_MODES } from '@/data/modes/modeRegistry';
+import { setGameSounds } from '@/lib/gameSounds';
 
 const BASE = '/assets/';
 
@@ -151,6 +152,7 @@ export function applyMediaOverrides(o = {}) {
   HEIST_PHOTOS.splice(0, HEIST_PHOTOS.length, ...[ART.photoHeistNight, ...heistGallery].filter(str));
   PAJAMA_PHOTOS.splice(0, PAJAMA_PHOTOS.length, ...[ART.photoSlippers, ART.photoGame, ...pajamaGallery].filter(str));
   setList(SITE_VIDEOS, o.siteVideos, []);
+  setGameSounds(o.gameSounds);
   for (const key of Object.keys(VIDEO_PLACEMENTS)) delete VIDEO_PLACEMENTS[key];
   if (o.videoPlacements && typeof o.videoPlacements === 'object') Object.assign(VIDEO_PLACEMENTS, o.videoPlacements);
 }

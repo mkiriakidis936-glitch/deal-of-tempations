@@ -156,7 +156,7 @@ export default function ModeMediaManager({ value = {}, files = [], onSave, onRef
         {src ? (
           <div className={`relative overflow-hidden rounded-2xl bg-black ${ratio}`}>
             {video
-              ? <video src={src} controls muted playsInline preload="metadata" className="absolute inset-0 h-full w-full object-cover" />
+              ? <video src={`${src}#t=0.1`} controls playsInline preload="metadata" className="absolute inset-0 h-full w-full object-cover" />
               : <img src={src} alt="" loading="lazy" className="absolute inset-0 h-full w-full object-cover" />}
             {uploading && <div className="absolute inset-0 flex items-center justify-center bg-black/70 text-xs font-bold">Ανέβασμα…</div>}
           </div>

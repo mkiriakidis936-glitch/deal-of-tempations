@@ -3,6 +3,7 @@ import { stopAllSounds } from '@/data/soundLibrary';
 import { timerStart, timerLeft, timerAdd, timerPause, timerResume } from '@/lib/modeTimer';
 import { applyDelta, undoLast } from '@/lib/modeUndo';
 import { randomExitCode } from '@/lib/consent';
+import { withCustomSounds } from '@/lib/gameSounds';
 
 export const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
 export function shuffle(arr) {
@@ -166,7 +167,7 @@ function sweep(from, to, dur, type = 'sine', vol = 0.15, when = 0) {
 const chord = (notes, dur, type, vol, when = 0) => notes.forEach((f) => tone(f, dur, type, vol, when));
 
 // Τηλεοπτικά stingers για την TV: σύντομα, χωρίς αρχεία, ελάχιστη CPU.
-export const tvSfx = {
+export const tvSfx = withCustomSounds('tv', {
   dice() { [0, 0.07, 0.14, 0.21, 0.3].forEach((w, i) => tone(1200 + i * 140, 0.04, 'square', 0.05, w)); tone(523, 0.25, 'triangle', 0.14, 0.42); },
   loot() { tone(1318, 0.09, 'triangle', 0.13, 0.5); tone(1760, 0.22, 'triangle', 0.13, 0.6); },
   card() { [784, 988, 1175, 1568].forEach((f, i) => tone(f, 0.28, 'triangle', 0.09, i * 0.07)); },
@@ -186,16 +187,16 @@ export const tvSfx = {
   dossier() { tone(196, 0.5, 'sawtooth', 0.06); tone(233, 0.5, 'sawtooth', 0.06, 0.5); tone(185, 0.9, 'sawtooth', 0.06, 1); },
   news() { [0, 0.12, 0.24].forEach((w) => tone(1568, 0.08, 'square', 0.05, w)); tone(784, 0.4, 'triangle', 0.1, 0.4); },
   drama() { tone(55, 2.2, 'sine', 0.3); sweep(110, 220, 2, 'sawtooth', 0.04); tone(880, 0.6, 'sine', 0.05, 1.8); },
-};
+});
 
-export const sfx = {
+export const sfx = withCustomSounds('sfx', {
   alarm() { [0, 0.4, 0.8, 1.2].forEach((w, i) => tone(i % 2 ? 440 : 660, 0.34, 'sawtooth', 0.12, w)); },
   horn() { tone(180, 0.9, 'sawtooth', 0.2); tone(185, 0.9, 'square', 0.1); },
   click(high) { tone(high ? 2600 : 1500, 0.03, 'square', high ? 0.14 : 0.06); },
   ok() { tone(660, 0.12, 'triangle', 0.16); tone(880, 0.22, 'triangle', 0.16, 0.12); },
   fail() { tone(220, 0.4, 'sawtooth', 0.16); },
   buzz(ms = 200) { try { navigator.vibrate?.(ms); } catch { /* δεν υποστηρίζεται */ } },
-};
+});
 
 // Beat για το «DJ player»: kick + hi-hat, ρυθμός ρυθμιζόμενος.
 export function startBeat(bpm = 110) {
