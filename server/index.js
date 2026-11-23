@@ -127,8 +127,11 @@ if (fs.existsSync(dist)) {
 
 // eslint-disable-next-line no-unused-vars
 app.use((err, _req, res, _next) => {
+  // Λάθος αίτημα από τον client (χαλασμένο JSON, πολύ μεγάλο σώμα): 4xx, όχι «σφάλμα server».
+  if (err?.type === 'entity.parse.failed') return res.status(400).json({ error: 'Μη έγκυρα δεδομένα αιτήματος.' });
+  if (err?.type === 'entity.too.large') return res.status(413).json({ error: 'Το αίτημα είναι πολύ μεγάλο.' });
   console.error(err);
-  res.status(500).json({ error: 'Internal server error' });
+  return res.status(500).json({ error: 'Internal server error' });
 });
 
 const port = Number(process.env.PORT) || 3000;

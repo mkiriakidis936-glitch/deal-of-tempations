@@ -1,6 +1,22 @@
 import React from 'react';
 import { fmt, useTick } from '@/lib/modeKit';
 
+// Υπόλοιπος συνολικός χρόνος σε δευτερόλεπτα (null αν δεν τρέχει).
+export function totalRemainingSeconds(state, now = Date.now()) {
+  const durationSeconds = Math.max(0, Number(state?.gameDurationMinutes || 0) * 60);
+  if (!durationSeconds || !state?.gameStartedAt) return null;
+  const pausedAt = state.gamePausedAt || (state.stopActive || state.mg?.stop ? now : null);
+  const pausedMs = Math.max(0, Number(state.gamePausedMs || 0));
+  const elapsedMs = Math.max(0, now - state.gameStartedAt - pausedMs - (pausedAt ? now - pausedAt : 0));
+  return Math.max(0, Math.ceil(durationSeconds - elapsedMs / 1000));
+}
+
+// Όταν το χρονόμετρο της φάσης μετράει ουσιαστικά το ίδιο με τον συνολικό χρόνο, δεν το δείχνουμε δύο φορές.
+export const sameAsTotal = (state, phaseLeftSeconds) => {
+  const total = totalRemainingSeconds(state);
+  return total != null && Number.isFinite(phaseLeftSeconds) && Math.abs(total - phaseLeftSeconds) <= 5;
+};
+
 export default function GameDurationClock({ state, compact = false, inline = false, corner = false }) {
   useTick(!!state?.gameStartedAt, 1000);
   const durationSeconds = Math.max(0, Number(state?.gameDurationMinutes || 0) * 60);

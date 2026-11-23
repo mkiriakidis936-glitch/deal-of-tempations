@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { modeMeta, ACT_META } from '@/data/modes/modeRegistry';
 import { fmt, timerLeft, useTick, setGameStopActive } from '@/lib/modeKit';
-import GameDurationClock from '@/components/shared/GameDurationClock';
+import GameDurationClock, { sameAsTotal } from '@/components/shared/GameDurationClock';
 import { Dock, DockItem, Card, Button, Input } from '@/design/ui';
 
 // Κοινό περίβλημα όλων των νέων modes: τίτλος, χρονόμετρο, ΣΤΟΠ για όλες, ημερολόγιο γεγονότων.
@@ -22,7 +22,7 @@ export default function ModeShell({ modeId, ctx, state, act, children, onQR, onE
           </div>
           <div className="flex shrink-0 items-center gap-2">
             <GameDurationClock state={state} inline />
-            {showTimer && mg.timer && <ModeTimer timer={mg.timer} />}
+            {showTimer && mg.timer && !sameAsTotal(state, timerLeft(mg.timer)) && <ModeTimer timer={mg.timer} />}
           </div>
         </header>
 

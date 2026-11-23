@@ -52,6 +52,20 @@ const rules = {
 };
 const needsAdmin = (entity, op) => (rules[entity]?.[op] || 'public') === ADMIN;
 const isAdmin = (req) => req.user?.role === 'admin';
+
+// Ρυθμίσεις μόνο για το Admin: ονόματα παικτριών, προσκλήσεις, ιστορικό εκδόσεων, κονσόλα AV, σενάρια, ρεκόρ.
+// Οι υπόλοιπες (φωτογραφίες, κείμενα Site, περιεχόμενο modes, σχεδίαση) μένουν δημόσιες για TV, κινητά και Site.
+const ADMIN_ONLY_SETTINGS = new Set(['show_casting_plan', 'digital_invitations', 'admin_site_versions', 'av_control_room_v1', 'admin_custom_scenarios', 'all_time_records']);
+// Πεδία που ορίζει ΜΟΝΟ η διοργανώτρια: μια δημόσια φόρμα δεν μπορεί να «αυτο-εγκριθεί».
+const ADMIN_ONLY_FIELDS = ['approved', 'approvalStatus', 'approvedAt', 'approvedDate', 'approvedBy', 'approvals', 'rejected', 'rejectedAt', 'role', 'adminNotes', 'reviewedAt', 'reviewedBy'];
+export const stripAdminOnlyFields = (data) => {
+  if (!data || typeof data !== 'object' || Array.isArray(data)) return data;
+  const clean = { ...data };
+  for (const field of ADMIN_ONLY_FIELDS) delete clean[field];
+  return clean;
+};
+export const isAdminOnlySetting = (entity, data) => entity === 'AppSetting' && !!data &&
+  (ADMIN_ONLY_SETTINGS.has(String(data.key || '')) || String(data.key || '').startsWith('admin_setting_versions_'));
 const DOT_EVENT_PHASES = {
   one_night: ['arrival', 'preparation', 'start', 'show_game_1', 'break', 'show_game_2', 'final_round', 'close'],
   villa_48h: ['arrival', 'day_1', 'afternoon', 'night_1', 'dawn_morning', 'day_2', 'final_show', 'finale', 'close'],
@@ -538,6 +552,7 @@ function broadcast(entity, event) {
   const sent = new Map();
   for (const subscriber of set) {
     if (subscriber.sessionCode && event.data?.sessionCode !== subscriber.sessionCode) continue;
+    if (subscriber.isPublic && isAdminOnlySetting(entity, event.data)) continue;
     const dedupeKey = subscriber.isPublic && entity === 'GameSession' ? `${subscriber.playerId || ''}` : '';
     const written = sent.has(subscriber.res) ? sent.get(subscriber.res) : null;
     if (written && written.has(dedupeKey)) continue;
@@ -1455,7 +1470,7 @@ export function entityRoutes() {
     const lim = Math.min(Math.max(parseInt(effectiveLimit, 10) || 50, 1), req.entity === 'GameSession' && !isAdmin(req) ? 1 : MAX_LIMIT);
     const off = Math.max(parseInt(effectiveSkip, 10) || 0, 0);
     const { rows } = await query(`SELECT * FROM records WHERE ${where} ORDER BY ${orderBy(effectiveSort)} LIMIT ${lim} OFFSET ${off}`, params);
-    const items = rows.map(toRecord);
+    const items = rows.map(toRecord).filter((rec) => isAdmin(req) || !isAdminOnlySetting(req.entity, rec));
     if (req.entity === 'GameSession' && !isAdmin(req) && req.sessionViewerPlayerId &&
         items.length && !(items[0].state?.players || []).some((player) => player.id === req.sessionViewerPlayerId)) {
       return res.status(403).json({ error: 'Unknown player' });
@@ -1474,11 +1489,12 @@ export function entityRoutes() {
   r.get('/:entity/:id', guard('read'), async (req, res) => {
     if (req.entity === 'GameSession' && !isAdmin(req)) return res.status(403).json({ error: 'Use session-code lookup' });
     const { rows } = await query('SELECT * FROM records WHERE id = $1 AND entity = $2', [req.params.id, req.entity]);
-    if (!rows[0]) return res.status(404).json({ error: 'Not found' });
+    if (!rows[0] || (!isAdmin(req) && isAdminOnlySetting(req.entity, toRecord(rows[0])))) return res.status(404).json({ error: 'Not found' });
     res.json(toRecord(rows[0]));
   });
 
   r.post('/:entity', guard('create'), formLimit, async (req, res, next) => {
+    if (!isAdmin(req)) req.body = stripAdminOnlyFields(req.body || {});
     if (req.entity === 'Interest' && !isAdmin(req)) {
       const body = req.body || {};
       const name = typeof body.name === 'string' ? body.name.trim().slice(0, 60) : '';
@@ -1620,7 +1636,7 @@ export function entityRoutes() {
     res.json(rec);
   });
 
-  r.post('/:entity/bulk', guard('create'), formLimit, async (req, res) => {
+  r.post('/:entity/bulk', requireAdmin, formLimit, async (req, res) => {
     if (!Array.isArray(req.body)) return res.status(400).json({ error: 'Expected an array' });
     const client = await pool.connect();
     const created = [];

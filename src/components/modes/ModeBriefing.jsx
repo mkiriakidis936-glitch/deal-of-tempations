@@ -55,28 +55,28 @@ export function BriefingTV({ state }) {
   const guide = MODE_GUIDE[state.mode];
   const art = modeArtUrl(state.mode, '');
   if (!guide) return null;
+  // Όλα χωράνε σε μία οθόνη TV (χωρίς scroll): μεγέθη με βάση το μικρότερο από πλάτος/ύψος.
+  const u = (n) => `min(${n}vw, ${n * 1.75}vh)`;
   return (
-    <div className="relative min-h-screen overflow-hidden bg-black p-[3vw] text-white">
+    <div className="relative flex h-screen flex-col overflow-hidden bg-black text-white" style={{ padding: `${u(4.5)} ${u(3)} ${u(2)}`, gap: u(1.2) }}>
       {art && <img src={art} alt="" className="absolute inset-0 h-full w-full object-cover opacity-25" />}
-      <div className="relative space-y-[2vw]">
-        <div>
-          <div className="text-[1.4vw] font-semibold uppercase tracking-[0.3em] text-[#E8C26B]">Πώς παίζεται</div>
-          <div className="text-[4.5vw] font-bold leading-none">{meta?.icon} {meta?.name}</div>
-          <div className="mt-[1vw] max-w-[70vw] text-[1.8vw] text-white/80">{guide.tagline}</div>
-        </div>
-        <div className="grid grid-cols-3 gap-[1.5vw] text-[1.4vw]">
-          <div className="col-span-2 rounded-3xl bg-white/5 p-[1.5vw]"><b className="text-[#E8C26B]">Στόχος</b><div>{guide.goal}</div><b className="mt-[1vw] block text-[#E8C26B]">Νίκη</b><div>{guide.win}</div></div>
-          <div className="rounded-3xl border border-[#FF453A]/50 bg-[#1A0B0A]/80 p-[1.5vw]"><b className="text-[#FF8A80]">🛑 ΣΤΟΠ & PASS</b><div className="mt-[0.5vw] text-[1.2vw]">Το ΣΤΟΠ σταματά αμέσως τα πάντα. Το PASS είναι πάντα διαθέσιμο.</div></div>
-        </div>
-        <ol className="grid grid-cols-2 gap-[1vw]">
-          {guide.phases.map((phase, i) => (
-            <li key={phase.id} className="flex gap-[1vw] rounded-3xl bg-white/5 p-[1.2vw]">
-              <span className="flex h-[3vw] w-[3vw] shrink-0 items-center justify-center rounded-full bg-[#E8C26B] text-[1.4vw] font-black text-black">{i + 1}</span>
-              <div><div className="text-[1.5vw] font-bold">{phase.title}</div><div className="text-[1.1vw] text-white/70">{phase.text}</div></div>
-            </li>
-          ))}
-        </ol>
+      <div className="relative">
+        <div className="font-semibold uppercase tracking-[0.3em] text-[#E8C26B]" style={{ fontSize: u(1.2) }}>Πώς παίζεται</div>
+        <div className="font-bold leading-none" style={{ fontSize: u(3.8) }}>{meta?.icon} {meta?.name}</div>
+        <div className="max-w-[75vw] text-white/80" style={{ fontSize: u(1.5), marginTop: u(0.6) }}>{guide.tagline}</div>
       </div>
+      <div className="relative grid grid-cols-3" style={{ gap: u(1.2), fontSize: u(1.2) }}>
+        <div className="col-span-2 rounded-3xl bg-white/5" style={{ padding: u(1.2) }}><b className="text-[#E8C26B]">Στόχος</b><div>{guide.goal}</div><b className="block text-[#E8C26B]" style={{ marginTop: u(0.6) }}>Νίκη</b><div>{guide.win}</div></div>
+        <div className="rounded-3xl border border-[#FF453A]/50 bg-[#1A0B0A]/80" style={{ padding: u(1.2) }}><b className="text-[#FF8A80]">🛑 ΣΤΟΠ & PASS</b><div style={{ fontSize: u(1.05), marginTop: u(0.4) }}>Το ΣΤΟΠ σταματά αμέσως τα πάντα. Το PASS είναι πάντα διαθέσιμο.</div></div>
+      </div>
+      <ol className="relative grid min-h-0 grid-cols-3 content-start" style={{ gap: u(1) }}>
+        {guide.phases.map((phase, i) => (
+          <li key={phase.id} className="flex min-h-0 overflow-hidden rounded-3xl bg-white/5" style={{ gap: u(0.8), padding: u(1) }}>
+            <span className="flex shrink-0 items-center justify-center rounded-full bg-[#E8C26B] font-black text-black" style={{ width: u(2.6), height: u(2.6), fontSize: u(1.2) }}>{i + 1}</span>
+            <div className="min-w-0"><div className="line-clamp-2 font-bold leading-tight" style={{ fontSize: u(1.25) }}>{phase.title}</div><div className="line-clamp-2 text-white/70" style={{ fontSize: u(1), marginTop: u(0.3) }}>{phase.text}</div></div>
+          </li>
+        ))}
+      </ol>
     </div>
   );
 }
@@ -128,6 +128,10 @@ export function PhaseTransitionTV({ state }) {
     if (prev.current && id && prev.current !== id) setShownAt(Date.now());
     prev.current = id;
   }, [id]);
+  const briefingDoneAt = state?.mg?.briefingDoneAt || 0;
+  useEffect(() => {
+    if (briefingDoneAt && Date.now() - briefingDoneAt < 8000) setShownAt(Date.now());
+  }, [briefingDoneAt]);
   useEffect(() => {
     if (!shownAt) return undefined;
     const t = setTimeout(() => setShownAt(0), 6000);

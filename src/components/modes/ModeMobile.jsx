@@ -11,7 +11,7 @@ import ModeArt from '@/components/modes/ModeArt';
 import { BriefingMobile, PlayerDashboard, briefingPending } from '@/components/modes/ModeBriefing';
 import { fmt, sfx, timerLeft, useTick, setGameStopActive } from '@/lib/modeKit';
 import { enablePlayerPush } from '@/lib/push';
-import GameDurationClock from '@/components/shared/GameDurationClock';
+import GameDurationClock, { sameAsTotal } from '@/components/shared/GameDurationClock';
 import { Header, Button, List, Row, SafetyBar } from '@/design/ui';
 
 // Οθόνη κινητού (/play) για τα ψηφιακά modes.
@@ -108,7 +108,7 @@ export default function ModeMobile({ state, me, updateState, onChangePlayer, ses
         <PlayerDashboard state={state} me={me} />
         <div className="flex justify-center"><GameDurationClock state={state} inline /></div>
 
-        {mg.timer && (
+        {mg.timer && !sameAsTotal(state, left) && (
           <div className={`ui-timer text-center text-5xl ${left < 60 ? 'ui-timer--danger' : ''}`}>{fmt(left)}</div>
         )}
 
