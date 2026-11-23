@@ -3,7 +3,6 @@ import { PAJAMA_ACTS } from '@/data/pajamaProgram';
 // Περιεχόμενο του /site για κάθε event. Όλα επεξεργάζονται από Admin → 🌐 Site & Σενάριο.
 export const SITE_EVENTS = [
   { id: 'heist', label: '🚨 HEIST NIGHT' },
-  { id: 'pajama', label: '🩴 PAJAMA PEDI-GLAM' },
 ];
 
 const PAJAMA_PROGRAM = PAJAMA_ACTS.map((a) => ({
@@ -114,8 +113,6 @@ const modeFaq = (what, duration) => [
 ];
 
 SITE_EVENTS.push(
-  { id: 'pedi_glam', label: '💅 PAJAMA PEDI-GLAM · 90′' },
-  { id: 'pedi_extended', label: '💅 PAJAMA PEDI-GLAM EXTENDED' },
   { id: 'lockdown', label: '🚨 PAJAMA LOCKDOWN' },
   { id: 'beachbar', label: '🍹 BEACH BAR HOME LOCKDOWN' },
   { id: 'marathon4h', label: '🚔 PAJAMA HEIST & ARREST' },

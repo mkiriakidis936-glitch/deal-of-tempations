@@ -43,19 +43,19 @@ export const PHOTO_SPOT_IDS = PHOTO_SPOTS.map((v) => v.id);
 
 export const GALLERIES = [
   { id: 'heistPhotos', label: 'Heist — γκαλερί', where: '12 αριθμημένες εικόνες: heist_01 έως heist_12', requiredCount: 12, surfaces: ['site', 'forms'] },
-  { id: 'pajamaPhotos', label: 'Pajama — γκαλερί', where: '12 αριθμημένες εικόνες: pajama_01 έως pajama_12', requiredCount: 12, surfaces: ['site', 'forms'] },
+  { id: 'pajamaPhotos', label: 'Pajama — γκαλερί', where: '12 αριθμημένες εικόνες: pajama_01 έως pajama_12', requiredCount: 12, surfaces: ['site', 'forms'], retired: true },
   { id: 'siteVideos', kind: 'video', label: 'Site — επιπλέον βίντεο', where: 'Αρχική σελίδα, κάτω από το τρέιλερ (όσα θες)', surfaces: ['site'] },
 ];
 
 export const MODE_COVER_SLOTS = [
   { id: 'modeCover_classic', modeId: 'classic', label: 'Κλασικό', filename: 'modeCover_classic.jpg', surfaces: ['tablet', 'forms'] },
-  { id: 'modeCover_marathon', modeId: 'marathon', label: 'Mega Marathon', filename: 'modeCover_marathon.jpg', surfaces: ['tablet', 'forms'] },
+  { id: 'modeCover_marathon', modeId: 'marathon', label: 'Mega Marathon', filename: 'modeCover_marathon.jpg', surfaces: ['tablet', 'forms'], retired: true },
   { id: 'modeCover_arrest_heist', modeId: 'arrest_heist', label: 'Arrest & Heist', filename: 'modeCover_arrest_heist.jpg', surfaces: ['tablet', 'forms'] },
-  { id: 'modeCover_pajama', modeId: 'pajama', label: 'Pajama Mode', filename: 'modeCover_pajama.jpg', surfaces: ['tablet', 'forms'] },
-  { id: 'modeCover_pedi_extended', modeId: 'pedi_extended', label: 'Pedi-Glam Extended', filename: '', surfaces: ['tablet', 'forms'] },
+  { id: 'modeCover_pajama', modeId: 'pajama', label: 'Pajama Mode', filename: 'modeCover_pajama.jpg', surfaces: ['tablet', 'forms'], retired: true },
+  { id: 'modeCover_pedi_extended', modeId: 'pedi_extended', label: 'Pedi-Glam Extended', filename: '', surfaces: ['tablet', 'forms'], retired: true },
   { id: 'modeCover_lockdown', modeId: 'lockdown', label: 'PAJAMA LOCKDOWN 18+', filename: 'cover.jpg', surfaces: ['tablet', 'forms'] },
   { id: 'modeCover_beach_bar', modeId: 'beach_bar', label: 'BEACH BAR HOME LOCKDOWN', filename: 'cover.jpg', surfaces: ['tablet', 'forms'] },
-  { id: 'modeCover_pedi_glam', modeId: 'pedi_glam', label: 'Pajama Pedi-Glam 90′', filename: '', surfaces: ['tablet', 'forms'] },
+  { id: 'modeCover_pedi_glam', modeId: 'pedi_glam', label: 'Pajama Pedi-Glam 90′', filename: '', surfaces: ['tablet', 'forms'], retired: true },
   { id: 'modeCover_marathon_4h', modeId: 'marathon_4h', label: 'Pajama Heist & Arrest', filename: '', surfaces: ['tablet', 'forms'] },
 ];
 

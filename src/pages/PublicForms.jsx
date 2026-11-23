@@ -48,8 +48,26 @@ export default function PublicForms() {
           <h1 className="mt-3 text-3xl font-bold text-[#F7E3A8]">ΦΟΡΜΑ ΣΥΜΜΕΤΟΧΗΣ</h1>
           <p className="mt-2 text-sm text-[#b6aa8b]">Επίλεξε ένα Mode για να συμπληρώσεις την αίτησή σου.</p>
         </header>
-        <section className="mt-5 grid gap-3 sm:grid-cols-2">
-          {GAME_MODES.map((mode) => (
+        <h2 className="mt-6 text-xs font-bold tracking-[.3em] text-[#E8C26B]">🎲 ΜΗΧΑΝΕΣ ΠΑΙΧΝΙΔΙΟΥ</h2>
+        <section className="mt-3 grid gap-3 sm:grid-cols-2">
+          {GAME_MODES.filter((m) => m.kind === 'engine').map((mode) => (
+            <button
+              key={mode.id}
+              type="button"
+              onClick={() => chooseMode(mode.id)}
+              className="overflow-hidden rounded-2xl border border-[#806a35] bg-[#111] text-left hover:border-[#E8C26B]"
+            >
+              {MODE_COVERS[`modeCover_${mode.id}`] && <img src={MODE_COVERS[`modeCover_${mode.id}`]} alt="" loading="lazy" decoding="async" className="aspect-[16/9] w-full object-cover" />}
+              <span className="block p-4">
+                <span className="block text-lg font-bold text-[#F7E3A8]">{mode.icon} {mode.name}</span>
+                <span className="mt-2 block text-sm text-[#b6aa8b]">{mode.desc}</span>
+              </span>
+            </button>
+          ))}
+        </section>
+        <h2 className="mt-6 text-xs font-bold tracking-[.3em] text-[#E8C26B]">📱 ΨΗΦΙΑΚΑ MODES</h2>
+        <section className="mt-3 grid gap-3 sm:grid-cols-2">
+          {GAME_MODES.filter((m) => m.kind !== 'engine').map((mode) => (
             <button
               key={mode.id}
               type="button"

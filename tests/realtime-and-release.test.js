@@ -41,7 +41,7 @@ test('admin: κάθε καρτέλα της πλοήγησης έχει οθόν
   const admin = read('src/pages/Admin.jsx');
   const navBlock = admin.slice(admin.indexOf('const NAV_GROUPS'), admin.indexOf('const LEGACY_TABS'));
   const ids = [...navBlock.matchAll(/\{ id: '([a-z_]+)', label: '[^']+', icon:/g)].map((m) => m[1]);
-  assert.ok(ids.length >= 25);
+  assert.ok(ids.length >= 15); // 5.0: αφαιρέθηκαν Σενάρια, Επιτεύγματα, Πληροφορίες event, Αρχείο, Ανάκτηση
   for (const id of ids.filter((id) => id !== 'dashboard')) {
     assert.match(admin, new RegExp(`case '${id}':`), `λείπει η οθόνη για ${id}`);
   }

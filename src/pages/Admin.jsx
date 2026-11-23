@@ -4,8 +4,8 @@ import { useSearchParams } from 'react-router-dom';
 import { base44, request } from '@/api/base44Client';
 import { getActiveSessionCode, setActiveSessionCode, subscribeActiveSession } from '@/lib/activeSession';
 import {
-  LayoutDashboard, Inbox, Ticket, BarChart3, Gamepad2, Radio, AudioLines, Clapperboard, Video, Users, Award, Layers, Drama,
-  Images, Globe, Mail, FileText, Link2, History, Film, HardDrive, LifeBuoy, Settings, CalendarDays, Bell, Search, RefreshCw, BookOpen,
+  LayoutDashboard, Inbox, Ticket, BarChart3, Gamepad2, Radio, AudioLines, Clapperboard, Video, Users, Layers,
+  Images, Globe, Mail, FileText, Link2, History, HardDrive, Settings, Bell, Search, RefreshCw, BookOpen,
 } from 'lucide-react';
 import AdminNav, { AdminTabBar } from '@/components/admin/AdminNav';
 import AdminSessionBar from '@/components/admin/AdminSessionBar';
@@ -19,19 +19,14 @@ const AdminSettings = lazy(() => import('@/components/admin/AdminSettings'));
 const AdminGuide = lazy(() => import('@/components/admin/AdminGuide'));
 const AdminBackup = lazy(() => import('@/components/admin/AdminBackup'));
 const AdminSessions = lazy(() => import('@/components/admin/AdminSessions'));
-const AdminSessionRecovery = lazy(() => import('@/components/admin/AdminSessionRecovery'));
-const AdminEpisodeArchive = lazy(() => import('@/components/admin/AdminEpisodeArchive'));
 const AdminPlayers = lazy(() => import('@/components/admin/AdminPlayers'));
 const AdminLiveControl = lazy(() => import('@/components/admin/AdminLiveControl'));
 const AdminIntakes = lazy(() => import('@/components/admin/AdminIntakes'));
 const AdminShowCasting = lazy(() => import('@/components/admin/AdminShowCasting'));
 const AdminLinks = lazy(() => import('@/components/admin/AdminLinks'));
 const AdminRSVP = lazy(() => import('@/components/admin/AdminRSVP'));
-const AdminEventInfo = lazy(() => import('@/components/admin/AdminEventInfo'));
-const AdminMeta = lazy(() => import('@/components/admin/AdminMeta'));
 const AdminMedia = lazy(() => import('@/components/admin/AdminMedia'));
 const AdminSite = lazy(() => import('@/components/admin/AdminSite'));
-const AdminCustomScenarios = lazy(() => import('@/components/admin/AdminCustomScenarios'));
 const AdminFormsBuilder = lazy(() => import('@/components/admin/AdminFormsBuilder'));
 const AdminNotifications = lazy(() => import('@/components/admin/AdminNotifications'));
 const AdminVisits = lazy(() => import('@/components/admin/AdminVisits'));
@@ -69,8 +64,6 @@ const NAV_GROUPS = [
     tabs: [
       { id: 'modes', label: 'Κάρτες & περιεχόμενο', icon: Layers },
       { id: 'media', label: 'Φωτογραφίες & βίντεο', icon: Images },
-      { id: 'scenarios', label: 'Σενάρια', icon: Drama },
-      { id: 'achievements', label: 'Επιτεύγματα', icon: Award },
     ],
   },
   {
@@ -89,7 +82,6 @@ const NAV_GROUPS = [
     label: 'Ιστοσελίδα',
     tabs: [
       { id: 'website', label: 'Ιστοσελίδα', icon: Globe },
-      { id: 'eventinfo', label: 'Πληροφορίες event', icon: CalendarDays },
       { id: 'statistics', label: 'Στατιστικά & επισκέψεις', icon: BarChart3 },
     ],
   },
@@ -100,8 +92,6 @@ const NAV_GROUPS = [
       { id: 'settings', label: 'Ρυθμίσεις & έκδοση', icon: Settings },
       { id: 'notifications', label: 'Ειδοποιήσεις', icon: Bell },
       { id: 'sessions', label: 'Ιστορικό παρτίδων', icon: History },
-      { id: 'archive', label: 'Αρχείο επεισοδίων', icon: Film },
-      { id: 'recovery', label: 'Ανάκτηση παρτίδων', icon: LifeBuoy },
       { id: 'backup', label: 'Αντίγραφα ασφαλείας', icon: HardDrive },
       { id: 'guide', label: 'Οδηγός', icon: BookOpen },
     ],
@@ -118,12 +108,17 @@ const LEGACY_TABS = {
   arrest_heist: 'modes',
   special: 'modes',
   site: 'website',
-  meta: 'achievements',
+  meta: 'modes',
+  achievements: 'modes',
+  scenarios: 'modes',
+  eventinfo: 'events',
+  archive: 'sessions',
+  recovery: 'sessions',
   visits: 'statistics',
   intakes: 'forms',
   rsvp: 'forms',
   blitz: 'players',
-  leaderboard: 'achievements',
+  leaderboard: 'modes',
 };
 
 export default function Admin() {
@@ -307,10 +302,6 @@ export default function Admin() {
         return <AdminProduction sessions={sessions} selectedSession={activeSession} onSelect={selectSession} />;
       case 'av':
         return <AdminAVControlRoom />;
-      case 'achievements':
-        return <AdminMeta initialTab="achievements" />;
-      case 'scenarios':
-        return <AdminCustomScenarios />;
       case 'website':
         return <AdminSite />;
       case 'media':
@@ -341,10 +332,6 @@ export default function Admin() {
         return <AdminGuide />;
       case 'backup':
         return <AdminBackup />;
-      case 'recovery':
-        return <AdminSessionRecovery />;
-      case 'archive':
-        return <AdminEpisodeArchive />;
       case 'sessions':
         return (
           <AdminSessions
@@ -393,8 +380,6 @@ export default function Admin() {
         return <AdminIntakes />;
       case 'rsvp':
         return <AdminRSVP />;
-      case 'eventinfo':
-        return <AdminEventInfo />;
       default:
         return <AdminOverview sessions={sessions} loading={loading} onNavigate={setTab} />;
     }

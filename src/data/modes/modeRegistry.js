@@ -1,27 +1,5 @@
-// Τα εγκεκριμένα ψηφιακά game modes.
+// Τα ενεργά ψηφιακά modes (ξεχωριστά από τις μηχανές παιχνιδιού Classic / Arrest Heist).
 export const NEW_MODES = [
-  {
-    id: 'pedi_glam',
-    name: 'PAJAMA PEDI-GLAM · 90′',
-    icon: '💅',
-    desc: 'Ψηφιακή εμπειρία 90 λεπτών με Pedi-Care, ASMR, μάσκες, φτερά, κρέμες, Glam Tokens και εξομολογήσεις.',
-    min: 3,
-    max: 8,
-    acts: ['board', 'midnight'],
-    actDurations: { board: 60, midnight: 30 },
-    minutes: 90,
-  },
-  {
-    id: 'pedi_extended',
-    name: 'PAJAMA PEDI-GLAM EXTENDED',
-    icon: '💅',
-    desc: 'Εκτεταμένη εμπειρία 2–2,5 ωρών με διαδοχικές κάρτες, mini-games, χρονόμετρα και κλιμακούμενες προκλήσεις.',
-    min: 3,
-    max: 8,
-    acts: ['board', 'midnight'],
-    actDurations: { board: 90, midnight: 60 },
-    minutes: 150,
-  },
   {
     id: 'lockdown',
     name: 'PAJAMA LOCKDOWN 18+',
@@ -58,6 +36,34 @@ export const NEW_MODES = [
 
 ];
 
+// Αποσυρμένα modes: δεν εμφανίζονται πουθενά, μένουν μόνο για να ανοίγουν παλιές αποθηκευμένες συνεδρίες.
+export const RETIRED_MODES = [
+  {
+    id: 'pedi_glam',
+    name: 'PAJAMA PEDI-GLAM · 90′',
+    icon: '💅',
+    desc: 'Ψηφιακή εμπειρία 90 λεπτών με Pedi-Care, ASMR, μάσκες, φτερά, κρέμες, Glam Tokens και εξομολογήσεις.',
+    min: 3,
+    max: 8,
+    acts: ['board', 'midnight'],
+    actDurations: { board: 60, midnight: 30 },
+    retired: true,
+    minutes: 90,
+  },
+  {
+    id: 'pedi_extended',
+    name: 'PAJAMA PEDI-GLAM EXTENDED',
+    icon: '💅',
+    desc: 'Εκτεταμένη εμπειρία 2–2,5 ωρών με διαδοχικές κάρτες, mini-games, χρονόμετρα και κλιμακούμενες προκλήσεις.',
+    min: 3,
+    max: 8,
+    acts: ['board', 'midnight'],
+    actDurations: { board: 90, midnight: 60 },
+    retired: true,
+    minutes: 150,
+  },
+];
+
 export const MODE_MEDIA_SECTIONS = {
   lockdown: [
     { id: 'level1', label: 'Level 1 — Hostage Sacrifice', filename: 'section1_Level1_Hostage_Sacrifice.jpg' },
@@ -75,8 +81,8 @@ export const MODE_MEDIA_SECTIONS = {
   ],
 };
 
-export const isNewMode = (id) => NEW_MODES.some((m) => m.id === id);
-export const modeMeta = (id) => NEW_MODES.find((m) => m.id === id);
+export const isNewMode = (id) => NEW_MODES.some((m) => m.id === id) || RETIRED_MODES.some((m) => m.id === id);
+export const modeMeta = (id) => NEW_MODES.find((m) => m.id === id) || RETIRED_MODES.find((m) => m.id === id);
 
 // iOS 27 · μαύρο & χρυσό. Κάθε mode έχει δική του απόχρωση χρυσού (όχι άλλο χρώμα).
 export const MODE_THEMES = {
@@ -97,12 +103,14 @@ export const ACT_META = {
 };
 
 
-// Vollständige Liste αποκλειστικά για το ενιαίο MODE MEDIA CENTER.
-// Δεν αλλάζει τη λίστα των ενεργών/διαθέσιμων game modes.
+// Μηχανές παιχνιδιού (ταμπλό με ζάρι) — ξεχωριστή κατηγορία από τα ψηφιακά modes.
+export const ENGINE_MODES = [
+  { id: 'classic', name: 'CLASSIC', icon: '🎲', kind: 'engine' },
+  { id: 'arrest_heist', name: 'ARREST HEIST', icon: '🚨', kind: 'engine' },
+];
+
+// Όλα τα ενεργά modes για το MODE MEDIA CENTER: πρώτα οι μηχανές, μετά τα ψηφιακά.
 export const MEDIA_MODES = [
-  { id: 'classic', name: 'CLASSIC', icon: '' },
-  { id: 'marathon', name: 'MARATHON', icon: '' },
-  { id: 'arrest_heist', name: 'ARREST HEIST', icon: '' },
-  { id: 'pajama', name: 'PAJAMA', icon: '' },
-  ...NEW_MODES.map(({ id, name, icon }) => ({ id, name, icon })),
+  ...ENGINE_MODES,
+  ...NEW_MODES.map(({ id, name, icon }) => ({ id, name, icon, kind: 'digital' })),
 ];

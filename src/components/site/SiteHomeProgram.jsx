@@ -5,8 +5,6 @@ import SiteFaq from '@/components/site/SiteFaq';
 // Οι διάρκειες και οι κανόνες προέρχονται από τα κείμενα κάθε event στο data/siteContent.js.
 const EXPERIENCES = [
   { id: 'heist', title: 'Heist Night', meta: 'Μία βραδιά · κλειστή λίστα', text: 'Βραδιά με κάρτες, ομάδες και υποχρεώσεις. Παίρνεις το γράμμα, υπογράφεις και έρχεσαι.' },
-  { id: 'pajama', title: 'Pajama Pedi-Glam', meta: 'Επτά πράξεις · περίπου 8 ώρες', text: 'Τέσσερις πράξεις το βράδυ και τρεις το πρωί: ταμπλό, μυστικά, δίκη, ξύπνημα, πρωινό τραπέζι και το Δώρο.' },
-  { id: 'extended', title: 'Pedi-Glam Extended', meta: 'Τρεις πράξεις · περίπου 2,5 ώρες', text: 'Ψηφιακό ταμπλό με tokens, μεσάνυχτα ASMR και πρωινός γρίφος για τον καφέ.' },
   { id: 'lockdown', title: 'Pajama Lockdown', meta: 'Τρία επίπεδα · 60′ (περίπου 75′ με προετοιμασία)', text: 'Ψηφιακό escape room 18+ με γρίφους, φυσικές δοκιμασίες και χρονόμετρο που δεν σταματά.' },
   { id: 'beachbar', title: 'Beach Bar Lockdown', meta: 'Πέντε φάσεις · 3–4 ώρες', text: 'Χορός, σαγιονάρες, τροχός ποινών και τελικός για τη Beach Queen. Το αλκοόλ είναι προαιρετικό.' },
   { id: 'marathon4h', title: 'Pajama Heist & Arrest', meta: 'Τέσσερις φάσεις · 105 λεπτά', text: 'The Ultimate Lounge Lockdown: ταμπλό 21 τετραγώνων, Αστυνόμος & Fugitives, χειροπέδες, ανάκριση και Barefoot Escape.' },

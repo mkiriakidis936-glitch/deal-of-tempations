@@ -6,6 +6,7 @@ import { EXIT_CODE, syncExitCode } from '@/data/modes/lockdownContent';
 import { consentPending } from '@/lib/consent';
 import { ConsentTV } from '@/components/modes/ConsentCheckIn';
 import LoungeTV from '@/components/modes/LoungeTV';
+import ModeArt from '@/components/modes/ModeArt';
 import { fmt, timerLeft, useTick, setGameStopActive } from '@/lib/modeKit';
 import { TvScreen, TvLeaderboard } from '@/design/ui';
 
@@ -38,6 +39,8 @@ export default function ModeTV({ state }) {
           {mg.timer && <div className={`ui-tv-num ui-timer ${left < 60 || surge ? 'ui-timer--danger' : ''}`} style={{ fontSize: 'calc(var(--tv-unit) * 6)' }}>{fmt(left)}</div>}
         </div>
       )}
+
+      {act !== 'lounge' && <ModeArt state={state} alt={meta.name} className="mt-4 aspect-[21/7] rounded-3xl" />}
 
       {mg.stop && <div className="ui-card ui-card--danger text-center"><div className="ui-tv-title ui-tv-title--red">⏸ Όλα σταμάτησαν</div><div className="ui-tv-text mt-2">Αναμονή για ομόφωνη συναίνεση πριν τη συνέχεια.</div></div>}
       {act === 'lounge' && <LoungeTV state={state} />}

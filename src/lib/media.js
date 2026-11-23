@@ -38,7 +38,7 @@ export async function patchOverrides(mutator) {
 // 2) Η φόρτωση από τον server έχει υπομονή (8″) και ΔΕΝ εγκαταλείπεται: συνεχίζει ξανά και ξανά στο παρασκήνιο.
 // 3) Η TV/Tablet/Κινητό ελέγχουν περιοδικά για αλλαγές από το Admin (χωρίς χειροκίνητο refresh).
 const CACHE_KEY = 'media_overrides_cache_v2';
-const POLL_MS = 45_000;
+const POLL_MS = 15_000; // TV/Tablet/κινητά βλέπουν νέα φωτογραφία από το Admin σε ≤15″
 const STATIC_PATHS = /^\/(site|promo|forms|gift-unlock|vip\/|production-consent)/;
 const mediaListeners = new Set();
 let lastSignature = '';

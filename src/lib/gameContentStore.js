@@ -8,11 +8,12 @@ import { buildGameContentRecords } from '@/lib/reseedContent';
 
 import {
   BOARD, SQUARE_TYPES, FULL_PENALTY_LADDER, FOOTWEAR_LEVELS, TOENAIL_PERKS,
-  HIDDEN_ROLES, INTENSITY_LEVELS, GAME_MODES, MARATHON_STAGES,
+  HIDDEN_ROLES, INTENSITY_LEVELS, GAME_MODES, RETIRED_GAME_MODES, MARATHON_STAGES,
   BOMB_TYPING_TYPES, BOMB_RIDDLES_ALPHA, BOMB_RIDDLES_BETA, BOMB_PASO_TRIALS,
   ARREST_HEIST_LADDER, ARREST_HEIST_INTENSITY,
   WHEEL_BINDING_MATERIALS, WHEEL_TICKLE_TOOLS,
 } from '@/data/gameConfig';
+const RETIRED_MODE_IDS = new Set(RETIRED_GAME_MODES.map((m) => m.id));
 
 import {
   WARRANT_CARDS, GLITCH_CARDS, BLACK_MARKET_OPTIONS,
@@ -113,12 +114,12 @@ export async function hydrateGameContent() {
       } else {
         const arr = recs.map((r, i) => (t.build ? t.build(r.data, i) : r.data));
         if (t.mergeById) {
-          // Keep every mode defined in code; DB only overrides matching ids.
+          // Αποσυρμένα modes δεν ξαναμπαίνουν από τη βάση. Keep every mode defined in code; DB only overrides matching ids.
           const byId = {};
           arr.forEach((x) => { if (x && x.id) byId[x.id] = x; });
-          const merged = t.target.map((base) => byId[base.id] || base);
+          const merged = t.target.map((base) => (byId[base.id] ? { ...byId[base.id], kind: base.kind } : base));
           arr.forEach((x) => {
-            if (x && x.id && !merged.some((m) => m.id === x.id)) merged.push(x);
+            if (x && x.id && !RETIRED_MODE_IDS.has(x.id) && !merged.some((m) => m.id === x.id)) merged.push(x);
           });
           replaceArray(t.target, merged);
         } else {

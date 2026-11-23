@@ -404,32 +404,27 @@ export default function SetupScreen({ onStart }) {
             </div>
           )}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div className={`comic-panel-sm p-3 transition-all sm:col-span-2 ${mode === 'classic' || mode === 'marathon' ? 'ring-2 ring-primary bg-primary/10' : 'bg-secondary'}`}>
-              <div className="font-heading text-xl text-foreground">🎲 ΚΛΑΣΣΙΚΗ / MEGA MARATHON</div>
-              <div className="text-sm text-foreground/70 font-body mb-2">Ίδιο τραπέζι, ίδιοι κανόνες — αλλάζει μόνο η κλίμακα.</div>
-              <div className="grid grid-cols-2 gap-2">
-                {GAME_MODES.filter((v) => v.id === 'classic' || v.id === 'marathon').map((v) => {
-                  const on = mode === v.id;
-                  return (
-                    <button
-                      key={v.id}
-                      onClick={() => handleModeChange(v)}
-                      disabled={!!castingPlan}
-                      className={`rounded-md border p-2 text-left transition-all ${on ? 'border-primary bg-primary/15' : 'border-border/60 bg-surface-1 hover:border-primary/50'} ${castingPlan ? 'cursor-not-allowed opacity-75' : ''}`}
-                    >
-                      {MODE_COVERS["modeCover_" + v.id] && <img src={MODE_COVERS["modeCover_" + v.id]} alt={v.name} className="w-full aspect-[16/9] object-cover rounded-md mb-2 bg-black/30" />}
-                      <div className="font-heading text-base text-foreground leading-tight">{v.icon} {v.name}</div>
-                      <div className="ds-label mt-1 text-primary/70">{v.id === 'classic' ? '2-6 παίκτριες' : '8-10 παίκτριες'}</div>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-            {GAME_MODES.filter((m) => m.id !== 'classic' && m.id !== 'marathon').map((m) => (
+            <div className="sm:col-span-2 ds-label text-primary">🎲 ΜΗΧΑΝΕΣ ΠΑΙΧΝΙΔΙΟΥ · ταμπλό με ζάρι</div>
+            {GAME_MODES.filter((m) => m.kind === 'engine').map((m) => (
               <button
                 key={m.id}
                 onClick={() => handleModeChange(m)}
                 disabled={!!castingPlan}
+                aria-pressed={mode === m.id}
+                className={`comic-panel-sm p-3 text-left transition-all ${mode === m.id ? 'ring-2 ring-primary bg-primary/10' : 'bg-secondary'} ${castingPlan ? 'cursor-not-allowed opacity-75' : ''}`}
+              >
+                {MODE_COVERS["modeCover_" + m.id] && <img src={MODE_COVERS["modeCover_" + m.id]} alt={m.name} className="w-full aspect-[16/9] object-cover rounded-md mb-2 bg-black/30" />}
+                <div className="font-heading text-xl text-foreground">{m.icon} {m.name}</div>
+                <div className="text-sm text-foreground/70 font-body">{m.desc}</div>
+              </button>
+            ))}
+            <div className="sm:col-span-2 ds-label text-primary mt-2">📱 ΨΗΦΙΑΚΑ MODES · οθόνες, χρονόμετρα, κινητά</div>
+            {GAME_MODES.filter((m) => m.kind !== 'engine').map((m) => (
+              <button
+                key={m.id}
+                onClick={() => handleModeChange(m)}
+                disabled={!!castingPlan}
+                aria-pressed={mode === m.id}
                 className={`comic-panel-sm p-3 text-left transition-all ${mode === m.id ? 'ring-2 ring-primary bg-primary/10' : 'bg-secondary'} ${castingPlan ? 'cursor-not-allowed opacity-75' : ''}`}
               >
                 {MODE_COVERS["modeCover_" + m.id] && <img src={MODE_COVERS["modeCover_" + m.id]} alt={m.name} className="w-full aspect-[16/9] object-cover rounded-md mb-2 bg-black/30" />}

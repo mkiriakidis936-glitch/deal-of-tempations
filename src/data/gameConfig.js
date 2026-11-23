@@ -113,17 +113,27 @@ export const INTENSITY_LEVELS = [
 ];
 
 // ===== GAME MODES =====
-// BUILD 11:07 — 4 modes: classic, marathon, arrest_heist, pajama
-export const GAME_MODES = [
-  { id: 'classic', name: 'ΚΛΑΣΣΙΚΗ', icon: '🎲', desc: '2-6 παίκτριες. Ταμπλό 24 κουτιών, Σκάλα 7 Ποινών, Στάδια 1-3.' },
-  { id: 'marathon', name: 'MEGA MARATHON', icon: '🏆', desc: '8-10 παίκτριες. 2 ομάδες (Alpha & Beta), 4 στάδια, $200.000 Loot ή 10 Wanted Stars.' },
-  { id: 'arrest_heist', name: 'ARREST & HEIST', icon: '🚨', desc: '2 Ομάδες (Alpha vs Beta). 6 γύροι, 6 στάδια ποινών, Grand Heist Escape.' },
-  { id: 'pajama', name: 'PAJAMA PEDI-GLAM · 5H', icon: '🩴', desc: 'Μένουν στο σπίτι. Πιτζάμες, νύχια, παντόφλες, γαργαλητό & δεσίματα. 44 κουτιά, νύχτα & πρωί.' },
+// Μηχανές παιχνιδιού (kind: 'engine') + ψηφιακά modes (kind: 'digital').
+import { NEW_MODES, RETIRED_MODES } from '@/data/modes/modeRegistry';
+
+export const ENGINE_GAME_MODES = [
+  { id: 'classic', name: 'ΚΛΑΣΣΙΚΗ', icon: '🎲', kind: 'engine', desc: '2-6 παίκτριες. Ταμπλό 24 κουτιών, Σκάλα 7 Ποινών, Στάδια 1-3.' },
+  { id: 'arrest_heist', name: 'ARREST & HEIST', icon: '🚨', kind: 'engine', desc: '2 Ομάδες (Alpha vs Beta). 6 γύροι, 6 στάδια ποινών, Grand Heist Escape.' },
 ];
 
-// Τα 4 ψηφιακά modes του «Μεγάλου Update» ορίζονται στο data/modes/modeRegistry.js
-import { NEW_MODES } from '@/data/modes/modeRegistry';
-NEW_MODES.forEach((m) => GAME_MODES.push({ id: m.id, name: m.name, icon: m.icon, desc: m.desc }));
+export const DIGITAL_GAME_MODES = NEW_MODES.map((m) => ({ id: m.id, name: m.name, icon: m.icon, desc: m.desc, kind: 'digital' }));
+
+// Τα ενεργά modes που εμφανίζονται παντού (Tablet, Forms, Site, Admin).
+export const GAME_MODES = [...ENGINE_GAME_MODES, ...DIGITAL_GAME_MODES];
+
+// Αποσυρμένα — μόνο για ονόματα σε παλιά δεδομένα/συνεδρίες.
+export const RETIRED_GAME_MODES = [
+  { id: 'marathon', name: 'MEGA MARATHON', icon: '🏆', kind: 'engine', retired: true, desc: '8-10 παίκτριες. 2 ομάδες (Alpha & Beta), 4 στάδια.' },
+  { id: 'pajama', name: 'PAJAMA PEDI-GLAM · 5H', icon: '🩴', kind: 'engine', retired: true, desc: 'Παλιό mode.' },
+  ...RETIRED_MODES.map((m) => ({ id: m.id, name: m.name, icon: m.icon, desc: m.desc, kind: 'digital', retired: true })),
+];
+
+export const modeDisplayName = (id) => [...GAME_MODES, ...RETIRED_GAME_MODES].find((m) => m.id === id)?.name || id;
 
 // ===== MARATHON STAGES =====
 export const MARATHON_STAGES = [

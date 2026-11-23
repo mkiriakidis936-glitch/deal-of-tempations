@@ -76,6 +76,7 @@ export default function AdminMedia() {
   const [libraryKindFilter, setLibraryKindFilter] = useState('all');
   const [librarySearch, setLibrarySearch] = useState('');
   const [galleryAsset, setGalleryAsset] = useState({});
+  const [section, setSection] = useState('modes');
   const [surfaceFilter, setSurfaceFilter] = useState('all');
   const [fileLoadStatus, setFileLoadStatus] = useState({});
   const [libraryStatusFilter, setLibraryStatusFilter] = useState('all');
@@ -374,7 +375,7 @@ export default function AdminMedia() {
       if (!src) missing.push({ surface: slot.surfaces?.[0] || 'site', label: slot.label, where: slot.where });
     }
     for (const slot of IMAGE_SLOTS) if (!ov[slot.id] && (clearedImages || !DEFAULTS[slot.id])) missing.push({ surface: slot.surfaces?.[0] || 'site', label: slot.label, where: slot.where });
-    for (const slot of MODE_COVER_SLOTS.filter((item) => item.modeId !== 'pedi_extended' && !NEW_MODES.some((mode) => mode.id === item.modeId))) {
+    for (const slot of MODE_COVER_SLOTS.filter((item) => !item.retired && !NEW_MODES.some((mode) => mode.id === item.modeId))) {
       const src = ov[slot.id] || (ov.emptyModeCovers?.includes(slot.id) || clearedImages ? '' : DEFAULTS[slot.id]);
       if (!src) missing.push({ surface: 'tablet', label: slot.label, where: 'Εξώφυλλο επιλογής Mode στο Tablet / Forms' });
     }
@@ -412,6 +413,20 @@ export default function AdminMedia() {
     <div className="space-y-3">
       <input ref={libraryOne} type="file" accept={MEDIA_ACCEPT} hidden onChange={onFiles} />
 
+      <div className="ui-segmented grid grid-cols-3 gap-2" role="tablist" aria-label="Ενότητες πολυμέσων">
+        {[
+          { id: 'modes', label: '🎮 MODE MEDIA CENTER', hint: 'Όλα ανά mode' },
+          { id: 'site', label: '🌐 Site & TV', hint: 'Σημεία, gallery, βίντεο έναρξης' },
+          { id: 'library', label: '🗂️ Βιβλιοθήκη', hint: 'Ανέβασμα & όλα τα αρχεία' },
+        ].map((item) => (
+          <button key={item.id} type="button" role="tab" aria-selected={section === item.id} onClick={() => { setSection(item.id); if (item.id !== 'site') setSurfaceFilter('all'); }}
+            className={section === item.id ? 'rounded-xl border border-primary bg-primary/15 p-3 text-left' : 'rounded-xl border border-border bg-secondary/40 p-3 text-left'}>
+            <div className="text-sm font-black">{item.label}</div><div className="text-[10px] text-foreground/55">{item.hint}</div>
+          </button>
+        ))}
+      </div>
+
+      {section === 'library' && (<>
       <ComicPanel className="bg-card">
         <div className="font-heading text-xl text-primary">🗂️ ΒΙΒΛΙΟΘΗΚΗ ΠΟΛΥΜΕΣΩΝ 3.0</div>
         <div onDragOver={(e) => { e.preventDefault(); setDragging(true); }} onDragLeave={() => setDragging(false)} onDrop={(e) => { e.preventDefault(); setDragging(false); target.current = { id: 'library', mode: 'library', surface: surfaceFilter }; onFiles({ target: { files: [...(e.dataTransfer?.files || [])], value: '' } }); }} className={`mt-3 rounded-xl border-2 border-dashed p-5 text-center text-sm font-bold transition-colors ${dragging ? 'border-primary bg-primary/15' : 'border-border/70 bg-secondary/40'}`}>ΣΥΡΕ ΕΔΩ ΠΟΛΛΑΠΛΑ ΑΡΧΕΙΑ ΓΙΑ ΑΝΕΒΑΣΜΑ</div>
@@ -426,6 +441,8 @@ export default function AdminMedia() {
         {msg && <div className={`mt-2 text-sm font-bold ${msg.ok ? 'text-green-400' : 'text-red-400'}`}>{msg.text}</div>}
       </ComicPanel>
 
+      </>)}
+      {section === 'site' && (<>
       <ComicPanel className="bg-card">
         <div className="font-heading text-lg">ΠΡΟΟΡΙΣΜΟΣ ΠΟΛΥΜΕΣΩΝ</div>
         <p className="mt-1 text-xs text-foreground/60">Επίλεξε πού ανήκει το υλικό. Οι καρτέλες φιλτράρουν τα σημεία και τη βιβλιοθήκη αρχείων. Μπορείς είτε να επιλέξεις υπάρχον αρχείο από τη βιβλιοθήκη είτε να ανεβάσεις νέο απευθείας στο συγκεκριμένο σημείο.</p>
@@ -506,12 +523,14 @@ export default function AdminMedia() {
         </div>
       </ComicPanel>
       )}
+      </>)}
 
+      {section === 'modes' && (<>
       {showSurface('tablet', 'forms') && (
       <ComicPanel className="bg-card space-y-3">
         <div className="font-heading text-lg">🎮 ΕΞΩΦΥΛΛΟ ΦΩΤΟΓΡΑΦΙΑΣ ΑΝΑ MODE</div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {MODE_COVER_SLOTS.filter((s) => s.modeId !== 'pedi_extended' && !NEW_MODES.some((mode) => mode.id === s.modeId) && showSurface(...(s.surfaces || ['tablet', 'forms']))).map((s) => {
+          {MODE_COVER_SLOTS.filter((s) => !s.retired && !NEW_MODES.some((mode) => mode.id === s.modeId) && showSurface(...(s.surfaces || ['tablet', 'forms']))).map((s) => {
             const src = ov[s.id] || (ov.emptyModeCovers?.includes(s.id) || ov.clearAllPhotos || ov.clearAllMedia ? '' : DEFAULTS[s.id]);
             return (
               <div key={s.id} className="border-2 border-border/40 rounded-lg p-2 bg-secondary/40">
@@ -559,10 +578,12 @@ export default function AdminMedia() {
         </div>
       </ComicPanel>
       )}
+      </>)}
 
+      {section === 'site' && (<>
       {showSurface('site', 'forms') && (
       <>
-      {GALLERIES.filter((g) => showSurface(...(g.surfaces || ['site']))).map((g) => {
+      {GALLERIES.filter((g) => !g.retired && showSurface(...(g.surfaces || ['site']))).map((g) => {
         const video = g.kind === 'video';
         const list = listOf(g.id);
         const requiredCount = g.requiredCount || 0;
@@ -641,7 +662,9 @@ export default function AdminMedia() {
       })}
       </>
       )}
+      </>)}
 
+      {section === 'library' && (<>
       {surfaceFilter !== 'preview' && (
       <ComicPanel className="bg-card space-y-3">
         <div className="font-heading text-lg">📋 ΑΝΑΦΟΡΑ ΚΕΝΩΝ ΣΗΜΕΙΩΝ</div>
@@ -719,6 +742,7 @@ export default function AdminMedia() {
         </div>
       </ComicPanel>
       )}
+      </>)}
     </div>
   );
 }

@@ -5,8 +5,6 @@ import { LOCKDOWN_SECONDS, MARATHON_LOCKDOWN_SECONDS } from '../src/data/modes/l
 
 test('all approved digital modes are registered with their exact durations', () => {
   const expected = {
-    pedi_glam: 90,
-    pedi_extended: 150,
     lockdown: 60,
     beach_bar: 150,
     marathon_4h: 105,
@@ -43,4 +41,9 @@ test('Lounge Lockdown: 21 τετράγωνα, 36 κάρτες, 4 φάσεις 10
   assert.equal(lg.LOUNGE_PHASES.reduce((sum, phase) => sum + phase.minutes, 0), 105);
   assert.equal(lg.restraintFor(5).name, 'Classic Hogtie & Sensory Lock');
   for (const type of lg.LOUNGE_BOARD) assert.ok(lg.SQUARE_TYPES[type], type);
+});
+
+test('μόνο Classic & Arrest Heist ως μηχανές, 3 ψηφιακά modes, τα παλιά αποσυρμένα', async () => {
+  const { modeMeta: meta } = await import('../src/data/modes/modeRegistry.js');
+  assert.equal(meta('pedi_glam')?.retired, true, 'παλιές συνεδρίες ανοίγουν ακόμα');
 });
