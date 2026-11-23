@@ -80,7 +80,10 @@ export const PHOTO = {
 export const FILM = { agent: '', welcomeVideo: '', countdownVideo: '' };
 for (const id of PHOTO_SPOT_IDS) FILM[id] = '';
 
-export const SITE_VIDEOS = []; // επιπλέον βίντεο για το /site (Admin → Φωτογραφίες & Βίντεο)
+export const SITE_VIDEOS = [];
+// Πού εμφανίζεται κάθε επιπλέον βίντεο: 'site' (αρχική) ή id ενός mode. Χωρίς τιμή = αρχική Site.
+export const VIDEO_PLACEMENTS = {};
+export const videosFor = (placement) => SITE_VIDEOS.filter((url) => (VIDEO_PLACEMENTS[url] || 'site') === placement); // επιπλέον βίντεο για το /site (Admin → Φωτογραφίες & Βίντεο)
 // Οι προεπιλεγμένες gallery εικόνες είναι ξεχωριστές από τις 12 αριθμημένες εικόνες κάθε gallery.
 export const PAJAMA_PHOTOS = [ART.photoSlippers, ART.photoGame];
 export const HEIST_PHOTOS = [ART.photoHeistNight];
@@ -148,4 +151,6 @@ export function applyMediaOverrides(o = {}) {
   HEIST_PHOTOS.splice(0, HEIST_PHOTOS.length, ...[ART.photoHeistNight, ...heistGallery].filter(str));
   PAJAMA_PHOTOS.splice(0, PAJAMA_PHOTOS.length, ...[ART.photoSlippers, ART.photoGame, ...pajamaGallery].filter(str));
   setList(SITE_VIDEOS, o.siteVideos, []);
+  for (const key of Object.keys(VIDEO_PLACEMENTS)) delete VIDEO_PLACEMENTS[key];
+  if (o.videoPlacements && typeof o.videoPlacements === 'object') Object.assign(VIDEO_PLACEMENTS, o.videoPlacements);
 }

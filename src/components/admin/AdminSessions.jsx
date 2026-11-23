@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import ComicPanel from '@/components/comic/ComicPanel';
 import ComicButton from '@/components/comic/ComicButton';
-import { GAME_MODES, INTENSITY_LEVELS } from '@/data/gameConfig';
+import { GAME_MODES, RETIRED_GAME_MODES, INTENSITY_LEVELS } from '@/data/gameConfig';
 import { calculateMostWanted } from '@/lib/gameLogic';
 
-const MODE_NAMES = Object.fromEntries(GAME_MODES.map((m) => [m.id, m.name]));
+const MODE_NAMES = Object.fromEntries([...GAME_MODES, ...RETIRED_GAME_MODES].map((m) => [m.id, m.name]));
 const INT_NAMES = Object.fromEntries(INTENSITY_LEVELS.map((i) => [i.id, `${i.icon} ${i.name}`]));
 const STAGE_NAMES = { 0: 'Στάδιο 0', 1: 'Στάδιο 1', 2: 'Στάδιο 2', 3: 'Στάδιο 3' };
 

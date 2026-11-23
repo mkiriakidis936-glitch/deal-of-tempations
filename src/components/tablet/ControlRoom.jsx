@@ -163,7 +163,7 @@ export default function ControlRoom({ state, updateState, playerProfiles = [], p
           <ComicPanel className="bg-card p-3">
             <div className="ds-label text-foreground/50">ΚΑΤΑΣΤΑΣΗ SHOW</div>
             <div className="mt-1 font-heading text-lg">{state.stopActive ? 'ΠΑΥΣΗ' : 'LIVE'}</div>
-            <div className="text-[10px] text-foreground/45">{state.testMode ? 'TEST MODE' : 'ΠΑΡΑΓΩΓΗ'}</div>
+            <div className="text-[10px] text-foreground/45">ΠΑΡΑΓΩΓΗ</div>
           </ComicPanel>
         </div>
 

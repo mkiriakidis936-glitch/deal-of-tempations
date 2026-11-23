@@ -269,9 +269,6 @@ export default function TVScreen() {
       <FinaleTV state={state} />
       <GiftCodeTV state={state} />
       <BlitzOverlay blitz={state.blitz} />
-      {state.testMode && (
-        <div className="fixed top-10 left-4 z-40"><span className="ui-badge ui-badge--gold">🧪 Δοκιμαστική λειτουργία</span></div>
-      )}
 
       {state.syncTimer && (
         <div className="fixed bottom-16 right-4 z-40 w-44">

@@ -8,6 +8,7 @@ import { consentPending } from '@/lib/consent';
 import { ConsentMobile } from '@/components/modes/ConsentCheckIn';
 import { MORNING_CLUES } from '@/data/modes/extendedContent';
 import ModeArt from '@/components/modes/ModeArt';
+import { BriefingMobile, PlayerDashboard, briefingPending } from '@/components/modes/ModeBriefing';
 import { fmt, sfx, timerLeft, useTick, setGameStopActive } from '@/lib/modeKit';
 import { enablePlayerPush } from '@/lib/push';
 import GameDurationClock from '@/components/shared/GameDurationClock';
@@ -87,11 +88,24 @@ export default function ModeMobile({ state, me, updateState, onChangePlayer, ses
     );
   }
 
+  if (briefingPending(mg, state.mode)) {
+    return (
+      <div className="ui-page" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 11rem)' }}>
+        <div className="ui-stack">
+          <Header eyebrow={me.name} title={`${meta.icon} ${meta.name}`} gold />
+          <ModeArt state={state} alt={meta.name} className="aspect-[16/9] rounded-2xl" />
+          <BriefingMobile state={state} />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="ui-page" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 11rem)' }}>
       <div className="ui-stack">
         <Header eyebrow={me.name} title={`${meta.icon} ${meta.name}`} gold />
         <ModeArt state={state} alt={meta.name} className="aspect-[16/9] rounded-2xl" />
+        <PlayerDashboard state={state} me={me} />
         <div className="flex justify-center"><GameDurationClock state={state} inline /></div>
 
         {mg.timer && (

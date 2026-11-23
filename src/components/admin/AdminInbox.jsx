@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { base44, request } from '@/api/base44Client';
 import ComicPanel from '@/components/comic/ComicPanel';
 import ComicButton from '@/components/comic/ComicButton';
-import { GAME_MODES } from '@/data/gameConfig';
+import { modeDisplayName } from '@/data/gameConfig';
 
 const SOURCES = [
   ['PublicFormSubmission', 'Δημόσια φόρμα'],
@@ -14,7 +14,7 @@ const SOURCES = [
 ];
 const STATUSES = ['Νέο', 'Επικοινωνία', 'Επιβεβαιώθηκε', 'Απορρίφθηκε'];
 const GAME_ENTITIES = new Set(['PlayerIntake', 'PajamaIntake', 'BacheloretteIntake', 'VIPInvitationSubmission']);
-const modeName = (id) => GAME_MODES.find((mode) => mode.id === id)?.name || id;
+const modeName = (id) => modeDisplayName(id);
 const modesFor = (item) => {
   if (item._entity === 'BacheloretteIntake') return ['arrest_heist'];
   if (Array.isArray(item.preferredModes) && item.preferredModes.length) return item.preferredModes;

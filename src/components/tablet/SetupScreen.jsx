@@ -1,16 +1,33 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { base44, request } from '@/api/base44Client';
-import ComicPanel from '@/components/comic/ComicPanel';
-import ComicButton from '@/components/comic/ComicButton';
-import { GAME_MODES, FOOTWEAR_LEVELS, TOENAIL_PERKS, INTENSITY_LEVELS } from '@/data/gameConfig';
+import { GAME_MODES, FOOTWEAR_LEVELS, TOENAIL_PERKS } from '@/data/gameConfig';
 import { createInitialState, generateSessionCode } from '@/lib/gameLogic';
-import { isNewMode, modeMeta } from '@/data/modes/modeRegistry';
-import { MODE_COVERS, MODE_MEDIA } from '@/data/brandArt';
-import { COLLECTIONS } from '@/lib/modesContentStore';
+import { isNewMode, modeMeta, MODE_MEDIA_SECTIONS } from '@/data/modes/modeRegistry';
+import { buildRoster, modeCounts, nameKey } from '@/lib/intakeRoster';
+import { MODE_COVERS, MODE_MEDIA, videosFor } from '@/data/brandArt';
 
 const SHOE_TO_LEVEL = { boots: 3, sneakers: 2, sandals: 1, barefoot: 0 };
+const playerLimits = (modeId) => {
+  const meta = isNewMode(modeId) ? modeMeta(modeId) : null;
+  if (meta) return { min: meta.min, max: meta.max };
+  return modeId === 'arrest_heist' ? { min: 4, max: 10 } : { min: 2, max: 6 };
+};
 
-const NAIL_COLORS = ['Red', 'Pink', 'White', 'Black', 'Nude', 'French', 'Blue', 'Purple', 'Green', 'Orange', 'Gold', 'Silver', 'None'];
+const ACTIVE_MODE_IDS = new Set(GAME_MODES.map((m) => m.id));
+
+// Στοιχεία από τη φόρμα που χρειάζεται το παιχνίδι.
+function playerFromRow(row, index) {
+  const i = row.item || {};
+  return {
+    name: row.name,
+    footwearLevel: SHOE_TO_LEVEL[i.shoeType] ?? 2,
+    toenailPerk: TOENAIL_PERKS[index % TOENAIL_PERKS.length].id,
+    slipperType: i.slipperType || '', nailColor: i.nailColor || 'Pink', pajamaStyle: i.pajamaStyle || '',
+    bringsOwnSlippers: i.bringsOwnSlippers ?? true, hasFlipFlops: i.hasFlipFlops ?? true,
+    ...(i.vipProfile ? { vipProfile: i.vipProfile } : {}),
+    formInfo: [i.shoeType && `👟 ${i.shoeType}`, i.nailColor && `💅 ${i.nailColor}`, i.slipperType && `🩴 ${i.slipperType}`, i.alcoholFree === true && '🚫🍸 χωρίς αλκοόλ', i.boundaries && `⚠️ ${String(i.boundaries).slice(0, 60)}`].filter(Boolean),
+  };
+}
 
 
 export default function SetupScreen({ onStart }) {
@@ -20,46 +37,16 @@ export default function SetupScreen({ onStart }) {
   const [selectedDotEventId, setSelectedDotEventId] = useState('');
   const modeRef = useRef(mode);
   useEffect(() => { modeRef.current = mode; }, [mode]);
-  const [intensity, setIntensity] = useState('standard');
   const [safeWord, setSafeWord] = useState('');
   const [safeWordConfirmed, setSafeWordConfirmed] = useState(false);
   const [players, setPlayers] = useState([
     { name: '', footwearLevel: 2, toenailPerk: 'red' },
     { name: '', footwearLevel: 2, toenailPerk: 'pink' },
   ]);
-  const [intakes, setIntakes] = useState([]);
-  const [heistIntakes, setHeistIntakes] = useState([]);
-  const [pajamaApproved, setPajamaApproved] = useState([]);
   const [pendingIntakes, setPendingIntakes] = useState([]);
   const [approvalMessage, setApprovalMessage] = useState('');
-  const [intakesLoaded, setIntakesLoaded] = useState(false);
-  const [testMode, setTestMode] = useState(false);
-  const [customScenarios, setCustomScenarios] = useState([]);
-  const [selectedScenarioId, setSelectedScenarioId] = useState('');
+  const [roster, setRoster] = useState([]);
   const [castingPlan, setCastingPlan] = useState(null);
-
-  const applyNames = (names, shoeByName, pjByName = {}, vipByName = {}) => {
-    if (!names.length) return;
-    setPlayers((prev) => {
-      const kept = prev.map((p) => p.name.trim()).filter(Boolean);
-      const merged = [...kept];
-      names.forEach((n) => { if (!merged.includes(n)) merged.push(n); });
-      const currentMode = modeRef.current;
-      const currentMeta = isNewMode(currentMode) ? modeMeta(currentMode) : null;
-      const limit = currentMeta?.max || (currentMode === 'marathon' || currentMode === 'arrest_heist' ? 10 : 6);
-      return merged.slice(0, limit).map((n, idx) => ({
-        name: n,
-        footwearLevel: shoeByName[n] ?? 2,
-        toenailPerk: TOENAIL_PERKS[idx % TOENAIL_PERKS.length].id,
-        slipperType: pjByName[n]?.slipperType || '',
-        nailColor: pjByName[n]?.nailColor || 'Pink',
-        bringsOwnSlippers: pjByName[n]?.bringsOwnSlippers ?? true,
-        hasFlipFlops: pjByName[n]?.hasFlipFlops ?? true,
-        pajamaStyle: pjByName[n]?.pajamaStyle || '',
-        ...(vipByName[n]?.vipProfile ? { vipProfile: vipByName[n].vipProfile } : {}),
-      }));
-    });
-  };
 
   const loadIntakes = async () => {
     try {
@@ -78,10 +65,8 @@ export default function SetupScreen({ onStart }) {
         ? item.dotEventId === selectedDotEventId || item.roomCode === selectedEvent?.room_code || item.sessionCode === selectedEvent?.room_code
         : eventCode ? item.sessionCode === eventCode || item.roomCode === eventCode : !item.sessionCode && !item.roomCode && !item.dotEventId);
       const allClassic = scopeToEvent(classicRes.items).filter((item) => item.approved === true);
-      const classic = allClassic.filter((item) => item.gameMode === 'classic' || item.vipGameMode === 'classic' || item.preferredModes?.includes('classic') || (!item.gameMode && !item.vipGameMode && !['pajama', 'modes'].includes(item.formType) && !Array.isArray(item.preferredModes)));
       const allPajama = scopeToEvent(pajamaRes.items);
       const approved = allPajama.filter((i) => i.approved === true && i.name);
-      const legacyPajama = approved.filter((i) => (i.formType || 'pajama') !== 'modes');
       const pending = [
         ...scopeToEvent(classicRes.items).filter((item) => item.approved !== true).map((item) => ({ ...item, sourceEntity: 'PlayerIntake', modeIds: item.preferredModes?.length ? item.preferredModes : [item.vipGameMode || item.gameMode || 'classic'] })),
         ...allPajama.filter((item) => item.approved !== true).map((item) => ({ ...item, sourceEntity: 'PajamaIntake', modeIds: item.preferredModes?.length ? item.preferredModes : ['pajama'] })),
@@ -89,20 +74,8 @@ export default function SetupScreen({ onStart }) {
         ...scopeToEvent(vipRes.items).filter((item) => item.approved !== true && item.approvalStatus !== 'rejected').map((item) => ({ ...item, sourceEntity: 'VIPInvitationSubmission', modeIds: [item.gameMode || 'classic'] })),
       ].sort((a, b) => new Date(b.created_date || b.submittedAt || 0) - new Date(a.created_date || a.submittedAt || 0));
       setPendingIntakes(pending);
-      setHeistIntakes([...scopeToEvent(heistRes.items).filter((item) => item.approved === true).map((item) => ({ ...item, modeIds: ['arrest_heist'] })), ...allClassic.filter((item) => item.gameMode === 'arrest_heist')]);
-      setIntakes(allClassic);
-      setPajamaApproved(approved);
-
-      const shoeByName = {};
-      classic.forEach((i) => {
-        if (i.name) shoeByName[i.name.trim()] = SHOE_TO_LEVEL[i.shoeType] ?? 2;
-      });
-
-      const pjByName = {};
-      legacyPajama.forEach((i) => {
-        const n = i.name.trim();
-        pjByName[n] = { slipperType: i.slipperType || '', nailColor: i.nailColor || '', bringsOwnSlippers: i.bringsOwnSlippers, hasFlipFlops: i.hasFlipFlops, pajamaStyle: i.pajamaStyle || '' };
-      });
+      const builtRoster = buildRoster({ player: scopeToEvent(classicRes.items), pajama: allPajama, heist: scopeToEvent(heistRes.items), vip: scopeToEvent(vipRes.items).filter((item) => item.approved !== true) });
+      setRoster(builtRoster);
 
       const castingRecord = castingRes.items?.[0] || null;
       const savedCastingPlan = castingRecord?.value;
@@ -142,20 +115,10 @@ export default function SetupScreen({ onStart }) {
         if (savedCastingPlan?.players?.length && (!planMatchesEvent || !planHasOnlyApprovedPlayers)) {
           setApprovalMessage('Η αποθηκευμένη επιλογή δεν αντιστοιχεί στο Event ή περιλαμβάνει συμμετοχή χωρίς ενεργή έγκριση. Φορτώθηκαν μόνο οι εγκεκριμένες συμμετοχές.');
         }
-        const currentMode = modeRef.current;
-        let names = [];
-        if (currentMode === 'classic') names = classic.map((item) => item.name?.trim()).filter(Boolean);
-        else if (currentMode === 'marathon') names = allClassic.filter((item) => item.gameMode === 'marathon' || item.preferredModes?.includes('marathon')).map((item) => item.name?.trim()).filter(Boolean);
-        else if (currentMode === 'arrest_heist') names = [...scopeToEvent(heistRes.items), ...allClassic.filter((item) => item.gameMode === 'arrest_heist' || item.preferredModes?.includes('arrest_heist'))].flatMap((item) => [item.name, item.leaderName, item.opponentName]).map((name) => String(name || '').trim()).filter(Boolean);
-        else if (currentMode === 'pajama') names = [...legacyPajama, ...approved.filter((item) => item.formType === 'modes' && item.preferredModes?.includes('pajama'))].map((item) => item.name?.trim()).filter(Boolean);
-        else if (isNewMode(currentMode)) names = [...approved.filter((item) => item.preferredModes?.includes(currentMode)).map((item) => item.name?.trim()), ...allClassic.filter((item) => item.preferredModes?.includes(currentMode) || item.vipGameMode === currentMode).map((item) => item.name?.trim())].filter(Boolean);
-        const vipByName = Object.fromEntries(allClassic.map((item) => [item.name?.trim(), item]).filter(([name]) => name));
-        applyNames([...new Set(names)], shoeByName, pjByName, vipByName);
+        seedPlayers(modeRef.current, builtRoster, { keepTyped: true });
       }
     } catch (e) {
       console.error('Intake load error', e);
-    } finally {
-      setIntakesLoaded(true);
     }
   };
 
@@ -173,103 +136,55 @@ export default function SetupScreen({ onStart }) {
     return () => { offPlayers?.(); offPajama?.(); offEvents?.(); offHeist?.(); offVip?.(); };
   }, [selectedDotEventId]);
 
-  useEffect(() => {
-    let active = true;
-    base44.entities.AppSetting.filter({ key: 'admin_custom_scenarios' }, { limit: 1 })
-      .then(({ items }) => { if (active) setCustomScenarios(Array.isArray(items?.[0]?.value?.items) ? items[0].value.items : []); })
-      .catch((error) => console.warn('Custom scenarios load failed', error));
-    return () => { active = false; };
-  }, []);
 
+
+  const selectedMode = GAME_MODES.find((m) => m.id === mode) || GAME_MODES[0];
   const newMode = isNewMode(mode) ? modeMeta(mode) : null;
-  const modeDuration = newMode?.minutes || 300;
-  const maxPlayers = newMode ? newMode.max : mode === 'marathon' ? 10 : mode === 'arrest_heist' ? 10 : 6;
-  const minPlayers = newMode ? newMode.min : mode === 'marathon' ? 8 : mode === 'arrest_heist' ? 4 : 2;
-  const modePreferenceRows = GAME_MODES.map((entry) => {
-    const names = new Set();
-    [...intakes, ...pajamaApproved, ...heistIntakes, ...pendingIntakes].forEach((item) => {
-      const name = String(item.name || item.displayName || '').trim().toLocaleLowerCase('el-GR');
-      if (!name) return;
-      const ids = Array.isArray(item.modeIds) ? item.modeIds
-        : Array.isArray(item.preferredModes) && item.preferredModes.length ? item.preferredModes
-          : [item.vipGameMode || item.gameMode || ((item.formType || '') === 'pajama' ? 'pajama' : 'classic')];
-      if (ids.includes(entry.id)) names.add(name);
+  const { min: minPlayers, max: maxPlayers } = playerLimits(mode);
+  const counts = modeCounts(roster);
+  const countFor = (id) => counts.find((row) => row.id === id) || { approved: [], pending: [] };
+  const totalFilled = new Set(roster.map((row) => nameKey(row.name))).size;
+  const totalApproved = new Set(roster.filter((row) => row.approved).map((row) => nameKey(row.name))).size;
+  const isEngine = selectedMode.kind === 'engine';
+
+  // Γεμίζει τις παίκτριες με τις εγκεκριμένες του mode, μαζί με τα στοιχεία της φόρμας τους.
+  function seedPlayers(modeId, rows = roster, { keepTyped = false } = {}) {
+    const { min, max } = playerLimits(modeId);
+    const approvedRows = [];
+    const seen = new Set();
+    rows.filter((row) => row.approved && row.modes.includes(modeId)).forEach((row) => {
+      if (!seen.has(nameKey(row.name))) { seen.add(nameKey(row.name)); approvedRows.push(row); }
     });
-    return { ...entry, count: names.size };
-  }).filter((entry) => entry.count > 0);
-
-  function addPlayer() {
-    if (players.length < maxPlayers) {
-      setPlayers([...players, { name: '', footwearLevel: 2, toenailPerk: 'pink' }]);
-    }
-  }
-
-  function removePlayer(idx) {
-    if (players.length > Math.max(2, minPlayers)) {
-      setPlayers(players.filter((_, i) => i !== idx));
-    }
-  }
-
-  function updatePlayer(idx, field, value) {
-    setPlayers(players.map((p, i) => (i === idx ? { ...p, [field]: value } : p)));
+    setPlayers((previous) => {
+      const typed = keepTyped ? previous.filter((p) => p.name.trim() && !seen.has(nameKey(p.name))) : [];
+      const next = [...approvedRows.map(playerFromRow), ...typed].slice(0, max);
+      while (next.length < min) next.push({ name: '', footwearLevel: 2, toenailPerk: TOENAIL_PERKS[next.length % TOENAIL_PERKS.length].id });
+      return next;
+    });
   }
 
   function handleModeChange(m) {
     modeRef.current = m.id;
     setMode(m.id);
-    const selectedModeMeta = isNewMode(m.id) ? modeMeta(m.id) : null;
-    const selectedModeMax = selectedModeMeta ? selectedModeMeta.max : (m.id === 'marathon' || m.id === 'arrest_heist' ? 10 : 6);
-    if (m.id === 'marathon') {
-      const names = [...new Set(intakes.filter((item) => item.gameMode === 'marathon' || item.preferredModes?.includes('marathon')).map((item) => (item.name || '').trim()).filter(Boolean))].slice(0, 10);
-      const seeded = names.map((name, i) => ({ name, footwearLevel: 2, toenailPerk: TOENAIL_PERKS[i % TOENAIL_PERKS.length].id }));
-      setPlayers([...seeded, ...Array.from({ length: Math.max(0, 8 - seeded.length) }, (_, i) => ({ name: '', footwearLevel: 2, toenailPerk: TOENAIL_PERKS[(seeded.length + i) % TOENAIL_PERKS.length].id }))]);
-    } else if (m.id === 'arrest_heist') {
-      const names = [...new Set([...heistIntakes, ...intakes.filter((item) => item.gameMode === 'arrest_heist' || item.preferredModes?.includes('arrest_heist'))].flatMap((item) => [item.name, item.leaderName, item.opponentName]).map((name) => (name || '').trim()).filter(Boolean))].slice(0, 10);
-      const seeded = names.map((name, i) => ({ name, footwearLevel: 2, toenailPerk: TOENAIL_PERKS[i % TOENAIL_PERKS.length].id }));
-      setPlayers([...seeded, ...Array.from({ length: Math.max(0, 4 - seeded.length) }, (_, i) => ({ name: '', footwearLevel: 2, toenailPerk: TOENAIL_PERKS[(seeded.length + i) % TOENAIL_PERKS.length].id }))]);
-    } else if (m.id === 'pajama') {
-      const names = [...new Set(pajamaApproved.filter((item) => (item.formType || 'pajama') !== 'modes' || item.preferredModes?.includes('pajama')).map((item) => (item.name || '').trim()).filter(Boolean))].slice(0, 6);
-      const seeded = names.map((name, i) => ({ name, footwearLevel: 2, toenailPerk: TOENAIL_PERKS[i % TOENAIL_PERKS.length].id }));
-      setPlayers([...seeded, ...Array.from({ length: Math.max(0, 2 - seeded.length) }, (_, i) => ({ name: '', footwearLevel: 2, toenailPerk: TOENAIL_PERKS[(seeded.length + i) % TOENAIL_PERKS.length].id }))]);
-    } else if (m.id === 'classic') {
-      const names = [...new Set(intakes.filter((item) => item.gameMode === 'classic' || item.vipGameMode === 'classic' || item.preferredModes?.includes('classic') || (!item.gameMode && !item.vipGameMode && !['pajama', 'modes'].includes(item.formType) && !Array.isArray(item.preferredModes))).map((item) => (item.name || '').trim()).filter(Boolean))].slice(0, 6);
-      const seeded = names.map((name, i) => ({ name, footwearLevel: 2, toenailPerk: TOENAIL_PERKS[i % TOENAIL_PERKS.length].id }));
-      setPlayers([...seeded, ...Array.from({ length: Math.max(0, 2 - seeded.length) }, (_, i) => ({ name: '', footwearLevel: 2, toenailPerk: TOENAIL_PERKS[(seeded.length + i) % TOENAIL_PERKS.length].id }))]);
-    } else if (isNewMode(m.id)) {
-      const meta = modeMeta(m.id);
-      const approvedForMode = [...intakes, ...pajamaApproved].filter((i) => i.name && (
-        (Array.isArray(i.preferredModes) && i.preferredModes.includes(m.id)) || i.vipGameMode === m.id
-      )).map((i) => i.name.trim());
-      const wanted = [...new Set(approvedForMode)];
-      if (wanted.length > 0) {
-        const byName = Object.fromEntries([...intakes, ...pajamaApproved].filter((i) => i.name).map((i) => [i.name.trim(), i]));
-        const next = [...new Set(wanted)].slice(0, meta.max).map((n, idx) => ({
-          name: n, footwearLevel: 2, toenailPerk: TOENAIL_PERKS[idx % TOENAIL_PERKS.length].id,
-          slipperType: byName[n]?.slipperType || '', nailColor: byName[n]?.nailColor || 'Pink', bringsOwnSlippers: byName[n]?.bringsOwnSlippers ?? true, hasFlipFlops: byName[n]?.hasFlipFlops ?? true, pajamaStyle: byName[n]?.pajamaStyle || '',
-          ...(byName[n]?.vipProfile ? { vipProfile: byName[n].vipProfile } : {}),
-        }));
-        while (next.length < meta.min) next.push({ name: '', footwearLevel: 2, toenailPerk: 'pink' });
-        setPlayers(next);
-        return;
-      }
-      setPlayers(Array.from({ length: meta.min }, () => ({ name: '', footwearLevel: 2, toenailPerk: 'pink' })));
-    }
-    const vipForLegacyMode = intakes.filter((i) => i.vipGameMode === m.id && i.name);
-    if (vipForLegacyMode.length) {
-      setPlayers((previous) => {
-        const byName = new Map(previous.filter((p) => p.name.trim()).map((p) => [p.name.trim(), p]));
-        vipForLegacyMode.forEach((item, index) => {
-          const playerName = item.name.trim();
-          if (!byName.has(playerName)) byName.set(playerName, {
-            name: playerName,
-            footwearLevel: 2,
-            toenailPerk: TOENAIL_PERKS[(byName.size + index) % TOENAIL_PERKS.length].id,
-            vipProfile: item.vipProfile || null,
-          });
-        });
-        return [...byName.values()].slice(0, selectedModeMax);
-      });
-    }
+    seedPlayers(m.id);
+  }
+
+  function addPlayer(name = '') {
+    if (players.length >= maxPlayers) return;
+    const emptyIndex = players.findIndex((p) => !p.name.trim());
+    const row = name ? roster.find((r) => nameKey(r.name) === nameKey(name) && r.modes.includes(mode)) : null;
+    const entry = row ? playerFromRow(row, players.length) : { name, footwearLevel: 2, toenailPerk: TOENAIL_PERKS[players.length % TOENAIL_PERKS.length].id };
+    if (name && emptyIndex >= 0) setPlayers(players.map((p, i) => (i === emptyIndex ? entry : p)));
+    else setPlayers([...players, entry]);
+  }
+
+  function removePlayer(idx) {
+    if (players.length > minPlayers) setPlayers(players.filter((_, i) => i !== idx));
+    else setPlayers(players.map((p, i) => (i === idx ? { name: '', footwearLevel: 2, toenailPerk: p.toenailPerk } : p)));
+  }
+
+  function updatePlayer(idx, field, value) {
+    setPlayers(players.map((p, i) => (i === idx ? { ...p, [field]: value } : p)));
   }
 
   async function approveIntake(item) {
@@ -283,336 +198,202 @@ export default function SetupScreen({ onStart }) {
     }
   }
 
+  const named = players.filter((p) => p.name.trim());
+  const canStart = named.length >= minPlayers && safeWord.trim().length >= 2 && safeWordConfirmed;
+
   async function handleStart() {
-    const valid = players.filter((p) => p.name.trim());
-    if (valid.length < minPlayers) return;
-    const selectedScenario = customScenarios.find((scenario) => scenario.id === selectedScenarioId && scenario.modeId === mode);
-    const selectedIntensity = mode === 'classic' ? intensity : 'standard';
-    if (!safeWord.trim() || !safeWordConfirmed) return;
-    const selectedDuration = { id: String(modeDuration), minutes: modeDuration };
-    const state = { ...createInitialState(mode, selectedIntensity, valid), gameDurationMinutes: selectedDuration.minutes, gameStartedAt: Date.now(), gamePausedMs: 0, gamePausedAt: null, safetyProfile: { safeWord: safeWord.trim(), confirmedAt: Date.now() }, testMode,
-      ...(selectedScenario ? { customScenario: { id: selectedScenario.id, name: selectedScenario.name, description: selectedScenario.description, collections: selectedScenario.collections || [] } } : {})
-    };
+    if (!canStart) return;
+    // Η διάρκεια ακολουθεί το mode (ψηφιακά) — δεν εμφανίζεται πλέον στο Setup.
+    const durationMinutes = newMode?.minutes || 300;
+    const valid = named.map(({ formInfo: _formInfo, ...player }) => player);
+    const state = { ...createInitialState(mode, 'standard', valid), gameDurationMinutes: durationMinutes, gameStartedAt: Date.now(), gamePausedMs: 0, gamePausedAt: null, safetyProfile: { safeWord: safeWord.trim(), confirmedAt: Date.now() } };
     if (mode === 'beach_bar') {
       state.mg = { ...state.mg, alcoholFree: true, bb: { ...(state.mg.bb || {}), flops: Object.fromEntries(state.players.map((player) => [player.id, player.hasFlipFlops !== false])) } };
     }
-    await onStart({
-      sessionCode: generateSessionCode(),
-      dotEventId: selectedDotEventId,
-      mode,
-      duration: selectedDuration.id,
-      intensity: selectedIntensity,
-      stage: state.stage,
-      state,
-    });
+    await onStart({ sessionCode: generateSessionCode(), dotEventId: selectedDotEventId, mode, duration: String(durationMinutes), intensity: 'standard', stage: state.stage, state });
     if (castingPlan?.settingId && castingPlan.mode === mode) {
       try {
-        await base44.entities.AppSetting.update(castingPlan.settingId, {
-          value: { ...castingPlan, usedAt: new Date().toISOString() },
-        });
+        await base44.entities.AppSetting.update(castingPlan.settingId, { value: { ...castingPlan, usedAt: new Date().toISOString() } });
       } catch (error) {
         console.warn('Episode cast usage timestamp could not be saved', error);
       }
     }
   }
 
-  const canStart = players.filter((p) => p.name.trim()).length >= minPlayers && safeWord.trim().length >= 2 && safeWordConfirmed;
+  const media = MODE_MEDIA[mode] || {};
+  const heroSrc = media.hero || media.cover || MODE_COVERS[`modeCover_${mode}`] || '';
+  const sections = media.sections?.length ? media.sections : (MODE_MEDIA_SECTIONS[mode] || []);
+  const modeVideos = [media.trailer, ...videosFor(mode)].filter(Boolean);
+  const current = countFor(mode);
+  const notInGame = current.approved.filter((name) => !named.some((p) => nameKey(p.name) === nameKey(name)));
+  const step = !named.length || named.length < minPlayers ? 2 : !canStart ? 3 : 4;
+
+  const ModeCard = ({ m }) => {
+    const c = countFor(m.id);
+    const on = mode === m.id;
+    const cover = MODE_MEDIA[m.id]?.cover || MODE_COVERS[`modeCover_${m.id}`];
+    return (
+      <button type="button" onClick={() => handleModeChange(m)} disabled={!!castingPlan} aria-pressed={on}
+        className={`dot-lobby-card group relative overflow-hidden text-left ${on ? 'is-on' : ''} ${castingPlan && !on ? 'opacity-40' : ''}`}>
+        <div className="absolute inset-0 bg-gradient-to-br from-[#2a2112] to-black" />
+        {cover && <img src={cover} alt="" onError={(e) => { e.currentTarget.style.display = 'none'; }} className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />}
+        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/55 to-transparent" />
+        <div className="relative flex h-full flex-col justify-end p-4">
+          <div className="text-2xl">{m.icon}</div>
+          <div className="mt-1 text-lg font-bold leading-tight text-white">{m.name}</div>
+          <div className="mt-2 flex flex-wrap gap-1.5 text-[11px] font-semibold">
+            <span className="rounded-full bg-[#30D158]/20 px-2 py-0.5 text-[#7BE495]">✓ {c.approved.length}</span>
+            {c.pending.length > 0 && <span className="rounded-full bg-white/10 px-2 py-0.5 text-white/70">⏳ {c.pending.length}</span>}
+          </div>
+        </div>
+        {on && <div className="absolute right-3 top-3 rounded-full bg-[#E8C26B] px-2.5 py-1 text-[11px] font-black text-black">ΕΠΙΛΟΓΗ</div>}
+      </button>
+    );
+  };
+
+  const StepTitle = ({ n, title, done }) => (
+    <div className="mb-3 flex items-center gap-3">
+      <span className={`flex h-8 w-8 items-center justify-center rounded-full text-sm font-black ${done ? 'bg-[#30D158] text-black' : 'bg-[#E8C26B] text-black'}`}>{done ? '✓' : n}</span>
+      <h2 className="text-xl font-bold tracking-tight text-white">{title}</h2>
+    </div>
+  );
 
   return (
-    <div className="min-h-screen comic-dots p-4 pb-24">
-      <div className="max-w-4xl mx-auto space-y-4">
-        <ComicPanel className="text-center py-8 ds-sheen">
-          <h1 className="font-display text-3xl sm:text-5xl text-primary tracking-[0.14em]">DEAL OF TEMPTATION</h1>
-          <div className="ds-rule my-4 mx-auto max-w-xs" />
-          <p className="ds-eyebrow text-primary/70">ΛΗΣΤΕΙΑ &amp; ΣΥΛΛΗΨΗ — 18+ ALL-GIRLS EDITION</p>
-        </ComicPanel>
+    <div className="dot-lobby min-h-screen bg-black pb-36 text-[#F5F1E8]">
+      <header className="sticky top-0 z-30 border-b border-white/10 bg-black/80 px-4 py-3 backdrop-blur-xl">
+        <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-3">
+          <div className="mr-auto">
+            <div className="text-[11px] font-semibold uppercase tracking-[0.3em] text-[#E8C26B]">Deal of Temptation</div>
+            <div className="text-lg font-bold">Νέα βραδιά</div>
+          </div>
+          <select value={selectedDotEventId} onChange={(event) => setSelectedDotEventId(event.target.value)} className="h-11 rounded-full border border-white/15 bg-[#1C1C1E] px-4 text-sm" aria-label="Event">
+            <option value="">Χωρίς Event</option>
+            {dotEvents.filter((event) => !['closing', 'completed'].includes(event.status)).map((event) => <option key={event.id} value={event.id}>{event.title} · {event.room_code}</option>)}
+          </select>
+          <button type="button" onClick={loadIntakes} className="h-11 rounded-full bg-[#2C2C2E] px-4 text-sm font-semibold">↻ Φόρμες</button>
+        </div>
+        <ol className="mx-auto mt-3 grid max-w-6xl grid-cols-4 gap-2 text-[11px] font-semibold" aria-label="Βήματα">
+          {['Παιχνίδι', 'Παίκτριες', 'Ασφάλεια', 'Έναρξη'].map((label, i) => (
+            <li key={label} className={`rounded-full px-3 py-1.5 text-center ${i + 1 < step ? 'bg-[#30D158]/20 text-[#7BE495]' : i + 1 === step ? 'bg-[#E8C26B] text-black' : 'bg-white/5 text-white/45'}`}>{i + 1}. {label}</li>
+          ))}
+        </ol>
+      </header>
+
+      <main className="mx-auto max-w-6xl space-y-6 px-4 pt-5">
+        <section className="grid grid-cols-3 gap-3" aria-label="Σύνοψη φορμών">
+          {[{ label: 'Συμπλήρωσαν φόρμα', value: totalFilled }, { label: 'Εγκεκριμένες', value: totalApproved }, { label: 'Σε αναμονή', value: pendingIntakes.length }].map((item) => (
+            <div key={item.label} className="rounded-3xl bg-[#1C1C1E] p-4"><div className="text-3xl font-bold tabular-nums text-white">{item.value}</div><div className="text-xs text-white/55">{item.label}</div></div>
+          ))}
+        </section>
 
         {pendingIntakes.length > 0 && (
-          <ComicPanel className="bg-card border border-amber-500/50 space-y-2">
-            <div className="flex items-center justify-between gap-2"><h2 className="font-heading text-xl text-primary">ΕΓΚΡΙΣΗ ΣΥΜΜΕΤΟΧΩΝ</h2><span className="text-xs font-bold">{pendingIntakes.length} σε αναμονή</span></div>
-            {pendingIntakes.map((item) => (
-              <div key={`${item.sourceEntity}-${item.id}`} className="rounded-lg border border-border p-3 flex flex-wrap items-center justify-between gap-2">
-                <div className="min-w-0"><b>{item.name || item.displayName || 'Χωρίς όνομα'}</b><div className="flex flex-wrap gap-1 mt-1">{item.modeIds.map((id) => <span key={id} className="rounded bg-primary/15 px-2 py-0.5 text-[10px]">{GAME_MODES.find((entry) => entry.id === id)?.name || id}</span>)}</div></div>
-                <ComicButton size="sm" variant="green" onClick={() => approveIntake(item)}>ΕΓΚΡΙΣΗ</ComicButton>
-              </div>
-            ))}
-          </ComicPanel>
-        )}
-        {approvalMessage && <ComicPanel className="bg-secondary p-2"><p className="text-sm" role="status">{approvalMessage}</p></ComicPanel>}
-        {intakesLoaded && (intakes.length > 0 || pajamaApproved.length > 0) && (
-          <ComicPanel className="bg-secondary p-2">
-            <div className="text-xs font-bold text-foreground font-body">
-              ✅ {new Set([...pajamaApproved, ...intakes].map((item) => item.id)).size} εγκεκριμένες συμμετοχές — τα ονόματα μπαίνουν αυτόματα όταν επιλέξεις το Mode τους.
-            </div>
-          </ComicPanel>
-        )}
-
-        {modePreferenceRows.length > 0 && (
-          <ComicPanel className="bg-secondary space-y-2">
-            <div className="font-heading text-lg text-primary">ΕΠΙΛΟΓΕΣ MODE ΑΠΟ ΤΙΣ ΦΟΡΜΕΣ</div>
-            <p className="text-xs text-foreground/60">Οι εγκεκριμένες και οι εκκρεμείς προτιμήσεις συμμετοχής.</p>
-            <div className="flex flex-wrap gap-2">
-              {modePreferenceRows.map((entry) => (
-                <button key={entry.id} type="button" onClick={() => handleModeChange(entry)} className={`rounded-lg border px-3 py-2 text-xs font-bold ${mode === entry.id ? 'border-primary bg-primary/20 text-primary' : 'border-border bg-background'}`} aria-pressed={mode === entry.id}>
-                  {entry.icon} {entry.name} · {entry.count}
-                </button>
+          <section className="rounded-3xl border border-[#E8C26B]/40 bg-[#17140C] p-4">
+            <div className="mb-2 flex items-center justify-between"><h2 className="text-base font-bold text-[#F7E3A8]">Αιτήσεις για έγκριση</h2><span className="text-xs text-white/55">{pendingIntakes.length}</span></div>
+            <div className="grid gap-2 sm:grid-cols-2">
+              {pendingIntakes.map((item) => (
+                <div key={`${item.sourceEntity}-${item.id}`} className="flex items-center justify-between gap-2 rounded-2xl bg-black/40 p-3">
+                  <div className="min-w-0"><div className="truncate font-semibold">{item.name || item.displayName || 'Χωρίς όνομα'}</div><div className="truncate text-[11px] text-white/55">{item.modeIds.filter((id) => ACTIVE_MODE_IDS.has(id)).map((id) => GAME_MODES.find((entry) => entry.id === id)?.name).join(' · ') || 'Χωρίς ενεργό mode'}</div></div>
+                  <button type="button" onClick={() => approveIntake(item)} className="h-10 shrink-0 rounded-full bg-[#30D158] px-4 text-sm font-bold text-black">Έγκριση</button>
+                </div>
               ))}
             </div>
-            <div className="text-xs font-bold text-primary">ΕΠΙΛΕΓΜΕΝΟ MODE: {GAME_MODES.find((entry) => entry.id === mode)?.name || mode}</div>
-          </ComicPanel>
+          </section>
         )}
-        <ComicPanel>
-          <h2 className="font-heading text-2xl mb-3 text-primary">ΔΙΑΡΚΕΙΑ ΠΑΙΧΝΙΔΙΟΥ</h2>
-          <div className="comic-panel-sm p-3 bg-primary/10 border border-primary/40"><div className="font-heading text-xl text-foreground">⏱ ΔΙΑΡΚΕΙΑ · {modeDuration >= 60 ? `${Math.floor(modeDuration / 60)} ΩΡ${Math.floor(modeDuration / 60) === 1 ? 'Α' : 'ΕΣ'}` : `${modeDuration} ΛΕΠΤΑ`}{modeDuration % 60 ? ` ${modeDuration % 60} ΛΕΠΤΑ` : ''}</div><div className="text-sm text-foreground/70 font-body">Η διάρκεια ακολουθεί το επιλεγμένο Mode.</div></div>
-        </ComicPanel>
+        {approvalMessage && <p className="rounded-2xl bg-[#1C1C1E] p-3 text-sm" role="status">{approvalMessage}</p>}
 
-        <ComicPanel className="bg-card space-y-3">
-          <h2 className="font-heading text-2xl text-primary">VIBE &amp; SAFETY · ΚΟΙΝΗ ΛΕΞΗ ΑΣΦΑΛΕΙΑΣ</h2>
-          <p className="text-sm text-foreground/70">Ορίστε μία λέξη που σημαίνει άμεση παύση για όλη την παρέα. Το κουμπί ΣΤΟΠ παραμένει διαθέσιμο σε όλες τις οθόνες.</p>
-          <input
-            type="text"
-            value={safeWord}
-            onChange={(event) => { setSafeWord(event.target.value); setSafeWordConfirmed(false); }}
-            maxLength={32}
-            placeholder="Πληκτρολόγησε την κοινή λέξη ασφαλείας"
-            className="w-full rounded-lg border-2 border-border bg-background px-3 py-3 text-foreground font-bold"
-          />
-          <label className="flex items-start gap-2 text-sm text-foreground/80">
-            <input type="checkbox" checked={safeWordConfirmed} onChange={(event) => setSafeWordConfirmed(event.target.checked)} className="mt-1" />
-            <span>Η παρέα συμφώνησε στη λέξη ασφαλείας και γνωρίζει ότι οποιαδήποτε παίκτρια μπορεί να σταματήσει το παιχνίδι οποιαδήποτε στιγμή.</span>
-          </label>
-        </ComicPanel>
+        <section>
+          <StepTitle n={1} title="Διάλεξε παιχνίδι" done />
+          {castingPlan?.mode && <p className="mb-3 rounded-2xl bg-[#E8C26B]/10 p-3 text-sm text-[#F7E3A8]">🎬 Το mode το έχει ορίσει το Admin (Επιλογή επεισοδίου).</p>}
+          <div className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-white/50">🎲 Μηχανές παιχνιδιού</div>
+          <div className="grid grid-cols-2 gap-3">{GAME_MODES.filter((m) => m.kind === 'engine').map((m) => <ModeCard key={m.id} m={m} />)}</div>
+          <div className="mb-2 mt-4 text-xs font-semibold uppercase tracking-[0.2em] text-white/50">📱 Ψηφιακά modes</div>
+          <div className="grid grid-cols-2 gap-3 lg:grid-cols-3">{GAME_MODES.filter((m) => m.kind !== 'engine').map((m) => <ModeCard key={m.id} m={m} />)}</div>
+        </section>
 
-        <ComicPanel className="space-y-3">
-          <h2 className="font-heading text-2xl text-primary">ΕΠΙΛΟΓΗ EVENT</h2>
-          <select value={selectedDotEventId} onChange={(event) => setSelectedDotEventId(event.target.value)} className="w-full rounded-lg border border-border bg-background px-3 py-3 text-foreground">
-            <option value="">Χωρίς σύνδεση με Event</option>
-            {dotEvents.filter((event) => !['closing', 'completed'].includes(event.status)).map((event) => (
-              <option key={event.id} value={event.id}>{event.title} · {event.room_code}</option>
-            ))}
-          </select>
-          {selectedDotEventId && <p className="text-xs text-foreground/65">Οι εγκεκριμένες συμμετοχές και τα Modes της συγκεκριμένης διοργάνωσης θα φορτωθούν αυτόματα.</p>}
-        </ComicPanel>
-
-        <ComicPanel>
-          <h2 className="font-heading text-2xl mb-3 text-primary">1. ΕΠΙΛΟΓΗ MODE</h2>
-          {castingPlan?.mode && (
-            <div className="mb-3 rounded-lg border border-primary/50 bg-primary/10 p-3 text-sm">
-              <div className="font-heading text-primary">MODE ΕΠΙΛΕΓΜΕΝΟ ΑΠΟ ΤΟ ADMIN</div>
-              <div>{GAME_MODES.find((item) => item.id === castingPlan.mode)?.name || castingPlan.mode}</div>
-              <div className="mt-1 text-xs text-foreground/55">Για αλλαγή Mode, ενημέρωσε πρώτα την επιλογή επεισοδίου στο Admin.</div>
+        <section className="overflow-hidden rounded-[32px] bg-[#1C1C1E]">
+          <div className="relative aspect-[21/8] min-h-[180px]">
+            <div className="absolute inset-0 bg-gradient-to-br from-[#3a2c10] to-black" />
+            {heroSrc && <img src={heroSrc} alt="" onError={(e) => { e.currentTarget.style.display = 'none'; }} className="absolute inset-0 h-full w-full object-cover" />}
+            <div className="absolute inset-0 bg-gradient-to-t from-[#1C1C1E] via-black/40 to-transparent" />
+            <div className="absolute bottom-0 p-5">
+              <div className="text-xs font-semibold uppercase tracking-[0.25em] text-[#E8C26B]">{isEngine ? 'Μηχανή παιχνιδιού' : 'Ψηφιακό mode'} · {minPlayers}–{maxPlayers} παίκτριες</div>
+              <div className="mt-1 text-3xl font-bold text-white">{selectedMode.icon} {selectedMode.name}</div>
+              <p className="mt-1 max-w-2xl text-sm text-white/70">{selectedMode.desc}</p>
             </div>
-          )}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div className="sm:col-span-2 ds-label text-primary">🎲 ΜΗΧΑΝΕΣ ΠΑΙΧΝΙΔΙΟΥ · ταμπλό με ζάρι</div>
-            {GAME_MODES.filter((m) => m.kind === 'engine').map((m) => (
-              <button
-                key={m.id}
-                onClick={() => handleModeChange(m)}
-                disabled={!!castingPlan}
-                aria-pressed={mode === m.id}
-                className={`comic-panel-sm p-3 text-left transition-all ${mode === m.id ? 'ring-2 ring-primary bg-primary/10' : 'bg-secondary'} ${castingPlan ? 'cursor-not-allowed opacity-75' : ''}`}
-              >
-                {MODE_COVERS["modeCover_" + m.id] && <img src={MODE_COVERS["modeCover_" + m.id]} alt={m.name} className="w-full aspect-[16/9] object-cover rounded-md mb-2 bg-black/30" />}
-                <div className="font-heading text-xl text-foreground">{m.icon} {m.name}</div>
-                <div className="text-sm text-foreground/70 font-body">{m.desc}</div>
-              </button>
-            ))}
-            <div className="sm:col-span-2 ds-label text-primary mt-2">📱 ΨΗΦΙΑΚΑ MODES · οθόνες, χρονόμετρα, κινητά</div>
-            {GAME_MODES.filter((m) => m.kind !== 'engine').map((m) => (
-              <button
-                key={m.id}
-                onClick={() => handleModeChange(m)}
-                disabled={!!castingPlan}
-                aria-pressed={mode === m.id}
-                className={`comic-panel-sm p-3 text-left transition-all ${mode === m.id ? 'ring-2 ring-primary bg-primary/10' : 'bg-secondary'} ${castingPlan ? 'cursor-not-allowed opacity-75' : ''}`}
-              >
-                {MODE_COVERS["modeCover_" + m.id] && <img src={MODE_COVERS["modeCover_" + m.id]} alt={m.name} className="w-full aspect-[16/9] object-cover rounded-md mb-2 bg-black/30" />}
-                <div className="font-heading text-xl text-foreground">{m.icon} {m.name}</div>
-                <div className="text-sm text-foreground/70 font-body">{m.desc}</div>
-              </button>
-            ))}
           </div>
-        </ComicPanel>
-
-        {mode === 'classic' && (
-          <ComicPanel className="bg-card">
-            <h2 className="font-heading text-2xl mb-3 text-primary">2. ΕΝΤΑΣΗ ΠΑΙΧΝΙΔΙΟΥ</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-              {INTENSITY_LEVELS.map((level) => (
-                <button
-                  key={level.id}
-                  type="button"
-                  onClick={() => setIntensity(level.id)}
-                  className={`comic-panel-sm p-3 text-left transition-all ${intensity === level.id ? 'bg-primary/20 ring-2 ring-primary' : 'bg-secondary'}`}
-                  aria-pressed={intensity === level.id}
-                >
-                  <div className="font-heading text-lg text-foreground">{level.icon} {level.name}</div>
-                  <div className="text-xs text-foreground/70 font-body">{level.desc}</div>
-                </button>
+          {sections.length > 0 && (
+            <div className="flex gap-3 overflow-x-auto p-4" aria-label="Ενότητες">
+              {sections.map((item, index) => (
+                <div key={item.id} className="w-44 shrink-0 overflow-hidden rounded-2xl bg-black/40">
+                  {item.image ? <img src={item.image} alt="" className="aspect-video w-full object-cover" /> : <div className="flex aspect-video w-full items-center justify-center bg-white/5 text-2xl font-bold text-white/25">{index + 1}</div>}
+                  <div className="p-2 text-xs font-semibold leading-tight">{item.label}</div>
+                </div>
               ))}
             </div>
-          </ComicPanel>
-        )}
-
-        {newMode && (() => {
-          const media = MODE_MEDIA[mode] || {};
-          const hasMedia = media.hero || media.trailer || media.gallery?.length || media.sections?.some((item) => item.image);
-          return hasMedia ? (
-            <ComicPanel className="bg-card space-y-3">
-              {media.hero && <img src={media.hero} alt={newMode.name} className="w-full max-h-[360px] aspect-[16/7] object-cover rounded-xl" />}
-              {media.sections?.some((item) => item.image) && (
-                <div className="space-y-2">
-                  <div className="font-heading text-lg text-primary">ΕΝΟΤΗΤΕΣ</div>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                    {media.sections.filter((item) => item.image).map((item) => (
-                      <div key={item.id} className="rounded-lg overflow-hidden bg-secondary">
-                        <img src={item.image} alt={item.label || ''} className="w-full aspect-video object-cover" />
-                        <div className="p-2 text-xs font-bold">{item.label}</div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {media.gallery?.length > 0 && (
-                <div className="space-y-2">
-                  <div className="font-heading text-lg text-primary">GALLERY</div>
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                    {media.gallery.map((src, index) => <img key={`${src}-${index}`} src={src} alt="" className="w-full aspect-[4/5] object-cover rounded-lg" />)}
-                  </div>
-                </div>
-              )}
-              {media.trailer && <div className="space-y-2"><div className="font-heading text-lg text-primary">TRAILER</div><video src={media.trailer} controls playsInline className="w-full rounded-xl aspect-video bg-black" /></div>}
-            </ComicPanel>
-          ) : null;
-        })()}
-
-        {customScenarios.some((scenario) => scenario.modeId === mode) && (
-          <ComicPanel className="bg-card space-y-2">
-            <h2 className="font-heading text-xl text-primary">ΠΡΟΑΙΡΕΤΙΚΟ CUSTOM SCENARIO</h2>
-            <p className="text-xs text-foreground/60">Επίλεξε αποθηκευμένο σενάριο για το συγκεκριμένο Mode. Η επιλογή καταγράφεται στη συνεδρία.</p>
-            <select value={selectedScenarioId} onChange={(e) => setSelectedScenarioId(e.target.value)} className="w-full rounded border border-border bg-background p-2 text-sm">
-              <option value="">Χωρίς custom scenario</option>
-              {customScenarios.filter((scenario) => scenario.modeId === mode).map((scenario) => <option key={scenario.id} value={scenario.id}>{scenario.name}</option>)}
-            </select>
-            {customScenarios.find((scenario) => scenario.id === selectedScenarioId && scenario.modeId === mode)?.description && <p className="text-sm">{customScenarios.find((scenario) => scenario.id === selectedScenarioId && scenario.modeId === mode).description}</p>}
-            {selectedScenarioId && customScenarios.find((scenario) => scenario.id === selectedScenarioId && scenario.modeId === mode) && <div className="text-xs text-foreground/60">Περιεχόμενο σεναρίου: {(customScenarios.find((scenario) => scenario.id === selectedScenarioId && scenario.modeId === mode).collections || []).map((id) => COLLECTIONS.find((collection) => collection.id === id)?.label || id).join(' · ') || 'Δεν επιλέχθηκαν κατηγορίες'}</div>}
-          </ComicPanel>
-        )}
-
-        <ComicPanel>
-          {castingPlan?.mode === mode && (
-            <div className="mb-3 rounded-lg border border-primary/50 bg-primary/10 p-3">
-              <div className="font-heading text-sm text-primary">🎬 ΕΠΙΣΗΜΗ ΕΠΙΛΟΓΗ ΕΠΕΙΣΟΔΙΟΥ ΑΠΟ ADMIN</div>
-              <div className="text-xs text-foreground/70">{players.filter((player) => player.name.trim()).map((player) => player.name).join(' · ')}</div>
-              {castingPlan.usedAt && <div className="mt-1 text-[10px] text-foreground/45">Η επιλογή έχει χρησιμοποιηθεί σε προηγούμενη έναρξη.</div>}
+          )}
+          {modeVideos.length > 0 && (
+            <div className="grid gap-3 px-4 pb-4 sm:grid-cols-2">
+              {modeVideos.map((src) => <video key={src} src={src} controls playsInline preload="metadata" className="aspect-video w-full rounded-2xl bg-black" />)}
             </div>
           )}
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="font-heading text-2xl text-primary">2. ΠΑΙΚΤΡΙΕΣ ({players.length}/{maxPlayers})</h2>
-            <div className="flex gap-2">
-              <ComicButton variant="dark" size="sm" onClick={loadIntakes}>🔄 ΟΝΟΜΑΤΑ</ComicButton>
-              <ComicButton variant="green" size="sm" onClick={addPlayer} disabled={players.length >= maxPlayers}>
-                + ΠΡΟΣΘΗΚΗ
-              </ComicButton>
+        </section>
+
+        <section>
+          <StepTitle n={2} title={`Παίκτριες · ${named.length}/${maxPlayers}`} done={named.length >= minPlayers} />
+          <p className="mb-3 text-sm text-white/60">
+            {current.approved.length} εγκεκριμένες για {selectedMode.name}{current.pending.length ? ` · ${current.pending.length} περιμένουν έγκριση` : ''}. Χρειάζονται τουλάχιστον {minPlayers}.
+          </p>
+          {notInGame.length > 0 && (
+            <div className="mb-3 flex flex-wrap gap-2">
+              {notInGame.map((name) => <button key={name} type="button" onClick={() => addPlayer(name)} disabled={named.length >= maxPlayers} className="h-9 rounded-full bg-[#30D158]/15 px-3 text-sm font-semibold text-[#7BE495]">+ {name}</button>)}
             </div>
-          </div>
-          <div className="space-y-2">
+          )}
+          {current.pending.length > 0 && <div className="mb-3 text-xs text-white/45">⏳ Σε αναμονή: {current.pending.join(', ')}</div>}
+          <div className="grid gap-3 md:grid-cols-2">
             {players.map((p, idx) => (
-              <div key={idx} className="comic-panel-sm p-2 flex flex-col sm:flex-row gap-2 items-stretch sm:items-center">
-                <div className="font-heading text-lg w-8 text-center flex items-center justify-center text-primary">{idx + 1}</div>
-                <input
-                  type="text"
-                  value={p.name}
-                  onChange={(e) => updatePlayer(idx, 'name', e.target.value)}
-                  placeholder={`Όνομα ${idx + 1}`}
-                  className="flex-1 min-w-0 px-3 py-1.5 border-2 border-border rounded-lg font-bold bg-background text-foreground focus:outline-none focus:ring-2 ring-primary font-body"
-                />
-                {newMode ? null : mode === 'pajama' ? (
-                  <>
-                    <input
-                      type="text"
-                      value={p.slipperType || ''}
-                      onChange={(e) => updatePlayer(idx, 'slipperType', e.target.value)}
-                      placeholder="🩴 Παντόφλες (π.χ. fluffy ροζ)"
-                      className="px-2 py-1.5 border-2 border-border rounded-lg text-sm bg-background text-foreground font-body w-full sm:w-44"
-                    />
-                    <select
-                      value={p.nailColor || 'Pink'}
-                      onChange={(e) => updatePlayer(idx, 'nailColor', e.target.value)}
-                      className="px-2 py-1.5 border-2 border-border rounded-lg text-sm bg-background text-foreground font-body"
-                    >
-                      {NAIL_COLORS.map((c) => (
-                        <option key={c} value={c}>💅 {c}</option>
-                      ))}
-                    </select>
-                  </>
-                ) : (
-                  <>
-                    <select
-                      value={p.footwearLevel}
-                      onChange={(e) => updatePlayer(idx, 'footwearLevel', parseInt(e.target.value))}
-                      className="px-2 py-1.5 border-2 border-border rounded-lg text-sm bg-background text-foreground font-body"
-                    >
-                      {FOOTWEAR_LEVELS.map((f) => (
-                        <option key={f.level} value={f.level}>{f.icon} {f.label}</option>
-                      ))}
-                    </select>
-                    <select
-                      value={p.toenailPerk}
-                      onChange={(e) => updatePlayer(idx, 'toenailPerk', e.target.value)}
-                      className="px-2 py-1.5 border-2 border-border rounded-lg text-sm bg-background text-foreground font-body"
-                    >
-                      {TOENAIL_PERKS.map((perk) => (
-                        <option key={perk.id} value={perk.id}>{perk.icon} {perk.name}</option>
-                      ))}
-                    </select>
-                  </>
-                )}
-                {players.length > Math.max(2, minPlayers) && (
-                  <button
-                    onClick={() => removePlayer(idx)}
-                    className="px-2 py-1 border-2 border-border rounded-lg bg-destructive text-foreground font-bold shrink-0"
-                  >
-                    ✕
-                  </button>
-                )}
+              <div key={idx} className="flex items-start gap-3 rounded-3xl bg-[#1C1C1E] p-3">
+                <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-lg font-bold ${p.name.trim() ? 'bg-[#E8C26B] text-black' : 'bg-white/10 text-white/40'}`}>{p.name.trim() ? p.name.trim()[0].toUpperCase() : idx + 1}</div>
+                <div className="min-w-0 flex-1 space-y-2">
+                  <input type="text" value={p.name} onChange={(e) => updatePlayer(idx, 'name', e.target.value)} placeholder={`Παίκτρια ${idx + 1}`} aria-label={`Όνομα παίκτριας ${idx + 1}`}
+                    className="h-11 w-full rounded-2xl border border-white/10 bg-black/40 px-3 font-semibold text-white focus:border-[#E8C26B] focus:outline-none" />
+                  {p.formInfo?.length > 0 && <div className="flex flex-wrap gap-1">{p.formInfo.map((info) => <span key={info} className="rounded-full bg-white/5 px-2 py-0.5 text-[11px] text-white/65">{info}</span>)}</div>}
+                  {isEngine && (
+                    <div className="grid grid-cols-2 gap-2">
+                      <select value={p.footwearLevel} onChange={(e) => updatePlayer(idx, 'footwearLevel', parseInt(e.target.value, 10))} aria-label="Παπούτσι" className="h-10 rounded-xl bg-black/40 px-2 text-xs">
+                        {FOOTWEAR_LEVELS.map((f) => <option key={f.level} value={f.level}>{f.icon} {f.label}</option>)}
+                      </select>
+                      <select value={p.toenailPerk} onChange={(e) => updatePlayer(idx, 'toenailPerk', e.target.value)} aria-label="Δύναμη" className="h-10 rounded-xl bg-black/40 px-2 text-xs">
+                        {TOENAIL_PERKS.map((perk) => <option key={perk.id} value={perk.id}>{perk.icon} {perk.name}</option>)}
+                      </select>
+                    </div>
+                  )}
+                </div>
+                <button type="button" onClick={() => removePlayer(idx)} aria-label={`Αφαίρεση παίκτριας ${idx + 1}`} className="h-9 w-9 shrink-0 rounded-full bg-white/5 text-white/60">✕</button>
               </div>
             ))}
           </div>
-          <div className="mt-2 text-xs text-foreground/60 font-body">
-            {newMode
-              ? '🔞 Μόνο ενήλικες (18+) που συμφωνούν να παίξουν. Κάθε παίκτρια μπορεί να πει ΣΤΟΠ οποιαδήποτε στιγμή.'
-              : mode === 'pajama'
-              ? '🩴 Παντόφλες & 💅 χρώμα νυχιών — τα βασικά της βραδιάς. Δεν υπάρχουν παπούτσια ή perks σε αυτό το mode.'
-              : '👟 Επίπεδο Παπουτσιού καθορίζει τη σκάλα ποινών · 💅 Toenail Perk = 1 ειδική δύναμη ανά παίκτρια'}
+          <button type="button" onClick={() => addPlayer()} disabled={players.length >= maxPlayers} className="mt-3 h-12 w-full rounded-full border border-dashed border-white/20 text-sm font-semibold text-white/70 disabled:opacity-30">+ Προσθήκη παίκτριας</button>
+        </section>
+
+        <section className="rounded-3xl bg-[#1C1C1E] p-4">
+          <StepTitle n={3} title="Λέξη ασφαλείας" done={safeWord.trim().length >= 2 && safeWordConfirmed} />
+          <p className="mb-3 text-sm text-white/60">Μία λέξη που σταματά αμέσως το παιχνίδι για όλες. Το κουμπί ΣΤΟΠ υπάρχει πάντα σε όλες τις οθόνες.</p>
+          <input type="text" value={safeWord} onChange={(event) => { setSafeWord(event.target.value); setSafeWordConfirmed(false); }} maxLength={32} placeholder="Κοινή λέξη ασφαλείας" aria-label="Λέξη ασφαλείας"
+            className="h-12 w-full rounded-2xl border border-white/10 bg-black/40 px-4 font-semibold text-white focus:border-[#E8C26B] focus:outline-none" />
+          <label className="mt-3 flex items-start gap-3 text-sm text-white/75">
+            <input type="checkbox" checked={safeWordConfirmed} onChange={(event) => setSafeWordConfirmed(event.target.checked)} className="mt-0.5 h-5 w-5 accent-[#E8C26B]" />
+            <span>Η παρέα συμφώνησε στη λέξη και ξέρει ότι οποιαδήποτε μπορεί να σταματήσει το παιχνίδι οποιαδήποτε στιγμή.</span>
+          </label>
+        </section>
+      </main>
+
+      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-white/10 bg-black/85 px-4 pb-[calc(env(safe-area-inset-bottom,0px)+12px)] pt-3 backdrop-blur-xl">
+        <div className="mx-auto flex max-w-6xl items-center gap-3">
+          <div className="min-w-0 flex-1 text-sm">
+            <div className="truncate font-bold">{selectedMode.icon} {selectedMode.name}</div>
+            <div className="truncate text-xs text-white/55">{canStart ? named.map((p) => p.name).join(' · ') : named.length < minPlayers ? `Χρειάζονται ${minPlayers - named.length} ακόμα παίκτριες` : 'Όρισε και επιβεβαίωσε τη λέξη ασφαλείας'}</div>
           </div>
-        </ComicPanel>
-
-        <ComicPanel className={testMode ? 'bg-tarot-royal/40' : 'bg-secondary'}>
-          <button onClick={() => setTestMode((t) => !t)} className="w-full flex items-center justify-between gap-3 text-left">
-            <div>
-              <div className="font-heading text-xl text-primary">🧪 ΔΟΚΙΜΑΣΤΙΚΗ ΠΑΡΤΙΔΑ</div>
-              <div className="text-sm text-foreground/70 font-body">
-                Δοκιμαστική παρτίδα: δεν αποθηκεύεται στο Chronicle ούτε στα στατιστικά.
-              </div>
-            </div>
-            <span className={`font-heading text-lg px-3 py-1 rounded border-2 border-border shrink-0 ${testMode ? 'bg-tarot-forest text-foreground' : 'bg-background text-foreground/60'}`}>
-              {testMode ? 'ON' : 'OFF'}
-            </span>
-          </button>
-        </ComicPanel>
-
-        <div className="dot-startbar">
-          <ComicButton variant="magenta" size="lg" onClick={handleStart} disabled={!canStart}>
-            🎬 ΕΝΑΡΞΗ ΠΑΙΧΝΙΔΙΟΥ
-          </ComicButton>
-          {!canStart && (
-            <div className="dot-startbar-hint">
-              Χρειάζονται τουλάχιστον {minPlayers} παίκτριες με όνομα.
-            </div>
-          )}
+          <button type="button" onClick={handleStart} disabled={!canStart} className="h-14 shrink-0 rounded-full bg-[#E8C26B] px-8 text-base font-black text-black disabled:opacity-30">▶ ΕΝΑΡΞΗ</button>
         </div>
       </div>
     </div>

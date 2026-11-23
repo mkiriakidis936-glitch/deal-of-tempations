@@ -3,7 +3,7 @@ import ComicPanel from '@/components/comic/ComicPanel';
 
 const PREVIEWS = [
   { id: 'site', label: 'SITE', path: '/site' },
-  { id: 'forms', label: 'FORMS', path: '/invitation' },
+  { id: 'forms', label: 'FORMS', path: '/forms' },
   { id: 'tablet', label: 'TABLET', path: '/' },
   { id: 'tv', label: 'TV', path: '/tv' },
   { id: 'mobile', label: 'MOBILE (/play)', path: '/play' },
@@ -12,10 +12,8 @@ const PREVIEWS = [
 const SITE_PAGES = [
   { path: '/site', label: 'Αρχική' },
   { path: '/site?event=heist', label: 'Heist' },
-  { path: '/site?event=pajama', label: 'Pajama' },
   { path: '/site?event=lockdown', label: 'Pajama Lockdown 18+' },
   { path: '/site?event=beachbar', label: 'Beach Bar Home Lockdown' },
-  { path: '/site?event=extended', label: 'Pedi-Glam Extended' },
   { path: '/site?event=marathon4h', label: 'Pajama Heist & Arrest' },
   { path: '/promo', label: 'Promo' },
 ];
@@ -72,11 +70,10 @@ export default function AdminMediaPreview() {
           title={`Live preview ${title}`}
           loading="lazy"
           sandbox="allow-scripts allow-same-origin"
-          className="h-[72vh] min-h-[520px] w-full bg-black"
-          style={{ pointerEvents: 'none' }}
+          className="h-[72vh] min-h-[520px] w-full bg-black" scrolling="yes"
         />
       </div>
-      <p className="text-[10px] text-foreground/45">Η προεπισκόπηση είναι μόνο για θέαση. Για πλήρη χρήση, άνοιξε τη σελίδα σε νέα καρτέλα.</p>
+      <p className="text-[10px] text-foreground/45">Μπορείς να κάνεις scroll και να πατάς κουμπιά· οι φόρμες δεν υποβάλλονται από την προεπισκόπηση. Για πλήρη χρήση, άνοιξε τη σελίδα σε νέα καρτέλα.</p>
     </ComicPanel>
   );
 }

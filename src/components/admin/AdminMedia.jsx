@@ -4,9 +4,8 @@ import ComicPanel from '@/components/comic/ComicPanel';
 import ComicButton from '@/components/comic/ComicButton';
 import { ART, DEFAULTS, applyMediaOverrides } from '@/data/brandArt';
 import { IMAGE_SLOTS, PHOTO_SPOTS, PHOTO_SPOT_IDS, VIDEO_SLOTS, MODE_COVER_SLOTS, GALLERIES, SURFACES } from '@/data/mediaSlots';
-import { NEW_MODES, MODE_MEDIA_SECTIONS } from '@/data/modes/modeRegistry';
+import { MEDIA_MODES, MODE_MEDIA_SECTIONS } from '@/data/modes/modeRegistry';
 import ModeMediaManager from '@/components/admin/ModeMediaManager';
-import GameMediaLibraries from '@/components/admin/GameMediaLibraries';
 import AdminMediaPreview from '@/components/admin/AdminMediaPreview';
 import { MEDIA_KEY, fetchOverrides, uploadMedia, listMedia, deleteMedia, deleteAllMedia } from '@/lib/media';
 
@@ -80,13 +79,19 @@ export default function AdminMedia() {
   const [surfaceFilter, setSurfaceFilter] = useState('all');
   const [fileLoadStatus, setFileLoadStatus] = useState({});
   const [libraryStatusFilter, setLibraryStatusFilter] = useState('all');
+  // Κατηγορίες βιβλιοθήκης: μία ανά mode + Site + TV. Οι παλιές τιμές μεταφράζονται αυτόματα.
   const LIBRARY_CATEGORIES = [
-    { id: 'heist', label: 'Ληστεία' },
-    { id: 'pajama', label: 'Πιτζάμα' },
-    { id: 'branding', label: 'Εταιρική ταυτότητα' },
+    ...MEDIA_MODES.map((mode) => ({ id: mode.id, label: `${mode.icon || '🎮'} ${mode.name}` })),
+    { id: 'site', label: '🌐 Site & φόρμες' },
+    { id: 'tv', label: '📺 TV' },
     { id: 'uncategorized', label: 'Χωρίς κατηγορία' },
   ];
-  const categoryOf = (url) => ov.libraryCategories?.[url] || 'uncategorized';
+  const LEGACY_CATEGORY = { heist: 'arrest_heist', branding: 'site', pajama: 'uncategorized' };
+  const categoryOf = (url) => {
+    const raw = ov.libraryCategories?.[url] || 'uncategorized';
+    const mapped = LEGACY_CATEGORY[raw] || raw;
+    return LIBRARY_CATEGORIES.some((item) => item.id === mapped) ? mapped : 'uncategorized';
+  };
   const showSurface = (...ids) => surfaceFilter === 'all' || ids.includes(surfaceFilter);
   const [busy, setBusy] = useState(null);
   const [progress, setProgress] = useState(0);
@@ -375,24 +380,22 @@ export default function AdminMedia() {
       if (!src) missing.push({ surface: slot.surfaces?.[0] || 'site', label: slot.label, where: slot.where });
     }
     for (const slot of IMAGE_SLOTS) if (!ov[slot.id] && (clearedImages || !DEFAULTS[slot.id])) missing.push({ surface: slot.surfaces?.[0] || 'site', label: slot.label, where: slot.where });
-    for (const slot of MODE_COVER_SLOTS.filter((item) => !item.retired && !NEW_MODES.some((mode) => mode.id === item.modeId))) {
-      const src = ov[slot.id] || (ov.emptyModeCovers?.includes(slot.id) || clearedImages ? '' : DEFAULTS[slot.id]);
-      if (!src) missing.push({ surface: 'tablet', label: slot.label, where: 'Εξώφυλλο επιλογής Mode στο Tablet / Forms' });
-    }
-    for (const mode of NEW_MODES) {
+    for (const slot of VIDEO_SLOTS) if (!ov[slot.id]) missing.push({ surface: 'tv', label: slot.label, where: slot.where });
+    for (const mode of MEDIA_MODES) {
       const saved = ov.modeMedia?.[mode.id] || {};
       const sections = Array.isArray(saved.sections) && saved.sections.length
         ? saved.sections
         : (MODE_MEDIA_SECTIONS[mode.id] || []).map((item) => ({ ...item, image: '' }));
       const gallery = Array.isArray(saved.gallery) ? saved.gallery.filter(Boolean) : [];
       if (!saved.hero) missing.push({ surface: 'site', label: `${mode.name} — Hero`, where: 'Κεντρική εικόνα παρουσίασης του Mode' });
-      if (!saved.cover && !ov[`modeCover_${mode.id}`]) missing.push({ surface: 'tablet', label: `${mode.name} — Cover`, where: 'Ξεχωριστό εξώφυλλο επιλογής Mode στο Tablet / Forms' });
+      if (saved.coverCleared || (!saved.cover && !ov[`modeCover_${mode.id}`] && !DEFAULTS[`modeCover_${mode.id}`])) missing.push({ surface: 'tablet', label: `${mode.name} — Cover`, where: 'Ξεχωριστό εξώφυλλο επιλογής Mode στο Tablet / Forms' });
       for (const section of sections) {
         if (!section.image) missing.push({ surface: 'tablet', label: `${mode.name} — ${section.label}`, where: 'Εικόνα ενότητας στο Tablet Setup' });
       }
-      if (gallery.length < 6) missing.push({ surface: 'site', label: `${mode.name} — Gallery (${gallery.length}/6)`, where: 'Απαιτούνται έξι αριθμημένες εικόνες Gallery 01–06' });
+      if (gallery.length < 6) missing.push({ surface: 'site', label: `${mode.name} — Gallery (${gallery.length}/6)`, where: 'Gallery του mode στο Site (6 θέσεις)' });
+      if (!saved.trailer) missing.push({ surface: 'tablet', label: `${mode.name} — Βίντεο trailer`, where: 'Tablet Setup και σελίδα του mode στο Site' });
     }
-    for (const gallery of GALLERIES) {
+    for (const gallery of GALLERIES.filter((item) => !item.retired)) {
       const count = listOf(gallery.id).filter(Boolean).length;
       const required = gallery.requiredCount || 0;
       if (required > 0 && count < required) missing.push({
@@ -526,35 +529,34 @@ export default function AdminMedia() {
       </>)}
 
       {section === 'modes' && (<>
-      {showSurface('tablet', 'forms') && (
       <ComicPanel className="bg-card space-y-3">
         <div className="font-heading text-lg">🎮 ΕΞΩΦΥΛΛΟ ΦΩΤΟΓΡΑΦΙΑΣ ΑΝΑ MODE</div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {MODE_COVER_SLOTS.filter((s) => !s.retired && !NEW_MODES.some((mode) => mode.id === s.modeId) && showSurface(...(s.surfaces || ['tablet', 'forms']))).map((s) => {
-            const src = ov[s.id] || (ov.emptyModeCovers?.includes(s.id) || ov.clearAllPhotos || ov.clearAllMedia ? '' : DEFAULTS[s.id]);
+        <p className="text-xs text-foreground/60">Εμφανίζεται στην επιλογή mode στο Tablet, στη φόρμα /forms και στο Site. Ίδιο με το «Cover image» του MODE MEDIA CENTER.</p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
+          {MEDIA_MODES.map((mode) => {
+            const coverId = `modeCover_${mode.id}`;
+            const saved = ov.modeMedia?.[mode.id] || {};
+            const src = saved.coverCleared ? '' : (saved.cover || ov[coverId] || (ov.clearAllPhotos || ov.clearAllMedia ? '' : DEFAULTS[coverId]) || '');
+            const withCover = (base, url) => ({ ...base, modeMedia: { ...(base.modeMedia || {}), [mode.id]: { ...(base.modeMedia?.[mode.id] || {}), cover: url, coverCleared: !url } } });
             return (
-              <div key={s.id} className="border-2 border-border/40 rounded-lg p-2 bg-secondary/40">
+              <div key={mode.id} className="border-2 border-border/40 rounded-lg p-2 bg-secondary/40">
                 {src ? <Thumb src={src} className="w-full aspect-video rounded" /> : <div className="w-full aspect-video rounded bg-black/40 flex items-center justify-center text-xs text-foreground/50">Χωρίς φωτογραφία</div>}
-                <div className="font-bold text-sm mt-2">{s.label}</div>
+                <div className="font-bold text-sm mt-2">{mode.icon} {mode.name}</div>
                 <div className="flex gap-2 mt-2 flex-wrap">
-                  <select aria-label={`Εικόνα εξωφύλλου ${s.label}`} value="" disabled={!!busy} onChange={(e) => { if (e.target.value) assignMediaToSlot(e.target.value, s.id); }} className="w-full rounded-lg border border-border bg-background px-2 py-2 text-xs"><option value="">Σύνδεση εικόνας από κεντρική βιβλιοθήκη…</option>{library.filter((file) => file.kind === 'image' || file.kind === 'graphic').map((file) => <option key={file.url} value={file.url}>{file.name}</option>)}</select>
-                  {directUploadControl(`mode-cover-${s.id}`, 'image/*', (url, ov) => ({ ...ov, [s.id]: url, emptyModeCovers: (ov.emptyModeCovers || []).filter((id) => id !== s.id) }))}
-                  <ComicButton size="sm" variant="dark" disabled={!!busy} onClick={() => reset(s.id)}>↩︎ Αρχική φωτογραφία</ComicButton>
+                  <select aria-label={`Εικόνα εξωφύλλου ${mode.name}`} value="" disabled={!!busy} onChange={(e) => { const url = e.target.value; if (url) run(`cover-${mode.id}`, () => save(withCover(ov, url)), 'Το εξώφυλλο αποθηκεύτηκε ✓'); }} className="w-full rounded-lg border border-border bg-background px-2 py-2 text-xs">
+                    <option value="">Επιλογή από βιβλιοθήκη…</option>
+                    {library.filter((file) => file.kind === 'image' || file.kind === 'graphic').map((file) => <option key={file.url} value={file.url}>{file.name}</option>)}
+                  </select>
+                  {directUploadControl(`mode-cover-${mode.id}`, 'image/*', (url, base) => withCover(base, url))}
+                  {src && <ComicButton size="sm" variant="dark" disabled={!!busy} onClick={() => run(`cover-clear-${mode.id}`, () => save(withCover(ov, '')), 'Το εξώφυλλο αφαιρέθηκε ✓')}>Αφαίρεση</ComicButton>}
                 </div>
-                <Progress id={s.id} />
               </div>
             );
           })}
         </div>
       </ComicPanel>
-      )}
 
-      {showSurface('site', 'forms', 'tablet') && (
       <ComicPanel className="bg-card space-y-3">
-        <div className="font-heading text-lg">🎮 ΔΙΑΧΕΙΡΙΣΗ ΣΥΝΔΕΣΕΩΝ ΑΝΑ MODE</div>
-        <p className="text-xs text-foreground/60">Τα Modes χρησιμοποιούν αρχεία που υπάρχουν ήδη στην κεντρική βιβλιοθήκη. Δεν γίνεται νέο ανέβασμα από αυτή την ενότητα.</p>
-        <GameMediaLibraries value={ov} files={library} onSave={saveChanged} onRefresh={refreshLibrary} />
-        <div className="border-t border-border/60 pt-4">
         <ModeMediaManager
           value={ov.modeMedia || {}}
           files={library}
@@ -565,7 +567,7 @@ export default function AdminMedia() {
             setMsg(null);
             try {
               await saveChanged({ ...ov, modeMedia });
-              setMsg({ ok: true, text: 'Το Πολυμέσα Mode αποθηκεύτηκε ✓' });
+              setMsg({ ok: true, text: 'Τα πολυμέσα του mode αποθηκεύτηκαν ✓' });
             } catch (error) {
               setMsg({ ok: false, text: error.message });
               throw error;
@@ -575,12 +577,45 @@ export default function AdminMedia() {
             }
           }}
         />
-        </div>
       </ComicPanel>
-      )}
       </>)}
 
       {section === 'site' && (<>
+      {showSurface('site', 'forms') && (
+      <ComicPanel className="bg-card space-y-4">
+        <div>
+          <div className="font-heading text-lg">📸 GALLERY ΑΝΑ MODE</div>
+          <p className="text-[11px] text-foreground/60">6 φωτογραφίες για κάθε mode. Εμφανίζονται στη σελίδα του mode στο Site και στην καρτέλα «Όλες» της γκαλερί.</p>
+        </div>
+        {MEDIA_MODES.map((mode) => {
+          const gallery = Array.from({ length: 6 }, (_, index) => ov.modeMedia?.[mode.id]?.gallery?.[index] || '');
+          const withSlot = (base, index, url) => {
+            const current = Array.from({ length: 6 }, (_, i) => base.modeMedia?.[mode.id]?.gallery?.[i] || '');
+            current[index] = url;
+            return { ...base, modeMedia: { ...(base.modeMedia || {}), [mode.id]: { ...(base.modeMedia?.[mode.id] || {}), gallery: current } } };
+          };
+          return (
+            <div key={mode.id} className="rounded-xl border border-border/60 p-3 space-y-2">
+              <div className="text-sm font-bold">{mode.icon} {mode.name} · {gallery.filter(Boolean).length}/6</div>
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
+                {gallery.map((src, index) => (
+                  <div key={index} className="rounded-lg border border-border/50 bg-secondary/30 p-2 space-y-1.5">
+                    <div className="text-[10px] font-bold">Θέση {index + 1}</div>
+                    {src ? <Thumb src={src} className="w-full aspect-[4/3] rounded" /> : <div className="w-full aspect-[4/3] rounded bg-black/40 flex items-center justify-center text-[10px] text-foreground/45">Κενό</div>}
+                    {directUploadControl(`mode-gallery-${mode.id}-${index}`, 'image/*', (url, base) => withSlot(base, index, url), src ? 'Αλλαγή' : 'Ανέβασμα')}
+                    <select aria-label={`${mode.name} gallery ${index + 1}`} value="" disabled={!!busy} onChange={(e) => { const url = e.target.value; if (url) run(`mode-gallery-pick-${mode.id}-${index}`, () => save(withSlot(ov, index, url)), 'Η φωτογραφία μπήκε στη gallery ✓'); }} className="w-full rounded border border-border bg-background px-1 py-1 text-[10px]">
+                      <option value="">Από βιβλιοθήκη…</option>
+                      {library.filter((file) => file.kind === 'image' || file.kind === 'graphic').map((file) => <option key={file.url} value={file.url}>{file.name}</option>)}
+                    </select>
+                    {src && <button type="button" disabled={!!busy} onClick={() => run(`mode-gallery-clear-${mode.id}-${index}`, () => save(withSlot(ov, index, '')), 'Η θέση άδειασε ✓')} className="w-full rounded border border-border px-1 py-1 text-[10px]">Αφαίρεση</button>}
+                  </div>
+                ))}
+              </div>
+            </div>
+          );
+        })}
+      </ComicPanel>
+      )}
       {showSurface('site', 'forms') && (
       <>
       {GALLERIES.filter((g) => !g.retired && showSurface(...(g.surfaces || ['site']))).map((g) => {
@@ -652,6 +687,14 @@ export default function AdminMedia() {
                         <button disabled={!!busy} onClick={() => remove(g.id, i)} className="py-2.5 text-red-400" aria-label="Αφαίρεση">🗑</button>
                         <button disabled={!!busy || i === list.length - 1} onClick={() => move(g.id, i, 1)} className="py-2.5 disabled:opacity-30" aria-label="Μπροστά">▶</button>
                       </div>
+                      {video && (
+                        <select aria-label={`Πού εμφανίζεται το βίντεο ${i + 1}`} value={ov.videoPlacements?.[src] || 'site'} disabled={!!busy}
+                          onChange={(e) => { const placement = e.target.value; run(`placement-${i}`, () => save({ ...ov, videoPlacements: { ...(ov.videoPlacements || {}), [src]: placement } }), 'Η θέση του βίντεο αποθηκεύτηκε ✓'); }}
+                          className="w-full bg-background px-2 py-2 text-[11px]">
+                          <option value="site">📍 Αρχική Site</option>
+                          {MEDIA_MODES.map((mode) => <option key={mode.id} value={mode.id}>📍 {mode.name} (Site + Tablet)</option>)}
+                        </select>
+                      )}
                     </div>
                   ))}
                 </div>

@@ -1,0 +1,22 @@
+// Κοινή κατάταξη για τα ψηφιακά modes (Tablet αποτελέσματα, TV τελετή, κινητό dashboard).
+export const pointsOf = (mg = {}, pid) => ((mg.scores || {})[pid] || 0)
+  + Math.round((((mg.lounge?.stats || {})[pid]?.loot) || 0) / 1000)
+  + ((mg.tokens || {})[pid] || 0);
+
+export const rankPlayers = (players = [], mg = {}) => [...players].sort((a, b) => pointsOf(mg, b.id) - pointsOf(mg, a.id));
+
+// Ο τίτλος της νικήτριας: Beach Queen / Lounge Queen αν έχει οριστεί, αλλιώς η πρώτη της κατάταξης.
+export function championOf(players = [], mg = {}) {
+  const find = (id) => players.find((p) => p.id === id);
+  if (mg.bb?.queen && find(mg.bb.queen)) return { player: find(mg.bb.queen), title: 'Beach Queen' };
+  if (mg.loungeQueen && find(mg.loungeQueen)) return { player: find(mg.loungeQueen), title: 'Ultimate Pajama Police Queen' };
+  const top = rankPlayers(players, mg)[0];
+  return top ? { player: top, title: mg.lockdownResult === 'won' ? 'Απόδραση — VIP Vault' : 'Νικήτρια' } : null;
+}
+
+// Τελική κατάταξη: η νικήτρια του τίτλου (Queen κ.λπ.) πάντα πρώτη, μετά οι υπόλοιπες με βάση τους πόντους.
+export function finalStandings(players = [], mg = {}) {
+  const champion = championOf(players, mg)?.player;
+  const ranked = rankPlayers(players, mg);
+  return champion ? [champion, ...ranked.filter((p) => p.id !== champion.id)] : ranked;
+}

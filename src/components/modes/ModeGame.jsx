@@ -10,10 +10,12 @@ import ActLounge from '@/components/modes/ActLounge';
 import VIPUnratedMode from '@/components/modes/VIPUnratedMode';
 import { modeMeta, ACT_META, MODE_THEMES } from '@/data/modes/modeRegistry';
 import { useModeCtx, useTick, timerStart } from '@/lib/modeKit';
-import { COLLECTIONS, applyScenarioCollections } from '@/lib/modesContentStore';
+import { applyScenarioCollections } from '@/lib/modesContentStore';
 import { consentPending } from '@/lib/consent';
 import { ConsentTablet } from '@/components/modes/ConsentCheckIn';
 import ModeRecap from '@/components/modes/ModeRecap';
+import { BriefingTablet, PhaseGuideTablet, briefingPending } from '@/components/modes/ModeBriefing';
+import { finalStandings, pointsOf } from '@/lib/modeRanking';
 
 // Tablet (game master) για τα ψηφιακά modes. Κάθε mode = λίστα από acts.
 export default function ModeGame({ state, updateState, onEnd, onQR, playerProfiles = [], playerProfilesReady = true }) {
@@ -79,6 +81,14 @@ export default function ModeGame({ state, updateState, onEnd, onQR, playerProfil
     );
   }
 
+  if (briefingPending(mg, state.mode)) {
+    return (
+      <ModeShell modeId={state.mode} ctx={ctx} state={state} onQR={onQR} onEnd={onEnd} showTimer={false}>
+        <BriefingTablet state={state} setMg={setMg} log={log} />
+      </ModeShell>
+    );
+  }
+
   if (showVip || mg.vipUnrated?.active || mg.vipUnrated?.completed || mg.vipUnrated?.stoppedAt) {
     return (
       <ModeShell modeId={state.mode} ctx={ctx} state={state} onQR={onQR} onEnd={onEnd}>
@@ -123,13 +133,7 @@ export default function ModeGame({ state, updateState, onEnd, onQR, playerProfil
         <Btn onClick={() => setShowVip(true)}>🔐 VIP</Btn>
         <span className="opacity-75">Χρόνος παιχνιδιού: {elapsedLabel} / {totalLabel}</span>
       </div>
-      {state.customScenario && (
-        <div className="rounded-lg border px-3 py-2 text-sm" style={{ borderColor: theme.accent, background: `${theme.accent}18` }}>
-          <div className="font-heading" style={{ color: theme.accent2 }}>CUSTOM SCENARIO: {state.customScenario.name}</div>
-          {state.customScenario.description && <div className="mt-1 opacity-80">{state.customScenario.description}</div>}
-          {(state.customScenario.collections || []).length > 0 && <div className="mt-2 text-xs opacity-75">Περιεχόμενο σεναρίου: {(state.customScenario.collections || []).map((id) => COLLECTIONS.find((collection) => collection.id === id)?.label || id).join(' · ')}</div>}
-        </div>
-      )}
+      <PhaseGuideTablet state={state} />
 
       {act === 'board' && <ActBoard ctx={ctx} onDone={nextAct} />}
       {act === 'midnight' && <ActMidnight ctx={ctx} onDone={nextAct} />}
@@ -143,9 +147,8 @@ export default function ModeGame({ state, updateState, onEnd, onQR, playerProfil
 
 function Results({ ctx, theme, onEnd, state }) {
   const { players, mg } = ctx;
-  const total = (p) => ((mg.scores || {})[p.id] || 0) + Math.round(((mg.lounge?.stats || {})[p.id]?.loot || 0) / 1000);
   const tokens = (p) => (mg.tokens || {})[p.id] || 0;
-  const ranking = [...players].sort((a, b) => total(b) + tokens(b) - (total(a) + tokens(a)));
+  const ranking = finalStandings(players, mg);
   const queen = mg.bb?.queen && players.find((p) => p.id === mg.bb.queen);
   const loungeQueen = mg.loungeQueen && players.find((p) => p.id === mg.loungeQueen);
   return (
@@ -159,7 +162,7 @@ function Results({ ctx, theme, onEnd, state }) {
             <span className="font-display text-xl w-8">{['🥇', '🥈', '🥉'][i] || i + 1}</span>
             <b className="flex-1">{p.name}</b>
             <span className="text-sm opacity-70">{tokens(p)}🪙</span>
-            <span className="font-heading">{total(p) + tokens(p)}</span>
+            <span className="font-heading">{pointsOf(mg, p.id)}</span>
           </div>
         ))}
       </div>

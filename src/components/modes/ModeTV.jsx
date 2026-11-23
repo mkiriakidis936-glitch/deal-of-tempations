@@ -7,6 +7,7 @@ import { consentPending } from '@/lib/consent';
 import { ConsentTV } from '@/components/modes/ConsentCheckIn';
 import LoungeTV from '@/components/modes/LoungeTV';
 import ModeArt from '@/components/modes/ModeArt';
+import { BriefingTV, PhaseTransitionTV, ChampionCeremonyTV, briefingPending } from '@/components/modes/ModeBriefing';
 import { fmt, timerLeft, useTick, setGameStopActive } from '@/lib/modeKit';
 import { TvScreen, TvLeaderboard } from '@/design/ui';
 
@@ -27,9 +28,12 @@ export default function ModeTV({ state }) {
   const ranking = [...players].sort((a, b) => total(b) - total(a));
 
   if (consentPending(mg)) return <ConsentTV state={state} />;
+  if (briefingPending(mg, state.mode)) return <BriefingTV state={state} />;
+  if (mg.finishedAll) return <ChampionCeremonyTV state={state} />;
 
   return (
     <TvScreen className="mx-auto max-w-[min(96vw,2600px)] p-4">
+      <PhaseTransitionTV state={state} />
       {act !== 'lounge' && (
         <div className="flex items-end justify-between gap-6">
           <div>

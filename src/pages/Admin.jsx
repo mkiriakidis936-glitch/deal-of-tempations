@@ -276,7 +276,6 @@ export default function Admin() {
         gamePausedMs: 0,
         gamePausedAt: null,
         safetyProfile: state.safetyProfile || null,
-        testMode: !!state.testMode,
         ...(state.customScenario ? { customScenario: state.customScenario } : {}),
       };
       await base44.entities.GameSession.update(session.id, { state: newState });

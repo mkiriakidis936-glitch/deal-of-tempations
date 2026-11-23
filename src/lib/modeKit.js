@@ -330,6 +330,8 @@ export function initialMg(modeId, extra = {}) {
   // Ψηφιακά modes: consent check-in πριν ξεκινήσει το παιχνίδι + τυχαίος Exit Code ανά συνεδρία.
   if (['pedi_glam', 'pedi_extended', 'lockdown', 'beach_bar', 'marathon_4h'].includes(modeId) || String(modeId || '').startsWith('custom_')) base.consentRequired = true;
   if (modeId === 'lockdown') base.exitCode = extra.exitCode || randomExitCode();
+  // Νέες παρτίδες: εισαγωγή με κανόνες σε Tablet/TV/κινητά πριν την πρώτη φάση.
+  if (['lockdown', 'beach_bar', 'marathon_4h'].includes(modeId)) base.briefingRequired = true;
   return base;
 }
 

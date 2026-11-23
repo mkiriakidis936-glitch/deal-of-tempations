@@ -65,6 +65,26 @@ export const RETIRED_MODES = [
 ];
 
 export const MODE_MEDIA_SECTIONS = {
+  classic: [
+    { id: 'board', label: 'Ταμπλό 24 θέσεων', filename: 'classic_board.jpg' },
+    { id: 'truth_dare', label: 'Αλήθεια ή Θάρρος', filename: 'classic_truth_dare.jpg' },
+    { id: 'police', label: 'Αστυνομικός έλεγχος', filename: 'classic_police.jpg' },
+    { id: 'black_market', label: 'Μαύρη αγορά', filename: 'classic_black_market.jpg' },
+    { id: 'warrant', label: 'Ένταλμα', filename: 'classic_warrant.jpg' },
+    { id: 'finale', label: 'Φινάλε', filename: 'classic_finale.jpg' },
+  ],
+  arrest_heist: [
+    { id: 'teams', label: 'Alpha vs Beta', filename: 'heist_teams.jpg' },
+    { id: 'rounds', label: 'Γύροι ληστείας', filename: 'heist_rounds.jpg' },
+    { id: 'penalties', label: 'Στάδια ποινών', filename: 'heist_penalties.jpg' },
+    { id: 'escape', label: 'Grand Heist Escape', filename: 'heist_escape.jpg' },
+  ],
+  marathon_4h: [
+    { id: 'phase1', label: 'Φάση 1 — Warm-up & Slipper Grabbing', filename: 'lounge_phase1.jpg' },
+    { id: 'phase2', label: 'Φάση 2 — The Handcuff Escalation', filename: 'lounge_phase2.jpg' },
+    { id: 'phase3', label: 'Φάση 3 — Lockdown & Decibel Challenge', filename: 'lounge_phase3.jpg' },
+    { id: 'phase4', label: 'Φάση 4 — Barefoot Escape & Crown', filename: 'lounge_phase4.jpg' },
+  ],
   lockdown: [
     { id: 'level1', label: 'Level 1 — Hostage Sacrifice', filename: 'section1_Level1_Hostage_Sacrifice.jpg' },
     { id: 'level2', label: 'Level 2 — Sensory Cipher', filename: 'section2_Level2_Sensory_Cipher.jpg' },

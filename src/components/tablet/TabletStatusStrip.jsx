@@ -29,9 +29,6 @@ export default function TabletStatusStrip({ state }) {
           <span className="ds-value text-xs">{currentPlayer.name}</span>
         </>
       )}
-      {state.testMode && (
-        <span className="ds-label rounded-full border border-primary/40 px-2 py-0.5 text-primary">ΔΟΚΙΜΗ</span>
-      )}
     </div>
   );
 }

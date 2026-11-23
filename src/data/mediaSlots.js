@@ -44,7 +44,7 @@ export const PHOTO_SPOT_IDS = PHOTO_SPOTS.map((v) => v.id);
 export const GALLERIES = [
   { id: 'heistPhotos', label: 'Heist — γκαλερί', where: '12 αριθμημένες εικόνες: heist_01 έως heist_12', requiredCount: 12, surfaces: ['site', 'forms'] },
   { id: 'pajamaPhotos', label: 'Pajama — γκαλερί', where: '12 αριθμημένες εικόνες: pajama_01 έως pajama_12', requiredCount: 12, surfaces: ['site', 'forms'], retired: true },
-  { id: 'siteVideos', kind: 'video', label: 'Site — επιπλέον βίντεο', where: 'Αρχική σελίδα, κάτω από το τρέιλερ (όσα θες)', surfaces: ['site'] },
+  { id: 'siteVideos', kind: 'video', label: 'Επιπλέον βίντεο', where: 'Όσα θες. Σε κάθε βίντεο διαλέγεις πού εμφανίζεται: Αρχική Site ή σελίδα συγκεκριμένου mode (Site + Tablet Setup).', surfaces: ['site', 'tablet'] },
 ];
 
 export const MODE_COVER_SLOTS = [

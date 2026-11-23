@@ -2,18 +2,26 @@ import React, { useState } from 'react';
 import { cn } from '@/lib/utils';
 import { HEIST_PHOTOS, MODE_MEDIA } from '@/data/brandArt';
 
-const MODE_IDS = { extended: 'pedi_extended', lockdown: 'lockdown', beachbar: 'beach_bar', marathon4h: 'marathon_4h' };
-const TABS = [
-  { id: 'all', label: 'Όλες', photos: HEIST_PHOTOS },
-  { id: 'heist', label: 'Heist Night', photos: HEIST_PHOTOS },
-];
+import { MEDIA_MODES } from '@/data/modes/modeRegistry';
+
+const MODE_IDS = { lockdown: 'lockdown', beachbar: 'beach_bar', marathon4h: 'marathon_4h', heist: 'arrest_heist' };
+const galleryOf = (modeId) => (MODE_MEDIA[modeId]?.gallery || []).filter(Boolean);
+
+// Καρτέλες: «Όλες» + μία ανά mode που έχει φωτογραφίες (υπολογίζεται κάθε φορά, ώστε να φαίνονται αμέσως οι αλλαγές του Admin).
+function buildTabs() {
+  const modeTabs = MEDIA_MODES.map((mode) => ({ id: mode.id, label: mode.name, photos: galleryOf(mode.id) })).filter((tab) => tab.photos.length);
+  const all = [...new Set([...HEIST_PHOTOS.filter(Boolean), ...modeTabs.flatMap((tab) => tab.photos)])];
+  return [{ id: 'all', label: 'Όλες', photos: all }, ...modeTabs];
+}
 
 export default function SiteGallery({ initialTab = 'all', eventId }) {
   const modeId = MODE_IDS[eventId];
-  const modePhotos = modeId ? (MODE_MEDIA[modeId]?.gallery || []).filter(Boolean) : [];
+  const TABS = buildTabs();
+  const modePhotos = modeId ? (galleryOf(modeId).length || modeId !== 'arrest_heist' ? galleryOf(modeId) : HEIST_PHOTOS.filter(Boolean)) : [];
   const [tab, setTab] = useState(initialTab);
   const photos = modeId ? modePhotos : (TABS.find((t) => t.id === tab) || TABS[0]).photos;
   if (modeId && !modePhotos.length) return null;
+  if (!photos.length) return null;
 
   return (
     <section id="photos" className="px-4 py-20 sm:py-24">
@@ -22,7 +30,7 @@ export default function SiteGallery({ initialTab = 'all', eventId }) {
           <div className="text-[10px] sm:text-xs tracking-[0.42em] text-tarot-gold/65 uppercase mb-3">Φωτογραφίες & Βίντεο</div>
           <h2 className="font-display text-3xl sm:text-4xl text-tarot-gold tracking-[0.08em]">Η ΑΤΜΟΣΦΑΙΡΑ</h2>
         </div>
-        {!modeId && <div className="flex justify-center gap-2 mb-8 flex-wrap">
+        {!modeId && TABS.length > 1 && <div className="flex justify-center gap-2 mb-8 flex-wrap">
           {TABS.map((t) => (
             <button key={t.id} onClick={() => setTab(t.id)} className={cn(
               'min-h-10 px-5 py-2 text-[10px] tracking-[0.22em] uppercase rounded-full border transition-colors',

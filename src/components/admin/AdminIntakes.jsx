@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { base44, request } from '@/api/base44Client';
 import ComicPanel from '@/components/comic/ComicPanel';
 import ComicButton from '@/components/comic/ComicButton';
-import { GAME_MODES } from '@/data/gameConfig';
+import { GAME_MODES, RETIRED_GAME_MODES } from '@/data/gameConfig';
 import PajamaIntakeList from '@/components/admin/PajamaIntakeList';
 
 const SHOE_LABELS = { boots: '👢 Μπότες', sneakers: '👟 Sneakers', sandals: '👡 Πέδιλα', barefoot: '🦶 Ξυπόλυτη' };
@@ -10,7 +10,7 @@ const INTENSITY_LABELS = { soft: '🟢 Soft', medium: '🟡 Medium', hardcore: '
 const NAIL_LABELS = { red: '🔴 Κόκκινο', pink: '🩷 Ροζ', white: '⚪ Άσπρο', black: '⚫ Μαύρο', nude: '🤎 Nude', french: '💅 Γαλλικό', blue: '🔵 Γαλάζιο', purple: '🟣 Μωβ', green: '🟢 Πράσινο', orange: '🟠 Πορτοκαλί', gold: '✨ Χρυσό', silver: '🤍 Ασημί', none: '⭕ Χωρίς' };
 const COMFORT_LABELS = { comfortTruth: '💬 Αλήθειες', comfortDare: '🔥 Θάρρη', comfortTickle: '🍃 Αύρα', comfortBondage: '🌙 Σκοτάδι', comfortDrinking: '🍹 Ποτό' };
 const ACCOMMODATION_LABELS = { house: '🏠 Μένει', oneday: '🕐 Μία μέρα' };
-const MODE_NAMES = Object.fromEntries(GAME_MODES.map((mode) => [mode.id, mode.name]));
+const MODE_NAMES = Object.fromEntries([...GAME_MODES, ...RETIRED_GAME_MODES].map((mode) => [mode.id, mode.name]));
 
 export default function AdminIntakes() {
   const [intakes, setIntakes] = useState([]);

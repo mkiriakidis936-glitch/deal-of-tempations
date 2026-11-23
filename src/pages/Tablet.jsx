@@ -195,7 +195,7 @@ export default function Tablet() {
   }
 
   async function archiveAndDelete() {
-    if (!session || !state || state.testMode) {
+    if (!session || !state) {
       try { await deleteSession(); }
       catch (error) {
         console.error('Session deletion failed', error);

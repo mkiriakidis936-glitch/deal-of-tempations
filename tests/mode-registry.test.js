@@ -47,3 +47,35 @@ test('μόνο Classic & Arrest Heist ως μηχανές, 3 ψηφιακά mode
   const { modeMeta: meta } = await import('../src/data/modes/modeRegistry.js');
   assert.equal(meta('pedi_glam')?.retired, true, 'παλιές συνεδρίες ανοίγουν ακόμα');
 });
+
+test('οδηγός: κάθε ενεργό mode έχει οδηγό, και κάθε φάση του ψηφιακού παιχνιδιού αντιστοιχεί σε ενότητα φωτογραφίας', async () => {
+  const { MODE_GUIDE, phaseIdFor, currentPhase } = await import('../src/data/modes/modeGuide.js');
+  const { ENGINE_MODES, NEW_MODES: active, MODE_MEDIA_SECTIONS } = await import('../src/data/modes/modeRegistry.js');
+  for (const mode of [...ENGINE_MODES, ...active]) assert.ok(MODE_GUIDE[mode.id], `λείπει οδηγός για ${mode.id}`);
+  for (const id of ['lockdown', 'beach_bar', 'marathon_4h']) {
+    const sectionIds = (MODE_MEDIA_SECTIONS[id] || []).map((s) => s.id);
+    for (const phase of MODE_GUIDE[id].phases) assert.ok(sectionIds.includes(phase.id), `${id}: η φάση ${phase.id} δεν έχει ενότητα φωτογραφίας`);
+  }
+  assert.equal(phaseIdFor({ mode: 'lockdown', mg: { ld: { stage: 'exit' } } }), 'level4');
+  assert.equal(phaseIdFor({ mode: 'beach_bar', mg: { bb: { phase: 'wheel' } } }), 'penalty_wheel');
+  assert.equal(currentPhase({ mode: 'marathon_4h', mg: { lounge: { phase: 3 } } }).index, 3);
+});
+
+test('νέες ψηφιακές παρτίδες ξεκινούν με εισαγωγή κανόνων· οι παλιές δεν μπλοκάρονται', async () => {
+  const src = (await import('node:fs')).readFileSync(new URL('../src/lib/modeKit.js', import.meta.url), 'utf8');
+  assert.match(src, /\['lockdown', 'beach_bar', 'marathon_4h'\]\.includes\(modeId\)\) base\.briefingRequired = true/);
+  const { pointsOf, rankPlayers, championOf } = await import('../src/lib/modeRanking.js');
+  const players = [{ id: 'a', name: 'Α' }, { id: 'b', name: 'Β' }];
+  const mg = { scores: { a: 3, b: 5 }, tokens: { a: 4 }, lounge: { stats: { b: { loot: 2000 } } } };
+  assert.equal(pointsOf(mg, 'a'), 7);
+  assert.equal(pointsOf(mg, 'b'), 7);
+  assert.equal(rankPlayers(players, { scores: { a: 1, b: 2 } })[0].id, 'b');
+  assert.equal(championOf(players, { bb: { queen: 'a' } }).title, 'Beach Queen');
+});
+
+test('τελετή: η νικήτρια του τίτλου είναι πάντα πρώτη στο βάθρο, ακόμα κι αν έχει λιγότερους πόντους', async () => {
+  const { finalStandings } = await import('../src/lib/modeRanking.js');
+  const players = [{ id: 'a' }, { id: 'b' }, { id: 'c' }];
+  const order = finalStandings(players, { scores: { a: 4, b: 5, c: 0 }, bb: { queen: 'c' } }).map((p) => p.id);
+  assert.deepEqual(order, ['c', 'b', 'a']);
+});

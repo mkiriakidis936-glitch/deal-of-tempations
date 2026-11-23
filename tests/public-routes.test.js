@@ -49,11 +49,6 @@ test('Bachelorette intake submissions can be approved and only approved players 
 });
 
 
-test('approved Arrest & Heist registrations appear in mode preference counts', () => {
-  const setup = read('../src/components/tablet/SetupScreen.jsx');
-  assert.match(setup, /filter\(\(item\) => item\.approved === true\)\.map\(\(item\) => \(\{ \.\.\.item, modeIds: \['arrest_heist'\] \}\)\)/);
-  assert.match(setup, /\.\.\.heistIntakes, \.\.\.pendingIntakes/);
-});
 
 
 test('Admin can approve Arrest & Heist intake directly from its form record', () => {
@@ -95,12 +90,6 @@ test('casting plans are Event-scoped and revoked approvals cannot enter Tablet s
 });
 
 
-test('Tablet loads approved preferred Modes from every supported intake source', () => {
-  const setup = read('../src/components/tablet/SetupScreen.jsx');
-  assert.match(setup, /allClassic\.filter\(\(item\) => item\.preferredModes\?\.includes\(currentMode\) \|\| item\.vipGameMode === currentMode\)/);
-  assert.match(setup, /const approvedForMode = \[\.\.\.intakes, \.\.\.pajamaApproved\]/);
-  assert.match(setup, /i\.preferredModes\.includes\(m\.id\)/);
-});
 
 test('session switching ignores stale async responses and binds updates to their originating session', () => {
   const hook = read('../src/hooks/useGameSession.js');
@@ -131,10 +120,28 @@ test('active session writes are serialized and session deletion clears subscribe
 });
 
 
-test('approved preferences populate Classic, Marathon, Arrest & Heist and Pajama modes', () => {
-  const setup = read('../src/components/tablet/SetupScreen.jsx');
-  assert.match(setup, /item\.preferredModes\?\.includes\('classic'\)/);
-  assert.match(setup, /item\.preferredModes\?\.includes\('marathon'\)/);
-  assert.match(setup, /item\.preferredModes\?\.includes\('arrest_heist'\)/);
-  assert.match(setup, /item\.preferredModes\?\.includes\('pajama'\)/);
+
+test('Tablet: μετράει σωστά ποιες συμπλήρωσαν φόρμα και σε ποιο mode, από όλες τις φόρμες', async () => {
+  const { buildRoster, modeCounts } = await import('../src/lib/intakeRoster.js');
+  const roster = buildRoster({
+    player: [
+      { id: 'a', name: 'Άννα', approved: true, preferredModes: ['classic', 'lockdown'] },
+      { id: 'b', name: 'Βίκυ', approved: false, gameMode: 'classic' },
+      { id: 'c', name: 'Γιώτα', approved: true, gameMode: 'marathon' },
+    ],
+    pajama: [
+      { id: 'd', name: 'Δήμητρα', approved: true, preferredModes: ['beach_bar'] },
+      { id: 'e', name: 'άννα ', approved: true, preferredModes: ['lockdown'] },
+    ],
+    heist: [{ id: 'f', name: 'Ελένη', leaderName: 'Ζωή', approved: true }],
+    vip: [{ id: 'g', name: 'Ήρα', gameMode: 'marathon_4h', approvalStatus: 'rejected' }],
+  });
+  const by = Object.fromEntries(modeCounts(roster).map((row) => [row.id, row]));
+  assert.deepEqual(by.classic.approved, ['Άννα']);
+  assert.deepEqual(by.classic.pending, ['Βίκυ']);
+  assert.equal(by.lockdown.approved.length, 1, 'ίδιο όνομα από δύο φόρμες μετράει μία φορά');
+  assert.deepEqual(by.beach_bar.approved, ['Δήμητρα']);
+  assert.deepEqual(by.arrest_heist.approved.sort(), ['Ελένη', 'Ζωή']);
+  assert.equal(by.marathon_4h.approved.length + by.marathon_4h.pending.length, 0, 'απορριφθείσα δεν μετράει');
+  assert.equal(by.marathon, undefined, 'αποσυρμένο mode δεν εμφανίζεται');
 });
