@@ -5,16 +5,9 @@ import { uploadMedia } from '@/lib/media';
 import { IMAGE_ACCEPT, VIDEO_ACCEPT } from '@/lib/mediaKind';
 
 const emptyMode = { hero: '', cover: '', sections: [], gallery: [], cards: [], trailer: '' };
-const inputClass = 'rounded-lg border border-border bg-background px-3 py-2 text-sm';
 const imageAccept = IMAGE_ACCEPT;
 const videoAccept = VIDEO_ACCEPT;
 
-function Thumb({ src, video = false, className = '' }) {
-  if (!src) return <div className={`flex items-center justify-center rounded-lg bg-black/30 text-xs text-foreground/45 ${className}`}>Χωρίς αρχείο</div>;
-  return video
-    ? <video src={src} controls muted playsInline preload="metadata" className={`rounded-lg bg-black object-cover ${className}`} />
-    : <img src={src} alt="" loading="lazy" className={`rounded-lg object-cover ${className}`} />;
-}
 
 function expectedNameFor(modeId, field, item) {
   if (field === 'hero') return 'hero.jpg';
@@ -37,7 +30,6 @@ export default function ModeMediaManager({ value = {}, files = [], onSave, onRef
   const [busy, setBusy] = useState('');
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
-  const [chosen, setChosen] = useState({});
   const fileInputs = useRef({});
   const mode = MEDIA_MODES.find((item) => item.id === selected) || MEDIA_MODES[0];
   const saved = value[selected] || {};
@@ -134,22 +126,16 @@ export default function ModeMediaManager({ value = {}, files = [], onSave, onRef
   };
 
   const triggerUpload = (field) => fileInputs.current[field]?.click();
-  const uploadControl = (field, label, item = null) => (
-    <div className="flex flex-wrap items-center gap-2">
-      <input
-        ref={(element) => { fileInputs.current[field] = element; }}
-        type="file"
-        accept={field === 'trailer' ? videoAccept : imageAccept}
-        className="hidden"
-        disabled={disabled || !!busy}
-        onChange={(event) => uploadToField(field, event.target.files?.[0], item)}
-        aria-label={`Ανέβασμα από υπολογιστή: ${label}`}
-      />
-      <button type="button" disabled={disabled || !!busy} onClick={() => triggerUpload(field)} className="rounded-lg bg-primary px-3 py-2 text-xs font-bold text-black disabled:opacity-40">
-        Ανέβασμα από υπολογιστή
-      </button>
-      <span className="text-[10px] text-foreground/50">Αναμενόμενο: {expectedNameFor(selected, field, item) || (field === 'trailer' ? 'MP4 / WEBM / MOV' : 'εικόνα')}</span>
-    </div>
+  const fileInput = (field, label, item = null) => (
+    <input
+      ref={(element) => { fileInputs.current[field] = element; }}
+      type="file"
+      accept={field === 'trailer' ? videoAccept : imageAccept}
+      className="hidden"
+      disabled={disabled || !!busy}
+      onChange={(event) => uploadToField(field, event.target.files?.[0], item)}
+      aria-label={`Ανέβασμα από υπολογιστή: ${label}`}
+    />
   );
 
   const updateItems = (field, items) => persist({ ...data, [field]: items });
@@ -160,120 +146,114 @@ export default function ModeMediaManager({ value = {}, files = [], onSave, onRef
   const updateLabel = (field, id, label) => updateItems(field, (data[field] || []).map((item) => item.id === id ? { ...item, label } : item));
   const removeItem = (field, id) => updateItems(field, (data[field] || []).filter((item) => item.id !== id));
 
-  const libraryPicker = (field, label, item = null) => (
-    <div className="flex flex-wrap gap-2">
-      <select aria-label={label} className={inputClass} value={chosen[field] || ''} disabled={disabled || !!busy} onChange={(event) => setChosen((current) => ({ ...current, [field]: event.target.value }))}>
-        <option value="">Επιλογή από τη βιβλιοθήκη</option>
-        {availableFor(field).map((file) => <option key={file.url} value={file.url}>{file.name}</option>)}
-      </select>
-      <button type="button" disabled={disabled || !!busy || !chosen[field]} onClick={() => { assign(field, chosen[field]); setChosen((current) => ({ ...current, [field]: '' })); }} className="rounded-lg border border-border px-3 py-2 text-xs">Σύνδεση υπάρχοντος</button>
-    </div>
+  // Ένα «πλακίδιο» φωτογραφίας: γεμίζει το πλαίσιο· αν είναι άδειο, πατιέται για ανέβασμα.
+  const Tile = ({ field, src, label, item = null, video = false, ratio = 'aspect-video', onClear }) => {
+    const status = assignmentStatus(field, src, item);
+    const uploading = busy === field;
+    return (
+      <div className="space-y-1.5">
+        {fileInput(field, label, item)}
+        {src ? (
+          <div className={`relative overflow-hidden rounded-2xl bg-black ${ratio}`}>
+            {video
+              ? <video src={src} controls muted playsInline preload="metadata" className="absolute inset-0 h-full w-full object-cover" />
+              : <img src={src} alt="" loading="lazy" className="absolute inset-0 h-full w-full object-cover" />}
+            {uploading && <div className="absolute inset-0 flex items-center justify-center bg-black/70 text-xs font-bold">Ανέβασμα…</div>}
+          </div>
+        ) : (
+          <button type="button" disabled={disabled || !!busy} onClick={() => triggerUpload(field)}
+            className={`flex w-full flex-col items-center justify-center gap-1 rounded-2xl border border-dashed border-white/20 bg-white/[0.03] text-white/55 ${ratio}`}>
+            <span className="text-2xl leading-none">＋</span>
+            <span className="px-2 text-center text-[11px] font-semibold">{uploading ? 'Ανέβασμα…' : video ? 'Προσθήκη βίντεο' : 'Προσθήκη φωτογραφίας'}</span>
+          </button>
+        )}
+        <div className="flex flex-wrap items-center gap-1.5">
+          {src && <button type="button" disabled={disabled || !!busy} onClick={() => triggerUpload(field)} className="h-9 rounded-full bg-[#E8C26B] px-3 text-xs font-bold text-black">Αλλαγή</button>}
+          <select aria-label={`${label} — από τη βιβλιοθήκη`} value="" disabled={disabled || !!busy}
+            onChange={(event) => { if (event.target.value) assign(field, event.target.value); }}
+            className="h-9 min-w-0 basis-full rounded-full border border-white/10 bg-[#2C2C2E] px-3 text-xs">
+            <option value="">Από βιβλιοθήκη…</option>
+            {availableFor(field).map((file) => <option key={file.url} value={file.url}>{file.name}</option>)}
+          </select>
+          {src && onClear && <button type="button" disabled={disabled || !!busy} onClick={onClear} className="h-9 rounded-full px-2 text-xs text-white/55 underline">Αφαίρεση</button>}
+        </div>
+        {status.startsWith('ΛΑΘΟΣ') && <div className="text-[11px] text-[#FF8A80]">{status}</div>}
+      </div>
+    );
+  };
+
+  const Block = ({ title, hint, action, children }) => (
+    <section className="rounded-3xl bg-[#1C1C1E] p-4 sm:p-5">
+      <div className="mb-3 flex items-start justify-between gap-3">
+        <div className="min-w-0"><h3 className="text-base font-bold text-white">{title}</h3>{hint && <p className="text-xs text-white/55">{hint}</p>}</div>
+        {action}
+      </div>
+      {children}
+    </section>
   );
 
   return (
-    <section className="space-y-3">
-      <div className="rounded-2xl border border-primary/30 bg-gradient-to-br from-[#17131d] to-[#292039] p-4 sm:p-5 text-white">
-        <div className="text-[10px] font-black tracking-[.2em] text-primary">ΠΟΛΥΜΕΣΑ ΑΝΑ MODE</div>
-        <div className="mt-1 font-heading text-2xl">Φωτογραφική ταυτότητα ανά Mode</div>
-        <p className="mt-1 text-xs text-white/65">Κάθε θέση δέχεται απευθείας ανέβασμα από τον υπολογιστή ή επιλογή ήδη ανεβασμένου αρχείου. Όπου υπάρχει καθορισμένο όνομα στις προδιαγραφές, ελέγχεται πριν γίνει το ανέβασμα.</p>
-        <div className="mt-4 grid grid-cols-2 xl:grid-cols-4 gap-2">
-          {MEDIA_MODES.map((item) => (
-            <button key={item.id} type="button" disabled={disabled || !!busy} onClick={() => { setSelected(item.id); setError(''); setNotice(''); }} className={`rounded-xl border p-3 text-left transition ${selected === item.id ? 'border-primary bg-primary/20' : 'border-white/15 bg-white/5 hover:bg-white/10'}`}>
-              <div className="text-xs font-black">{item.icon} {item.name}</div>
-              <div className="mt-1 text-[10px] text-white/55">{(value[item.id]?.gallery || []).filter(Boolean).length}/6 gallery · {(value[item.id]?.sections || []).length || (MODE_MEDIA_SECTIONS[item.id] || []).length} ενότητες</div>
-            </button>
-          ))}
+    <div className="space-y-3 text-[#F5F1E8]">
+      <header className="rounded-3xl border border-[#E8C26B]/30 bg-[#17140C] p-4 sm:p-5">
+        <div className="text-[11px] font-semibold uppercase tracking-[0.25em] text-[#E8C26B]">Mode Media Center</div>
+        <h2 className="mt-1 text-xl font-bold sm:text-2xl">Φωτογραφίες & βίντεο ανά mode</h2>
+        <p className="mt-1 text-xs text-white/60">Διάλεξε mode και πάτα σε οποιοδήποτε πλαίσιο για να ανεβάσεις. Εμφανίζονται σε Tablet, TV, κινητά και Site.</p>
+        <div className="-mx-4 mt-3 flex snap-x gap-2 overflow-x-auto px-4 pb-1 sm:mx-0 sm:grid sm:grid-cols-3 sm:overflow-visible sm:px-0 xl:grid-cols-5">
+          {MEDIA_MODES.map((item) => {
+            const on = selected === item.id;
+            const filled = (value[item.id]?.gallery || []).filter(Boolean).length;
+            return (
+              <button key={item.id} type="button" disabled={disabled || !!busy} onClick={() => { setSelected(item.id); setError(''); setNotice(''); }} aria-pressed={on}
+                className={`w-40 shrink-0 snap-start rounded-2xl border p-3 text-left sm:w-auto ${on ? 'border-[#E8C26B] bg-[#E8C26B]/15' : 'border-white/10 bg-black/30'}`}>
+                <div className="truncate text-sm font-bold">{item.icon} {item.name}</div>
+                <div className="mt-0.5 text-[11px] text-white/55">{filled}/6 gallery</div>
+              </button>
+            );
+          })}
         </div>
-      </div>
+      </header>
 
-      <div className="rounded-2xl border border-border/70 bg-card p-4 sm:p-5 space-y-4">
-        <div>
-          <div className="font-heading text-xl">{mode.icon} {mode.name}</div>
-          <p className="mt-1 text-xs text-foreground/55">Οι θέσεις εμφανίζουν το απαιτούμενο όνομα αρχείου, προεπισκόπηση και κατάσταση σύνδεσης.</p>
+      <Block title={`${mode.icon || ''} ${mode.name}`} hint="Κεντρική εικόνα (TV, κινητά, Tablet) και εξώφυλλο (επιλογή mode, φόρμα, Site).">
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div><div className="mb-1.5 text-xs font-semibold text-white/70">Κεντρική εικόνα</div><Tile field="hero" src={data.hero} label="Κεντρική εικόνα" onClear={() => persist({ ...data, hero: '' }, 'Η κεντρική εικόνα αφαιρέθηκε.')} /></div>
+          <div><div className="mb-1.5 text-xs font-semibold text-white/70">Εξώφυλλο</div><Tile field="cover" src={data.cover} label="Εξώφυλλο" onClear={() => persist({ ...data, cover: '', coverCleared: true }, 'Το εξώφυλλο αφαιρέθηκε.')} /></div>
         </div>
+      </Block>
 
-        <div className="grid sm:grid-cols-2 gap-3">
-          {[
-            { id: 'hero', label: 'Κεντρική εικόνα / Hero' },
-            { id: 'cover', label: 'Cover image' },
-          ].map((slot) => (
-            <div key={slot.id} className="rounded-xl border border-border/60 bg-secondary/30 p-3">
-              <Thumb src={data[slot.id]} className="mb-3 aspect-video w-full" />
-              <div className="text-sm font-bold">{slot.label}</div>
-              <div className="mt-1 text-[11px] text-foreground/55">Επιτρεπόμενος τύπος: εικόνα</div>
-              <div className="mt-1 text-[10px]">{assignmentStatus(slot.id, data[slot.id])}</div>
-              <div className="mt-2 space-y-2">
-                {uploadControl(slot.id, slot.label)}
-                {libraryPicker(slot.id, slot.label)}
-                {data[slot.id] && <button type="button" disabled={disabled || !!busy} onClick={() => persist({ ...data, [slot.id]: '', ...(slot.id === 'cover' ? { coverCleared: true } : {}) }, 'Η σύνδεση αφαιρέθηκε. Το αρχείο παραμένει στη βιβλιοθήκη.')} className="rounded-lg border border-border px-3 py-2 text-xs">Αφαίρεση σύνδεσης</button>}
-              </div>
-            </div>
-          ))}
-        </div>
-
-        <div className="rounded-xl border border-border/60 p-3 space-y-3">
-          <div className="flex items-center justify-between gap-2">
-            <div><div className="font-bold text-sm">Φωτογραφίες ανά ενότητα</div><div className="text-[11px] text-foreground/55">Εμφάνιση στο Tablet Setup.</div></div>
-            <button type="button" disabled={disabled || !!busy} onClick={() => addItem('sections')} className="rounded-lg border border-border px-3 py-2 text-xs font-bold">+ Προαιρετική ενότητα</button>
-          </div>
+      <Block title="Φωτογραφίες ανά φάση" hint="Αλλάζουν μόνες τους σε TV και κινητά όταν το παιχνίδι φτάνει στη φάση."
+        action={<button type="button" disabled={disabled || !!busy} onClick={() => addItem('sections')} className="h-9 shrink-0 rounded-full bg-[#2C2C2E] px-3 text-xs font-semibold">＋ Ενότητα</button>}>
+        <div className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-3">
           {data.sections.map((item) => {
             const field = `section:${item.id}`;
             const required = (MODE_MEDIA_SECTIONS[selected] || []).some((section) => section.id === item.id);
             return (
-              <div key={item.id} className="grid sm:grid-cols-[1fr_160px_auto] gap-2 items-center rounded-lg bg-secondary/40 p-2">
-                <div className="min-w-0">
-                  <input defaultValue={item.label || ''} disabled={disabled || !!busy} onBlur={(e) => { if (e.target.value !== (item.label || '')) updateLabel('sections', item.id, e.target.value); }} className="w-full min-w-0 rounded-lg border border-border bg-background px-3 py-2 text-sm" aria-label="Τίτλος ενότητας" />
-                  <div className="mt-1 text-[10px] text-foreground/55">Αναμενόμενο αρχείο αναφοράς: {item.filename || 'Δεν έχει οριστεί'} — γίνεται δεκτό οποιοδήποτε έγκυρο όνομα εικόνας</div>
-                  <div className="mt-1 text-[10px]">{assignmentStatus(field, item.image, item)}</div>
+              <div key={item.id} className="space-y-1.5">
+                <div className="flex items-center gap-2">
+                  <input defaultValue={item.label || ''} disabled={disabled || !!busy} aria-label="Όνομα ενότητας"
+                    onBlur={(e) => { if (e.target.value !== (item.label || '')) updateLabel('sections', item.id, e.target.value); }}
+                    className="h-9 min-w-0 flex-1 rounded-xl border border-transparent bg-transparent px-1 text-sm font-semibold focus:border-white/15 focus:bg-black/30" />
+                  {!required && <button type="button" disabled={disabled || !!busy} onClick={() => removeItem('sections', item.id)} aria-label="Διαγραφή ενότητας" className="h-9 w-9 shrink-0 rounded-full text-white/50">✕</button>}
                 </div>
-                <Thumb src={item.image} className="aspect-video w-full" />
-                <div className="flex flex-col gap-1">
-                  {uploadControl(field, item.label, item)}
-                  {libraryPicker(field, 'Εικόνα ενότητας', item)}
-                  {!required && <button type="button" disabled={disabled || !!busy} onClick={() => removeItem('sections', item.id)} className="rounded-lg border border-border px-2 py-2 text-xs">Αφαίρεση προαιρετικής ενότητας</button>}
-                </div>
+                <Tile field={field} src={item.image} label={item.label} item={item} onClear={() => persist(setField(field, ''), 'Η φωτογραφία της ενότητας αφαιρέθηκε.')} />
               </div>
             );
           })}
         </div>
+      </Block>
 
-        <div className="rounded-xl border border-border/60 p-3 space-y-3">
-          <div>
-            <div className="font-bold text-sm">Gallery — {data.gallery.filter(Boolean).length}/6 εικόνες</div>
-            <div className="text-[11px] text-foreground/55">Κάθε αριθμημένη θέση δέχεται απευθείας οποιοδήποτε έγκυρο αρχείο εικόνας. Τα κενά δεν μετακινούν τις επόμενες εικόνες.</div>
-          </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-            {data.gallery.map((src, index) => {
-              const field = `gallery:${index}`;
-              const filename = expectedNameFor(selected, field);
-              return (
-                <div key={index} className="rounded-lg border border-border/60 bg-secondary/30 p-2 space-y-2">
-                  <div className="text-xs font-bold">{filename}</div>
-                  <Thumb src={src} className="aspect-[4/3] w-full" />
-                  <div className="text-[10px]">{assignmentStatus(field, src)}</div>
-                  {uploadControl(field, filename)}
-                  {libraryPicker(field, filename)}
-                  {src && <button type="button" disabled={disabled || !!busy} onClick={() => persist(setField(field, ''), 'Η θέση Gallery καθαρίστηκε.')} className="w-full rounded-lg border border-border px-2 py-1.5 text-xs">Αφαίρεση σύνδεσης</button>}
-                </div>
-              );
-            })}
-          </div>
+      <Block title={`Gallery · ${data.gallery.filter(Boolean).length}/6`} hint="Εμφανίζεται στη σελίδα του mode στο Site και στο Tablet.">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+          {data.gallery.map((src, index) => (
+            <Tile key={index} field={`gallery:${index}`} src={src} label={`Gallery ${index + 1}`} ratio="aspect-[4/5]" onClear={() => persist(setField(`gallery:${index}`, ''), 'Η θέση άδειασε.')} />
+          ))}
         </div>
+      </Block>
 
-        <div className="rounded-xl border border-border/60 bg-secondary/30 p-3">
-          <div className="font-bold text-sm">Video trailer — Tablet Setup & Site mode page</div>
-          <Thumb src={data.trailer} video className="mt-3 aspect-video w-full" />
-          <div className="mt-1 text-[10px]">{assignmentStatus('trailer', data.trailer)}</div>
-          <div className="mt-2 space-y-2">
-            {uploadControl('trailer', 'Video trailer')}
-            {libraryPicker('trailer', 'Video trailer')}
-            {data.trailer && <button type="button" disabled={disabled || !!busy} onClick={() => persist({ ...data, trailer: '' }, 'Η σύνδεση αφαιρέθηκε. Το αρχείο παραμένει στη βιβλιοθήκη.')} className="rounded-lg border border-border px-3 py-2 text-xs">Αφαίρεση σύνδεσης</button>}
-          </div>
-        </div>
+      <Block title="Βίντεο trailer" hint="Tablet Setup και σελίδα του mode στο Site.">
+        <Tile field="trailer" src={data.trailer} label="Βίντεο trailer" video onClear={() => persist({ ...data, trailer: '' }, 'Το βίντεο αφαιρέθηκε.')} />
+      </Block>
 
-        {(error || notice) && <div className="text-sm" role="status">{error ? <span className="text-red-400">{error}</span> : <span className="text-emerald-400">{notice}</span>}</div>}
-        {busy && <div className="text-xs text-foreground/55">Ανέβασμα / αποθήκευση σε εξέλιξη…</div>}
-      </div>
-    </section>
+      {(error || notice) && <div className="rounded-2xl bg-[#1C1C1E] px-4 py-3 text-sm" role="status">{error ? <span className="text-[#FF8A80]">{error}</span> : <span className="text-[#7BE495]">{notice}</span>}</div>}
+    </div>
   );
 }

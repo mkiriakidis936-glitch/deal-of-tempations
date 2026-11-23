@@ -207,12 +207,15 @@
    ========================================================= */
 .ui-dock {
   position: fixed; inset-inline: 0; bottom: 0; z-index: 65;
-  display: flex; align-items: center; justify-content: center; gap: 8px;
+  display: flex; align-items: center; justify-content: flex-start; justify-content: safe center; gap: 8px;
   padding: 10px 12px calc(env(safe-area-inset-bottom, 0px) + 10px);
+  scroll-padding-inline: 12px; -webkit-overflow-scrolling: touch;
   background: #000; border-top: 0.5px solid var(--ui-separator);
   overflow-x: auto; white-space: nowrap; scrollbar-width: none;
 }
 .ui-dock::-webkit-scrollbar { display: none; }
+.ui-dock > * { flex: none; }
+.ui-dock > * > * { flex: none; white-space: nowrap; }
 .ui-dock .ui-btn { min-height: 44px; padding: 0 14px; font-size: 15px; flex: none; text-decoration: none; }
 .ui-dock-spacer { height: calc(env(safe-area-inset-bottom, 0px) + 76px); }
 .ui-btn--sm, .ui-btn-group-sm .ui-btn { min-height: 40px; padding: 0 14px; font-size: 15px; }

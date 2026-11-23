@@ -7,6 +7,7 @@ import { buildRoster, modeCounts, nameKey } from '@/lib/intakeRoster';
 import { MODE_COVERS, MODE_MEDIA, videosFor } from '@/data/brandArt';
 
 const SHOE_TO_LEVEL = { boots: 3, sneakers: 2, sandals: 1, barefoot: 0 };
+const SHOE_LABEL = { boots: 'Μπότες', sneakers: 'Αθλητικά', sandals: 'Σανδάλια', barefoot: 'Ξυπόλυτη' };
 const playerLimits = (modeId) => {
   const meta = isNewMode(modeId) ? modeMeta(modeId) : null;
   if (meta) return { min: meta.min, max: meta.max };
@@ -25,7 +26,7 @@ function playerFromRow(row, index) {
     slipperType: i.slipperType || '', nailColor: i.nailColor || 'Pink', pajamaStyle: i.pajamaStyle || '',
     bringsOwnSlippers: i.bringsOwnSlippers ?? true, hasFlipFlops: i.hasFlipFlops ?? true,
     ...(i.vipProfile ? { vipProfile: i.vipProfile } : {}),
-    formInfo: [i.shoeType && `👟 ${i.shoeType}`, i.nailColor && `💅 ${i.nailColor}`, i.slipperType && `🩴 ${i.slipperType}`, i.alcoholFree === true && '🚫🍸 χωρίς αλκοόλ', i.boundaries && `⚠️ ${String(i.boundaries).slice(0, 60)}`].filter(Boolean),
+    formInfo: [i.shoeType && `👟 ${SHOE_LABEL[i.shoeType] || i.shoeType}`, i.nailColor && `💅 ${i.nailColor}`, i.slipperType && `🩴 ${i.slipperType}`, i.alcoholFree === true && '🚫🍸 χωρίς αλκοόλ', i.boundaries && `⚠️ ${String(i.boundaries).slice(0, 60)}`].filter(Boolean),
   };
 }
 
@@ -261,20 +262,20 @@ export default function SetupScreen({ onStart }) {
   return (
     <div className="dot-lobby min-h-screen bg-black pb-36 text-[#F5F1E8]">
       <header className="sticky top-0 z-30 border-b border-white/10 bg-black/80 px-4 py-3 backdrop-blur-xl">
-        <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-3">
-          <div className="mr-auto">
+        <div className="mx-auto flex max-w-6xl items-center gap-2 sm:gap-3">
+          <div className="mr-auto min-w-0">
             <div className="text-[11px] font-semibold uppercase tracking-[0.3em] text-[#E8C26B]">Deal of Temptation</div>
             <div className="text-lg font-bold">Νέα βραδιά</div>
           </div>
-          <select value={selectedDotEventId} onChange={(event) => setSelectedDotEventId(event.target.value)} className="h-11 rounded-full border border-white/15 bg-[#1C1C1E] px-4 text-sm" aria-label="Event">
+          <select value={selectedDotEventId} onChange={(event) => setSelectedDotEventId(event.target.value)} className="h-11 min-w-0 max-w-[40vw] rounded-full border border-white/15 bg-[#1C1C1E] px-3 text-sm sm:max-w-none sm:px-4" aria-label="Event">
             <option value="">Χωρίς Event</option>
             {dotEvents.filter((event) => !['closing', 'completed'].includes(event.status)).map((event) => <option key={event.id} value={event.id}>{event.title} · {event.room_code}</option>)}
           </select>
-          <button type="button" onClick={loadIntakes} className="h-11 rounded-full bg-[#2C2C2E] px-4 text-sm font-semibold">↻ Φόρμες</button>
+          <button type="button" onClick={loadIntakes} className="h-11 shrink-0 rounded-full bg-[#2C2C2E] px-3 text-sm font-semibold sm:px-4" aria-label="Ανανέωση φορμών">↻<span className="hidden sm:inline"> Φόρμες</span></button>
         </div>
         <ol className="mx-auto mt-3 grid max-w-6xl grid-cols-4 gap-2 text-[11px] font-semibold" aria-label="Βήματα">
           {['Παιχνίδι', 'Παίκτριες', 'Ασφάλεια', 'Έναρξη'].map((label, i) => (
-            <li key={label} className={`rounded-full px-3 py-1.5 text-center ${i + 1 < step ? 'bg-[#30D158]/20 text-[#7BE495]' : i + 1 === step ? 'bg-[#E8C26B] text-black' : 'bg-white/5 text-white/45'}`}>{i + 1}. {label}</li>
+            <li key={label} className={`truncate rounded-full px-2 py-1.5 text-center sm:px-3 ${i + 1 < step ? 'bg-[#30D158]/20 text-[#7BE495]' : i + 1 === step ? 'bg-[#E8C26B] text-black' : 'bg-white/5 text-white/45'}`}><span className="hidden sm:inline">{i + 1}. </span>{label}</li>
           ))}
         </ol>
       </header>

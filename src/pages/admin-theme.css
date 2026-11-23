@@ -470,3 +470,30 @@
 }
 #admin-root nav button[aria-current="page"] *, #admin-root .adm-tab[aria-selected="true"] * { color: inherit !important; }
 #admin-root nav button[aria-current="page"] svg { color: var(--ui-gold) !important; }
+
+/* ---------- 6.0 · Κινητό & MacBook: τίποτα δεν ξεχειλίζει, όλα πατιούνται ---------- */
+/* Τα κελιά των πλεγμάτων μικραίνουν μαζί με την οθόνη (αλλιώς ένα μεγάλο κουμπί «σπρώχνει» όλο το πάνελ έξω). */
+#admin-root .adm-content .grid > * { min-width: 0; }
+#admin-root .adm-content select,
+#admin-root .adm-content input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+#admin-root .adm-content textarea { max-width: 100%; min-width: 0; }
+#admin-root .adm-content button,
+#admin-root .adm-content .comic-boom { white-space: normal; overflow-wrap: anywhere; }
+#admin-root .adm-content img,
+#admin-root .adm-content video,
+#admin-root .adm-content iframe { max-width: 100%; }
+#admin-root .adm-content table { display: block; max-width: 100%; overflow-x: auto; }
+
+/* Δάχτυλο: τουλάχιστον 44px ύψος σε κουμπιά και πεδία (οδηγία Apple). */
+@media (pointer: coarse), (max-width: 640px) {
+  #admin-root .adm-content button:not(.adm-chip-tiny),
+  #admin-root .adm-content select,
+  #admin-root .adm-content a[role="button"],
+  #admin-root .adm-content input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]) { min-height: 44px; }
+  #admin-root .adm-content input[type="checkbox"], #admin-root .adm-content input[type="radio"] { width: 22px; height: 22px; }
+}
+
+/* MacBook / μεγάλες οθόνες: άνετο πλάτος ανάγνωσης, χωρίς τεράστιες γραμμές κειμένου. */
+@media (min-width: 1280px) {
+  #admin-root .adm-content { max-width: 1320px; }
+}

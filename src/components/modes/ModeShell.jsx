@@ -15,12 +15,12 @@ export default function ModeShell({ modeId, ctx, state, act, children, onQR, onE
   return (
     <div className="mode-shell ui-page text-foreground" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 96px)' }}>
       <div className="max-w-5xl mx-auto space-y-3">
-        <header className="flex items-center justify-between gap-3 pr-36">
-          <div className="min-w-0">
+        <header className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2 pr-28 sm:pr-36">
+          <div className="min-w-0 basis-full sm:basis-auto sm:flex-1">
             {act && <div className="ui-eyebrow">{actTitle}</div>}
-            <div className="ui-title ui-title--gold truncate">{meta?.icon ? `${meta.icon} ` : ''}{meta?.name}</div>
+            <div className="ui-title ui-title--gold text-[24px] leading-tight sm:truncate sm:text-[30px]">{meta?.icon ? `${meta.icon} ` : ''}{meta?.name}</div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex shrink-0 items-center gap-2">
             <GameDurationClock state={state} inline />
             {showTimer && mg.timer && <ModeTimer timer={mg.timer} />}
           </div>

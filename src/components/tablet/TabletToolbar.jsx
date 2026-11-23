@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import ComicButton from '@/components/comic/ComicButton';
+import { DockItem } from '@/design/ui';
 
 // Collapsible toolbar for Tablet — hot buttons stay visible, the rest live in grouped panels.
 export default function TabletToolbar({
@@ -63,9 +64,9 @@ export default function TabletToolbar({
     .filter((g) => g.items.length > 0);
 
   return (
-    <div className="fixed bottom-3 left-3 z-50 flex flex-col gap-2 items-start">
+    <>
       {expanded && (
-        <div className="comic-slide-in ds-surface comic-slide-in w-64 max-h-[60vh] overflow-y-auto p-2 space-y-3 shadow-panel">
+        <div className="comic-slide-in ds-surface fixed left-3 right-3 z-[70] max-h-[60vh] overflow-y-auto p-2 space-y-3 shadow-panel sm:right-auto sm:w-72" style={{ position: 'fixed', bottom: 'calc(env(safe-area-inset-bottom, 0px) + 80px)' }}>
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
@@ -95,7 +96,8 @@ export default function TabletToolbar({
         </div>
       )}
 
-      <div className="flex flex-wrap items-center gap-1.5 max-w-[calc(100vw-1.5rem)] rounded-lg border border-primary/20 bg-surface-1/90 p-1.5 shadow-raised backdrop-blur">
+      <DockItem order={0} fallbackClassName="fixed bottom-3 left-3 z-50">
+      <div className="flex items-center gap-1.5">
         <ComicButton variant="cyan" size="sm" onClick={onQR}>📷 QR</ComicButton>
         {!bombDisabled && <ComicButton variant="red" size="sm" onClick={onBomb}>💣 BOMB</ComicButton>}
         <ComicButton variant="dark" size="sm" onClick={onFlashbang}>⚡ FLASHBANG</ComicButton>
@@ -112,6 +114,7 @@ export default function TabletToolbar({
           {expanded ? '✕ ΚΛΕΙΣΙΜΟ' : '⚙️ ΕΡΓΑΛΕΙΑ'}
         </ComicButton>
       </div>
-    </div>
+      </DockItem>
+    </>
   );
 }

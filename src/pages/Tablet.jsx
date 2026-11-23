@@ -51,7 +51,7 @@ const FinalDeal = React.lazy(() => import('@/components/tablet/FinalDeal'));
 const ControlRoom = React.lazy(() => import('@/components/tablet/ControlRoom'));
 const BlackmailMarket = React.lazy(() => import('@/components/tablet/BlackmailMarket'));
 const NightDirectorHost = React.lazy(() => import('@/components/night/NightDirectorHost'));
-import { DockItem } from '@/design/ui';
+import { Dock, DockItem } from '@/design/ui';
 import LiveCameraControl from '@/components/tablet/LiveCameraControl';
 import ConnectionHealth from '@/components/tablet/ConnectionHealth';
 import ConnectionBanner from '@/components/shared/ConnectionBanner';
@@ -500,7 +500,7 @@ export default function Tablet() {
   const mostWantedName = calculateMostWanted(state.players)?.name;
 
   return (
-    <div className="relative">
+    <div className="relative pt-[108px] sm:pt-14">
       <ScreenWallpaper src={ART.wallpaperTablet} />
       <WantedStrobePanic wantedLevel={wantedLevel} playerName={mostWantedName} />
       <StopButton active={state.stopActive} onToggle={handleStop} />
@@ -514,7 +514,7 @@ export default function Tablet() {
           </div>
         </div>
       )}
-      <div className="fixed top-3 left-3 z-50">
+      <div className="fixed z-50 max-sm:left-3 max-sm:top-[112px] sm:left-3 sm:top-3">
         <BountyMultiplier state={state} />
       </div>
       <TabletStatusStrip state={displayState} />
@@ -654,6 +654,8 @@ export default function Tablet() {
       <MobileVotePanel state={displayState} updateState={trackedUpdate} />
       <FlashbangOverlay state={displayState} updateState={trackedUpdate} />
       {renderQR()}
+      <div className="ui-dock-spacer" aria-hidden="true" />
+      <Dock />
     </div>
   );
 }

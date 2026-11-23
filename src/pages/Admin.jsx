@@ -1,4 +1,5 @@
 import React, { lazy, Suspense, useState, useEffect, useCallback, useRef } from 'react';
+import SectionErrorBoundary from '@/components/shared/SectionErrorBoundary';
 import './admin-theme.css';
 import { useSearchParams } from 'react-router-dom';
 import { base44, request } from '@/api/base44Client';
@@ -457,9 +458,11 @@ export default function Admin() {
             <AdminNav groups={navGroups} active={tab} onChange={setTab} />
           </aside>
           <main className="adm-content">
-            <Suspense fallback={<div className="adm-loading">Φόρτωση ενότητας…</div>}>
-              {renderTab()}
-            </Suspense>
+            <SectionErrorBoundary name={`admin:${tab}`} resetKey={tab}>
+              <Suspense fallback={<div className="adm-loading">Φόρτωση ενότητας…</div>}>
+                {renderTab()}
+              </Suspense>
+            </SectionErrorBoundary>
           </main>
         </div>
 

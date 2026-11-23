@@ -416,15 +416,15 @@ export default function AdminMedia() {
     <div className="space-y-3">
       <input ref={libraryOne} type="file" accept={MEDIA_ACCEPT} hidden onChange={onFiles} />
 
-      <div className="ui-segmented grid grid-cols-3 gap-2" role="tablist" aria-label="Ενότητες πολυμέσων">
+      <div className="grid grid-cols-1 gap-2 sm:grid-cols-3" role="tablist" aria-label="Ενότητες πολυμέσων">
         {[
           { id: 'modes', label: '🎮 MODE MEDIA CENTER', hint: 'Όλα ανά mode' },
           { id: 'site', label: '🌐 Site & TV', hint: 'Σημεία, gallery, βίντεο έναρξης' },
           { id: 'library', label: '🗂️ Βιβλιοθήκη', hint: 'Ανέβασμα & όλα τα αρχεία' },
         ].map((item) => (
           <button key={item.id} type="button" role="tab" aria-selected={section === item.id} onClick={() => { setSection(item.id); if (item.id !== 'site') setSurfaceFilter('all'); }}
-            className={section === item.id ? 'rounded-xl border border-primary bg-primary/15 p-3 text-left' : 'rounded-xl border border-border bg-secondary/40 p-3 text-left'}>
-            <div className="text-sm font-black">{item.label}</div><div className="text-[10px] text-foreground/55">{item.hint}</div>
+            className={`flex items-center justify-between gap-3 rounded-2xl border px-4 py-3 text-left sm:block ${section === item.id ? 'border-primary bg-primary/15' : 'border-border bg-secondary/40'}`}>
+            <div className="text-sm font-black">{item.label}</div><div className="text-[11px] text-foreground/55 sm:mt-0.5">{item.hint}</div>
           </button>
         ))}
       </div>
@@ -529,34 +529,35 @@ export default function AdminMedia() {
       </>)}
 
       {section === 'modes' && (<>
-      <ComicPanel className="bg-card space-y-3">
-        <div className="font-heading text-lg">🎮 ΕΞΩΦΥΛΛΟ ΦΩΤΟΓΡΑΦΙΑΣ ΑΝΑ MODE</div>
-        <p className="text-xs text-foreground/60">Εμφανίζεται στην επιλογή mode στο Tablet, στη φόρμα /forms και στο Site. Ίδιο με το «Cover image» του MODE MEDIA CENTER.</p>
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
+      <section className="rounded-3xl bg-[#1C1C1E] p-4 text-[#F5F1E8] sm:p-5">
+        <h3 className="text-base font-bold">🎮 Εξώφυλλο ανά mode</h3>
+        <p className="mb-3 text-xs text-white/55">Επιλογή mode στο Tablet, φόρμα /forms και Site.</p>
+        <div className="grid grid-cols-2 gap-3 lg:grid-cols-3 xl:grid-cols-5">
           {MEDIA_MODES.map((mode) => {
             const coverId = `modeCover_${mode.id}`;
             const saved = ov.modeMedia?.[mode.id] || {};
             const src = saved.coverCleared ? '' : (saved.cover || ov[coverId] || (ov.clearAllPhotos || ov.clearAllMedia ? '' : DEFAULTS[coverId]) || '');
             const withCover = (base, url) => ({ ...base, modeMedia: { ...(base.modeMedia || {}), [mode.id]: { ...(base.modeMedia?.[mode.id] || {}), cover: url, coverCleared: !url } } });
             return (
-              <div key={mode.id} className="border-2 border-border/40 rounded-lg p-2 bg-secondary/40">
-                {src ? <Thumb src={src} className="w-full aspect-video rounded" /> : <div className="w-full aspect-video rounded bg-black/40 flex items-center justify-center text-xs text-foreground/50">Χωρίς φωτογραφία</div>}
-                <div className="font-bold text-sm mt-2">{mode.icon} {mode.name}</div>
-                <div className="flex gap-2 mt-2 flex-wrap">
-                  <select aria-label={`Εικόνα εξωφύλλου ${mode.name}`} value="" disabled={!!busy} onChange={(e) => { const url = e.target.value; if (url) run(`cover-${mode.id}`, () => save(withCover(ov, url)), 'Το εξώφυλλο αποθηκεύτηκε ✓'); }} className="w-full rounded-lg border border-border bg-background px-2 py-2 text-xs">
-                    <option value="">Επιλογή από βιβλιοθήκη…</option>
+              <div key={mode.id} className="space-y-1.5">
+                <div className="relative aspect-[4/5] overflow-hidden rounded-2xl bg-black">
+                  {src ? <img src={src} alt="" loading="lazy" className="absolute inset-0 h-full w-full object-cover" /> : <div className="absolute inset-0 flex items-center justify-center border border-dashed border-white/20 text-xs text-white/45 rounded-2xl">Χωρίς εξώφυλλο</div>}
+                  <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 to-transparent p-2 pt-8 text-xs font-bold">{mode.icon} {mode.name}</div>
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  {directUploadControl(`mode-cover-${mode.id}`, 'image/*', (url, base) => withCover(base, url), src ? 'Αλλαγή' : '＋ Ανέβασμα')}
+                  <select aria-label={`Εξώφυλλο ${mode.name} από βιβλιοθήκη`} value="" disabled={!!busy} onChange={(e) => { const url = e.target.value; if (url) run(`cover-${mode.id}`, () => save(withCover(ov, url)), 'Το εξώφυλλο αποθηκεύτηκε ✓'); }} className="h-9 w-full min-w-0 rounded-full border border-white/10 bg-[#2C2C2E] px-3 text-xs">
+                    <option value="">Από βιβλιοθήκη…</option>
                     {library.filter((file) => file.kind === 'image' || file.kind === 'graphic').map((file) => <option key={file.url} value={file.url}>{file.name}</option>)}
                   </select>
-                  {directUploadControl(`mode-cover-${mode.id}`, 'image/*', (url, base) => withCover(base, url))}
-                  {src && <ComicButton size="sm" variant="dark" disabled={!!busy} onClick={() => run(`cover-clear-${mode.id}`, () => save(withCover(ov, '')), 'Το εξώφυλλο αφαιρέθηκε ✓')}>Αφαίρεση</ComicButton>}
                 </div>
               </div>
             );
           })}
         </div>
-      </ComicPanel>
+      </section>
 
-      <ComicPanel className="bg-card space-y-3">
+      <div>
         <ModeMediaManager
           value={ov.modeMedia || {}}
           files={library}
@@ -577,15 +578,15 @@ export default function AdminMedia() {
             }
           }}
         />
-      </ComicPanel>
+      </div>
       </>)}
 
       {section === 'site' && (<>
       {showSurface('site', 'forms') && (
-      <ComicPanel className="bg-card space-y-4">
+      <section className="space-y-3 rounded-3xl bg-[#1C1C1E] p-4 text-[#F5F1E8] sm:p-5">
         <div>
-          <div className="font-heading text-lg">📸 GALLERY ΑΝΑ MODE</div>
-          <p className="text-[11px] text-foreground/60">6 φωτογραφίες για κάθε mode. Εμφανίζονται στη σελίδα του mode στο Site και στην καρτέλα «Όλες» της γκαλερί.</p>
+          <h3 className="text-base font-bold">📸 Gallery ανά mode</h3>
+          <p className="text-xs text-white/55">6 φωτογραφίες για κάθε mode — σελίδα του mode στο Site και καρτέλα «Όλες» της γκαλερί.</p>
         </div>
         {MEDIA_MODES.map((mode) => {
           const gallery = Array.from({ length: 6 }, (_, index) => ov.modeMedia?.[mode.id]?.gallery?.[index] || '');
@@ -595,26 +596,23 @@ export default function AdminMedia() {
             return { ...base, modeMedia: { ...(base.modeMedia || {}), [mode.id]: { ...(base.modeMedia?.[mode.id] || {}), gallery: current } } };
           };
           return (
-            <div key={mode.id} className="rounded-xl border border-border/60 p-3 space-y-2">
-              <div className="text-sm font-bold">{mode.icon} {mode.name} · {gallery.filter(Boolean).length}/6</div>
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
+            <div key={mode.id} className="space-y-2 border-t border-white/10 pt-3 first:border-0 first:pt-0">
+              <div className="text-sm font-bold">{mode.icon} {mode.name} <span className="font-normal text-white/50">· {gallery.filter(Boolean).length}/6</span></div>
+              <div className="grid grid-cols-3 gap-2 lg:grid-cols-6">
                 {gallery.map((src, index) => (
-                  <div key={index} className="rounded-lg border border-border/50 bg-secondary/30 p-2 space-y-1.5">
-                    <div className="text-[10px] font-bold">Θέση {index + 1}</div>
-                    {src ? <Thumb src={src} className="w-full aspect-[4/3] rounded" /> : <div className="w-full aspect-[4/3] rounded bg-black/40 flex items-center justify-center text-[10px] text-foreground/45">Κενό</div>}
-                    {directUploadControl(`mode-gallery-${mode.id}-${index}`, 'image/*', (url, base) => withSlot(base, index, url), src ? 'Αλλαγή' : 'Ανέβασμα')}
-                    <select aria-label={`${mode.name} gallery ${index + 1}`} value="" disabled={!!busy} onChange={(e) => { const url = e.target.value; if (url) run(`mode-gallery-pick-${mode.id}-${index}`, () => save(withSlot(ov, index, url)), 'Η φωτογραφία μπήκε στη gallery ✓'); }} className="w-full rounded border border-border bg-background px-1 py-1 text-[10px]">
-                      <option value="">Από βιβλιοθήκη…</option>
-                      {library.filter((file) => file.kind === 'image' || file.kind === 'graphic').map((file) => <option key={file.url} value={file.url}>{file.name}</option>)}
-                    </select>
-                    {src && <button type="button" disabled={!!busy} onClick={() => run(`mode-gallery-clear-${mode.id}-${index}`, () => save(withSlot(ov, index, '')), 'Η θέση άδειασε ✓')} className="w-full rounded border border-border px-1 py-1 text-[10px]">Αφαίρεση</button>}
+                  <div key={index} className="space-y-1">
+                    <div className="relative aspect-square overflow-hidden rounded-xl bg-black">
+                      {src ? <img src={src} alt="" loading="lazy" className="absolute inset-0 h-full w-full object-cover" /> : <div className="absolute inset-0 flex items-center justify-center rounded-xl border border-dashed border-white/20 text-lg text-white/35">{index + 1}</div>}
+                      {src && <button type="button" disabled={!!busy} onClick={() => run(`mode-gallery-clear-${mode.id}-${index}`, () => save(withSlot(ov, index, '')), 'Η θέση άδειασε ✓')} aria-label={`Αφαίρεση φωτογραφίας ${index + 1}`} className="absolute right-1 top-1 flex h-7 w-7 items-center justify-center rounded-full bg-black/70 text-xs">✕</button>}
+                    </div>
+                    {directUploadControl(`mode-gallery-${mode.id}-${index}`, 'image/*', (url, base) => withSlot(base, index, url), src ? 'Αλλαγή' : '＋')}
                   </div>
                 ))}
               </div>
             </div>
           );
         })}
-      </ComicPanel>
+      </section>
       )}
       {showSurface('site', 'forms') && (
       <>

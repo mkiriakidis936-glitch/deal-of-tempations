@@ -22,7 +22,8 @@ export default function AdminNotifications() {
 
   const load = useCallback(async () => {
     try {
-      setStatus(await pushStatus());
+      const next = await pushStatus();
+      setStatus({ devices: Array.isArray(next?.devices) ? next.devices : [], history: Array.isArray(next?.history) ? next.history : [] });
       setOn(!!(await currentSubscription()));
     } catch (e) { setMsg({ ok: false, text: e.message }); }
   }, []);

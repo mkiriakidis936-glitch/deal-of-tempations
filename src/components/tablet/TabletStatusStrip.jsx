@@ -9,7 +9,7 @@ export default function TabletStatusStrip({ state }) {
   const currentPlayer = state.players?.[state.currentPlayerIndex];
 
   return (
-    <div className="fixed top-3 left-1/2 -translate-x-1/2 z-40 flex items-center gap-3 rounded-full border border-primary/25 bg-surface-1/90 px-4 py-1.5 shadow-raised backdrop-blur whitespace-nowrap">
+    <div className="fixed top-3 max-sm:left-3 max-sm:right-[108px] z-40 flex items-center gap-2 overflow-x-auto rounded-full border border-primary/25 bg-surface-1/90 px-3 py-2 shadow-raised backdrop-blur whitespace-nowrap [scrollbar-width:none] sm:left-1/2 sm:right-auto sm:-translate-x-1/2 sm:gap-3 sm:px-4 sm:py-1.5">
       <span className="ds-label text-primary/85">{stageName}</span>
       <span className="h-3 w-px bg-primary/25" />
       <span className="ds-value text-xs">
