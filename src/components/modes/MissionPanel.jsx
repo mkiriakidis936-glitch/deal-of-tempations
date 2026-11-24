@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Panel, Btn } from '@/components/modes/ModeShell';
 import { pick, useTick, fmt } from '@/lib/modeKit';
 import { getVipAnswers, isVipActivityAllowed } from '@/lib/playerIntelligence';
+import { pickAllowed } from '@/lib/consent';
 
 // Real-Time Secret Missions: ξεκινούν από το tablet και εμφανίζονται κρυφά στο κινητό της παίκτριας.
 export default function MissionPanel({ ctx, pool, onSuccess, onFail, title = '📲 Secret Missions' }) {
@@ -26,7 +27,6 @@ export default function MissionPanel({ ctx, pool, onSuccess, onFail, title = '�
     setMessage('');
     const cur = ctx.mg.missions || {};
     const free = players.filter((player) => canReceiveMissions(player) && (!cur[player.id] || cur[player.id].status !== 'active'));
-    const eligible = players.filter(canReceiveMissions);
     if (target === 'random' && free.length === 0) {
       setMessage('Όλες οι διαθέσιμες παίκτριες έχουν ήδη ενεργή αποστολή.');
       return;
@@ -41,16 +41,20 @@ export default function MissionPanel({ ctx, pool, onSuccess, onFail, title = '�
       return;
     }
     const answers = profileFor(p);
-    const suitablePool = pool;
-    if (!suitablePool.length) {
+    if (!pool.length) {
       setMessage('Δεν υπάρχουν διαθέσιμες αποστολές σε αυτό το Mode.');
+      return;
+    }
+    // Μόνο αποστολές που σέβονται τα όρια που δήλωσε η παίκτρια στο check-in (π.χ. χωρίς φωτογραφίες/αλκοόλ).
+    const m = pickAllowed(pool, ctx.mg, p.id);
+    if (!m) {
+      setMessage(`Καμία αποστολή δεν ταιριάζει στα όρια της ${p.name}.`);
       return;
     }
     if (auto && answers?.boundaries?.trim()) {
       setMessage('Η παίκτρια έχει δηλώσει προσωπικά όρια. Απαιτείται χειροκίνητος έλεγχος πριν από την αποστολή.');
       return;
     }
-    const m = pick(suitablePool);
     if (!auto) {
       const boundaries = String(answers?.boundaries || '').trim();
       const review = `Αποστολή στη ${p.name}: «${m.title}»\n\n${m.text}${boundaries ? `\n\nΠΡΟΣΩΠΙΚΑ ΟΡΙΑ: ${boundaries}\n\nΕπιβεβαίωσε ότι η αποστολή δεν παραβιάζει τα όρια.` : ''}`;

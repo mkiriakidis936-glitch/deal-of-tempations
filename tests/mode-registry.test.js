@@ -52,13 +52,16 @@ test('οδηγός: κάθε ενεργό mode έχει οδηγό, και κά�
   const { MODE_GUIDE, phaseIdFor, currentPhase } = await import('../src/data/modes/modeGuide.js');
   const { ENGINE_MODES, NEW_MODES: active, MODE_MEDIA_SECTIONS } = await import('../src/data/modes/modeRegistry.js');
   for (const mode of [...ENGINE_MODES, ...active]) assert.ok(MODE_GUIDE[mode.id], `λείπει οδηγός για ${mode.id}`);
-  for (const id of ['lockdown', 'beach_bar', 'marathon_4h']) {
+  for (const id of ['classic', 'arrest_heist', 'lockdown', 'beach_bar', 'marathon_4h']) {
     const sectionIds = (MODE_MEDIA_SECTIONS[id] || []).map((s) => s.id);
     for (const phase of MODE_GUIDE[id].phases) assert.ok(sectionIds.includes(phase.id), `${id}: η φάση ${phase.id} δεν έχει ενότητα φωτογραφίας`);
   }
   assert.equal(phaseIdFor({ mode: 'lockdown', mg: { ld: { stage: 'exit' } } }), 'level4');
   assert.equal(phaseIdFor({ mode: 'beach_bar', mg: { bb: { phase: 'wheel' } } }), 'penalty_wheel');
   assert.equal(currentPhase({ mode: 'marathon_4h', mg: { lounge: { phase: 3 } } }).index, 3);
+  // Μηχανές: η φάση ακολουθεί το πραγματικό στάδιο.
+  assert.deepEqual([0, 1, 2, 3].map((stage) => phaseIdFor({ mode: 'classic', stage })), ['setup', 'board', 'police', 'finale']);
+  assert.deepEqual([0, 1, 2, 3].map((stage) => phaseIdFor({ mode: 'arrest_heist', stage })), ['teams', 'rounds', 'escape', 'victory']);
 });
 
 test('νέες ψηφιακές παρτίδες ξεκινούν με εισαγωγή κανόνων· οι παλιές δεν μπλοκάρονται', async () => {

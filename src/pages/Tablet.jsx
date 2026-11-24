@@ -57,9 +57,11 @@ import ConnectionHealth from '@/components/tablet/ConnectionHealth';
 import ConnectionBanner from '@/components/shared/ConnectionBanner';
 import { useSyncTimerAutoFire } from '@/hooks/useSyncTimerAutoFire';
 import { calculateMostWanted, getWantedLevel } from '@/lib/gameLogic';
+import { canAssignVipActivity } from '@/lib/playerIntelligence';
 import { base44 } from '@/api/base44Client';
 import { awardAchievements } from '@/lib/achievements';
 import { setGameStopActive } from '@/lib/modeKit';
+import { BriefingTablet, PhaseGuideTablet, briefingPending } from '@/components/modes/ModeBriefing';
 
 export default function Tablet() {
   const { session, state, loading, updateState, createSession, deleteSession, refresh, joinByCode } = useGameSession();
@@ -524,6 +526,9 @@ export default function Tablet() {
           <div className="font-heading text-6xl text-destructive comic-text-stroke comic-pulse">⏸ ΠΑΥΣΗ</div>
         </div>
       )}
+      {!state.bombEvent && !briefingPending(state.mg, state.mode) && (
+        <div className="mx-auto w-full max-w-3xl px-3 pt-2"><PhaseGuideTablet state={displayState} /></div>
+      )}
       {state.bombEvent ? (
         <BombEventScreen
           state={displayState}
@@ -531,6 +536,10 @@ export default function Tablet() {
           onExit={() => trackedUpdate({ bombEvent: null })}
           onGoToStage2={() => trackedUpdate({ bombEvent: null, stage: 2 })}
         />
+      ) : state.stage === 0 && briefingPending(state.mg, state.mode) ? (
+        <div className="mx-auto w-full max-w-3xl p-3 pb-32 text-white">
+          <BriefingTablet state={displayState} setMg={(patch) => trackedUpdate({ mg: { ...(state.mg || {}), ...patch } })} />
+        </div>
       ) : state.stage === 0 ? (
         <StageZero state={displayState} updateState={trackedUpdate} />
       ) : state.mode === 'arrest_heist' ? (

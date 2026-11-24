@@ -2,7 +2,7 @@ import express from 'express';
 import path from 'node:path';
 import fs from 'node:fs';
 import { migrate, pool } from './db.js';
-import { attachUser, authRoutes, issueStreamTicket, requireAdmin } from './auth.js';
+import { attachUser, authRoutes, issueStreamTicket } from './auth.js';
 import { entityRoutes, closeAllStreams } from './entities.js';
 import { functionRoutes } from './functions.js';
 import { mediaRoutes, mediaStatic } from './media.js';
@@ -63,7 +63,8 @@ app.get('/api/production/privacy', async (req, res) => {
 });
 
 authRoutes(app);
-app.post('/api/entities/stream-ticket', requireAdmin, (req, res) => res.json({ ticket: issueStreamTicket(req.user.id) }));
+// Μόνο ο admin χρειάζεται εισιτήριο (πλήρη δεδομένα). Επισκέπτες και απλοί λογαριασμοί συνεχίζουν με δημόσια ροή — χωρίς σφάλμα.
+app.post('/api/entities/stream-ticket', (req, res) => res.json({ ticket: req.user?.role === 'admin' ? issueStreamTicket(req.user.id) : null }));
 app.use('/api/entities', entityRoutes());
 app.use('/api/functions', functionRoutes());
 app.use('/api/media', mediaRoutes());
@@ -103,7 +104,7 @@ if (fs.existsSync(dist)) {
     const meta = PAGES[route] || { title: 'Deal of Temptation', desc: SITE_DESC };
     const indexable = !!meta.index;
     return currentIndex()
-      .replace('<title>DEAL OF TEMPTATIONS</title>', `<title>${esc(meta.title)}</title>`)
+      .replace(/<title>[^<]*<\/title>/, `<title>${esc(meta.title)}</title>`)
       .replaceAll('__TITLE__', esc(meta.title)).replaceAll('__DESC__', esc(meta.desc))
       .replaceAll('__ORIGIN__', origin).replaceAll('__URL__', esc(origin + route))
       .replaceAll('__ROBOTS__', indexable ? 'index,follow' : 'noindex,nofollow');

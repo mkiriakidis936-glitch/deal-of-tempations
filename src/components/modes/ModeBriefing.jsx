@@ -3,6 +3,11 @@ import { MODE_GUIDE, SAFETY_RULES, PLAYER_REMINDERS, SCREENS, currentPhase, phas
 import { modeMeta } from '@/data/modes/modeRegistry';
 import { modeArtUrl } from '@/components/modes/ModeArt';
 import { rankPlayers, pointsOf, championOf, finalStandings } from '@/lib/modeRanking';
+import { GAME_MODES } from '@/data/gameConfig';
+import { introVideoFor } from '@/components/tv/GameIntroTV';
+
+// Όνομα/εικονίδιο mode: ψηφιακά από το registry, μηχανές (Classic, Arrest Heist) από το GAME_MODES.
+const metaFor = (id) => modeMeta(id) || GAME_MODES.find((m) => m.id === id) || null;
 
 // Η εισαγωγή εμφανίζεται μόνο σε νέες παρτίδες (briefingRequired) μέχρι η διοργανώτρια να πατήσει «Ξεκινάμε».
 export const briefingPending = (mg = {}, modeId) => !!MODE_GUIDE[modeId] && !!mg.briefingRequired && !mg.briefingDone;
@@ -29,7 +34,7 @@ const Safety = ({ size = 'md' }) => (
 
 // ---------- Tablet ----------
 export function BriefingTablet({ state, setMg, log }) {
-  const meta = modeMeta(state.mode);
+  const meta = metaFor(state.mode);
   const guide = MODE_GUIDE[state.mode];
   if (!guide) return null;
   return (
@@ -41,6 +46,10 @@ export function BriefingTablet({ state, setMg, log }) {
         <p className="mt-3"><b>Στόχος:</b> {guide.goal}</p>
         <p className="mt-1"><b>Νίκη:</b> {guide.win}</p>
       </div>
+      {introVideoFor(state.mode) && (
+        <button type="button" onClick={() => { setMg({ introAt: Date.now() }); log?.('🎬 Η TV παίζει το intro του παιχνιδιού'); }}
+          className="flex h-12 w-full items-center justify-center gap-2 rounded-full border border-[#E8C26B]/40 text-sm font-semibold text-[#F7E3A8]">🎬 Παίξε ξανά το intro στην TV</button>
+      )}
       <Phases guide={guide} />
       <Safety />
       <button type="button" onClick={() => { setMg({ briefingDone: true, briefingDoneAt: Date.now() }); log?.('🎬 Η εισαγωγή ολοκληρώθηκε — ξεκινάμε!'); }}
@@ -51,7 +60,7 @@ export function BriefingTablet({ state, setMg, log }) {
 
 // ---------- TV ----------
 export function BriefingTV({ state }) {
-  const meta = modeMeta(state.mode);
+  const meta = metaFor(state.mode);
   const guide = MODE_GUIDE[state.mode];
   const art = modeArtUrl(state.mode, '');
   if (!guide) return null;
@@ -83,7 +92,7 @@ export function BriefingTV({ state }) {
 
 // ---------- Κινητό ----------
 export function BriefingMobile({ state }) {
-  const meta = modeMeta(state.mode);
+  const meta = metaFor(state.mode);
   const guide = MODE_GUIDE[state.mode];
   if (!guide) return null;
   return (
@@ -153,13 +162,60 @@ export function PhaseTransitionTV({ state }) {
 }
 
 // ---------- Τελετή νικήτριας στην TV ----------
+// Μηχανές: Classic → η πιο καταζητούμενη (σκάλα ποινών, μετά αμοιβή)· Arrest Heist → η νικήτρια ομάδα.
+const wantedScore = (p) => (p.penaltyStep || 0) * 1e9 + (p.bounty || 0);
+const TEAM_LABEL = { A: '💖 Team Alpha', B: '💎 Team Beta' };
+
+function EngineCeremonyTV({ state }) {
+  const players = state.players || [];
+  const art = modeArtUrl(state.mode, state.mode === 'classic' ? 'finale' : 'victory');
+  const meta = metaFor(state.mode);
+  const isHeist = state.mode === 'arrest_heist';
+  const winner = state.grandHeist?.winner || 'A';
+  const ranked = [...players].sort((a, b) => wantedScore(b) - wantedScore(a));
+  const crowned = isHeist ? players.filter((p) => p.team === winner) : ranked.slice(0, 1);
+  const podium = isHeist ? [] : ranked.slice(0, 3);
+  const heistPoints = (team) => state[team === 'A' ? 'teamA' : 'teamB']?.points || 0;
+  return (
+    <div className="relative min-h-screen overflow-hidden bg-black text-white">
+      {art && <img src={art} alt="" onError={(e) => { e.currentTarget.style.display = 'none'; }} className="absolute inset-0 h-full w-full object-cover opacity-20" />}
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_30%,rgba(232,194,107,0.35),transparent_60%)]" />
+      <div className="relative flex min-h-screen flex-col items-center justify-center gap-[2vw] p-[3vw] text-center">
+        <div className="text-[1.6vw] font-semibold uppercase tracking-[0.4em] text-[#E8C26B]">{meta?.name} · {isHeist ? 'Τελικό αποτέλεσμα' : 'Φινάλε'}</div>
+        <div className="dot-crown-in">
+          <div className="text-[7vw] leading-none">{isHeist ? '🏆' : '👑'}</div>
+          <div className="text-[6vw] font-bold leading-none text-[#F7E3A8]">{isHeist ? TEAM_LABEL[winner] : (crowned[0]?.name || '—')}</div>
+          <div className="mt-[0.8vw] text-[2vw] text-white/80">{isHeist ? 'Άνοιξαν πρώτες το χρηματοκιβώτιο' : 'Η πιο καταζητούμενη της βραδιάς'}</div>
+        </div>
+        {isHeist ? (
+          <div className="mt-[1vw] flex flex-wrap justify-center gap-[1vw]">
+            {crowned.map((p) => <span key={p.id} className="rounded-full bg-[#E8C26B]/15 px-[1.4vw] py-[0.5vw] text-[1.6vw] font-semibold text-[#F7E3A8]">{p.isLeader ? '⭐ ' : ''}{p.name}</span>)}
+            <div className="w-full text-[1.4vw] tabular-nums text-white/60">Alpha {heistPoints('A')} · Beta {heistPoints('B')} πόντοι</div>
+          </div>
+        ) : (
+          <div className="mt-[2vw] flex items-end justify-center gap-[2vw]">
+            {[podium[1], podium[0], podium[2]].map((p, i) => !p ? <div key={`empty-${i}`} className="w-[16vw]" aria-hidden="true" /> : (
+              <div key={p.id} className="w-[16vw] rounded-t-3xl bg-white/10 p-[1vw]" style={{ height: ['13vw', '18vw', '10vw'][i] }}>
+                <div className="text-[2.5vw]">{['🥈', '🥇', '🥉'][i]}</div>
+                <div className="truncate text-[1.6vw] font-bold">{p.name}</div>
+                <div className="text-[1.3vw] tabular-nums text-[#E8C26B]">⭐ {p.penaltyStep || 0} · {(p.bounty || 0).toLocaleString('el-GR')}€</div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export function ChampionCeremonyTV({ state }) {
+  if (state?.mode === 'classic' || state?.mode === 'arrest_heist') return <EngineCeremonyTV state={state} />;
   const players = state.players || [];
   const mg = state.mg || {};
   const champion = championOf(players, mg);
   const podium = finalStandings(players, mg).slice(0, 3);
   const art = modeArtUrl(state.mode, '');
-  const meta = modeMeta(state.mode);
+  const meta = metaFor(state.mode);
   return (
     <div className="relative min-h-screen overflow-hidden bg-black text-white">
       {art && <img src={art} alt="" className="absolute inset-0 h-full w-full object-cover opacity-20" />}
@@ -174,7 +230,7 @@ export function ChampionCeremonyTV({ state }) {
           </div>
         )}
         <div className="mt-[2vw] flex items-end justify-center gap-[2vw]">
-          {[podium[1], podium[0], podium[2]].map((p, i) => p && (
+          {[podium[1], podium[0], podium[2]].map((p, i) => !p ? <div key={`empty-${i}`} className="w-[16vw]" aria-hidden="true" /> : (
             <div key={p.id} className="w-[16vw] rounded-t-3xl bg-white/10 p-[1vw]" style={{ height: ['13vw', '18vw', '10vw'][i] }}>
               <div className="text-[2.5vw]">{['🥈', '🥇', '🥉'][i]}</div>
               <div className="truncate text-[1.6vw] font-bold">{p.name}</div>

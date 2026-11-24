@@ -8,7 +8,7 @@ export const SURGE_BELOW = 10 * 60;
 export const SURGE_BONUS = 5 * 60;
 
 export let LOCKDOWN_MESSAGE =
-  'The Pajama Lockdown Has Begun. Only the sharpest minds and most fearless girls will escape. Fail, and face the ultimate tickle penalty.';
+  'Το Pajama Lockdown ξεκίνησε! Μόνο οι πιο έξυπνες και οι πιο τολμηρές θα αποδράσουν. Αν αποτύχετε, σας περιμένει η απόλυτη ποινή γαργαλητού.';
 
 export const getLockdownSettings = () => ({ exitCode: EXIT_CODE, message: LOCKDOWN_MESSAGE });
 // Κάθε νέα συνεδρία έχει τυχαίο κωδικό (mg.exitCode). Καλείται από τα components σε κάθε render ώστε
@@ -32,13 +32,13 @@ export const BINDING_OPTIONS = [
 // Level 1 — ερωτήσεις που απαντούν οι υπόλοιπες. Η διοργανώτρια κρίνει ✅/❌.
 export const HOSTAGE_QUESTIONS = [
   'Ποια από τις παρούσες είπε πρώτη «ναι» σε αυτό το Lockdown;',
-  'Τι χρώμα βερνίκι φοράει η Hostage στα νύχια των ποδιών;',
+  'Τι χρώμα βερνίκι φοράει η όμηρος στα νύχια των ποδιών;',
   'Ποιο τραγούδι έπαιζε όταν μπήκατε σήμερα στο σπίτι;',
   'Ποια είναι η πιο γαργαλιάρα της παρέας (απαντά η ομάδα ομόφωνα);',
   'Πόσα ζευγάρια παντόφλες υπάρχουν τώρα στο δωμάτιο;',
   'Ποια παίκτρια έχει γενέθλια πρώτη μετά από σήμερα;',
-  'Τι ποτό/χυμό πίνει η Hostage απόψε;',
-  'Ποιο είναι το πρώτο όνομα της Hostage ανάποδα;',
+  'Τι ποτό/χυμό πίνει η όμηρος απόψε;',
+  'Ποιο είναι το πρώτο όνομα της ομήρου ανάποδα;',
 ];
 export const HOSTAGE_NEEDED = 5; // σωστές απαντήσεις για να ανοίξει το Level 1
 
@@ -71,39 +71,39 @@ export const WHEEL_PENALTY_SECONDS = 30;
 
 // Level 2 — Blind Foot ID: υφή → ψηφίο (όπως στο PDF).
 export const FOOT_ID = [
-  { digit: '1', name: 'The Ice Melt', text: 'Παγάκι τυλιγμένο σε λεπτό σατέν, αργό πέρασμα στην καμάρα.' },
-  { digit: '2', name: 'The Feather Whisper', text: 'Ελαφρύ, σχεδόν αόρατο φτερό μαραμπού στα δάχτυλα των ποδιών.' },
-  { digit: '3', name: 'The Velvet Trap', text: 'Βελούδινη κορδέλα από τη φτέρνα ως τα δάχτυλα.' },
-  { digit: '4', name: 'The Fingernail Trace', text: 'Αργή διαδρομή με την άκρη του νυχιού κατά μήκος του πέλματος.' },
-  { digit: '5', name: 'The Warm Touch', text: 'Σταγόνα ζεστού ελαίου massage και κυκλικές κινήσεις στην πατούσα.' },
-  { digit: '6', name: 'The Woolen Sock Brush', text: 'Τρίψιμο με χοντρή μάλλινη κάλτσα στα ευαίσθητα σημεία.' },
-  { digit: '7', name: 'The Double Tap', text: 'Απαλό τσίμπημα με δύο δάχτυλα ανάμεσα στα δάχτυλα των ποδιών.' },
-  { digit: '8', name: 'The Satin Glide', text: 'Γρήγορο τράβηγμα σατέν ζώνης διαγώνια από την πατούσα.' },
-  { digit: '9', name: 'The Breath Play', text: 'Απαλό φύσημα με ζεστή ανάσα και ελαφρύ άγγιγμα στα δάχτυλα.' },
-  { digit: '0', name: 'The Multi-Textured Combo', text: 'Φτερό και παγάκι ταυτόχρονα, αριστερό και δεξί πόδι.' },
+  { digit: '1', name: 'Το λιωμένο παγάκι', text: 'Παγάκι τυλιγμένο σε λεπτό σατέν, αργό πέρασμα στην καμάρα.' },
+  { digit: '2', name: 'Ο ψίθυρος του φτερού', text: 'Ελαφρύ, σχεδόν αόρατο φτερό μαραμπού στα δάχτυλα των ποδιών.' },
+  { digit: '3', name: 'Η βελούδινη παγίδα', text: 'Βελούδινη κορδέλα από τη φτέρνα ως τα δάχτυλα.' },
+  { digit: '4', name: 'Το άγγιγμα του νυχιού', text: 'Αργή διαδρομή με την άκρη του νυχιού κατά μήκος του πέλματος.' },
+  { digit: '5', name: 'Το ζεστό άγγιγμα', text: 'Σταγόνα ζεστού ελαίου massage και κυκλικές κινήσεις στην πατούσα.' },
+  { digit: '6', name: 'Η μάλλινη κάλτσα-βούρτσα', text: 'Τρίψιμο με χοντρή μάλλινη κάλτσα στα ευαίσθητα σημεία.' },
+  { digit: '7', name: 'Το διπλό άγγιγμα', text: 'Απαλό τσίμπημα με δύο δάχτυλα ανάμεσα στα δάχτυλα των ποδιών.' },
+  { digit: '8', name: 'Το σατέν γλίστρημα', text: 'Γρήγορο τράβηγμα σατέν ζώνης διαγώνια από την πατούσα.' },
+  { digit: '9', name: 'Η ανάσα', text: 'Απαλό φύσημα με ζεστή ανάσα και ελαφρύ άγγιγμα στα δάχτυλα.' },
+  { digit: '0', name: 'Ο συνδυασμός υφών', text: 'Φτερό και παγάκι ταυτόχρονα, αριστερό και δεξί πόδι.' },
 ];
 
 export const WHISPER_CLUES = [
-  { say: 'Find the velvet key', keyword: 'Βελούδο' },
-  { say: 'Tickle the tied feet', keyword: 'Γαργάλημα' },
-  { say: 'Hostage release code', keyword: 'Ομηρία' },
-  { say: 'Midnight sock heist', keyword: 'Κάλτσες' },
+  { say: 'Βρείτε το βελούδινο κλειδί', keyword: 'Βελούδο' },
+  { say: 'Γαργαλητό στα δεμένα πόδια', keyword: 'Γαργάλημα' },
+  { say: 'Κωδικός απελευθέρωσης ομήρου', keyword: 'Ομηρία' },
+  { say: 'Η μεταμεσονύχτια ληστεία της κάλτσας', keyword: 'Κάλτσες' },
   { say: 'Vault is open', keyword: '6969' },
 ];
 
 export const SOCK_HEIST_SECONDS = 120;
 
 export const MINI_GAMES = [
-  { id: 'glitch', icon: '👾', name: 'The Glitch Cipher', desc: 'Αποκρυπτογράφησε τη λέξη σε 45″.', fail: 'Λάθος: +1 λεπτό & 10″ απαλό γαργάλημα στη Hostage.', failSecs: 60 },
-  { id: 'hold', icon: '🤝', name: 'The Swipe & Hold', desc: 'Δύο παίκτριες κρατούν ταυτόχρονα 15″ (δάχτυλα ποδιών ή μύτη παντόφλας).', fail: 'Αν σηκωθεί το χέρι/πόδι, ξαναρχίζει το μέτρημα.', failSecs: 0 },
-  { id: 'memory', icon: '🧠', name: 'Midnight Memory Grid', desc: 'Ξαναπάτα τα εικονίδια με τη σωστή σειρά.', fail: 'Αποτυχία: 15″ ποινή στο Blind Foot ID της Hostage.', failSecs: 0 },
-  { id: 'truth', icon: '⚡', name: 'Rapid-Fire Truth Tap', desc: '5 σωστά True/False σε 20″.', fail: 'Έστω και ένα λάθος: ενεργοποιείται ο Spicy Truth Wheel.', failSecs: 0, wheel: true },
-  { id: 'decibel', icon: '🤫', name: 'The Decibel Challenge', desc: '30″ απόλυτη σιωπή (ακόμα και με γαργάλημα).', fail: 'Αν κάποια γελάσει ή μιλήσει: +3 λεπτά στο timer.', failSecs: 180 },
-  { id: 'lockpick', icon: '🔐', name: 'The Virtual Lockpick', desc: 'Βρες τον συνδυασμό ακούγοντας τα «click».', fail: '', failSecs: 0 },
-  { id: 'socks', icon: '🧦', name: 'The Sock Match Puzzle', desc: 'Βρες 2 ζευγάρια σε 30″ ενώ μια παίκτρια ψάχνει τις πραγματικές κάλτσες στα τυφλά.', fail: '', failSecs: 0 },
-  { id: 'slider', icon: '🎚️', name: 'Danger Zone Slider', desc: 'Σύρε το Tickle Intensity ακριβώς στο 7 σε 5″.', fail: 'Λάθος: 30″ ομαδικό γαργάλημα.', failSecs: 0 },
-  { id: 'shake', icon: '📳', name: 'The Secret Shake Test', desc: 'Κουνήστε δυνατά το κινητό 10″ συγχρονισμένα.', fail: '', failSecs: 0 },
-  { id: 'cipher', icon: '🔢', name: 'Final Countdown Cipher', desc: 'Λύσε τον γρίφο με τα εικονίδια.', fail: '', failSecs: 0 },
+  { id: 'glitch', icon: '👾', name: 'Ο γρίφος του glitch', desc: 'Αποκρυπτογράφησε τη λέξη σε 45″.', fail: 'Λάθος: +1 λεπτό & 10″ απαλό γαργάλημα στην όμηρο.', failSecs: 60 },
+  { id: 'hold', icon: '🤝', name: 'Σύρε και κράτα', desc: 'Δύο παίκτριες κρατούν ταυτόχρονα 15″ (δάχτυλα ποδιών ή μύτη παντόφλας).', fail: 'Αν σηκωθεί το χέρι/πόδι, ξαναρχίζει το μέτρημα.', failSecs: 0 },
+  { id: 'memory', icon: '🧠', name: 'Το μεταμεσονύχτιο πλέγμα μνήμης', desc: 'Ξαναπάτα τα εικονίδια με τη σωστή σειρά.', fail: 'Αποτυχία: 15″ ποινή στο αναγνώριση ποδιών της ομήρου.', failSecs: 0 },
+  { id: 'truth', icon: '⚡', name: 'Γρήγορη αλήθεια', desc: '5 σωστά True/False σε 20″.', fail: 'Έστω και ένα λάθος: ενεργοποιείται ο Τροχός πικάντικης αλήθειας.', failSecs: 0, wheel: true },
+  { id: 'decibel', icon: '🤫', name: 'Η πρόκληση των ντεσιμπέλ', desc: '30″ απόλυτη σιωπή (ακόμα και με γαργάλημα).', fail: 'Αν κάποια γελάσει ή μιλήσει: +3 λεπτά στο timer.', failSecs: 180 },
+  { id: 'lockpick', icon: '🔐', name: 'Το ψηφιακό αντικλείδι', desc: 'Βρες τον συνδυασμό ακούγοντας τα «click».', fail: '', failSecs: 0 },
+  { id: 'socks', icon: '🧦', name: 'Ο γρίφος με τα ζευγάρια κάλτσες', desc: 'Βρες 2 ζευγάρια σε 30″ ενώ μια παίκτρια ψάχνει τις πραγματικές κάλτσες στα τυφλά.', fail: '', failSecs: 0 },
+  { id: 'slider', icon: '🎚️', name: 'Η ζώνη κινδύνου', desc: 'Σύρε το Tickle Intensity ακριβώς στο 7 σε 5″.', fail: 'Λάθος: 30″ ομαδικό γαργάλημα.', failSecs: 0 },
+  { id: 'shake', icon: '📳', name: 'Το τεστ της μυστικής χειραψίας', desc: 'Κουνήστε δυνατά το κινητό 10″ συγχρονισμένα.', fail: '', failSecs: 0 },
+  { id: 'cipher', icon: '🔢', name: 'Ο γρίφος της τελικής αντίστροφης μέτρησης', desc: 'Λύσε τον γρίφο με τα εικονίδια.', fail: '', failSecs: 0 },
 ];
 
 export const TRUE_FALSE = [

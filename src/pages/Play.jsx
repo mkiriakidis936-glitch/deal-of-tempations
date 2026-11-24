@@ -153,7 +153,7 @@ function PlayInner() {
   }
 
   if (state.stage === 0 && state.mode !== 'pajama') {
-    return <WaitingRoom sessionCode={session.sessionCode} />;
+    return <WaitingRoom sessionCode={session.sessionCode} state={state} />;
   }
 
   const myPlayer = state.players?.find((p) => p.id === selectedPlayerId);

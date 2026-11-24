@@ -44,7 +44,7 @@ const AUTO_TITLES = {
  "recap_04_credits_bg": "ΕΥΧΑΡΙΣΤΟΥΜΕ ΠΟΥ ΠΑΙΞΑΤΕ",
  "mode_intro_arrest_heist": "Εισαγωγή Mode: ARREST & HEIST",
  "mode_intro_beach_bar": "Εισαγωγή Mode: BEACH BAR HOME LOCKDOWN",
- "mode_intro_classic": "Εισαγωγή Mode: ΚΛΑΣΣΙΚΗ",
+ "mode_intro_classic": "Εισαγωγή Mode: ΚΛΑΣΙΚΗ",
  "mode_intro_lockdown": "Εισαγωγή Mode: PAJAMA LOCKDOWN",
  "mode_intro_marathon": "Εισαγωγή Mode: MEGA MARATHON",
  "mode_intro_pajama": "Εισαγωγή Mode: PAJAMA PEDI-GLAM",

@@ -4,7 +4,9 @@ import { MODE_COVERS } from '@/data/brandArt';
 import { uploadMedia } from '@/lib/media';
 import { IMAGE_ACCEPT, VIDEO_ACCEPT } from '@/lib/mediaKind';
 
-const emptyMode = { hero: '', cover: '', sections: [], gallery: [], cards: [], trailer: '' };
+const emptyMode = { hero: '', cover: '', sections: [], gallery: [], cards: [], trailer: '', intro: '' };
+// Πεδία που δέχονται βίντεο (τα υπόλοιπα δέχονται εικόνα).
+const isVideoField = (field) => field === 'trailer' || field === 'intro';
 const imageAccept = IMAGE_ACCEPT;
 const videoAccept = VIDEO_ACCEPT;
 
@@ -21,7 +23,7 @@ function validateSelectedFile(file, expectedName, video) {
   if (!file) return 'Δεν επιλέχθηκε αρχείο.';
   const extension = file.name.split('.').pop()?.toLowerCase();
   const allowed = video ? ['mp4', 'webm', 'mov'] : ['jpg', 'jpeg', 'png', 'webp', 'gif', 'avif', 'svg', 'heic', 'heif'];
-  if (!allowed.includes(extension)) return video ? 'Για trailer επίλεξε MP4, WEBM ή MOV.' : 'Για εικόνα επίλεξε JPG, PNG, WEBP, GIF, AVIF, SVG ή HEIC.';
+  if (!allowed.includes(extension)) return video ? 'Για βίντεο επίλεξε MP4, WEBM ή MOV.' : 'Για εικόνα επίλεξε JPG, PNG, WEBP, GIF, AVIF, SVG ή HEIC.';
   return '';
 }
 
@@ -44,7 +46,7 @@ export default function ModeMediaManager({ value = {}, files = [], onSave, onRef
   };
   const imageFiles = files.filter((file) => file.kind === 'image' || file.kind === 'graphic');
   const videoFiles = files.filter((file) => file.kind === 'video');
-  const availableFor = (field) => field === 'trailer' ? videoFiles : imageFiles;
+  const availableFor = (field) => isVideoField(field) ? videoFiles : imageFiles;
 
   const persist = async (next, message = 'Η σύνδεση αποθηκεύτηκε.') => {
     setBusy('save');
@@ -82,7 +84,7 @@ export default function ModeMediaManager({ value = {}, files = [], onSave, onRef
   const assign = (field, url) => {
     if (!url) return;
     const file = files.find((item) => item.url === url);
-    const validationError = validateSelectedFile(file, expectedNameFor(selected, field), field === 'trailer');
+    const validationError = validateSelectedFile(file, expectedNameFor(selected, field), isVideoField(field));
     if (validationError) {
       setError(validationError);
       setNotice('');
@@ -92,7 +94,7 @@ export default function ModeMediaManager({ value = {}, files = [], onSave, onRef
   };
 
   const uploadToField = async (field, file, item = null) => {
-    const video = field === 'trailer';
+    const video = isVideoField(field);
     const expected = expectedNameFor(selected, field, item);
     const validationError = validateSelectedFile(file, expected, video);
     if (validationError) {
@@ -121,7 +123,7 @@ export default function ModeMediaManager({ value = {}, files = [], onSave, onRef
     if (!url) return 'Εκκρεμεί αρχείο';
     const file = files.find((entry) => entry.url === url);
     if (!file) return 'Προεπιλεγμένο ή μη καταχωρισμένο αρχείο — δεν επαληθεύτηκε';
-    const problem = validateSelectedFile(file, expectedNameFor(selected, field, item), field === 'trailer');
+    const problem = validateSelectedFile(file, expectedNameFor(selected, field, item), isVideoField(field));
     return problem ? 'ΛΑΘΟΣ ΑΡΧΕΙΟ: ' + problem : '✓ Το όνομα και ο τύπος αρχείου είναι σωστά';
   };
 
@@ -130,7 +132,7 @@ export default function ModeMediaManager({ value = {}, files = [], onSave, onRef
     <input
       ref={(element) => { fileInputs.current[field] = element; }}
       type="file"
-      accept={field === 'trailer' ? videoAccept : imageAccept}
+      accept={isVideoField(field) ? videoAccept : imageAccept}
       className="hidden"
       disabled={disabled || !!busy}
       onChange={(event) => uploadToField(field, event.target.files?.[0], item)}
@@ -213,7 +215,7 @@ export default function ModeMediaManager({ value = {}, files = [], onSave, onRef
         </div>
       </header>
 
-      <Block title={`${mode.icon || ''} ${mode.name}`} hint="Κεντρική εικόνα (TV, κινητά, Tablet) και εξώφυλλο (επιλογή mode, φόρμα, Site).">
+      <Block title={`${mode.icon || ''} ${mode.name}`} hint="Κεντρική εικόνα: TV, κινητά, Tablet, Site και κεφαλίδα της φόρμας. Εξώφυλλο: κάρτες επιλογής mode.">
         <div className="grid gap-4 sm:grid-cols-2">
           <div><div className="mb-1.5 text-xs font-semibold text-white/70">Κεντρική εικόνα</div><Tile field="hero" src={data.hero} label="Κεντρική εικόνα" onClear={() => persist({ ...data, hero: '' }, 'Η κεντρική εικόνα αφαιρέθηκε.')} /></div>
           <div><div className="mb-1.5 text-xs font-semibold text-white/70">Εξώφυλλο</div><Tile field="cover" src={data.cover} label="Εξώφυλλο" onClear={() => persist({ ...data, cover: '', coverCleared: true }, 'Το εξώφυλλο αφαιρέθηκε.')} /></div>
@@ -249,8 +251,12 @@ export default function ModeMediaManager({ value = {}, files = [], onSave, onRef
         </div>
       </Block>
 
+      <Block title="🎬 Intro βίντεο TV" hint="Παίζει στην TV στην αρχή κάθε νέας παρτίδας αυτού του mode, πριν από τους κανόνες. Το Tablet μπορεί να το ξαναπαίξει. Αν μείνει κενό, παίζει το γενικό «Intro παιχνιδιού» (Site & TV)." >
+        <div className="max-w-xl"><Tile field="intro" src={data.intro} label="Intro βίντεο TV" video onClear={() => persist({ ...data, intro: '' }, 'Το intro αφαιρέθηκε.')} /></div>
+      </Block>
+
       <Block title="Βίντεο trailer" hint="Tablet Setup και σελίδα του mode στο Site.">
-        <Tile field="trailer" src={data.trailer} label="Βίντεο trailer" video onClear={() => persist({ ...data, trailer: '' }, 'Το βίντεο αφαιρέθηκε.')} />
+        <div className="max-w-xl"><Tile field="trailer" src={data.trailer} label="Βίντεο trailer" video onClear={() => persist({ ...data, trailer: '' }, 'Το βίντεο αφαιρέθηκε.')} /></div>
       </Block>
 
       {(error || notice) && <div className="rounded-2xl bg-[#1C1C1E] px-4 py-3 text-sm" role="status">{error ? <span className="text-[#FF8A80]">{error}</span> : <span className="text-[#7BE495]">{notice}</span>}</div>}

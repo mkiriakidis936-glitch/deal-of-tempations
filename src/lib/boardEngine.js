@@ -67,10 +67,13 @@ export const currentPlayer = (lg, players) => (players.length ? players[(lg.turn
 export const isBusy = (lg) => !!(lg.card || lg.interro || lg.tickle || lg.finale);
 export const isBarefoot = (lg, def, pid) => statOf(lg, def, pid).footwear === 0;
 
-export function drawCard(lg, def, pid, { rng = Math.random, now = Date.now() } = {}) {
+// isAllowed(card): προαιρετικό φίλτρο ορίων της παίκτριας (consent check-in). Αν καμία κάρτα δεν ταιριάζει → PASS.
+export function drawCard(lg, def, pid, { rng = Math.random, now = Date.now(), isAllowed = null } = {}) {
   let used = lg.usedCards || [];
-  let pool = def.cards.filter((card) => !used.includes(card.id));
-  if (!pool.length) { used = []; pool = def.cards; }
+  const allowed = isAllowed ? def.cards.filter((card) => isAllowed(card, pid)) : def.cards;
+  if (!allowed.length) return { ...lg, card: { id: 'pass', pass: true, title: 'PASS', text: 'Καμία κάρτα δεν ταιριάζει στα όρια της παίκτριας — PASS χωρίς ποινή.', pid, at: now } };
+  let pool = allowed.filter((card) => !used.includes(card.id));
+  if (!pool.length) { used = used.filter((id) => !allowed.some((card) => card.id === id)); pool = allowed; }
   const card = pickWith(rng, pool);
   return { ...lg, card: { ...card, pid, at: now }, usedCards: [...used, card.id] };
 }
@@ -94,7 +97,7 @@ function glitchEvent(lg, def, pid, players, rng, now) {
 }
 
 // Μία ζαριά: κίνηση, μπόνους αφετηρίας, εφέ τετραγώνου, επόμενη σειρά.
-export function applyRoll(lg, players, def, { d, rng = Math.random, now = Date.now() } = {}) {
+export function applyRoll(lg, players, def, { d, rng = Math.random, now = Date.now(), isAllowed = null } = {}) {
   const player = currentPlayer(lg, players);
   if (!player || isBusy(lg)) return { lounge: lg, event: null };
   const dice = d ?? 1 + Math.floor(rng() * 6);
@@ -120,7 +123,7 @@ export function applyRoll(lg, players, def, { d, rng = Math.random, now = Date.n
   if (effect.stars) next = updateStat(next, def, player.id, (s) => ({ stars: s.stars + effect.stars }));
   if (effect.footwear) next = updateStat(next, def, player.id, (s) => ({ footwear: s.footwear + effect.footwear }));
   if (effect.immune) next = updateStat(next, def, player.id, { immune: true });
-  if (effect.card) next = drawCard(next, def, player.id, { rng, now });
+  if (effect.card) next = drawCard(next, def, player.id, { rng, now, isAllowed });
   if (effect.interrogate) next = startInterrogation(next, def, player.id, { rng, now });
   if (effect.market) next = { ...next, card: { id: 'market', market: true, title: def.texts?.marketTitle || 'Black Market', text: def.texts?.market || '', pid: player.id, at: now } };
   if (effect.random) next = glitchEvent(next, def, player.id, players, rng, now);
@@ -131,6 +134,7 @@ export function applyRoll(lg, players, def, { d, rng = Math.random, now = Date.n
 export function resolveCard(lg, def, ok) {
   const card = lg.card;
   if (!card) return lg;
+  if (card.pass) return { ...lg, card: null };
   const reward = def.cardReward || { loot: 1000 };
   const penalty = def.cardPenalty || { stars: 1, footwear: -1 };
   const golden = isGolden(lg) ? 2 : 1;

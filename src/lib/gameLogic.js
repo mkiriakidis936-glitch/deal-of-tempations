@@ -1,6 +1,7 @@
 // DEAL OF TEMPTATION - Shared Game Logic
 import { BOARD, CLASSIC_BOARD, getPenaltyLadder, FULL_PENALTY_LADDER, HIDDEN_ROLES } from '@/data/gameConfig';
 import {
+  STREET_TRUTHS, STREET_DARES, WARRANT_CARDS, GLITCH_CARDS,
   PDF_STREET_TRUTHS, PDF_STREET_DARES, PDF_WARRANT_CARDS, PDF_GLITCH_CARDS,
   HARDCORE_TRUTHS, ULTIMATE_TRUTHS,
 } from '@/data/gameContent';
@@ -133,7 +134,8 @@ export function createInitialState(mode, intensity, players) {
   if (isNewMode(mode)) {
     return {
       mode, intensity, stage: 1, players: assignedPlayers, history: [], mobileVotes: {},
-      stopActive: false, bombEvent: null, mg: initialMg(mode),
+      // introAt: η TV παίζει το intro βίντεο του mode στην αρχή της νέας παρτίδας.
+      stopActive: false, bombEvent: null, mg: { ...initialMg(mode), introAt: Date.now() },
     };
   }
   if (mode === 'classic') {
@@ -157,6 +159,8 @@ export function createInitialState(mode, intensity, players) {
       activeCard: null, cardAction: null, history: [],
       teamA: { points: 0 }, teamB: { points: 0 },
       grandHeist: null, stopActive: false, bombEvent: null,
+      // Νέα παρτίδα: πρώτα η εισαγωγή κανόνων σε Tablet/TV/κινητά.
+      mg: { briefingRequired: true, introAt: Date.now() },
     };
   }
   return {
@@ -186,6 +190,7 @@ export function createInitialState(mode, intensity, players) {
     trialIndex: 0,
     penaltyIndex: 0,
     bombEvent: null,
+    ...(mode === 'classic' ? { mg: { briefingRequired: true, introAt: Date.now() } } : {}),
   };
 }
 

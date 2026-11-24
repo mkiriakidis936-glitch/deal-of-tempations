@@ -56,6 +56,28 @@ export default [
         { ignore: ["cmdk-input-wrapper", "toast-close"] },
       ],
       "react-hooks/rules-of-hooks": "error",
+      // Το spread του recommended χάνεται όταν ορίζουμε δικό μας "rules": ξαναβάζουμε τους κρίσιμους ελέγχους.
+      "no-undef": "error",
+      "react/jsx-no-undef": "error",
+      "no-dupe-keys": "error",
+      "no-unreachable": "error",
+      "no-const-assign": "error",
+      "no-self-assign": "error",
+    },
+  },
+  // Λογική, δεδομένα, hooks, API και server: έλεγχος για μεταβλητές/εισαγωγές που λείπουν (σκάνε μόνο την ώρα του παιχνιδιού).
+  {
+    files: ["src/lib/**/*.js", "src/data/**/*.js", "src/hooks/**/*.js", "src/api/**/*.js", "server/**/*.js", "scripts/**/*.{js,mjs}"],
+    languageOptions: {
+      globals: { ...globals.browser, ...globals.node },
+      parserOptions: { ecmaVersion: 2024, sourceType: "module" },
+    },
+    rules: {
+      "no-undef": "error",
+      "no-dupe-keys": "error",
+      "no-unreachable": "error",
+      "no-const-assign": "error",
+      "no-self-assign": "error",
     },
   },
 ];

@@ -17,11 +17,15 @@ test('the three active digital modes keep their specified durations', () => {
   assert.deepEqual(NEW_MODES.map((mode) => mode.minutes), [60, 150, 105]);
 });
 
-test('player session response never exposes another player VIP profile', () => {
-  const record = { id: 'session', state: { players } };
+test('player session response never exposes VIP profiles, and hidden roles only to their owner', () => {
+  const record = { id: 'session', state: { players: players.map((p, i) => ({ ...p, role: i ? 'cop' : 'hacker' })) } };
   const fromP0 = sanitizePublicSession(record, 'p0');
-  assert.deepEqual(fromP0.state.players[0].vipProfile, { boundaries: ['private'] });
+  // Το κινητό δεν χρειάζεται ποτέ το VIP προφίλ — ούτε της ίδιας (δεν εκτίθεται αν κάποια διαλέξει λάθος όνομα).
+  assert.equal('vipProfile' in fromP0.state.players[0], false);
   assert.equal('vipProfile' in fromP0.state.players[1], false);
+  assert.equal(fromP0.state.players[0].role, 'hacker');
+  assert.equal('role' in fromP0.state.players[1], false);
+  assert.equal('role' in sanitizePublicSession(record).state.players[0], false);
   const forTv = sanitizePublicSession(record);
   assert.equal('vipProfile' in forTv.state.players[0], false);
   assert.equal('vipProfile' in forTv.state.players[1], false);
@@ -186,4 +190,36 @@ test('εξομολογητήριο: ανώνυμες εξομολογήσεις 
   assert.match(src, /anonBox/);
   assert.doesNotMatch(src, /\bconfessions\b/);
   assert.equal(typeof validatePlayerPatch, 'function');
+});
+
+test('ασφάλεια: μια δημόσια φόρμα δεν μπορεί να «αυτο-εγκριθεί» ούτε να δηλώσει admin', async () => {
+  const { stripAdminOnlyFields } = await import('../server/entities.js');
+  const clean = stripAdminOnlyFields({ name: 'Άννα', preferredModes: ['lockdown'], approved: true, approvalStatus: 'approved', approvedAt: 'x', approvedDate: 'x', approvedBy: 'x', role: 'admin', adminNotes: 'x' });
+  assert.deepEqual(clean, { name: 'Άννα', preferredModes: ['lockdown'] });
+  const src = await readFile(new URL('../server/entities.js', import.meta.url), 'utf8');
+  assert.match(src, /if \(!isAdmin\(req\)\) req\.body = stripAdminOnlyFields\(req\.body \|\| \{\}\);/, 'η γενική δημιουργία καθαρίζει τα πεδία έγκρισης');
+  assert.match(src, /r\.post\('\/:entity\/bulk', requireAdmin/, 'η μαζική δημιουργία είναι μόνο για admin');
+});
+
+test('ασφάλεια: οι ρυθμίσεις του Admin δεν διαβάζονται δημόσια, οι δημόσιες ναι', async () => {
+  const { isAdminOnlySetting } = await import('../server/entities.js');
+  for (const key of ['show_casting_plan', 'digital_invitations', 'admin_site_versions', 'av_control_room_v1', 'admin_custom_scenarios', 'all_time_records', 'admin_setting_versions_modes_content']) {
+    assert.equal(isAdminOnlySetting('AppSetting', { key }), true, `${key} πρέπει να είναι μόνο για admin`);
+  }
+  for (const key of ['media_overrides', 'site_content', 'modes_content', 'custom_board_modes', 'admin_global_design', 'event_date', 'admin_form_questions']) {
+    assert.equal(isAdminOnlySetting('AppSetting', { key }), false, `${key} χρειάζεται δημόσια (TV, κινητά, Site)`);
+  }
+  assert.equal(isAdminOnlySetting('GameSession', { key: 'show_casting_plan' }), false);
+});
+
+test('double down from the phone works with the redacted player list but cannot touch private fields', () => {
+  const current = { players: players.map((p, i) => ({ ...p, role: i ? 'cop' : 'hacker', penaltyStep: 1 })), history: [] };
+  const view = sanitizePublicSession({ state: current }, 'p1').state;
+  const entry = { type: 'double_down', player: 'Player 1', result: 'ποινή', timestamp: 1 };
+  const patch = { players: view.players.map((p) => (p.id === 'p1' ? { ...p, penaltyStep: 2 } : p)), history: [entry] };
+  assert.equal(validatePlayerPatch(current, patch, 'p1'), true);
+  const roleSwap = { ...patch, players: patch.players.map((p) => (p.id === 'p1' ? { ...p, role: 'driver' } : p)) };
+  assert.equal(validatePlayerPatch(current, roleSwap, 'p1'), false);
+  const otherRole = { ...patch, players: patch.players.map((p) => (p.id === 'p0' ? { ...p, role: 'driver' } : p)) };
+  assert.equal(validatePlayerPatch(current, otherRole, 'p1'), false);
 });

@@ -497,3 +497,189 @@
 @media (min-width: 1280px) {
   #admin-root .adm-content { max-width: 1320px; }
 }
+
+/* ======================================================================
+   iOS 27 · ΚΑΘΑΡΟ ΘΕΜΑ ADMIN (6.2.0)
+   Χωρίς animations, μεταβάσεις, θόλωμα (glass), λάμψεις και διαβαθμίσεις.
+   Χρώματα συστήματος iOS: μαύρο φόντο, ομαδοποιημένες κάρτες #1C1C1E,
+   εσωτερικά στοιχεία #2C2C2E, λεπτοί διαχωριστές, χρυσό μόνο για έμφαση.
+   ====================================================================== */
+:root:has(#admin-root) {
+  --ios-bg: #000000;
+  --ios-card: #1C1C1E;
+  --ios-card-2: #2C2C2E;
+  --ios-card-3: #3A3A3C;
+  --ios-sep: rgba(84, 84, 88, 0.6);
+  --ios-label: #FFFFFF;
+  --ios-label-2: rgba(235, 235, 245, 0.6);
+  --ios-label-3: rgba(235, 235, 245, 0.3);
+  --ios-gold: #E8C26B;
+  --adm-glass: var(--ios-card);
+  --adm-glass-thick: var(--ios-card);
+  --adm-fill: var(--ios-card-2);
+  --adm-fill-2: var(--ios-card-2);
+  --adm-fill-3: var(--ios-card-3);
+  --adm-line: var(--ios-sep);
+  --adm-line-strong: rgba(84, 84, 88, 0.9);
+  --adm-hi: transparent;
+  --adm-text-2: var(--ios-label-2);
+  --adm-text-3: var(--ios-label-3);
+}
+
+/* 1. Καμία κίνηση: όλα εμφανίζονται και αλλάζουν αμέσως (μόνο οι δείκτες φόρτωσης γυρίζουν). */
+#admin-root *:not(.animate-spin),
+#admin-root *:not(.animate-spin)::before,
+#admin-root *:not(.animate-spin)::after {
+  animation: none !important;
+  transition: none !important;
+  scroll-behavior: auto !important;
+}
+#admin-root [class*="hover:scale"]:hover,
+#admin-root [class*="active:scale"]:active,
+#admin-root [class*="hover:-translate"]:hover,
+#admin-root .adm-pill:active, #admin-root .adm-chip:active, #admin-root .adm-tab:active { transform: none !important; }
+
+/* 2. Χωρίς glass, λάμψεις και διαβαθμίσεις. */
+#admin-root { background: var(--ios-bg) !important; background-image: none !important; }
+#admin-root *, #admin-root *::before, #admin-root *::after {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+  text-shadow: none !important;
+}
+#admin-root [class*="shadow"], #admin-root [class*="ring-offset"] { box-shadow: none !important; }
+#admin-root [class*="blur-"]:not(img):not(video) { filter: none !important; }
+/* Διακοσμητικές λάμψεις (radial/linear φόντα). Οι σκούρες διαβαθμίσεις πάνω σε φωτογραφίες μένουν για να διαβάζεται το κείμενο. */
+#admin-root [class*="bg-[radial"] { background-image: none !important; }
+
+/* 3. Επιφάνειες: ομαδοποιημένες κάρτες iOS. */
+#admin-root .comic-panel,
+#admin-root .comic-panel-sm,
+#admin-root .adm-header,
+#admin-root .adm-sidebar,
+#admin-root .adm-sessionbar,
+#admin-root .adm-sheet,
+#admin-root .adm-more,
+#admin-root .ui-card {
+  background: var(--ios-card) !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+#admin-root .comic-panel, #admin-root .adm-sheet, #admin-root .adm-more { border-radius: 22px !important; }
+#admin-root .adm-header, #admin-root .adm-sidebar, #admin-root .adm-sessionbar { border-radius: 22px !important; }
+#admin-root .comic-panel .comic-panel,
+#admin-root .comic-panel .comic-panel-sm,
+#admin-root .comic-panel .ui-card { background: var(--ios-card-2) !important; border-radius: 14px !important; }
+#admin-root .adm-overlay { background: rgba(0, 0, 0, 0.72) !important; }
+
+/* Κάτω μπάρα καρτελών (κινητό): συμπαγής, με διαχωριστή επάνω όπως στο iOS. */
+#admin-root .adm-tabbar {
+  background: var(--ios-card) !important;
+  border: 0 !important;
+  box-shadow: 0 0 0 0.5px var(--ios-sep) !important;
+}
+#admin-root .adm-tab[aria-selected="true"] { background: var(--ios-card-2) !important; box-shadow: none !important; }
+
+/* 4. Πλοήγηση. */
+#admin-root .adm-navitem { border-color: transparent !important; }
+#admin-root .adm-navitem:hover { background: var(--ios-card-2) !important; }
+#admin-root .adm-navitem[aria-current="page"] { background: var(--ios-card-3) !important; box-shadow: none !important; }
+#admin-root .adm-group + .adm-group { border-top: 0.5px solid var(--ios-sep) !important; }
+#admin-root .adm-dot { box-shadow: none !important; }
+
+/* 5. Κουμπιά: επίπεδα, χρυσό γέμισμα μόνο για την κύρια ενέργεια. */
+#admin-root .adm-pill, #admin-root .adm-chip {
+  background: var(--ios-card-2) !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+#admin-root .adm-pill:hover, #admin-root .adm-chip:hover { background: var(--ios-card-3) !important; }
+#admin-root .adm-mark { background: var(--ios-card-2) !important; box-shadow: none !important; }
+#admin-root .bg-primary, #admin-root button.bg-primary { background: var(--ios-gold) !important; background-image: none !important; color: #000 !important; }
+
+/* 6. Πεδία φορμών: γέμισμα iOS χωρίς λάμψη εστίασης. */
+#admin-root input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]),
+#admin-root select,
+#admin-root textarea {
+  background-color: var(--ios-card-2) !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+}
+#admin-root input:focus-visible, #admin-root select:focus-visible, #admin-root textarea:focus-visible, #admin-root button:focus-visible {
+  outline: 2px solid var(--ios-gold) !important;
+  outline-offset: 1px;
+  box-shadow: none !important;
+}
+
+/* 7. Τυπογραφία: καθαρά χρώματα, χωρίς χρυσές διαβαθμίσεις στο κείμενο. */
+#admin-root .dot-gold-text, #admin-root [class*="bg-clip-text"] {
+  background: none !important;
+  -webkit-text-fill-color: currentColor !important;
+  color: var(--ios-gold) !important;
+}
+#admin-root .comic-boom { box-shadow: none !important; border-color: transparent !important; }
+#admin-root .comic-boom:active { transform: none !important; }
+#admin-root .comic-boom[class~="bg-primary"],
+#admin-root .comic-boom[class*="tarot-parchment"] { background: var(--ios-gold) !important; box-shadow: none !important; }
+#admin-root .comic-boom[class~="bg-primary"]:hover { filter: none !important; background: #F0CF85 !important; }
+
+/* ======================================================================
+   iOS 27 · ΔΟΜΗ ΡΥΘΜΙΣΕΩΝ (6.2.0)
+   Μεγάλος τίτλος χωρίς κουτί, πλευρική λίστα όπως οι Ρυθμίσεις του iPad,
+   χρωματιστά εικονίδια, ομαδοποιημένες λίστες με διαχωριστές μέσα στη σειρά.
+   ====================================================================== */
+#admin-root .adm-shell { gap: 18px; }
+
+/* Μεγάλος τίτλος (Large Title) πάνω στο μαύρο, χωρίς κάρτα. */
+#admin-root .adm-header {
+  background: transparent !important;
+  padding: 6px 4px 0 !important;
+  border-radius: 0 !important;
+  min-height: 0;
+}
+#admin-root .adm-title { font-size: clamp(1.9rem, 4vw, 2.6rem) !important; font-weight: 800 !important; letter-spacing: -0.035em !important; line-height: 1.05; }
+#admin-root .adm-subtitle { letter-spacing: 0.02em !important; text-transform: none !important; font-size: 13px !important; color: var(--ios-label-2) !important; }
+#admin-root .adm-mark { width: 44px !important; height: 44px !important; border-radius: 11px !important; }
+#admin-root .adm-pill { height: 40px; border-radius: 999px !important; }
+
+/* Πλευρική στήλη: όχι κουτί — λίστες ομάδων όπως στις Ρυθμίσεις. */
+#admin-root .adm-sidebar { background: transparent !important; padding: 0 !important; }
+#admin-root .adm-group + .adm-group { border-top: 0 !important; margin-top: 22px !important; padding-top: 0 !important; }
+#admin-root .adm-group-label {
+  padding: 0 16px 7px !important;
+  font-size: 12.5px !important; font-weight: 500 !important; letter-spacing: 0.02em !important;
+  color: var(--ios-label-2) !important;
+}
+#admin-root .adm-group-list { background: var(--ios-card); border-radius: 14px; overflow: hidden; }
+#admin-root .adm-navitem {
+  display: flex !important; align-items: center; gap: 12px;
+  width: 100%; min-height: 46px; padding: 0 14px !important;
+  border-radius: 0 !important; border: 0 !important; background: transparent !important;
+  position: relative; text-align: left;
+  font-size: 15.5px !important; font-weight: 500 !important; color: var(--ios-label) !important;
+}
+#admin-root .adm-group-list .adm-navitem + .adm-navitem::before {
+  content: ''; position: absolute; top: 0; left: 56px; right: 0; height: 0.5px; background: var(--ios-sep);
+}
+#admin-root .adm-navitem:hover { background: var(--ios-card-2) !important; }
+#admin-root .adm-navitem[aria-current="page"] { background: var(--ios-card-3) !important; }
+#admin-root .adm-navitem[aria-current="page"] .adm-navlabel { font-weight: 650; }
+#admin-root .adm-ico {
+  flex: none; width: 30px; height: 30px; border-radius: 8px;
+  display: inline-flex; align-items: center; justify-content: center;
+}
+#admin-root .adm-ico svg { width: 18px !important; height: 18px !important; color: #fff !important; stroke-width: 2.1 !important; }
+#admin-root .adm-navlabel { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#admin-root .adm-chev { flex: none; font-size: 20px; line-height: 1; color: var(--ios-label-3); margin-top: -2px; }
+
+/* «Περισσότερα» στο κινητό: ίδιες λίστες. */
+#admin-root .adm-more { background: #000 !important; }
+#admin-root .adm-more .adm-group-list { background: var(--ios-card); }
+
+/* Μπάρα ενεργής συνεδρίας: ομαδοποιημένη σειρά. */
+#admin-root .adm-sessionbar { border-radius: 14px !important; }
+#admin-root .adm-sessionbar select { background-color: var(--ios-card-2) !important; border-radius: 10px !important; }
+
+/* Κάρτες περιεχομένου: γωνίες iOS, άνετα κενά, μεγάλοι αριθμοί. */
+#admin-root .adm-content .comic-panel { border-radius: 20px !important; }
+#admin-root .adm-content h2 { font-size: 1.35rem; font-weight: 750; letter-spacing: -0.02em; }
+#admin-root .adm-footer { color: var(--ios-label-3) !important; }

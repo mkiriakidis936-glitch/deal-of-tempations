@@ -48,12 +48,12 @@ export default function ModeTV({ state }) {
 
       {mg.stop && <div className="ui-card ui-card--danger text-center"><div className="ui-tv-title ui-tv-title--red">⏸ Όλα σταμάτησαν</div><div className="ui-tv-text mt-2">Αναμονή για ομόφωνη συναίνεση πριν τη συνέχεια.</div></div>}
       {act === 'lounge' && <LoungeTV state={state} />}
-      {surge && <div className="ui-card ui-card--danger text-center text-4xl">MIDNIGHT PENALTY SURGE · +5′</div>}
+      {surge && <div className="ui-card ui-card--danger text-center text-4xl">ΜΕΤΑΜΕΣΟΝΥΧΤΙΑ ΕΚΡΗΞΗ ΠΟΙΝΩΝ · +5′</div>}
       {mg.finishedAll && <div className="ui-card ui-card--gold text-center text-5xl">🏆 {ranking[0]?.name} ΝΙΚΗΤΡΙΑ!</div>}
 
       {act === 'lockdown' && (
         <div className="ui-card ui-card--danger text-center space-y-3">
-          <div className="text-xl opacity-70">{{ init: 'Αναμονή Lockdown…', l1: 'Level 1 · The Hostage Sacrifice', l2: 'Level 2 · The 18+ Sensory Cipher', l3: 'Level 3 · Midnight Sock Heist', exit: 'EXIT CODE', won: '🎆 ΑΠΟΔΡΑΣΗ — VIP VAULT UNLOCKED', lost: '💀 LOCKDOWN FAILED' }[ld.stage || 'init']}</div>
+          <div className="text-xl opacity-70">{{ init: 'Αναμονή Lockdown…', l1: 'Επίπεδο 1 · Η θυσία της ομήρου', l2: 'Επίπεδο 2 · Ο αισθησιακός γρίφος 18+', l3: 'Επίπεδο 3 · Η μεταμεσονύχτια ληστεία της κάλτσας', exit: 'ΚΩΔΙΚΟΣ ΕΞΟΔΟΥ', won: '🎆 ΑΠΟΔΡΑΣΗ — ΤΟ VIP VAULT ΑΝΟΙΞΕ', lost: '💀 Η ΑΠΟΔΡΑΣΗ ΑΠΕΤΥΧΕ' }[ld.stage || 'init']}</div>
           <div className="flex justify-center gap-4">
             {EXIT_CODE.split('').map((d, i) => (
               <div key={i} className="w-20 h-28 flex items-center justify-center font-display text-6xl rounded-lg" style={{ border: `3px solid ${(ld.revealed || [])[i] ? '#E8C26B' : '#FF453A'}`, color: '#E8C26B' }}>{(ld.revealed || [])[i] ? d : '🔒'}</div>
@@ -68,12 +68,12 @@ export default function ModeTV({ state }) {
       {act === 'midnight' && <div className="ui-card ui-card--gold text-center text-3xl">🌙 Midnight ASMR & Tickle Vault<div className="text-lg opacity-70 mt-2">Φώτα χαμηλά. Οι ερωτήσεις ψιθυρίζονται — δεν φαίνονται εδώ.</div></div>}
       {act === 'morning' && (
         <div className="ui-card ui-card--gold text-center text-3xl">
-          {mg.vaultUnlocked ? '👑 VIP VAULT UNLOCKED — The Ultimate Pajama Queens' : `☕ The Coffee Code is Hidden · ψήγματα ${(mg.morningFound || []).length}/4`}
+          {mg.vaultUnlocked ? '👑 ΤΟ VIP VAULT ΑΝΟΙΞΕ — Οι απόλυτες Pajama Queens' : `☕ The Coffee Code is Hidden · ψήγματα ${(mg.morningFound || []).length}/4`}
         </div>
       )}
       {act === 'beach' && (
         <div className="space-y-3">
-          <div className="text-2xl opacity-80">{({ checkin: '🩴 Check-in', dance: '🎶 Dance & Freeze', wheel: '🎡 Τροχός Ποινών', truth: '🥃 Shot & Truth', finale: '👑 The Last Queen Standing' })[bb.phase || 'checkin']}</div>
+          <div className="text-2xl opacity-80">{({ checkin: '🩴 Check-in', dance: '🎶 Dance & Freeze', wheel: '🎡 Τροχός Ποινών', truth: '🥃 Shot & Truth', finale: '👑 Η τελευταία βασίλισσα' })[bb.phase || 'checkin']}</div>
           {bb.freeze && <div className="ui-card ui-card--gold text-center text-4xl">📯 {bb.freeze.cmd}</div>}
           {bb.wheel && <GameCard variant="tv" kicker="Τροχός ποινών" corner={players.find((p) => p.id === bb.wheel.pid)?.name} icon="🎡" image={bb.wheel.card.image} accent="#F0B85A" title={bb.wheel.card.title} text={bb.wheel.card.text} footLeft={bb.wheel.card.secs ? `⏱ ${bb.wheel.card.secs}″` : ''} />}
           {bb.queen && <div className="ui-card ui-card--gold text-center text-5xl">👑 BEACH QUEEN: {players.find((p) => p.id === bb.queen)?.name}</div>}

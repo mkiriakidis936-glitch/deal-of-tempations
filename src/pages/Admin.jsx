@@ -432,7 +432,7 @@ export default function Admin() {
           <img className="adm-mark" src="/icons/icon-192.png" alt="" aria-hidden="true" />
           <div className="adm-titles">
             <h1 className="adm-title">{NAV_GROUPS.flatMap((group) => group.tabs).find((item) => item.id === tab)?.label || 'Κέντρο ελέγχου'}</h1>
-            <div className="adm-subtitle">Deal of Temptations · Admin</div>
+            <div className="adm-subtitle">Deal of Temptation · Admin</div>
           </div>
           <div className="adm-actions">
             <button type="button" className="adm-pill" onClick={() => { setGlobalSearch(''); setSearchOpen(true); }} aria-label="Αναζήτηση">

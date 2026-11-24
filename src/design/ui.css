@@ -245,3 +245,22 @@
 .dot-phase-in { animation: dot-phase-in 500ms ease-out both; }
 .dot-crown-in { animation: dot-crown-in 900ms cubic-bezier(0.22, 1, 0.36, 1) both; }
 @media (prefers-reduced-motion: reduce) { .dot-phase-in, .dot-crown-in { animation: none; } }
+
+/* ---------- /site · κινηματογραφική βιτρίνα ---------- */
+.dot-site { font-family: var(--ui-font); -webkit-font-smoothing: antialiased; }
+.dot-site ::selection { background: #E8C26B; color: #000; }
+.dot-gold-text { background: linear-gradient(100deg, #FFF3CF 0%, #E8C26B 45%, #B8862B 100%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.dot-reveal { opacity: 0; transform: translateY(28px); transition: opacity 800ms cubic-bezier(0.22, 1, 0.36, 1), transform 800ms cubic-bezier(0.22, 1, 0.36, 1); }
+.dot-reveal.is-in { opacity: 1; transform: none; }
+@keyframes dot-kenburns { from { transform: scale(1.08); } to { transform: scale(1); } }
+.dot-kenburns { animation: dot-kenburns 14s ease-out both; }
+@keyframes dot-marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+.dot-marquee { animation: dot-marquee 38s linear infinite; }
+@keyframes dot-shine { 0% { transform: translateX(-120%) skewX(-20deg); } 60%, 100% { transform: translateX(220%) skewX(-20deg); } }
+.dot-shine { background: linear-gradient(90deg, transparent, rgba(255,255,255,0.55), transparent); width: 40%; animation: dot-shine 3.6s ease-in-out infinite; }
+.dot-rail { scrollbar-width: none; scroll-padding-inline: 16px; }
+.dot-rail::-webkit-scrollbar { display: none; }
+@media (prefers-reduced-motion: reduce) {
+  .dot-reveal { opacity: 1; transform: none; transition: none; }
+  .dot-kenburns, .dot-marquee, .dot-shine { animation: none; }
+}

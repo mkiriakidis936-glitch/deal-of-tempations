@@ -4,6 +4,9 @@ import TVDrama from '@/components/tv/TVDrama';
 import ConnectionBanner from '@/components/shared/ConnectionBanner';
 import SoundUnlock from '@/components/shared/SoundUnlock';
 import ModeTV from '@/components/modes/ModeTV';
+import { QRCodeSVG } from 'qrcode.react';
+import GameIntroTV from '@/components/tv/GameIntroTV';
+import { BriefingTV, PhaseTransitionTV, ChampionCeremonyTV, briefingPending } from '@/components/modes/ModeBriefing';
 import TVExperienceLayer from '@/components/tv/TVExperienceLayer';
 import { isNewMode } from '@/data/modes/modeRegistry';
 import { ART } from '@/data/brandArt';
@@ -37,7 +40,7 @@ import { PHOTO, FILM } from '@/data/brandArt';
 import MediaSpot from '@/components/shared/MediaSpot';
 import NightTV from '@/components/night/NightTV';
 import { useAudioSync } from '@/hooks/useAudioSync';
-import { calculateMostWanted, getWantedLevel, getTotalLoot } from '@/lib/gameLogic';
+import { calculateMostWanted, getWantedLevel } from '@/lib/gameLogic';
 
 function formatEvent(event) {
   if (!event) return '';
@@ -57,7 +60,9 @@ function formatEvent(event) {
     case 'trap':
       return `🪤 ${event.player} — Παγίδα: ${event.square}`;
     case 'penalty':
-      return `⚠️ ${event.player} — Ποινή: ${event.square}`;
+      // Arrest Heist: στάδιο ποινής ομάδας· ταμπλό: τετράγωνο ποινής.
+      if (event.step != null) return `⚠️ ${event.player}${event.team ? ` (Team ${event.team})` : ''} — Ποινή στάδιο ${event.step}/6`;
+      return `⚠️ ${event.player} — Ποινή: ${event.square || 'τετράγωνο ποινής'}`;
     case 'duel_win':
       return `⚔️ ${event.player} — Κόντρα ΝΙΚΗ +$5.000`;
     case 'duel_lose':
@@ -90,8 +95,6 @@ function formatEvent(event) {
       return `💬 ${event.player} (Team ${event.team}) — Αλήθεια απαντήθηκε`;
     case 'truth_refused':
       return `💬 ${event.player} (Team ${event.team}) — Αλήθεια άρνηση`;
-    case 'penalty':
-      return `⚠️ ${event.player} (Team ${event.team}) — Ποινή στάδιο ${event.step}/6`;
     case 'vault_unlocked':
       return `🔓 VAULT ΞΕΚΛΕΙΔΩΘΗΚΕ — Team ${event.team} ΝΙΚΗΣΕ!`;
     case 'vault_timeout':
@@ -217,14 +220,15 @@ export default function TVScreen() {
 
   const mostWanted = calculateMostWanted(state.players);
   const wantedLevel = mostWanted ? getWantedLevel(mostWanted) : 0;
-  const totalLoot = getTotalLoot(state);
   const currentEvent = state.history?.[0];
   const isMarathon = state.mode === 'marathon';
   const isArrestHeist = state.mode === 'arrest_heist';
   const isPajama = state.mode === 'pajama';
   const isNew = isNewMode(state.mode);
-  const ahLeaderA = state.players?.find((p) => p.team === 'A' && p.isLeader);
-  const ahLeaderB = state.players?.find((p) => p.team === 'B' && p.isLeader);
+  // Classic & Arrest Heist: ίδια εισαγωγή, κάρτες φάσεων και τελετή με τα ψηφιακά modes.
+  const isEngine = state.mode === 'classic' || state.mode === 'arrest_heist';
+  const engineBriefing = isEngine && state.stage === 0 && briefingPending(state.mg, state.mode);
+  const engineCeremony = isEngine && state.stage === 3;
 
   return (
     <div className={`dot-tv-shell ui-tv min-h-screen text-foreground flex flex-col ${fullscreen ? 'dot-tv-fullscreen' : ''}`}>
@@ -258,6 +262,7 @@ export default function TVScreen() {
         countdownSrc={FILM.countdownVideo}
         countdownStartedAt={state.countdownStartedAt}
       />
+      <GameIntroTV state={state} sessionCode={session.sessionCode} disabled={IS_PREVIEW} />
       <IntroSequenceTV state={state} />
       <NightTV state={state} />
       <WantedStrobePanic wantedLevel={wantedLevel} playerName={mostWanted?.name} />
@@ -269,6 +274,21 @@ export default function TVScreen() {
       <FinaleTV state={state} />
       <GiftCodeTV state={state} />
       <BlitzOverlay blitz={state.blitz} />
+      {isEngine && <PhaseTransitionTV state={state} />}
+      {engineBriefing && (
+        <div className="fixed inset-0 z-[55]">
+          <BriefingTV state={state} />
+          <div className="absolute bottom-[3vh] right-[2vw] flex items-center gap-[1vw] rounded-3xl border border-[#E8C26B]/40 bg-black/80 p-[0.8vw] text-left text-white backdrop-blur">
+            <div className="rounded-2xl bg-white p-[0.5vw]"><QRCodeSVG value={`${window.location.origin}/play?code=${encodeURIComponent(session.sessionCode)}`} size={128} level="M" style={{ width: 'min(9vw,16vh)', height: 'min(9vw,16vh)' }} /></div>
+            <div>
+              <div className="text-[min(1vw,1.8vh)] font-semibold uppercase tracking-[0.25em] text-[#E8C26B]">Σκάναρε για είσοδο</div>
+              <div className="font-bold tabular-nums tracking-[0.2em] text-[min(2.6vw,4.5vh)] text-[#F7E3A8]">{session.sessionCode}</div>
+              <div className="text-[min(0.9vw,1.6vh)] text-white/60">ή /play + κωδικός</div>
+            </div>
+          </div>
+        </div>
+      )}
+      {engineCeremony && <div className="fixed inset-0 z-[55]"><ChampionCeremonyTV state={state} /></div>}
 
       {state.syncTimer && (
         <div className="fixed bottom-16 right-4 z-40 w-44">

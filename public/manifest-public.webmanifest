@@ -1,7 +1,7 @@
 {
   "id": "/site",
-  "name": "DEAL OF TEMPTATIONS — THE PRIVATE REALITY GAME NIGHT",
-  "short_name": "DEAL TEMPTATIONS",
+  "name": "Deal of Temptation",
+  "short_name": "Temptation",
   "description": "Ιδιωτική βιωματική Reality Show εμπειρία 18+",
   "lang": "el",
   "start_url": "/site?source=pwa",

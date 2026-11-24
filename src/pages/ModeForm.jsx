@@ -2,15 +2,18 @@ import React, { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { NEW_MODES } from '@/data/modes/modeRegistry';
-import { MODE_COVERS } from '@/data/brandArt';
 import CustomFormQuestions from '@/components/forms/CustomFormQuestions';
+import { FormShell, Section, Field, TextInput, TextArea, ChoiceGroup, Scale, Toggle, ConsentCheck, FooterBar, SuccessScreen, formImageFor } from '@/components/forms/FormKit';
 
-const NAIL_COLORS = ['Red', 'Pink', 'White', 'Black', 'Nude', 'French', 'Blue', 'Purple', 'Green', 'Orange', 'Gold', 'Silver', 'None'];
-const FIELD = 'w-full px-3 py-2 rounded-lg bg-input border border-primary/40 text-foreground focus:outline-none focus:ring-2 focus:ring-ring';
+const NAIL_COLORS = [
+  { id: 'Red', label: 'Κόκκινο', icon: '🔴' }, { id: 'Pink', label: 'Ροζ', icon: '🩷' }, { id: 'White', label: 'Άσπρο', icon: '⚪' }, { id: 'Black', label: 'Μαύρο', icon: '⚫' },
+  { id: 'Nude', label: 'Nude', icon: '🤎' }, { id: 'French', label: 'Γαλλικό', icon: '💅' }, { id: 'Blue', label: 'Μπλε', icon: '🔵' }, { id: 'Purple', label: 'Μωβ', icon: '🟣' },
+  { id: 'Green', label: 'Πράσινο', icon: '🟢' }, { id: 'Orange', label: 'Πορτοκαλί', icon: '🟠' }, { id: 'Gold', label: 'Χρυσό', icon: '✨' }, { id: 'Silver', label: 'Ασημί', icon: '🤍' }, { id: 'None', label: 'Χωρίς', icon: '⭕' },
+];
 const LEVELS = [
-  { id: 'none', label: 'Όχι δεσίματα' },
-  { id: 'light', label: 'Ελαφριά (κορδέλες σε καρπούς/αστραγάλους)' },
-  { id: 'full', label: 'Και hogtie / δοκάρι (πάντα με ΣΤΟΠ)' },
+  { id: 'none', label: 'Όχι', icon: '🙅', hint: 'καθόλου δέσιμο' },
+  { id: 'light', label: 'Ελαφριά', icon: '🎀', hint: 'κορδέλες' },
+  { id: 'full', label: 'Πλήρη', icon: '⛓️', hint: 'πάντα με ΣΤΟΠ' },
 ];
 
 // Φόρμα συμμετοχής για τα διαθέσιμα νέα modes: η καλεσμένη διαλέγει ένα ή περισσότερα.
@@ -87,153 +90,111 @@ export default function ModeForm() {
     setSaving(false);
   }
 
-  if (saved) {
-    return (
-      <div className="min-h-screen bg-background text-foreground flex items-center justify-center p-4">
-        <div className="text-center space-y-2 max-w-sm">
-          <div className="text-6xl">✨</div>
-          <div className="font-heading text-2xl text-foreground">Ευχαριστώ, {form.name}!</div>
-          <div className="text-sm text-muted-foreground">
-            Καταχωρήθηκες για: {NEW_MODES.find((m) => m.id === form.mode)?.name || form.mode}
-          </div>
-          <div className="text-xs text-muted-foreground">Θα μπεις στο παιχνίδι μόλις η διοργανώτρια εγκρίνει τη φόρμα σου.</div>
-        </div>
-      </div>
-    );
-  }
+  const selectedMode = NEW_MODES.find((m) => m.id === form.mode);
+  const image = formImageFor(form.mode || first || 'lockdown');
 
-  const TONES = { pink: 'bg-primary text-primary-foreground border-primary ', rose: 'bg-accent text-accent-foreground border-accent ' };
-  const Choice = ({ on, onClick, children, tone = 'pink' }) => (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`py-2 px-2 rounded-lg text-sm font-bold border ${on ? TONES[tone] : 'bg-input border-primary/40 text-foreground/80'}`}
-    >{children}</button>
-  );
+  if (saved) return <SuccessScreen name={form.name.trim()} modeName={selectedMode?.name} image={image} />;
 
-  const progress = step === 0 ? 50 : 100;
+  const stepValid = step === 0 ? !!selectedMode : step === 1 ? form.name.trim().length > 0 : canSend;
+  const next = () => {
+    if (step < 2) { setStep(step + 1); window.scrollTo({ top: 0, behavior: 'smooth' }); } else submit();
+  };
 
   return (
-    <div className="min-h-screen bg-background text-foreground p-4 pb-16">
-      <div className="max-w-xl mx-auto space-y-3">
-        <div className="text-center pt-4 rounded-2xl border border-primary/30 bg-black/30 p-5 shadow-2xl">
-          <div className="text-5xl">🎮🩴💅🍹</div>
-          <h1 className="font-heading text-2xl sm:text-3xl text-foreground drop-shadow-[0_0_18px_rgba(255,105,180,0.85)] mt-2">Deal of Temptation · 18+</h1>
-          <p className="text-sm text-muted-foreground mt-2">Φόρμα συμμετοχής — ένα Mode ανά υποβολή.</p>
-          <div className="mt-5 flex items-center justify-between text-xs text-foreground/80"><span>ΒΗΜΑ {step + 1} ΑΠΟ 2</span><span>{progress}%</span></div>
-          <div className="mt-2 h-2 rounded-full bg-surface-3 overflow-hidden"><div className="h-full rounded-full bg-primary transition-all" style={{ width: `${progress}%` }} /></div>
-        </div>
-
-        {step === 0 && <div className="rounded-xl border border-primary/40 bg-surface-2 p-3 space-y-2">
-          <div className="text-sm text-foreground/80">Ποιο Mode θέλεις; * Επίλεξε ακριβώς ένα.</div>
-          <div className="grid gap-2">
+    <FormShell
+      image={image}
+      kicker="Φόρμα συμμετοχής · 18+"
+      title={selectedMode ? selectedMode.name : 'Διάλεξε εμπειρία'}
+      subtitle={selectedMode ? `${selectedMode.minutes}′ · ${selectedMode.min}–${selectedMode.max} παίκτριες` : 'Μία εμπειρία ανά αίτηση.'}
+      steps={['Εμπειρία', 'Στοιχεία', 'Όρια']}
+      step={step}
+      footer={(
+        <FooterBar
+          onBack={step > 0 ? () => setStep(step - 1) : undefined}
+          onNext={next}
+          nextLabel={step < 2 ? 'Συνέχεια' : 'Αποστολή αίτησης'}
+          disabled={!stepValid}
+          busy={saving}
+          hint={step === 2 && !canSend ? 'Επιβεβαίωσε τις δύο δηλώσεις για να στείλεις.' : error || ''}
+        />
+      )}
+    >
+      {step === 0 && (
+        <Section title="Ποια εμπειρία θέλεις;" hint="Επίλεξε ακριβώς μία.">
+          <div className="grid gap-3">
             {NEW_MODES.map((m) => {
               const on = form.mode === m.id;
               return (
-                <button
-                  key={m.id}
-                  type="button"
-                  onClick={() => selectMode(m.id)}
-                  className={`text-left rounded-lg border p-3 ${on ? 'bg-primary/25 border-primary' : 'bg-input border-primary/40'}`}
-                >
-                  <div className="flex items-start gap-3">
-                    {MODE_COVERS[`modeCover_${m.id}`] && <img src={MODE_COVERS[`modeCover_${m.id}`]} alt={m.name} loading="lazy" className="w-24 h-20 sm:w-28 sm:h-24 rounded-lg object-cover shrink-0 border border-primary/30" />}
-                    <div className="min-w-0"><div className="font-heading text-lg">{on ? '✅' : '⬜'} {m.icon} {m.name}</div><div className="text-xs text-foreground/70 mt-1">{m.desc}</div></div>
+                <button key={m.id} type="button" role="radio" aria-checked={on} onClick={() => selectMode(m.id)}
+                  className={`flex items-center gap-3 rounded-2xl border p-2.5 text-left transition-all ${on ? 'border-[#E8C26B] bg-[#E8C26B]/12 shadow-[0_0_0_1px_#E8C26B]' : 'border-white/10 bg-white/[0.03]'}`}>
+                  <img src={formImageFor(m.id)} alt="" loading="lazy" className="h-20 w-20 shrink-0 rounded-xl object-cover" />
+                  <div className="min-w-0 flex-1">
+                    <div className="font-semibold text-white">{m.icon} {m.name}</div>
+                    <div className="mt-0.5 line-clamp-2 text-xs text-white/55">{m.desc}</div>
+                    <div className="mt-1 text-[11px] font-semibold text-[#E8C26B]">{m.minutes}′ · {m.min}–{m.max} παίκτριες</div>
                   </div>
+                  <span className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 text-xs ${on ? 'border-[#E8C26B] bg-[#E8C26B] text-black' : 'border-white/30'}`}>{on ? '✓' : ''}</span>
                 </button>
               );
             })}
           </div>
-        </div>}
+        </Section>
+      )}
 
-        {step === 1 && <div className="rounded-xl border border-primary/40 bg-surface-2 p-3 space-y-3">
-          <div>
-            <div className="text-sm text-foreground/80 mb-1">Όνομα *</div>
-            <input className={FIELD} value={form.name} onChange={(e) => set('name', e.target.value)} />
-          </div>
-
+      {step === 1 && (
+        <>
+          <Section icon="👤" title="Τα στοιχεία σου">
+            <Field label="Όνομα ή ψευδώνυμο" required input>
+              <TextInput value={form.name} onChange={(e) => set('name', e.target.value)} placeholder="π.χ. Μαρία" autoComplete="given-name" />
+            </Field>
+          </Section>
           {pajamaish && (
-            <>
-              <div>
-                <div className="text-sm text-foreground/80 mb-1">Πιτζάμες (χρώμα / σχέδιο)</div>
-                <input className={FIELD} value={form.pajamaStyle} onChange={(e) => set('pajamaStyle', e.target.value)} placeholder="π.χ. ροζ σατέν με αστεράκια" />
-              </div>
-              <div>
-                <div className="text-sm text-foreground/80 mb-1">Χρώμα νυχιών ποδιών</div>
-                <select className={FIELD} value={form.nailColor} onChange={(e) => set('nailColor', e.target.value)}>
-                  {NAIL_COLORS.map((c) => <option key={c} value={c}>{c}</option>)}
-                </select>
-              </div>
-              <div>
-                <div className="text-sm text-foreground/80 mb-1">Θα φέρεις τις δικές σου παντόφλες;</div>
-                <div className="grid grid-cols-2 gap-2">
-                  <Choice on={form.bringsOwnSlippers} onClick={() => set('bringsOwnSlippers', true)}>🩴 ΝΑΙ</Choice>
-                  <Choice on={!form.bringsOwnSlippers} onClick={() => set('bringsOwnSlippers', false)} tone="rose">🙅 ΟΧΙ</Choice>
-                </div>
-                <input className={`${FIELD} mt-2`} value={form.slipperType} onChange={(e) => set('slipperType', e.target.value)} placeholder={form.bringsOwnSlippers ? 'π.χ. fluffy ροζ' : 'Νούμερο παντόφλας (π.χ. 38)'} />
-              </div>
-            </>
+            <Section icon="🩴" title="Η εμφάνισή σου">
+              <Field label="Πιτζάμες (χρώμα / σχέδιο)" input>
+                <TextInput value={form.pajamaStyle} onChange={(e) => set('pajamaStyle', e.target.value)} placeholder="π.χ. ροζ σατέν με αστεράκια" />
+              </Field>
+              <Field label="Χρώμα νυχιών ποδιών">
+                <ChoiceGroup cols={4} size="sm" options={NAIL_COLORS} value={form.nailColor} onChange={(v) => set('nailColor', v)} />
+              </Field>
+              <Toggle label="Φέρνω τις δικές μου παντόφλες" checked={form.bringsOwnSlippers} onChange={(v) => set('bringsOwnSlippers', v)} />
+              <Field label={form.bringsOwnSlippers ? 'Τι παντόφλες;' : 'Νούμερο παντόφλας'} input>
+                <TextInput value={form.slipperType} onChange={(e) => set('slipperType', e.target.value)} placeholder={form.bringsOwnSlippers ? 'π.χ. fluffy ροζ' : 'π.χ. 38'} />
+              </Field>
+            </Section>
           )}
-
           {beachish && (
-            <>
-              <div>
-                <div className="text-sm text-foreground/80 mb-1">Έχεις σαγιονάρες; (υποχρεωτικές στο Beach Bar)</div>
-                <div className="grid grid-cols-2 gap-2">
-                  <Choice on={form.hasFlipFlops} onClick={() => set('hasFlipFlops', true)}>🩴 ΝΑΙ</Choice>
-                  <Choice on={!form.hasFlipFlops} onClick={() => set('hasFlipFlops', false)} tone="rose">ΟΧΙ, χρειάζομαι</Choice>
-                </div>
-              </div>
-              <div>
-                <div className="text-sm text-foreground/80 mb-1">Ποτό</div>
-                <div className="grid grid-cols-2 gap-2">
-                  <Choice on={form.alcohol === 'drinks'} onClick={() => set('alcohol', 'drinks')}>🥃 Πίνω</Choice>
-                  <Choice on={form.alcohol === 'free'} onClick={() => set('alcohol', 'free')}>🧃 Χωρίς αλκοόλ</Choice>
-                </div>
-              </div>
-            </>
+            <Section icon="🍹" title="Beach Bar">
+              <Toggle label="Έχω σαγιονάρες" hint="Είναι απαραίτητες στο Beach Bar" checked={form.hasFlipFlops} onChange={(v) => set('hasFlipFlops', v)} />
+              <Field label="Ποτό">
+                <ChoiceGroup options={[{ id: 'drinks', label: 'Πίνω', icon: '🥃' }, { id: 'free', label: 'Χωρίς αλκοόλ', icon: '🧃' }]} value={form.alcohol} onChange={(v) => set('alcohol', v)} />
+              </Field>
+            </Section>
           )}
+        </>
+      )}
 
-          <div>
-            <div className="text-sm text-foreground/80 mb-1">Ευαισθησία πελμάτων (1-5): {form.footSensitivity}</div>
-            <input type="range" min="1" max="5" value={form.footSensitivity} onChange={(e) => set('footSensitivity', e.target.value)} className="w-full accent-primary" />
-          </div>
-          <div>
-            <div className="text-sm text-foreground/80 mb-1">Πόσο γαργαλιέσαι (1-5): {form.ticklish}</div>
-            <input type="range" min="1" max="5" value={form.ticklish} onChange={(e) => set('ticklish', e.target.value)} className="w-full accent-primary" />
-          </div>
-          <div>
-            <div className="text-sm text-foreground/80 mb-1">Δεσίματα: τι σε βολεύει;</div>
-            <div className="grid gap-2">
-              {LEVELS.map((l) => <Choice key={l.id} on={form.restraintLevel === l.id} onClick={() => set('restraintLevel', l.id)}>{l.label}</Choice>)}
-            </div>
-          </div>
-          <label className="flex items-center gap-2 text-sm text-foreground/90">
-            <input type="checkbox" checked={form.blindfoldOk} onChange={(e) => set('blindfoldOk', e.target.checked)} className="accent-primary" />
-            Δέχομαι να φορέσω μάσκα ύπνου στις τυφλές δοκιμασίες
-          </label>
-          <div>
-            <div className="text-sm text-foreground/80 mb-1">Όρια: τι ΔΕΝ θέλεις</div>
-            <textarea rows={3} className={FIELD} value={form.boundaries} onChange={(e) => set('boundaries', e.target.value)} />
-          </div>
-
-          <CustomFormQuestions formType="modes" value={form.customAnswers} onChange={(value) => set('customAnswers', value)} onValidityChange={setCustomQuestionsValid} className="space-y-3" />
-
-          <label className="flex items-start gap-2 text-sm text-foreground/90">
-            <input type="checkbox" checked={form.adult} onChange={(e) => set('adult', e.target.checked)} className="mt-1 accent-primary" />
-            <span>Είμαι 18 ετών ή μεγαλύτερη και συμμετέχω με τη θέλησή μου. *</span>
-          </label>
-          <label className="flex items-start gap-2 text-sm text-foreground/90">
-            <input type="checkbox" checked={form.safeWordConfirmed} onChange={(e) => set('safeWordConfirmed', e.target.checked)} className="mt-1 accent-primary" />
-            <span>Κατάλαβα ότι μπορώ να πω ΣΤΟΠ οποιαδήποτε στιγμή και όλα σταματούν. *</span>
-          </label>
-        </div>}
-
-        {error && <div className="text-sm text-red-300 text-center">{error}</div>}
-        {step === 0 ? <button type="button" onClick={() => setStep(1)} disabled={!form.mode} className="w-full py-3 rounded-xl font-heading text-xl bg-primary text-primary-foreground hover:bg-primary/90  disabled:opacity-40">ΣΥΝΕΧΕΙΑ ΣΤΑ ΣΤΟΙΧΕΙΑ →</button> : <div className="flex gap-2"><button type="button" onClick={() => setStep(0)} className="px-5 py-3 rounded-xl font-bold border border-primary/40 text-foreground">← ΠΙΣΩ</button><button onClick={submit} disabled={!canSend} className="w-full py-3 rounded-xl font-heading text-xl bg-primary text-primary-foreground hover:bg-primary/90  disabled:opacity-40">
-          {saving ? 'ΑΠΟΣΤΟΛΗ...' : 'ΑΠΟΣΤΟΛΗ'}
-        </button></div>}
-      </div>
-    </div>
+      {step === 2 && (
+        <>
+          <Section icon="🎚️" title="Οι προτιμήσεις σου" hint="Μας βοηθούν να διαλέξουμε τις σωστές δοκιμασίες για σένα.">
+            <Scale label="Ευαισθησία πελμάτων" icon="🦶" value={form.footSensitivity} onChange={(v) => set('footSensitivity', v)} />
+            <Scale label="Πόσο γαργαλιέσαι" icon="🪶" value={form.ticklish} onChange={(v) => set('ticklish', v)} />
+            <Field label="Δεσίματα">
+              <ChoiceGroup cols={3} options={LEVELS} value={form.restraintLevel} onChange={(v) => set('restraintLevel', v)} />
+            </Field>
+            <Toggle label="Δέχομαι μάσκα ύπνου" hint="Στις «τυφλές» δοκιμασίες" checked={form.blindfoldOk} onChange={(v) => set('blindfoldOk', v)} />
+          </Section>
+          <Section icon="🔒" title="Τα όριά σου" hint="Τα βλέπει μόνο η διοργανώτρια — ποτέ οι υπόλοιπες.">
+            <Field label="Τι ΔΕΝ θέλεις να σου συμβεί" input>
+              <TextArea value={form.boundaries} onChange={(e) => set('boundaries', e.target.value)} placeholder="Γράψε ελεύθερα — όλα γίνονται σεβαστά." />
+            </Field>
+            <CustomFormQuestions formType="modes" value={form.customAnswers} onChange={(value) => set('customAnswers', value)} onValidityChange={setCustomQuestionsValid} className="space-y-3" />
+          </Section>
+          <Section icon="✅" title="Δηλώσεις">
+            <ConsentCheck checked={form.adult} onChange={(v) => set('adult', v)}>Είμαι <b>18 ετών ή μεγαλύτερη</b> και συμμετέχω με τη θέλησή μου.</ConsentCheck>
+            <ConsentCheck checked={form.safeWordConfirmed} onChange={(v) => set('safeWordConfirmed', v)}>Ξέρω ότι μπορώ να πω <b>ΣΤΟΠ</b> οποιαδήποτε στιγμή και όλα σταματούν αμέσως.</ConsentCheck>
+          </Section>
+        </>
+      )}
+    </FormShell>
   );
 }

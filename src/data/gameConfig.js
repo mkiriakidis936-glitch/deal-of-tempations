@@ -117,7 +117,7 @@ export const INTENSITY_LEVELS = [
 import { NEW_MODES, RETIRED_MODES } from '@/data/modes/modeRegistry';
 
 export const ENGINE_GAME_MODES = [
-  { id: 'classic', name: 'ΚΛΑΣΣΙΚΗ', icon: '🎲', kind: 'engine', desc: '2-6 παίκτριες. Ταμπλό 24 κουτιών, Σκάλα 7 Ποινών, Στάδια 1-3.' },
+  { id: 'classic', name: 'ΚΛΑΣΙΚΗ', icon: '🎲', kind: 'engine', desc: '2-6 παίκτριες. Ταμπλό 24 κουτιών, Σκάλα 7 Ποινών, Στάδια 1-3.' },
   { id: 'arrest_heist', name: 'ARREST & HEIST', icon: '🚨', kind: 'engine', desc: '2 Ομάδες (Alpha vs Beta). 6 γύροι, 6 στάδια ποινών, Grand Heist Escape.' },
 ];
 

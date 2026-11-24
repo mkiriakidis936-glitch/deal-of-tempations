@@ -18,13 +18,13 @@ export const IMAGE_SLOTS = [
   { id: 'party2', label: 'Pajama — νύχτα', where: '07_party2.jpg — Promo Pajama «Τη νύχτα»', surfaces: ['site'] },
   { id: 'vault', label: 'Vault', where: '08_vault.jpg — Promo Pajama και Vault', surfaces: ['site', 'forms'] },
   { id: 'banner', label: 'Banner Admin', where: '09_banner.jpg — επάνω banner στο Dashboard του Admin', surfaces: ['tablet'] },
-  { id: 'logo', label: 'Λογότυπο φόρμας', where: '10_logo.jpg — λογότυπο φόρμας ερωτηματολογίου πρόσκλησης', surfaces: ['forms'] },
-  { id: 'invitationBg', label: 'Φόντο φόρμας πρόσκλησης', where: '11_invitationBg.jpg — φόντο της φόρμας πρόσκλησης', surfaces: ['forms'] },
+  { id: 'logo', label: 'Λογότυπο φόρμας', where: '10_logo.jpg — δεν χρησιμοποιείται πια', surfaces: ['forms'], retired: true },
+  { id: 'invitationBg', label: 'Φόντο φορμών', where: 'Διακριτικό φόντο πίσω από όλες τις φόρμες και τη VIP πρόσκληση', surfaces: ['forms'] },
   { id: 'photoHeistNight', label: 'Heist gallery — προεπιλεγμένη εικόνα', where: 'extra_heistNight.jpg — προεπιλεγμένη εικόνα Heist gallery', surfaces: ['site', 'forms'] },
   { id: 'photoGame', label: 'Pajama gallery — προεπιλεγμένη εικόνα παιχνιδιού', where: 'extra_game.jpg — προεπιλεγμένη εικόνα Pajama gallery', surfaces: ['site', 'forms'] },
   { id: 'photoSlippers', label: 'Pajama gallery — προεπιλεγμένη εικόνα παντόφλας', where: 'extra_slippers.jpg — προεπιλεγμένη εικόνα Pajama gallery', surfaces: ['site', 'forms'] },
-  { id: 'extraHeistRoom', label: 'Κεφαλίδα φόρμας Arrest & Heist', where: 'extra_heistRoom.jpg — κεφαλίδα φόρμας Arrest & Heist', surfaces: ['forms'] },
-  { id: 'extraPediGlam', label: 'Κεφαλίδα φόρμας Pajama Pedi-Glam', where: 'extra_pediGlam.jpg — κεφαλίδα φόρμας Pajama Pedi-Glam', surfaces: ['forms'] },
+  { id: 'extraHeistRoom', label: 'Κεφαλίδα φόρμας Arrest & Heist', where: 'Πάνω μέρος της φόρμας Arrest & Heist (αλλιώς η κεντρική εικόνα του mode)', surfaces: ['forms'] },
+  { id: 'extraPediGlam', label: 'Κεφαλίδα φόρμας Pajama Pedi-Glam', where: 'αποσύρθηκε', surfaces: ['forms'], retired: true },
   { id: 'wallpaperPhone', label: 'Wallpaper κινητού 9:16', where: 'wallpaper_phone_9x16.jpg — φόντο κινητού', surfaces: ['mobile'] },
   { id: 'wallpaperTablet', label: 'Wallpaper tablet 4:3', where: 'wallpaper_tablet_4x3.jpg — φόντο tablet', surfaces: ['tablet'] },
   { id: 'wallpaperTv', label: 'Wallpaper TV 16:9', where: 'wallpaper_tv_16x9.jpg — φόντο TV', surfaces: ['tv'] },
@@ -36,7 +36,7 @@ export const PHOTO_SPOTS = [
   { id: 'siteTrailer', label: 'Site — τρέιλερ', where: 'Αρχική σελίδα, ενότητα τρέιλερ', surfaces: ['site'] },
   { id: 'tv', label: 'TV — οθόνη αναμονής', where: '13_tv.jpg — εικόνα οθόνης αναμονής TV', surfaces: ['tv'] },
   { id: 'promo', label: 'Promo', where: 'Promo, hero', surfaces: ['site'] },
-  { id: 'invitation', label: 'Εικόνα teaser πρόσκλησης', where: '15_invitation.jpg — εικόνα teaser πρόσκλησης', surfaces: ['forms'] },
+  { id: 'invitation', label: 'Εικόνα VIP πρόσκλησης', where: 'Κεφαλίδα της VIP πρόσκλησης και του teaser', surfaces: ['forms'] },
   { id: 'pajama', label: 'Pajama invitation — φόντο', where: '16_pajama.jpg — φόντο Pajama πρόσκλησης', surfaces: ['forms'], retired: true },
 ];
 export const PHOTO_SPOT_IDS = PHOTO_SPOTS.map((v) => v.id);
@@ -59,8 +59,9 @@ export const MODE_COVER_SLOTS = [
   { id: 'modeCover_marathon_4h', modeId: 'marathon_4h', label: 'Pajama Heist & Arrest', filename: '', surfaces: ['tablet', 'forms'] },
 ];
 
-// Τα δύο βίντεο έναρξης της τηλεόρασης.
+// Τα βίντεο έναρξης της τηλεόρασης.
 export const VIDEO_SLOTS = [
+  { id: 'gameIntroVideo', label: 'INTRO ΠΑΙΧΝΙΔΙΟΥ (όλα τα modes)', where: 'TV — στην αρχή κάθε νέας παρτίδας, πριν από τους κανόνες, όταν το mode δεν έχει δικό του intro (MODE MEDIA CENTER)', surfaces: ['tv'] },
   { id: 'welcomeVideo', label: 'WELCOME VIDEO', where: 'TV — όταν συνδέεται σε ενεργή συνεδρία', surfaces: ['tv'] },
   { id: 'countdownVideo', label: 'COUNTDOWN VIDEO', where: 'TV — αμέσως μετά την εντολή Έναρξη Παιχνιδιού', surfaces: ['tv'] },
 ];

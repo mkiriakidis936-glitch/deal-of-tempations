@@ -1,7 +1,7 @@
 import crypto from 'node:crypto';
 import express from 'express';
 import { query, pool } from './db.js';
-import { requireAdmin } from './auth.js';
+import { requireAdmin, hasStreamTicket } from './auth.js';
 import { notifyNewSubmission, notifyPlayerMission } from './push.js';
 import { isValidConsentEntry } from '../src/lib/consent.js';
 
@@ -22,14 +22,18 @@ const rules = {
   Interest: { read: ADMIN, update: ADMIN, delete: ADMIN },
   Participation: { read: ADMIN, update: ADMIN, delete: ADMIN },
   // personal answers: anyone can submit the form, only admins can read them
-  PlayerIntake:       { read: ADMIN, update: ADMIN, delete: ADMIN },
+  // Δημιουργούνται ΜΟΝΟ από τις ελεγμένες διαδρομές (/invitation-intake, /vip-invitations/:token/submit, /public-forms/:type).
+  PlayerIntake:       { read: ADMIN, create: ADMIN, update: ADMIN, delete: ADMIN },
   PlayerPresence:     { read: ADMIN, create: ADMIN, update: ADMIN, delete: ADMIN },
   PajamaIntake:       { read: ADMIN, update: ADMIN, delete: ADMIN },
-  BacheloretteIntake: { read: ADMIN, update: ADMIN, delete: ADMIN },
+  BacheloretteIntake: { read: ADMIN, create: ADMIN, update: ADMIN, delete: ADMIN },
   InvitationRSVP:     { read: ADMIN, update: ADMIN, delete: ADMIN },
   VIPInvitation: { read: ADMIN, create: ADMIN, update: ADMIN, delete: ADMIN },
-  VIPInvitationSubmission: { read: ADMIN, update: ADMIN, delete: ADMIN },
-  PublicFormSubmission: { read: ADMIN, update: ADMIN, delete: ADMIN },
+  VIPInvitationSubmission: { read: ADMIN, create: ADMIN, update: ADMIN, delete: ADMIN },
+  PublicFormSubmission: { read: ADMIN, create: ADMIN, update: ADMIN, delete: ADMIN },
+  // Παλιές οντότητες χωρίς χρήση στην εφαρμογή: κανείς ανώνυμος δεν τις διαβάζει/γράφει/σβήνει.
+  Haunting: { read: ADMIN, create: ADMIN, update: ADMIN, delete: ADMIN },
+  Memorial: { read: ADMIN, create: ADMIN, update: ADMIN, delete: ADMIN },
   // Reality-show production plans are private and editable only by administrators.
   ShowProduction: { read: ADMIN, create: ADMIN, update: ADMIN, delete: ADMIN },
   ProductionConsent: { read: ADMIN, update: ADMIN, delete: ADMIN },
@@ -126,6 +130,7 @@ const deepMerge = (target, patch, field = '', allowClear = false) => {
   return merged;
 };
 
+const PRIVATE_PLAYER_KEYS = ['vipProfile', 'role'];
 const INBOX_KEYS = new Set(['type', 'at', 'text', 'target', 'qid', 'answers']);
 const shortText = (value, max) => typeof value === 'string' && value.trim().length > 0 && value.length <= max;
 export function isValidInboxEntry(entry, validTarget) {
@@ -343,10 +348,13 @@ export function validatePlayerPatch(current, patch, playerId) {
     const old = current.players || [];
     const next = patch.players;
     if (!Array.isArray(next) || old.length !== next.length) return false;
-    const changed = old.filter((p, i) => !sameJson(p, next[i]));
+    // Το κινητό στέλνει τη λίστα όπως τη βλέπει (χωρίς VIP προφίλ/ρόλους των άλλων): αυτά δεν μετρούν ως αλλαγή,
+    // αλλά αν σταλούν, πρέπει να είναι ίδια με τα αποθηκευμένα.
+    const privateKeysUnchanged = (p, n) => PRIVATE_PLAYER_KEYS.every((key) => !isObject(n) || !(key in n) || sameJson(p?.[key], n[key]));
+    const changed = old.filter((p, i) => !sameJson(withoutKeys(p, PRIVATE_PLAYER_KEYS), withoutKeys(next[i], PRIVATE_PLAYER_KEYS)) || !privateKeysUnchanged(p, next[i]));
     const before = old.find((p) => p.id === playerId);
     const after = next.find((p) => p.id === playerId);
-    if (!before || !after || !sameExceptKeys(before, after, ['penaltyStep'])) return false;
+    if (!before || !after || !sameExceptKeys(withoutKeys(before, ['vipProfile']), withoutKeys(after, ['vipProfile']), ['penaltyStep']) || !privateKeysUnchanged(before, after)) return false;
     const delta = (after.penaltyStep || 0) - (before.penaltyStep || 0);
     const doubleDown = patch.history?.[0];
     const validPenaltyChange =
@@ -379,10 +387,11 @@ export function sanitizePublicSession(record, playerId = null) {
   if (!record?.state || !isObject(record.state)) return record;
   const state = { ...record.state };
   if (Array.isArray(state.players)) {
+    // Το VIP προφίλ (όρια, προτιμήσεις) το βλέπει μόνο το Tablet. Ο κρυφός ρόλος μόνο η ίδια η παίκτρια.
     state.players = state.players.map((player) => {
-      if (!isObject(player) || !Object.prototype.hasOwnProperty.call(player, 'vipProfile')) return player;
-      const { vipProfile, ...publicPlayer } = player;
-      return playerId && player.id === playerId ? { ...publicPlayer, vipProfile } : publicPlayer;
+      if (!isObject(player)) return player;
+      const { vipProfile: _vip, role, ...publicPlayer } = player;
+      return playerId && player.id === playerId && role !== undefined ? { ...publicPlayer, role } : publicPlayer;
     });
   }
   if (Array.isArray(state.history)) state.history = state.history.filter((event) => !['truth', 'dare', 'confession'].includes(event?.type));
@@ -1381,7 +1390,7 @@ export function entityRoutes() {
     const admin = isAdmin(req);
     // Εισιτήριο admin που έχει ήδη χρησιμοποιηθεί/λήξει (π.χ. αυτόματη επανασύνδεση του browser):
     // ΔΕΝ γίνεται σιωπηλά ανώνυμη σύνδεση — απορρίπτεται, ώστε η συσκευή να ζητήσει νέο εισιτήριο.
-    if (req.query.ticket && !admin) return res.status(401).json({ error: 'Stream ticket expired' });
+    if (hasStreamTicket(req) && !admin) return res.status(401).json({ error: 'Stream ticket expired' });
     const accepted = [];
     for (const item of subs) {
       const entity = String(item?.entity || '');
@@ -1417,7 +1426,7 @@ export function entityRoutes() {
 
   // --- realtime stream (EventSource can't send headers; admins authenticate with a one-time ?ticket= from POST /api/entities/stream-ticket) ---
   r.get('/:entity/stream', guard('read'), async (req, res) => {
-    if (req.query.ticket && !isAdmin(req)) return res.status(401).json({ error: 'Stream ticket expired' });
+    if (hasStreamTicket(req) && !isAdmin(req)) return res.status(401).json({ error: 'Stream ticket expired' });
     let sessionCode = null;
     let playerId = null;
     if (req.entity === 'GameSession') {

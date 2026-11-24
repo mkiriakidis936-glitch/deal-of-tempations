@@ -203,7 +203,7 @@ function DangerSlider({ onResult }) {
   const left = useLocalCountdown(5, true, () => onResult(v === 7));
   return (
     <div className="space-y-3 text-center">
-      <div className="font-heading">Tickle Intensity Level: <b className="text-3xl">{v}</b> · ⏱ {Math.ceil(left)}″</div>
+      <div className="font-heading">Ένταση γαργαλητού: <b className="text-3xl">{v}</b> · ⏱ {Math.ceil(left)}″</div>
       <input type="range" min="1" max="10" value={v} onChange={(e) => setV(Number(e.target.value))} className="w-full" />
       <div className="text-sm opacity-70">Βάλ’ το ακριβώς στο 7.</div>
       <Btn color="bg-red-800" onClick={() => onResult(v === 7)}>ΚΛΕΙΔΩΜΑ</Btn>
@@ -289,7 +289,7 @@ export default function LockdownMiniGames({ onPenalty, onWheel, onClose, safeOnl
   }
 
   return (
-    <Panel title="🎮 Digital Mini-Games" accent="#FF453A">
+    <Panel title="🎮 Ψηφιακά μίνι παιχνίδια" accent="#FF453A">
       {!game && (
         <div className="grid sm:grid-cols-2 gap-2">
           {availableGames.map((g) => (

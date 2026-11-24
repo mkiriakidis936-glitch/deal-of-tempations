@@ -36,7 +36,7 @@ export default function ActLockdown({ ctx, onDone, standalone }) {
     if (action?.type !== 'lockdown_exit_code' || ld.stage !== 'exit') return;
     if (action.code === EXIT_CODE) {
       setMg({ playerAction: null, ld: { ...ld, stage: 'won' } });
-      log('🎆 EXIT CODE σωστός — ΞΕΚΛΕΙΔΩΘΗΚΕ ΑΠΟ ΚΙΝΗΤΟ!');
+      log('🎆 Ο ΚΩΔΙΚΟΣ ΕΞΟΔΟΥ είναι σωστός — ΞΕΚΛΕΙΔΩΘΗΚΕ ΑΠΟ ΚΙΝΗΤΟ!');
       sfx.ok();
     } else {
       setMg({ playerAction: null });
@@ -78,11 +78,11 @@ export default function ActLockdown({ ctx, onDone, standalone }) {
 
   function start() {
     const initialHostage = players[ld.hostageIdx ?? 0];
-    if (!canAssignVipActivity(ctx, initialHostage, { activityLabel: 'ρόλο Hostage' })) return;
+    if (!canAssignVipActivity(ctx, initialHostage, { activityLabel: 'ρόλο ομήρου' })) return;
     sfx.alarm();
     const durationSeconds = standalone ? LOCKDOWN_SECONDS : MARATHON_LOCKDOWN_SECONDS;
     setMg({ timer: timerStart(durationSeconds), ld: { ...ld, stage: 'l1', revealed: [false, false, false, false], correct: 0, wrong: 0, qOrder: shuffle(HOSTAGE_QUESTIONS.map((_, i) => i)), qi: 0 } });
-    log('🚨 THE PAJAMA LOCKDOWN HAS BEGUN — 60′');
+    log('🚨 ΤΟ PAJAMA LOCKDOWN ΞΕΚΙΝΗΣΕ — 60′');
   }
 
   const revealed = ld.revealed || [false, false, false, false];
@@ -97,8 +97,8 @@ export default function ActLockdown({ ctx, onDone, standalone }) {
   if (ld.stage === 'won') {
     return (
       <div className="space-y-3">
-        <Panel title="👑 THE FINAL ESCAPE — VIP VAULT UNLOCKED" accent="#E8C26B">
-          <p className="font-body">Ο Exit Code ({EXIT_CODE}) λύθηκε πριν μηδενιστεί το ρολόι. Το Lockdown ξεκλειδώθηκε!</p>
+        <Panel title="👑 Η ΤΕΛΙΚΗ ΑΠΟΔΡΑΣΗ — ΤΟ VIP VAULT ΑΝΟΙΞΕ" accent="#E8C26B">
+          <p className="font-body">Ο κωδικός εξόδου ({EXIT_CODE}) λύθηκε πριν μηδενιστεί το ρολόι. Το Lockdown ξεκλειδώθηκε!</p>
           {vaultCard && <div className="rounded bg-amber-950/60 border border-amber-500 p-3 font-body text-lg">{vaultCard}</div>}
           <div className="flex flex-wrap gap-2">
             <Btn color="bg-amber-600 text-black" onClick={() => setVaultCard(pick(VIP_VAULT))}>🎴 Κάρτα VIP Vault</Btn>
@@ -123,7 +123,7 @@ export default function ActLockdown({ ctx, onDone, standalone }) {
 
       <DigitBar revealed={revealed} />
 
-      {ld.stage === 'l1' && <Level1 ctx={ctx} ld={ld} setLd={setLd} hostage={hostage} penalty={penalty} onPass={() => { reveal(0); setLd({ stage: 'l2' }); log('🔓 Level 1 ολοκληρώθηκε — 1ο ψηφίο'); sfx.ok(); }} />}
+      {ld.stage === 'l1' && <Level1 ctx={ctx} ld={ld} setLd={setLd} hostage={hostage} penalty={penalty} onPass={() => { reveal(0); setLd({ stage: 'l2' }); log('🔓 Το Επίπεδο 1 ολοκληρώθηκε — 1ο ψηφίο'); sfx.ok(); }} />}
       {ld.stage === 'l2' && <Level2 ld={ld} setLd={setLd} hostage={hostage} revealed={revealed} reveal={reveal} log={log} />}
       {ld.stage === 'l3' && <SockHeist onResult={(ok) => {
         if (ok) { setLd({ stage: 'exit' }); log('🧦 Midnight Sock Heist επιτυχές'); sfx.ok(); }
@@ -131,20 +131,20 @@ export default function ActLockdown({ ctx, onDone, standalone }) {
       }} />}
       {ld.stage === 'exit' && <Exit onSolved={() => {
         setLd({ stage: 'won' });
-        log('🎆 EXIT CODE σωστός — ΞΕΚΛΕΙΔΩΘΗΚΕ!');
+        log('🎆 Ο ΚΩΔΙΚΟΣ ΕΞΟΔΟΥ είναι σωστός — ΞΕΚΛΕΙΔΩΘΗΚΕ!');
         sfx.ok();
       }} />}
 
       <Panel title="⚙️ Chaos Mechanics" accent={RED}>
         <div className="flex flex-wrap gap-2">
-          <Btn color="bg-red-900" onClick={() => setTray(tray === 'wheel' ? null : 'wheel')}>🎡 Spicy Truth Wheel</Btn>
+          <Btn color="bg-red-900" onClick={() => setTray(tray === 'wheel' ? null : 'wheel')}>🎡 Τροχός πικάντικης αλήθειας</Btn>
           <Btn color="bg-red-900" onClick={() => setTray(tray === 'mini' ? null : 'mini')}>🎮 Mini-games</Btn>
-          {ld.stage === 'l2' && revealed.slice(1).every(Boolean) && <Btn color="bg-amber-700" onClick={() => setLd({ stage: 'l3' })}>🧦 Level 3 →</Btn>}
+          {ld.stage === 'l2' && revealed.slice(1).every(Boolean) && <Btn color="bg-amber-700" onClick={() => setLd({ stage: 'l3' })}>🧦 Επίπεδο 3 →</Btn>}
           <Btn onClick={() => setMg((cur) => ({ timer: timerAdd(cur.timer, 60) }))}>+1′ (host)</Btn>
         </div>
         <div className="text-xs opacity-70 space-y-1">
-          <div>🔗 <b>Blindfold Chain</b>: η Hostage ({hostage?.name}) είναι τυφλή και δεμένη· οι άλλες την καθοδηγούν αγγίζοντας πέλματα μόνο με κάλτσες ή δάχτυλα για να βρει τις σωστές επιλογές στην οθόνη.</div>
-          <div>🔄 <b>Rotation</b>: η θέση της Hostage αλλάζει κυκλικά σε κάθε act.</div>
+          <div>🔗 <b>Blindfold Chain</b>: η όμηρος ({hostage?.name}) είναι τυφλή και δεμένη· οι άλλες την καθοδηγούν αγγίζοντας πέλματα μόνο με κάλτσες ή δάχτυλα για να βρει τις σωστές επιλογές στην οθόνη.</div>
+          <div>🔄 <b>Rotation</b>: η θέση της ομήρου αλλάζει κυκλικά σε κάθε act.</div>
         </div>
       </Panel>
 
@@ -213,13 +213,13 @@ function Level1({ ctx, ld, setLd, hostage, penalty, onPass }) {
     }
   }
   return (
-    <Panel title="⛓️ Level 1 · The Hostage Sacrifice" accent={RED}>
-      <p className="text-sm opacity-80">Ο πρώτος κωδικός είναι κλειδωμένος. Η ομάδα επιλέγει μία «Hostage»· οι υπόλοιπες απαντούν στις ερωτήσεις ενώ κάνουν ασταμάτητο γαργάλημα στα πέλματά της. Κάθε λάθος = +2′ ποινή στο ρολόι.</p>
+    <Panel title="⛓️ Επίπεδο 1 · Η θυσία της ομήρου" accent={RED}>
+      <p className="text-sm opacity-80">Ο πρώτος κωδικός είναι κλειδωμένος. Η ομάδα επιλέγει μία «όμηρο»· οι υπόλοιπες απαντούν στις ερωτήσεις ενώ κάνουν ασταμάτητο γαργάλημα στα πέλματά της. Κάθε λάθος = +2′ ποινή στο ρολόι.</p>
       <div className="flex flex-wrap gap-2 items-center text-sm">
-        Hostage:
+        Όμηρος:
         <select value={ld.hostageIdx ?? ''} onChange={(e) => {
           const nextHostage = players[Number(e.target.value)];
-          if (canAssignVipActivity(ctx, nextHostage, { activityLabel: 'ρόλο Hostage' })) setLd({ hostageIdx: Number(e.target.value) });
+          if (canAssignVipActivity(ctx, nextHostage, { activityLabel: 'ρόλο ομήρου' })) setLd({ hostageIdx: Number(e.target.value) });
         }} className="px-2 py-1.5 rounded bg-background border border-border">
           <option value="">{hostage?.name} (σειρά)</option>
           {players.map((p, i) => <option key={p.id} value={i}>{p.name}</option>)}
@@ -242,7 +242,7 @@ function Level1({ ctx, ld, setLd, hostage, penalty, onPass }) {
 function Level2({ ld, setLd, hostage, revealed, reveal, log }) {
   return (
     <div className="space-y-3">
-      <div className="font-heading text-lg" style={{ color: RED }}>🔥 Level 2 · The 18+ Sensory Cipher — λύστε τις 3 δοκιμασίες</div>
+      <div className="font-heading text-lg" style={{ color: RED }}>🔥 Επίπεδο 2 · Ο αισθησιακός γρίφος 18+ — λύστε τις 3 δοκιμασίες</div>
       <FootId done={revealed[1]} hostage={hostage} onDone={() => { reveal(1); log('🙈 Blind Foot ID λύθηκε — 2ο ψηφίο'); sfx.ok(); }} />
       <ConfessionLock done={revealed[2]} onDone={(w) => { reveal(2); log(`🤫 Confession Lock: λέξη-κλειδί «${w}» — 3ο ψηφίο`); sfx.ok(); }} />
       <WhisperClue done={revealed[3]} onDone={() => { reveal(3); log('🎧 Audio Whisper Clue λύθηκε — 4ο ψηφίο'); sfx.ok(); }} />
@@ -325,7 +325,7 @@ function SockHeist({ onResult }) {
   const [run, setRun] = useState(false);
   const left = useLocalCountdown(SOCK_HEIST_SECONDS, run, () => { sfx.alarm(); setRun(false); });
   return (
-    <Panel title="🧦 Level 3 · The Sabotage Override — Midnight Sock Heist" accent={RED}>
+    <Panel title="🧦 Επίπεδο 3 · Δολιοφθορά — Η μεταμεσονύχτια ληστεία της κάλτσας" accent={RED}>
       <p className="text-sm opacity-80">Όλες φοράτε παράταιρες/τρύπιες/αστείες κάλτσες. 2 λεπτά αστραπιαίας μάχης κλοπής καλτσών στο δωμάτιο, χωρίς καμία να χάσει την ισορροπία της ή να πέσει κάτω.</p>
       <div className="text-center font-display text-5xl" style={{ color: left <= 15 && run ? RED : undefined }}>{Math.ceil(run ? left : SOCK_HEIST_SECONDS)}″</div>
       <div className="flex flex-wrap gap-2 justify-center">
@@ -381,7 +381,7 @@ function Exit({ onSolved }) {
     else { setWrong(true); sfx.fail(); sfx.buzz(400); setCode(''); setTimeout(() => setWrong(false), 700); }
   }
   return (
-    <Panel title="🔢 The Exit Code" accent="#E8C26B">
+    <Panel title="🔢 Ο κωδικός εξόδου" accent="#E8C26B">
       <div className={`text-center font-display text-5xl tracking-[0.4em] ${wrong ? 'text-red-500' : ''}`}>{code.padEnd(4, '•')}</div>
       <div className="grid grid-cols-3 gap-2 max-w-xs mx-auto">
         {['1', '2', '3', '4', '5', '6', '7', '8', '9', '⌫', '0', '✔'].map((k) => (
@@ -402,7 +402,7 @@ function SpicyWheel({ onClose, log }) {
   const [q, setQ] = useState(null);
   const [spin, setSpin] = useState(false);
   const [phase, setPhase] = useState('idle'); // idle | decide | penalty
-  const decide = useLocalCountdown(WHEEL_DECISION_SECONDS, phase === 'decide', () => { setPhase('penalty'); sfx.alarm(); log('🎡 Spicy Truth Wheel: ποινή 30″ δέσιμο & γαργάλημα'); });
+  const decide = useLocalCountdown(WHEEL_DECISION_SECONDS, phase === 'decide', () => { setPhase('penalty'); sfx.alarm(); log('🎡 Τροχός πικάντικης αλήθειας: ποινή 30″ δέσιμο & γαργάλημα'); });
   const pen = useLocalCountdown(WHEEL_PENALTY_SECONDS, phase === 'penalty', () => { sfx.alarm(); });
 
   function go() {
@@ -418,13 +418,13 @@ function SpicyWheel({ onClose, log }) {
     }, 110);
   }
   return (
-    <Panel title="🎡 The Spicy Truth Wheel" accent={phase === 'penalty' ? '#FF453A' : RED}>
+    <Panel title="🎡 Ο τροχός της πικάντικης αλήθειας" accent={phase === 'penalty' ? '#FF453A' : RED}>
       <div className={`rounded p-3 min-h-[5rem] font-body text-lg ${phase === 'penalty' ? 'bg-red-900/80' : 'bg-black/60'}`}>{q || 'Γύρνα τον τροχό για να εμφανιστεί η ερώτηση.'}</div>
       {phase === 'decide' && (
         <div className="flex items-center gap-3">
           <b className="font-display text-3xl">{Math.ceil(decide)}″</b>
           <Btn color="bg-emerald-700" onClick={() => { setPhase('idle'); sfx.ok(); }}>✅ Απάντησε</Btn>
-          <Btn color="bg-red-800" onClick={() => { setPhase('penalty'); sfx.alarm(); log('🎡 Spicy Truth Wheel: άρνηση — ποινή 30″'); }}>🙅 Αρνήθηκε</Btn>
+          <Btn color="bg-red-800" onClick={() => { setPhase('penalty'); sfx.alarm(); log('🎡 Τροχός πικάντικης αλήθειας: άρνηση — ποινή 30″'); }}>🙅 Αρνήθηκε</Btn>
         </div>
       )}
       {phase === 'penalty' && (
@@ -443,7 +443,7 @@ function Surge({ onDone }) {
   const left = useLocalCountdown(60, true, () => { sfx.alarm(); });
   return (
     <div className="fixed inset-0 z-[55] flex flex-col items-center justify-center gap-4 p-6 text-center animate-pulse" style={{ background: 'rgba(160,0,30,.94)' }}>
-      <div className="font-display text-4xl sm:text-6xl text-white">MIDNIGHT PENALTY SURGE</div>
+      <div className="font-display text-4xl sm:text-6xl text-white">ΜΕΤΑΜΕΣΟΝΥΧΤΙΑ ΕΚΡΗΞΗ ΠΟΙΝΩΝ</div>
       <div className="text-lg text-white font-body max-w-xl">Το ρολόι έπεσε κάτω από 10′ και οι γρίφοι είναι ανοιχτοί! Άμεσο ομαδικό δέσιμο και 60″ ασταμάτητο ομαδικό γαργάλημα σε όλες. Παίρνετε +5′ στο ρολόι.</div>
       <RestraintNote />
       <div className="font-display text-7xl text-white tabular-nums">{Math.ceil(left)}″</div>
@@ -456,7 +456,7 @@ function Lost({ onDone, standalone }) {
   const [run, setRun] = useState(false);
   const left = useLocalCountdown(60, run, () => { sfx.alarm(); setRun(false); });
   return (
-    <Panel title="💀 LOCKDOWN FAILED — The Ultimate Tickle Penalty" accent={RED}>
+    <Panel title="💀 Η ΑΠΟΔΡΑΣΗ ΑΠΕΤΥΧΕ — Η απόλυτη ποινή γαργαλητού" accent={RED}>
       <p className="font-body">Ο χρόνος μηδενίστηκε. Η ομάδα δέχεται την απόλυτη ποινή γαργαλητού.</p>
       <RestraintNote />
       <div className="font-display text-5xl text-center text-red-300">{Math.ceil(run ? left : 60)}″</div>

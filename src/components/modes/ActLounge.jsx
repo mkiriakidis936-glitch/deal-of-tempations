@@ -8,6 +8,7 @@ import { SQUARE_TYPES,
 } from '@/data/modes/loungeContent';
 
 import * as E from '@/lib/boardEngine';
+import { blockedBy, textOf } from '@/lib/consent';
 import ShowControls from '@/components/modes/ShowControls';
 import { LOUNGE_RULES } from '@/data/modes/loungeContent';
 import { customModeById, isCustomMode, rulesFromCustom } from '@/lib/customModes';
@@ -48,12 +49,14 @@ export default function ActLounge({ ctx, state, onFinish }) {
   const save = (patch, text) => commit({ ...lg, ...patch }, text);
   const stat = (pid) => E.statOf(lg, RULES, pid);
   const withStat = (pid, change, base = lg) => E.updateStat(base, RULES, pid, change).stats;
-  const drawCard = (pid) => E.drawCard(lg, RULES, pid);
+  // Κάρτες μόνο μέσα στα όρια που δήλωσε η παίκτρια στο check-in.
+  const isAllowed = (card, pid) => blockedBy(mg, pid, textOf(card)).length === 0;
+  const drawCard = (pid) => E.drawCard(lg, RULES, pid, { isAllowed });
   const startInterrogation = (pid) => E.startInterrogation(lg, RULES, pid);
 
   function roll(fromMobile = false) {
     if (!cur || pending || stopped) return;
-    const { lounge, event } = E.applyRoll(lg, players, RULES);
+    const { lounge, event } = E.applyRoll(lg, players, RULES, { isAllowed });
     if (!event) return;
     const sq = SQUARE_TYPES[event.square];
     sfx.click();
@@ -64,6 +67,7 @@ export default function ActLounge({ ctx, state, onFinish }) {
     const card = lg.card;
     if (!card) return;
     if (card.finale) { startFinale(); return; }
+    if (card.pass) { commit(E.resolveCard(lg, RULES, ok), `⏭️ ${nameOf(card.pid)}: PASS — καμία κάρτα μέσα στα όριά της`); return; }
     commit(E.resolveCard(lg, RULES, ok), `${ok ? '✅' : '❌'} ${nameOf(card.pid)}: «${card.title}»${ok ? ' +1.000€' : ' +1⭐ −1 σαγιονάρα/κάλτσα'}`);
     sfx[ok ? 'ok' : 'fail']();
   }

@@ -1,27 +1,40 @@
 import React, { useState } from 'react';
 import { LayoutDashboard, Inbox, Radio, Layers, LayoutGrid, X } from 'lucide-react';
 
+// Χρώμα εικονιδίου ανά ενότητα, όπως στις Ρυθμίσεις του iPhone.
+export const TAB_TONE = {
+  dashboard: '#0A84FF', inbox: '#FF9F0A',
+  show: '#FF375F', live: '#FF453A', players: '#5E5CE6', production: '#BF5AF2', av: '#FF2D55', casting: '#AF52DE',
+  modes: '#E8C26B', media: '#30D158',
+  events: '#FF9F0A', invitations: '#0A84FF', forms: '#64D2FF', interest: '#30D158', links: '#5E5CE6',
+  website: '#0A84FF', statistics: '#30D158',
+  settings: '#8E8E93', notifications: '#FF453A', sessions: '#5E5CE6', backup: '#636366', guide: '#FF9F0A',
+};
+
 export default function AdminNav({ groups, active, onChange }) {
   return (
     <nav aria-label="Πλοήγηση διαχείρισης">
       {groups.map((group) => (
         <div key={group.id} className="adm-group">
           <div className="adm-group-label">{group.label}</div>
-          {group.tabs.map((t) => {
-            const Icon = t.icon;
-            return (
-              <button
-                key={t.id}
-                type="button"
-                onClick={() => onChange(t.id)}
-                aria-current={active === t.id ? 'page' : undefined}
-                className="adm-navitem"
-              >
-                {Icon && <Icon aria-hidden="true" />}
-                <span>{t.label}</span>
-              </button>
-            );
-          })}
+          <div className="adm-group-list">
+            {group.tabs.map((t) => {
+              const Icon = t.icon;
+              return (
+                <button
+                  key={t.id}
+                  type="button"
+                  onClick={() => onChange(t.id)}
+                  aria-current={active === t.id ? 'page' : undefined}
+                  className="adm-navitem"
+                >
+                  <span className="adm-ico" style={{ background: TAB_TONE[t.id] || '#8E8E93' }} aria-hidden="true">{Icon && <Icon />}</span>
+                  <span className="adm-navlabel">{t.label}</span>
+                  <span className="adm-chev" aria-hidden="true">›</span>
+                </button>
+              );
+            })}
+          </div>
         </div>
       ))}
     </nav>
@@ -57,21 +70,24 @@ export function AdminTabBar({ groups, active, onChange }) {
           {groups.map((group) => (
             <section key={group.id} className="adm-group">
               <div className="adm-group-label">{group.label}</div>
-              {group.tabs.map((t) => {
-                const Icon = t.icon;
-                return (
-                  <button
-                    key={t.id}
-                    type="button"
-                    onClick={() => selectTab(t.id)}
-                    aria-current={active === t.id ? 'page' : undefined}
-                    className="adm-navitem"
-                  >
-                    {Icon && <Icon aria-hidden="true" />}
-                    <span>{t.label}</span>
-                  </button>
-                );
-              })}
+              <div className="adm-group-list">
+                {group.tabs.map((t) => {
+                  const Icon = t.icon;
+                  return (
+                    <button
+                      key={t.id}
+                      type="button"
+                      onClick={() => selectTab(t.id)}
+                      aria-current={active === t.id ? 'page' : undefined}
+                      className="adm-navitem"
+                    >
+                      <span className="adm-ico" style={{ background: TAB_TONE[t.id] || '#8E8E93' }} aria-hidden="true">{Icon && <Icon />}</span>
+                      <span className="adm-navlabel">{t.label}</span>
+                      <span className="adm-chev" aria-hidden="true">›</span>
+                    </button>
+                  );
+                })}
+              </div>
             </section>
           ))}
         </div>

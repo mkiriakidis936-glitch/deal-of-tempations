@@ -4,7 +4,7 @@ export const NEW_MODES = [
     id: 'lockdown',
     name: 'PAJAMA LOCKDOWN 18+',
     icon: '🚨',
-    desc: 'Χρονομετρημένο Escape Room 60 λεπτών με Team Cipher, Sensory Puzzles, Sabotage Override, mini-games, Exit Code και VIP Vault.',
+    desc: 'Χρονομετρημένο Escape Room 60 λεπτών με ομαδικούς γρίφους, αισθησιακές δοκιμασίες, δολιοφθορά, μίνι παιχνίδια, κωδικό εξόδου και VIP Vault.',
     min: 3,
     max: 8,
     acts: ['lockdown'],
@@ -66,9 +66,10 @@ export const RETIRED_MODES = [
 
 export const MODE_MEDIA_SECTIONS = {
   classic: [
-    { id: 'board', label: 'Ταμπλό 24 θέσεων', filename: 'classic_board.jpg' },
+    { id: 'setup', label: 'Προετοιμασία', filename: 'classic_setup.jpg' },
+    { id: 'board', label: 'Ταμπλό 24 θέσεων · Περιπολία', filename: 'classic_board.jpg' },
     { id: 'truth_dare', label: 'Αλήθεια ή Θάρρος', filename: 'classic_truth_dare.jpg' },
-    { id: 'police', label: 'Αστυνομικός έλεγχος', filename: 'classic_police.jpg' },
+    { id: 'police', label: 'Αστυνομικός έλεγχος · Ανάκριση', filename: 'classic_police.jpg' },
     { id: 'black_market', label: 'Μαύρη αγορά', filename: 'classic_black_market.jpg' },
     { id: 'warrant', label: 'Ένταλμα', filename: 'classic_warrant.jpg' },
     { id: 'finale', label: 'Φινάλε', filename: 'classic_finale.jpg' },
@@ -78,6 +79,7 @@ export const MODE_MEDIA_SECTIONS = {
     { id: 'rounds', label: 'Γύροι ληστείας', filename: 'heist_rounds.jpg' },
     { id: 'penalties', label: 'Στάδια ποινών', filename: 'heist_penalties.jpg' },
     { id: 'escape', label: 'Grand Heist Escape', filename: 'heist_escape.jpg' },
+    { id: 'victory', label: 'Νίκη & στέψη', filename: 'heist_victory.jpg' },
   ],
   marathon_4h: [
     { id: 'phase1', label: 'Φάση 1 — Warm-up & Slipper Grabbing', filename: 'lounge_phase1.jpg' },
@@ -86,11 +88,11 @@ export const MODE_MEDIA_SECTIONS = {
     { id: 'phase4', label: 'Φάση 4 — Barefoot Escape & Crown', filename: 'lounge_phase4.jpg' },
   ],
   lockdown: [
-    { id: 'level1', label: 'Level 1 — Hostage Sacrifice', filename: 'section1_Level1_Hostage_Sacrifice.jpg' },
-    { id: 'level2', label: 'Level 2 — Sensory Cipher', filename: 'section2_Level2_Sensory_Cipher.jpg' },
-    { id: 'level3', label: 'Level 3 — Sabotage Override', filename: 'section3_Level3_Sabotage_Override.jpg' },
-    { id: 'level4', label: 'Level 4 — Exit Code', filename: 'section4_Level4_Exit_Code.jpg' },
-    { id: 'level5', label: 'Level 5 — VIP Vault', filename: 'section5_Level5_VIP_Vault.jpg' },
+    { id: 'level1', label: 'Επίπεδο 1 — Η θυσία της ομήρου', filename: 'section1_Level1_Hostage_Sacrifice.jpg' },
+    { id: 'level2', label: 'Επίπεδο 2 — Ο αισθησιακός γρίφος', filename: 'section2_Level2_Sensory_Cipher.jpg' },
+    { id: 'level3', label: 'Επίπεδο 3 — Δολιοφθορά', filename: 'section3_Level3_Sabotage_Override.jpg' },
+    { id: 'level4', label: 'Επίπεδο 4 — Ο κωδικός εξόδου', filename: 'section4_Level4_Exit_Code.jpg' },
+    { id: 'level5', label: 'Επίπεδο 5 — VIP Vault', filename: 'section5_Level5_VIP_Vault.jpg' },
   ],
   beach_bar: [
     { id: 'checkin', label: 'Check-in', filename: 'beach_sec1.jpg' },

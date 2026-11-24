@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Page, Header, Card, Badge } from '@/design/ui';
+import { BriefingMobile, briefingPending } from '@/components/modes/ModeBriefing';
 
 const HINTS = [
   'Το τραπέζι στρώνεται. Κανείς δεν ξέρει τι κρατάει ο διπλανός.',
@@ -12,7 +13,8 @@ const HINTS = [
   'Η σιωπή κοστίζει. Πάντα.',
 ];
 
-export default function WaitingRoom({ sessionCode }) {
+export default function WaitingRoom({ sessionCode, state }) {
+  const briefing = !!state && briefingPending(state.mg, state.mode);
   const [index, setIndex] = useState(0);
 
   useEffect(() => {
@@ -23,11 +25,13 @@ export default function WaitingRoom({ sessionCode }) {
   return (
     <Page center>
       <div className="flex justify-center"><img src="/icons/icon-192.png" alt="" className="h-20 w-20 rounded-[22px]" /></div>
-      <Header eyebrow="Deal of Temptation" title="Αναμονή έναρξης" subtitle="Η σύνδεση κρατιέται — μείνε σε αυτή τη σελίδα." right={<Badge tone="gold">{sessionCode}</Badge>} />
-      <Card tone="gold">
-        <div className="ui-eyebrow mb-2" style={{ color: 'var(--ui-gold)' }}>Ψίθυρος</div>
-        <p className="min-h-[72px] text-[17px] leading-snug">«{HINTS[index]}»</p>
-      </Card>
+      <Header eyebrow="Deal of Temptation" title={briefing ? 'Οι κανόνες της βραδιάς' : 'Αναμονή έναρξης'} subtitle="Η σύνδεση κρατιέται — μείνε σε αυτή τη σελίδα." right={<Badge tone="gold">{sessionCode}</Badge>} />
+      {briefing ? <div className="text-white"><BriefingMobile state={state} /></div> : (
+        <Card tone="gold">
+          <div className="ui-eyebrow mb-2" style={{ color: 'var(--ui-gold)' }}>Ψίθυρος</div>
+          <p className="min-h-[72px] text-[17px] leading-snug">«{HINTS[index]}»</p>
+        </Card>
+      )}
     </Page>
   );
 }

@@ -146,3 +146,13 @@ test('engine: προσομοίωση 200 ζαριών χωρίς σφάλματ�
     }
   }
 });
+
+test('lounge cards respect the player consent filter and fall back to a penalty-free PASS', async () => {
+  const E = await import('../src/lib/boardEngine.js');
+  const def = { cards: [{ id: 'a', title: 'Selfie', text: 'βγάλε selfie' }, { id: 'b', title: 'Χορός', text: 'χόρεψε' }], cardReward: { loot: 1000 }, cardPenalty: { stars: 1, footwear: -1 } };
+  const onlyB = E.drawCard({}, def, 'p1', { isAllowed: (card) => card.id === 'b', rng: () => 0 });
+  assert.equal(onlyB.card.id, 'b');
+  const none = E.drawCard({}, def, 'p1', { isAllowed: () => false });
+  assert.equal(none.card.pass, true);
+  assert.deepEqual(E.resolveCard(none, def, false), { ...none, card: null });
+});

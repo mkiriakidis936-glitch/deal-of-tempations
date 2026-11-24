@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { base44 } from '@/api/base44Client';
-import { GAME_MODES } from '@/data/gameConfig';
+import { GAME_MODES, modeDisplayName } from '@/data/gameConfig';
 import { request } from '@/api/base44Client';
 import { fetchOverrides } from '@/lib/media';
 import { PHOTO_SPOT_IDS, VIDEO_SLOTS } from '@/data/mediaSlots';
@@ -79,7 +79,7 @@ export default function AdminOverview({ sessions = [], loading = false, onNaviga
       <div><div className="adm-card-title">Τι να κάνω τώρα</div><p className="text-xs text-[#e5c76b]/70">Άμεσες εκκρεμότητες από τα αποθηκευμένα δεδομένα.</p></div>
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-2">
         <div className="adm-tile"><div className="adm-label">ΝΕΕΣ ΑΙΤΗΣΕΙΣ</div><div className="mt-1 text-2xl font-bold">{extra.newRequests ?? '—'}</div><button onClick={() => onNavigate('inbox')} className="adm-link">Άνοιγμα εισερχομένων →</button></div>
-        <div className="adm-tile"><div className="adm-label">ΕΠΟΜΕΝΟ EVENT</div><div className="mt-1 text-sm font-bold">{upcomingEvent?.event?.title || upcomingEvent?.mode || 'Δεν υπάρχει Event'}</div><div className="mt-1 text-[10px] text-[#e5c76b]/70">{upcomingEvent?.event?.scheduledAt ? new Date(upcomingEvent.event.scheduledAt).toLocaleString('el-GR') : upcomingEvent?.sessionCode || 'Ξεκίνα από Game & Mode'}</div><button onClick={() => onNavigate('events')} className="adm-link">Άνοιγμα Events →</button></div>
+        <div className="adm-tile"><div className="adm-label">ΕΠΟΜΕΝΟ EVENT</div><div className="mt-1 text-sm font-bold">{upcomingEvent?.event?.title || (upcomingEvent?.mode ? modeDisplayName(upcomingEvent.mode) : 'Δεν υπάρχει Event')}</div><div className="mt-1 text-[10px] text-[#e5c76b]/70">{upcomingEvent?.event?.scheduledAt ? new Date(upcomingEvent.event.scheduledAt).toLocaleString('el-GR') : upcomingEvent?.sessionCode || 'Ξεκίνα από Game & Mode'}</div><button onClick={() => onNavigate('events')} className="adm-link">Άνοιγμα Events →</button></div>
         <div className="adm-tile"><div className="adm-label">ΕΝΕΡΓΕΣ VIP ΠΡΟΣΚΛΗΣΕΙΣ</div><div className="mt-1 text-2xl font-bold">{extra.vipInvitations ?? '—'}</div><button onClick={() => onNavigate('invitations')} className="adm-link">Άνοιγμα προσκλήσεων →</button></div>
         <div className="adm-tile"><div className="adm-label">ΤΕΛΕΥΤΑΙΟ BACKUP</div><div className="mt-1 text-sm font-bold">{extra.backup ? new Date(extra.backup.modified).toLocaleString('el-GR') : 'Μη διαθέσιμο'}</div><button onClick={() => onNavigate('settings')} className="adm-link">Άνοιγμα αντιγράφων →</button></div>
         <div className="adm-tile"><div className="adm-label">ΕΛΛΕΙΨΕΙΣ MEDIA</div><div className="mt-1 text-sm font-bold">{extra.emptyPhotos === null ? '—' : extra.emptyPhotos + (extra.missingVideos || 0) + (extra.missingTrailers || 0)}</div><div className="mt-1 text-[10px] text-[#e5c76b]/70">Κενές φωτογραφίες / βίντεο / trailers</div><button onClick={() => onNavigate('media')} className="adm-link">Άνοιγμα βιβλιοθήκης →</button></div>

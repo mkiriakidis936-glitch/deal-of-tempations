@@ -63,7 +63,8 @@ async function openLive(reason) {
   const params = new URLSearchParams({ subs: signature });
   if (getToken()) {
     try {
-      params.set('ticket', (await request('POST', '/api/entities/stream-ticket')).ticket);
+      const ticket = (await request('POST', '/api/entities/stream-ticket'))?.ticket;
+      if (ticket) params.set('ticket', ticket);
     } catch (error) {
       // Συσκευή admin: ΠΟΤΕ ανώνυμη σύνδεση (θα έπαιρνε φιλτραρισμένα δεδομένα και θα τα έγραφε πίσω).
       // Μόνο αν δεν είναι admin (401/403, δηλαδή δεν μπορεί και να γράψει) συνεχίζει ανώνυμα· αλλιώς ξαναδοκιμάζει.

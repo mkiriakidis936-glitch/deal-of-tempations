@@ -43,7 +43,7 @@ export default function ActMorning({ ctx, onFinish }) {
   function submit() {
     if (input === code) {
       setMg({ vaultUnlocked: true, morningSolvedAt: Date.now() });
-      log('☀️ Ο Coffee Code λύθηκε — VIP VAULT UNLOCKED');
+      log('☀️ Ο Coffee Code λύθηκε — ΤΟ VIP VAULT ΑΝΟΙΞΕ');
       sfx.ok();
     } else {
       setWrong(true);
@@ -96,7 +96,7 @@ export default function ActMorning({ ctx, onFinish }) {
           </div>
         </Panel>
       ) : (
-        <Panel title="👑 VIP VAULT UNLOCKED — The Ultimate Pajama Queens" accent="#E8C26B">
+        <Panel title="👑 ΤΟ VIP VAULT ΑΝΟΙΞΕ — Οι απόλυτες Pajama Queens" accent="#E8C26B">
           <p className="text-sm opacity-80">Σερβίρεται ο καφές! Παίξτε τις 20 κάρτες του Vault όσο θέλετε.</p>
           {card && <div className="rounded bg-amber-950/60 border border-amber-500 p-3 font-body text-lg">{card}</div>}
           <div className="flex flex-wrap gap-2">

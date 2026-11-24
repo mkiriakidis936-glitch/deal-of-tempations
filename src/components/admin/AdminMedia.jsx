@@ -209,6 +209,7 @@ export default function AdminMedia() {
       if (containsUrl(media.cover, url)) ['tablet', 'forms'].forEach((s) => found.add(s));
       if (containsUrl(media.sections, url)) found.add('tablet');
       if (containsUrl(media.gallery, url) || containsUrl(media.trailer, url)) found.add('site');
+      if (containsUrl(media.intro, url)) found.add('tv');
     }
     return [...found];
   };
@@ -310,7 +311,7 @@ export default function AdminMedia() {
           gallery: [],
           cards: (media.cards || []).map((item) => ({ ...item, image: '' })),
         } : {}),
-        ...(kind === 'video' || kind === 'all' ? { trailer: '' } : {}),
+        ...(kind === 'video' || kind === 'all' ? { trailer: '', intro: '' } : {}),
       }]));
       const next = {
         ...ov,
@@ -319,6 +320,7 @@ export default function AdminMedia() {
           agent: undefined,
           welcomeVideo: undefined,
           countdownVideo: undefined,
+          gameIntroVideo: undefined,
           siteVideos: [],
           ...Object.fromEntries(PHOTO_SPOT_IDS.map((id) => [id, typeof ov[id] === 'string' && !isVideoFile(ov[id]) && kind === 'video' ? ov[id] : undefined])),
         } : {}),
@@ -379,7 +381,7 @@ export default function AdminMedia() {
       const src = ov[slot.id] || (ov.emptySlots?.includes(slot.id) || clearedImages ? '' : DEFAULTS[slot.id]);
       if (!src) missing.push({ surface: slot.surfaces?.[0] || 'site', label: slot.label, where: slot.where });
     }
-    for (const slot of IMAGE_SLOTS) if (!ov[slot.id] && (clearedImages || !DEFAULTS[slot.id])) missing.push({ surface: slot.surfaces?.[0] || 'site', label: slot.label, where: slot.where });
+    for (const slot of IMAGE_SLOTS.filter((item) => !item.retired)) if (!ov[slot.id] && (clearedImages || !DEFAULTS[slot.id])) missing.push({ surface: slot.surfaces?.[0] || 'site', label: slot.label, where: slot.where });
     for (const slot of VIDEO_SLOTS) if (!ov[slot.id]) missing.push({ surface: 'tv', label: slot.label, where: slot.where });
     for (const mode of MEDIA_MODES) {
       const saved = ov.modeMedia?.[mode.id] || {};
@@ -446,6 +448,34 @@ export default function AdminMedia() {
 
       </>)}
       {section === 'site' && (<>
+      <section className="space-y-3 rounded-3xl border border-[#E8C26B]/30 bg-[#17140C] p-4 text-[#F5F1E8] sm:p-5">
+        <div>
+          <h3 className="text-base font-bold">📝 Φόρμες & VIP</h3>
+          <p className="text-xs text-white/60">Οι φωτογραφίες που βλέπουν οι καλεσμένες στις φόρμες. Η κεφαλίδα κάθε φόρμας mode είναι η <b>κεντρική εικόνα</b> του mode στο MODE MEDIA CENTER.</p>
+        </div>
+        <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+          {[
+            { id: 'invitationBg', label: 'Φόντο φορμών', ratio: 'aspect-[9/16]' },
+            { id: 'extraHeistRoom', label: 'Κεφαλίδα Arrest & Heist', ratio: 'aspect-[16/10]' },
+            { id: 'invitation', label: 'Εικόνα VIP πρόσκλησης', ratio: 'aspect-[16/10]' },
+          ].map((slot) => {
+            const src = ov[slot.id] || (ov.emptySlots?.includes(slot.id) ? '' : DEFAULTS[slot.id]) || '';
+            return (
+              <div key={slot.id} className="space-y-1.5">
+                <div className={`relative overflow-hidden rounded-2xl bg-black ${slot.ratio}`}>
+                  {src ? <img src={src} alt="" loading="lazy" className="absolute inset-0 h-full w-full object-cover" /> : <div className="absolute inset-0 flex items-center justify-center rounded-2xl border border-dashed border-white/20 text-xs text-white/45">Χωρίς φωτογραφία</div>}
+                </div>
+                <div className="text-xs font-semibold">{slot.label}</div>
+                {directUploadControl(`forms-${slot.id}`, 'image/*', (url, base) => ({ ...base, [slot.id]: url, emptySlots: (base.emptySlots || []).filter((id) => id !== slot.id) }), src ? 'Αλλαγή' : '＋ Ανέβασμα')}
+                {src && ov[slot.id] && <button type="button" disabled={!!busy} onClick={() => reset(slot.id)} className="h-9 w-full rounded-full text-xs text-white/60 underline">Αρχική</button>}
+              </div>
+            );
+          })}
+          <button type="button" onClick={() => { setSection('modes'); window.scrollTo({ top: 0 }); }} className="flex flex-col items-center justify-center gap-1 rounded-2xl border border-dashed border-[#E8C26B]/40 p-3 text-center text-xs text-[#F7E3A8]">
+            <span className="text-2xl">🎮</span>Κεφαλίδες φορμών ανά mode<br /><span className="text-white/50">→ MODE MEDIA CENTER</span>
+          </button>
+        </div>
+      </section>
       <ComicPanel className="bg-card">
         <div className="font-heading text-lg">ΠΡΟΟΡΙΣΜΟΣ ΠΟΛΥΜΕΣΩΝ</div>
         <p className="mt-1 text-xs text-foreground/60">Επίλεξε πού ανήκει το υλικό. Οι καρτέλες φιλτράρουν τα σημεία και τη βιβλιοθήκη αρχείων. Μπορείς είτε να επιλέξεις υπάρχον αρχείο από τη βιβλιοθήκη είτε να ανεβάσεις νέο απευθείας στο συγκεκριμένο σημείο.</p>
@@ -480,7 +510,7 @@ export default function AdminMedia() {
               </div>
             );
           })}
-          {IMAGE_SLOTS.filter((slot) => showSurface(...(slot.surfaces || []))).map((slot) => {
+          {IMAGE_SLOTS.filter((slot) => !slot.retired && showSurface(...(slot.surfaces || []))).map((slot) => {
             const src = ov[slot.id] || (ov.emptySlots?.includes(slot.id) || ov.clearAllPhotos || ov.clearAllMedia ? '' : DEFAULTS[slot.id]);
             const uploadedFile = library.find((file) => file.url === src);
             return <div key={slot.id} className="border-2 border-border/40 rounded-lg p-2 bg-secondary/40">

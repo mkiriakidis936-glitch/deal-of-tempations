@@ -3,6 +3,8 @@ import { useParams } from 'react-router-dom';
 import { request } from '@/api/base44Client';
 import { GAME_MODES } from '@/data/gameConfig';
 import CustomFormQuestions from '@/components/forms/CustomFormQuestions';
+import { FormShell, Section, Field, TextInput, TextArea, ChoiceGroup, Scale, Toggle, ConsentCheck, FooterBar, SuccessScreen, formImageFor } from '@/components/forms/FormKit';
+import { PHOTO } from '@/data/brandArt';
 
 const AVATARS = ['♠', '♥', '♦', '♣', '👑', '🖤', '🔥', '✨', '🦂', '🐍', '🦇', '🌙'];
 const NAIL_COLORS = ['Κόκκινο', 'Ροζ', 'Λευκό', 'Μαύρο', 'Nude', 'French', 'Μπλε', 'Μωβ', 'Πράσινο', 'Πορτοκαλί', 'Χρυσό', 'Ασημί', 'Χωρίς χρώμα'];
@@ -34,11 +36,17 @@ export default function VIPInvitationPage() {
   const [customAnswers, setCustomAnswers] = useState({});
   const [customQuestionsValid, setCustomQuestionsValid] = useState(true);
   const submissionId = useMemo(makeSubmissionId, []);
+  const [step, setStep] = useState(0);
 
   useEffect(() => {
     let active = true;
     request('GET', `/api/entities/vip-invitations/${encodeURIComponent(token)}`)
-      .then((data) => { if (active) setInvitation(data); })
+      .then((data) => {
+        if (!active) return;
+        setInvitation(data);
+        // Αν το Admin έχει ήδη ορίσει mode για την πρόσκληση, προεπιλέγεται.
+        if (data?.gameMode && GAME_MODES.some((mode) => mode.id === data.gameMode)) setSelectedGameMode(data.gameMode);
+      })
       .catch((e) => { if (active) setError(e.message || 'Η πρόσκληση δεν είναι διαθέσιμη.'); })
       .finally(() => { if (active) setLoading(false); });
     return () => { active = false; };
@@ -55,10 +63,9 @@ export default function VIPInvitationPage() {
   }));
   const valid = name.trim().length > 0 && !!selectedGameMode && adultConfirmed && consentConfirmed && String(answers.safeWord || '').trim().length >= 2 && customQuestionsValid && !saving;
   const gameName = GAME_MODES.find((mode) => mode.id === (selectedGameMode || invitation?.gameMode))?.name || selectedGameMode || invitation?.gameMode || 'Δεν έχει επιλεγεί';
-  const eventName = invitation?.eventTitle ? `${invitation.eventTitle} · ${invitation.roomCode || ''}` : '—';
 
   async function submit(event) {
-    event.preventDefault();
+    event?.preventDefault?.();
     if (!valid) return;
     setSaving(true);
     setError('');
@@ -71,117 +78,156 @@ export default function VIPInvitationPage() {
     finally { setSaving(false); }
   }
 
-  const inputStyle = { width: '100%', background: '#111', border: '1px solid rgba(207,174,91,.45)', borderRadius: 10, color: '#f7edcf', padding: '12px 14px', outline: 'none' };
-  const labelStyle = { display: 'block', color: '#d7bd78', fontSize: 13, fontWeight: 700, marginBottom: 7 };
-  const sectionStyle = { border: '1px solid rgba(207,174,91,.28)', borderRadius: 13, padding: 16, marginBottom: 15, background: 'rgba(22,18,11,.55)' };
-  const fieldStyle = { marginBottom: 16 };
-  const choice = (key, value, label) => (
-    <button type="button" onClick={() => setAnswer(key, value)} aria-pressed={answers[key] === value}
-      style={{ border: answers[key] === value ? '2px solid #e5c76c' : '1px solid rgba(207,174,91,.35)', background: answers[key] === value ? 'rgba(201,169,78,.2)' : '#111', color: '#f4e8c5', borderRadius: 9, padding: '10px 13px', flex: 1 }}>
-      {label}
-    </button>
+  const modeForImage = selectedGameMode || invitation?.gameMode || 'arrest_heist';
+  const image = PHOTO.invitation || formImageFor(modeForImage);
+  const STEPS = ['Στοιχεία', 'Χαρακτήρας', 'Όρια', 'VIP'];
+  const stepValid = [
+    name.trim().length > 0 && !!selectedGameMode,
+    true,
+    String(answers.safeWord || '').trim().length >= 2,
+    adultConfirmed && consentConfirmed && customQuestionsValid,
+  ][step];
+  const next = () => {
+    if (step < 3) { setStep(step + 1); window.scrollTo({ top: 0, behavior: 'smooth' }); } else submit();
+  };
+  const yesNo = (key) => <ChoiceGroup options={[{ id: 'yes', label: 'Ναι', icon: '👍' }, { id: 'no', label: 'Όχι', icon: '✋' }]} value={answers[key]} onChange={(v) => setAnswer(key, v)} />;
+  const text = (key, label, placeholder = '') => (
+    <Field label={label} input><TextInput value={answers[key] || ''} onChange={(e) => setAnswer(key, e.target.value)} maxLength={2000} placeholder={placeholder} /></Field>
   );
-  const yesNo = (key) => <div style={{ display: 'flex', gap: 8 }}>{choice(key, 'yes', 'ΝΑΙ')}{choice(key, 'no', 'ΟΧΙ')}</div>;
-  const textInput = (key, placeholder = '') => <input value={answers[key] || ''} onChange={(e) => setAnswer(key, e.target.value)} maxLength={2000} style={inputStyle} placeholder={placeholder} />;
-  const range = (key) => <div><input type="range" min="1" max="5" step="1" value={answers[key] || '3'} onChange={(e) => setAnswer(key, e.target.value)} style={{ width: '100%', accentColor: '#E8C26B' }} /><div style={{ display: 'flex', justifyContent: 'space-between', color: '#9e906d', fontSize: 11 }}><span>1 · Χαμηλά</span><strong style={{ color: '#e5cf91' }}>{answers[key] || 3} / 5</strong><span>5 · Πολύ</span></div></div>;
 
-  return <main style={{ minHeight: '100dvh', background: 'radial-gradient(ellipse at top, #29200f 0%, #090909 52%, #050505 100%)', color: '#f4e8c5', padding: '28px 14px', fontFamily: 'Georgia,serif' }}>
-    <div style={{ maxWidth: 620, margin: '0 auto' }}>
-      <header style={{ textAlign: 'center', border: '1px solid rgba(207,174,91,.65)', borderRadius: 18, padding: '25px 18px', background: 'linear-gradient(145deg,rgba(31,25,13,.96),rgba(8,8,8,.98))', boxShadow: '0 18px 70px rgba(0,0,0,.55)' }}>
-        <div style={{ color: '#E8C26B', letterSpacing: '.42em', fontSize: 11 }}>EXCLUSIVE ACCESS</div>
-        <div style={{ color: '#F7E3A8', fontSize: 'clamp(30px,8vw,44px)', letterSpacing: '.12em', margin: '14px 0' }}>VIP INVITATION</div>
-        <div style={{ height: 1, maxWidth: 180, margin: '0 auto 14px', background: 'linear-gradient(90deg,transparent,#E8C26B,transparent)' }} />
-        <div style={{ color: '#d6c28c', fontSize: 12, letterSpacing: '.24em' }}>DEAL OF TEMPTATION</div>
-        {invitation && <div style={{ color: '#e5cf91', fontSize: 12, marginTop: 14 }}>ΣΥΝΔΕΔΕΜΕΝΟ EVENT: {eventName}</div>}
-        {invitation && <div style={{ color: '#e5cf91', fontSize: 12, marginTop: 6 }}>ΕΠΙΛΕΓΜΕΝΟ MODE: {gameName}</div>}
-      </header>
+  if (loading) {
+    return <FormShell image={image} kicker="VIP · Exclusive access" title="VIP πρόσκληση" subtitle="Φόρτωση πρόσκλησης…"><div className="h-40 animate-pulse rounded-[28px] bg-white/5" /></FormShell>;
+  }
+  if (error && !invitation) {
+    return (
+      <FormShell image={image} kicker="VIP · Exclusive access" title="VIP πρόσκληση">
+        <Section icon="🔒" title="Η πρόσκληση δεν είναι διαθέσιμη" hint={error}>
+          <p className="text-sm text-white/60">Ίσως έληξε ή χρησιμοποιήθηκε ήδη. Ζήτησε νέο link από τη διοργανώτρια.</p>
+          <a href="/site" className="inline-flex h-12 items-center rounded-full border border-white/20 px-6 text-sm font-semibold">Επιστροφή στο site</a>
+        </Section>
+      </FormShell>
+    );
+  }
+  if (done) return <SuccessScreen name={name.trim()} modeName={gameName} image={image} text="Οι απαντήσεις σου αποθηκεύτηκαν και συνδέθηκαν με το παιχνίδι. Θα ενημερωθείς μόλις εγκριθεί η συμμετοχή σου." />;
 
-      {loading ? <div style={{ textAlign: 'center', padding: 40, color: '#E8C26B' }}>Φόρτωση πρόσκλησης…</div> :
-      error && !invitation ? <section style={{ textAlign: 'center', padding: 36, border: '1px solid #654747', borderRadius: 14, marginTop: 20 }}>{error}</section> :
-      done ? <section style={{ textAlign: 'center', padding: 38, border: '1px solid rgba(207,174,91,.6)', borderRadius: 16, marginTop: 20, background: '#100f0c' }}>
-        <div style={{ fontSize: 38, color: '#d7bd78' }}>✦</div>
-        <h1 style={{ color: '#e7ce89', fontSize: 27, margin: '12px 0' }}>Η ΣΥΜΜΕΤΟΧΗ ΚΑΤΑΧΩΡΗΘΗΚΕ</h1>
-        <p style={{ color: '#cbbd99', lineHeight: 1.7 }}>Οι απαντήσεις σου αποθηκεύτηκαν και συνδέθηκαν με το επιλεγμένο παιχνίδι.</p>
-      </section> :
-      invitation && <form onSubmit={submit} style={{ marginTop: 18, border: '1px solid rgba(207,174,91,.35)', borderRadius: 16, padding: 18, background: 'rgba(12,12,12,.94)' }}>
-        <div style={{ color: '#e4cf91', fontSize: 20, textAlign: 'center', marginBottom: 5 }}>{invitation.title}</div>
-        <p style={{ color: '#bfb08c', textAlign: 'center', lineHeight: 1.6, fontSize: 13, marginBottom: 20 }}>{invitation.intro}</p>
+  return (
+    <FormShell
+      image={image}
+      kicker="VIP · Exclusive access"
+      title={invitation?.title || 'VIP πρόσκληση'}
+      subtitle={invitation?.intro || (invitation?.eventTitle ? `${invitation.eventTitle}${invitation.roomCode ? ` · ${invitation.roomCode}` : ''}` : '')}
+      steps={STEPS}
+      step={step}
+      footer={(
+        <FooterBar
+          onBack={step > 0 ? () => setStep(step - 1) : undefined}
+          onNext={next}
+          nextLabel={step < 3 ? 'Συνέχεια' : 'Επιβεβαίωση συμμετοχής'}
+          disabled={!stepValid}
+          busy={saving}
+          hint={error || (step === 0 && !stepValid ? 'Γράψε όνομα και διάλεξε παιχνίδι.' : step === 2 && !stepValid ? 'Όρισε την προσωπική σου λέξη ΣΤΟΠ.' : step === 3 && !stepValid ? 'Επιβεβαίωσε τις δύο δηλώσεις.' : '')}
+        />
+      )}
+    >
+      {step === 0 && (
+        <>
+          <Section icon="🎲" title="Ποιο παιχνίδι θέλεις;" hint="Η επιλογή σου εμφανίζεται στο Admin και στο Tablet μετά την έγκριση.">
+            <div className="grid gap-2">
+              {GAME_MODES.map((mode) => {
+                const on = selectedGameMode === mode.id;
+                return (
+                  <button key={mode.id} type="button" role="radio" aria-checked={on} onClick={() => setSelectedGameMode(mode.id)}
+                    className={`flex items-center gap-3 rounded-2xl border p-2 text-left transition-all ${on ? 'border-[#E8C26B] bg-[#E8C26B]/12 shadow-[0_0_0_1px_#E8C26B]' : 'border-white/10 bg-white/[0.03]'}`}>
+                    <img src={formImageFor(mode.id)} alt="" loading="lazy" className="h-14 w-14 shrink-0 rounded-xl object-cover" />
+                    <span className="min-w-0 flex-1 font-semibold text-white">{mode.icon} {mode.name}</span>
+                    <span className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 text-xs ${on ? 'border-[#E8C26B] bg-[#E8C26B] text-black' : 'border-white/30'}`}>{on ? '✓' : ''}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </Section>
+          <Section icon="👤" title="Τα στοιχεία σου">
+            <Field label="Ονοματεπώνυμο ή nickname" required input><TextInput value={name} onChange={(e) => setName(e.target.value)} maxLength={80} placeholder="Το όνομά σου" autoComplete="name" /></Field>
+            {text('displayName', 'Πώς θέλεις να σε φωνάζουν στο παιχνίδι;', 'Όνομα εμφάνισης')}
+            <Field label="Το avatar σου">
+              <div className="grid grid-cols-6 gap-2">
+                {AVATARS.map((item) => (
+                  <button key={item} type="button" aria-pressed={avatar === item} onClick={() => setAvatar(item)}
+                    className={`flex h-12 items-center justify-center rounded-2xl text-xl transition-all ${avatar === item ? 'bg-[#E8C26B] text-black' : 'bg-white/[0.05] text-white'}`}>{item}</button>
+                ))}
+              </div>
+            </Field>
+          </Section>
+        </>
+      )}
 
-        <section style={sectionStyle}>
-          <h2 style={{ color: '#e5cf91', fontSize: 16, margin: '0 0 16px' }}>1. ΕΠΙΛΟΓΗ ΠΑΙΧΝΙΔΙΟΥ</h2>
-          <div style={fieldStyle}>
-            <label style={labelStyle}>ΕΠΕΛΕΞΕ ΤΟ MODE ΠΟΥ ΘΕΛΕΙΣ *</label>
-            <select required value={selectedGameMode} onChange={(e) => setSelectedGameMode(e.target.value)} style={inputStyle}>
-              <option value="">Επίλεξε Mode</option>
-              {GAME_MODES.map((mode) => <option key={mode.id} value={mode.id}>{mode.name}</option>)}
-            </select>
-            <div style={{ color: '#9e906d', fontSize: 11, marginTop: 6 }}>Η επιλογή σου θα εμφανιστεί στο Admin και στο Tablet μετά την έγκριση.</div>
-          </div>
-        </section>
-        <section style={sectionStyle}>
-          <h2 style={{ color: '#e5cf91', fontSize: 16, margin: '0 0 16px' }}>2. ΠΡΟΣΩΠΙΚΑ ΣΤΟΙΧΕΙΑ</h2>
-          <div style={fieldStyle}><label style={labelStyle}>ΟΝΟΜΑΤΕΠΩΝΥΜΟ Ή NICKNAME *</label><input value={name} onChange={(e) => setName(e.target.value)} maxLength={80} required style={inputStyle} placeholder="Το όνομά σου" /></div>
-          <div style={fieldStyle}><label style={labelStyle}>ΠΩΣ ΘΕΛΕΙΣ ΝΑ ΣΕ ΑΠΟΚΑΛΟΥΝ ΣΤΟ ΠΑΙΧΝΙΔΙ;</label>{textInput('displayName', 'Όνομα εμφάνισης')}</div>
-          <label style={labelStyle}>ΕΠΙΛΟΓΗ AVATAR</label>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6,minmax(0,1fr))', gap: 8 }}>
-            {AVATARS.map((item) => <button key={item} type="button" onClick={() => setAvatar(item)} aria-pressed={avatar === item} style={{ minHeight: 46, borderRadius: 10, border: avatar === item ? '2px solid #e4c66d' : '1px solid rgba(207,174,91,.25)', background: avatar === item ? 'rgba(201,169,78,.18)' : '#111', color: '#f4e8c5', fontSize: 22 }}>{item}</button>)}
-          </div>
-        </section>
+      {step === 1 && (
+        <>
+          <Section icon="🎭" title="Ο χαρακτήρας σου">
+            <Field label="Είσαι περισσότερο…">
+              <ChoiceGroup options={[{ id: 'bold', label: 'Τολμηρή', icon: '🔥' }, { id: 'reserved', label: 'Συγκρατημένη', icon: '🌙' }]} value={answers.personality} onChange={(v) => setAnswer('personality', v)} />
+            </Field>
+            <Scale label="Πόσο ανταγωνιστική είσαι;" icon="🏆" value={answers.competitiveness} onChange={(v) => setAnswer('competitiveness', String(v))} low="Χαλαρή" high="Θέλω να κερδίσω" />
+          </Section>
+          <Section icon="🎯" title="Τι σου αρέσει στο παιχνίδι;" hint="Διάλεξε όσα θες.">
+            {[['questions', 'Ερωτήσεις', '💬'], ['missions', 'Αποστολές', '🎯'], ['surprises', 'Εκπλήξεις', '🎁'], ['roleplay', 'Role-play', '🎭'], ['puzzles', 'Γρίφοι', '🧩']].map(([key, label, icon]) => (
+              <Toggle key={key} label={`${icon} ${label}`} checked={answers.activityPreferences?.[key] === 'yes'} onChange={(v) => setActivity(key, v)} />
+            ))}
+            <Field label="Θα διάλεγες μια απρόβλεπτη πρόκληση;">{yesNo('unexpectedChallenge')}</Field>
+          </Section>
+        </>
+      )}
 
-        <section style={sectionStyle}>
-          <h2 style={{ color: '#e5cf91', fontSize: 16, margin: '0 0 16px' }}>2. ΠΡΟΣΩΠΙΚΟΤΗΤΑ ΚΑΙ ΧΑΡΑΚΤΗΡΑΣ</h2>
-          <div style={fieldStyle}><label style={labelStyle}>ΕΙΣΑΙ ΠΕΡΙΣΣΟΤΕΡΟ…</label><div style={{ display: 'flex', gap: 8 }}>{choice('personality', 'bold', 'ΤΟΛΜΗΡΟΣ/Η')}{choice('personality', 'reserved', 'ΣΥΓΚΡΑΤΗΜΕΝΟΣ/Η')}</div></div>
-          <div style={fieldStyle}><label style={labelStyle}>ΠΟΣΟ ΑΝΤΑΓΩΝΙΣΤΙΚΟΣ/Η ΕΙΣΑΙ;</label>{range('competitiveness')}</div>
-        </section>
+      {step === 2 && (
+        <>
+          <Section icon="🛑" title="Ασφάλεια" hint="Τα όριά σου τα βλέπει μόνο η διοργανώτρια.">
+            <Field label="Η προσωπική σου λέξη ΣΤΟΠ" required hint="Αν την πεις, όλα σταματούν αμέσως." input>
+              <TextInput value={answers.safeWord || ''} onChange={(e) => setAnswer('safeWord', e.target.value)} maxLength={40} placeholder="π.χ. καρπούζι" />
+            </Field>
+            <Field label="Θέλεις να συμμετέχεις ενεργά;">{yesNo('activeParticipation')}</Field>
+            <Scale label="Ένταση δοκιμασιών" icon="🔥" value={answers.intensity} onChange={(v) => setAnswer('intensity', String(v))} low="Ήπια" high="Έντονη" />
+          </Section>
+          <Section icon="🔒" title="Δεν επιθυμώ…" hint="Ενεργοποίησε ό,τι θέλεις να αποφύγουμε.">
+            {[['touch', 'Σωματική επαφή'], ['restraints', 'Δεσίματα / περιορισμοί'], ['blindfolds', 'Κάλυψη ματιών'], ['alcohol', 'Αλκοόλ'], ['personal-disclosure', 'Προσωπικές αποκαλύψεις']].map(([key, label]) => (
+              <Toggle key={key} label={label} checked={(answers.safetyBoundaries || []).includes(key)} onChange={(v) => setSafetyBoundary(key, v)} />
+            ))}
+            <Field label="Κάτι άλλο που δεν θέλεις;" input>
+              <TextArea value={answers.boundaries || ''} onChange={(e) => setAnswer('boundaries', e.target.value)} maxLength={2000} placeholder="Προαιρετικά γράψε ό,τι άλλο θέλεις να γνωρίζει η διοργανώτρια." />
+            </Field>
+          </Section>
+        </>
+      )}
 
-        <section style={sectionStyle}>
-          <h2 style={{ color: '#e5cf91', fontSize: 16, margin: '0 0 16px' }}>3. ΠΡΟΤΙΜΗΣΕΙΣ ΠΑΙΧΝΙΔΙΟΥ</h2>
-          <div style={fieldStyle}><label style={labelStyle}>ΠΡΟΤΙΜΑΣ… (ΜΠΟΡΕΙΣ ΝΑ ΕΠΙΛΕΞΕΙΣ ΠΕΡΙΣΣΟΤΕΡΑ)</label>{[['questions','ΕΡΩΤΗΣΕΙΣ'],['missions','ΑΠΟΣΤΟΛΕΣ'],['surprises','ΕΚΠΛΗΞΕΙΣ'],['roleplay','ROLE-PLAY'],['puzzles','ΓΡΙΦΟΙ']].map(([key,label]) => <label key={key} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0', color: '#f4e8c5' }}><input type="checkbox" checked={answers.activityPreferences?.[key] === 'yes'} onChange={(e) => setActivity(key, e.target.checked)} style={{ accentColor: '#E8C26B', width: 17, height: 17 }} />{label}</label>)}</div>
-          <div style={fieldStyle}><label style={labelStyle}>ΘΑ ΕΠΕΛΕΓΕΣ ΜΙΑ ΑΠΡΟΒΛΕΠΤΗ ΠΡΟΚΛΗΣΗ;</label>{yesNo('unexpectedChallenge')}</div>
-        </section>
-
-        <section style={sectionStyle}>
-          <h2 style={{ color: '#e5cf91', fontSize: 16, margin: '0 0 16px' }}>4. ΣΥΜΜΕΤΟΧΗ ΚΑΙ ΟΡΙΑ</h2>
-          <div style={fieldStyle}><label style={labelStyle}>ΘΕΛΕΙΣ ΝΑ ΣΥΜΜΕΤΕΧΕΙΣ ΕΝΕΡΓΑ;</label>{yesNo('activeParticipation')}</div>
-          <div style={fieldStyle}><label style={labelStyle}>ΠΡΟΣΩΠΙΚΗ ΛΕΞΗ STOP / SAFE WORD *</label><input value={answers.safeWord || ''} onChange={(e) => setAnswer('safeWord', e.target.value)} maxLength={40} required style={inputStyle} placeholder="Η προσωπική σου λέξη STOP" /></div>
-          <div style={fieldStyle}><label style={labelStyle}>ΕΝΤΑΣΗ ΔΟΚΙΜΑΣΙΩΝ: {answers.intensity || '3'}/5</label><input type="range" min="1" max="5" step="1" value={answers.intensity || '3'} onChange={(e) => setAnswer('intensity', e.target.value)} style={{ width: '100%', accentColor: '#E8C26B' }} /><div style={{ display: 'flex', justifyContent: 'space-between', color: '#9e906d', fontSize: 11 }}><span>1 · Ήπια</span><span>5 · Έντονη</span></div></div>
-          <div style={fieldStyle}><label style={labelStyle}>ΟΡΙΑ / ΔΕΝ ΕΠΙΘΥΜΩ</label>{[['touch','Σωματική επαφή'],['restraints','Δεσίματα / περιορισμοί'],['blindfolds','Κάλυψη ματιών'],['alcohol','Αλκοόλ'],['personal-disclosure','Προσωπικές αποκαλύψεις']].map(([key,label]) => <label key={key} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '7px 0', color: '#f4e8c5' }}><input type="checkbox" checked={(answers.safetyBoundaries || []).includes(key)} onChange={(e) => setSafetyBoundary(key, e.target.checked)} style={{ accentColor: '#E8C26B', width: 17, height: 17 }} />{label}</label>)}</div>
-          <div style={fieldStyle}><label style={labelStyle}>ΥΠΑΡΧΕΙ ΚΑΤΙ ΑΛΛΟ ΠΟΥ ΔΕΝ ΕΠΙΘΥΜΕΙΣ ΝΑ ΠΕΡΙΛΑΜΒΑΝΕΙ ΤΟ ΠΑΙΧΝΙΔΙ;</label><textarea rows={3} value={answers.boundaries || ''} onChange={(e) => setAnswer('boundaries', e.target.value)} maxLength={2000} style={inputStyle} placeholder="Προαιρετικά γράψε ό,τι άλλο θέλεις να γνωρίζει ο διοργανωτής." /></div>
-        </section>
-
-        <section style={sectionStyle}>
-          <h2 style={{ color: '#e5cf91', fontSize: 16, margin: '0 0 16px' }}>5. ΜΥΣΤΙΚΕΣ ΕΠΙΛΟΓΕΣ VIP</h2>
-          <div style={fieldStyle}><label style={labelStyle}>ΠΟΙΑ ΕΚΠΛΗΞΗ ΘΑ ΗΘΕΛΕΣ ΝΑ ΥΠΑΡΧΕΙ ΣΤΟ ΠΑΙΧΝΙΔΙ;</label>{textInput('surpriseWish')}</div>
-          <div style={fieldStyle}><label style={labelStyle}>ΝΟΥΜΕΡΟ ΠΑΠΟΥΤΣΙΟΥ</label>{textInput('shoeSize', 'π.χ. 38')}</div>
-          <div style={fieldStyle}><label style={labelStyle}>ΤΙ ΣΚΕΦΤΕΣΑΙ ΝΑ ΦΟΡΕΣΕΙΣ;</label>{textInput('plannedOutfit')}</div>
-          <div style={fieldStyle}><label style={labelStyle}>ΤΙ ΠΑΠΟΥΤΣΙΑ ΘΑ ΦΟΡΕΣΕΙΣ;</label>{textInput('shoesToWear')}</div>
-          <div style={fieldStyle}><label style={labelStyle}>ΧΡΩΜΑ ΣΤΑ ΝΥΧΙΑ</label><select value={answers.nailColor || ''} onChange={(e) => setAnswer('nailColor', e.target.value)} style={inputStyle}><option value="">Επίλεξε…</option>{NAIL_COLORS.map((color) => <option key={color} value={color}>{color}</option>)}</select></div>
-          <div style={fieldStyle}><label style={labelStyle}>ΤΥΠΟΣ ΠΑΝΤΟΦΛΑΣ / ΣΑΓΙΟΝΑΡΑΣ</label>{textInput('slipperType')}</div>
-          <div style={fieldStyle}><label style={labelStyle}>ΤΥΠΟΣ ΠΙΤΖΑΜΑΣ</label>{textInput('pajamaType')}</div>
-          <div style={fieldStyle}><label style={labelStyle}>ΕΠΙΘΥΜΕΙΣ ΝΑ ΜΕΙΝΕΙΣ ΣΤΟ ΣΠΙΤΙ / VILLA;</label>{yesNo('stayAtVilla')}</div>
-          <div style={fieldStyle}><label style={labelStyle}>ΑΓΑΠΗΜΕΝΟ ΠΟΤΟ</label>{textInput('favoriteDrink')}</div>
-        </section>
-
-        {invitation.questions?.length > 0 && <section style={sectionStyle}>
-          <h2 style={{ color: '#e5cf91', fontSize: 16, margin: '0 0 16px' }}>6. ΕΠΙΠΛΕΟΝ ΕΡΩΤΗΣΕΙΣ</h2>
-          <CustomFormQuestions
-            formType="invitation"
-            questionsOverride={invitation.questions}
-            value={customAnswers}
-            onChange={setCustomAnswers}
-            onValidityChange={setCustomQuestionsValid}
-            className="space-y-3"
-          />
-        </section>}
-
-        <label style={{ display: 'flex', alignItems: 'flex-start', gap: 10, color: '#f4e8c5', fontSize: 13, margin: '18px 0 8px' }}><input type="checkbox" checked={adultConfirmed} onChange={(e) => setAdultConfirmed(e.target.checked)} style={{ accentColor: '#E8C26B', marginTop: 3 }} /><span>Επιβεβαιώνω ότι είμαι 18 ετών ή μεγαλύτερη. *</span></label>
-        <label style={{ display: 'flex', alignItems: 'flex-start', gap: 10, color: '#f4e8c5', fontSize: 13, margin: '8px 0 18px' }}><input type="checkbox" checked={consentConfirmed} onChange={(e) => setConsentConfirmed(e.target.checked)} style={{ accentColor: '#E8C26B', marginTop: 3 }} /><span>Επιβεβαιώνω ότι συμμετέχω εθελοντικά, έχω δηλώσει τα όριά μου και μπορώ να σταματήσω οποιαδήποτε στιγμή. *</span></label>
-        {error && <p role="alert" style={{ color: '#f1a0a0', fontSize: 13, marginBottom: 14 }}>{error}</p>}
-        <button type="submit" disabled={!valid} style={{ width: '100%', borderRadius: 10, padding: '14px 16px', border: '1px solid #e0c36b', background: !valid ? '#4a4025' : 'linear-gradient(110deg,#8b6a24,#d9bd68,#8b6a24)', color: '#100e09', fontWeight: 800, letterSpacing: '.12em', opacity: !valid ? .65 : 1 }}>
-          {saving ? 'ΑΠΟΘΗΚΕΥΣΗ…' : 'ΕΠΙΒΕΒΑΙΩΣΗ ΣΥΜΜΕΤΟΧΗΣ'}
-        </button>
-      </form>}
-      <footer style={{ textAlign: 'center', color: '#796d50', fontSize: 10, letterSpacing: '.18em', marginTop: 24 }}>PRIVATE INVITATION · DEAL OF TEMPTATION</footer>
-    </div>
-  </main>;
+      {step === 3 && (
+        <>
+          <Section icon="✨" title="Μυστικές επιλογές VIP" hint="Όλα προαιρετικά — κάνουν τη βραδιά πιο προσωπική.">
+            {text('surpriseWish', 'Ποια έκπληξη θα ήθελες;')}
+            <div className="grid grid-cols-2 gap-3">
+              {text('shoeSize', 'Νούμερο παπουτσιού', 'π.χ. 38')}
+              {text('favoriteDrink', 'Αγαπημένο ποτό')}
+            </div>
+            {text('plannedOutfit', 'Τι σκέφτεσαι να φορέσεις;')}
+            {text('shoesToWear', 'Τι παπούτσια θα φορέσεις;')}
+            <Field label="Χρώμα στα νύχια">
+              <ChoiceGroup cols={4} size="sm" options={NAIL_COLORS.map((c) => ({ id: c, label: c }))} value={answers.nailColor || ''} onChange={(v) => setAnswer('nailColor', v)} />
+            </Field>
+            <div className="grid grid-cols-2 gap-3">
+              {text('slipperType', 'Παντόφλα / σαγιονάρα')}
+              {text('pajamaType', 'Τύπος πιτζάμας')}
+            </div>
+            <Field label="Θέλεις να μείνεις στο σπίτι / villa;">{yesNo('stayAtVilla')}</Field>
+          </Section>
+          {invitation?.questions?.length > 0 && (
+            <Section icon="📝" title="Επιπλέον ερωτήσεις">
+              <CustomFormQuestions formType="invitation" questionsOverride={invitation.questions} value={customAnswers} onChange={setCustomAnswers} onValidityChange={setCustomQuestionsValid} className="space-y-3" />
+            </Section>
+          )}
+          <Section icon="✅" title="Δηλώσεις">
+            <ConsentCheck checked={adultConfirmed} onChange={setAdultConfirmed}>Επιβεβαιώνω ότι είμαι <b>18 ετών ή μεγαλύτερη</b>.</ConsentCheck>
+            <ConsentCheck checked={consentConfirmed} onChange={setConsentConfirmed}>Συμμετέχω <b>εθελοντικά</b>, έχω δηλώσει τα όριά μου και μπορώ να σταματήσω οποιαδήποτε στιγμή.</ConsentCheck>
+          </Section>
+        </>
+      )}
+    </FormShell>
+  );
 }

@@ -154,7 +154,7 @@ export default function ModeMobile({ state, me, updateState, onChangePlayer, ses
 
         {isLockdown && (
           <div className="ui-card ui-card--danger text-center space-y-2">
-            <div className="text-xs opacity-70">Level: {{ init: 'Εκκίνηση', l1: '1 · Hostage', l2: '2 · Sensory Cipher', l3: '3 · Sabotage', exit: 'Exit Code', won: 'ΑΠΟΔΡΑΣΗ!', lost: 'ΑΠΟΤΥΧΙΑ' }[ld.stage || 'init']}</div>
+            <div className="text-xs opacity-70">Επίπεδο: {{ init: 'Εκκίνηση', l1: '1 · Όμηρος', l2: '2 · Αισθησιακός γρίφος', l3: '3 · Δολιοφθορά', exit: 'Κωδικός εξόδου', won: 'ΑΠΟΔΡΑΣΗ!', lost: 'ΑΠΟΤΥΧΙΑ' }[ld.stage || 'init']}</div>
             <div className="flex justify-center gap-2">
               {EXIT_CODE.split('').map((d, i) => (
                 <div key={i} className="w-11 h-14 flex items-center justify-center font-display text-3xl rounded" style={{ border: `2px solid ${(ld.revealed || [])[i] ? '#E8C26B' : '#FF453A'}`, color: '#E8C26B' }}>{(ld.revealed || [])[i] ? d : '🔒'}</div>

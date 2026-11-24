@@ -1,5 +1,7 @@
 import React from 'react';
 import { Tablet, Tv, Smartphone } from 'lucide-react';
+import { modeDisplayName } from '@/data/gameConfig';
+import { currentPhase } from '@/data/modes/modeGuide';
 
 const PJ_PHASES = {
   setup: 'Στήσιμο',
@@ -22,11 +24,12 @@ const LINKS = [
 
 function describe(session) {
   const s = session?.state || {};
-  const mode = s.mode || session?.mode || '—';
+  const modeId = s.mode || session?.mode || '';
+  const mode = modeId ? modeDisplayName(modeId) : '—';
   const players = (s.players || []).length;
   const phase = mode === 'pajama'
     ? `Πράξη ${((s.pajama?.actIndex ?? 0) + 1)}/7 · ${PJ_PHASES[s.pajama?.phase] || 'Στήσιμο'}`
-    : `Stage ${s.stage ?? 0} · Γύρος ${s.round ?? 1}`;
+    : (() => { const phase = currentPhase(s); return phase ? `Φάση ${phase.index + 1}/${phase.total} · ${phase.title}` : `Στάδιο ${s.stage ?? 0} · Γύρος ${s.round ?? 1}`; })();
   return { mode, players, phase };
 }
 
@@ -49,7 +52,7 @@ export default function AdminSessionBar({ sessions, activeSession, onSelect }) {
         >
           {sessions.map((s) => (
             <option key={s.id} value={s.id}>
-              {s.sessionCode} · {s.mode} · {s.state?.players?.length || 0} παίκτριες
+              {s.sessionCode} · {modeDisplayName(s.state?.mode || s.mode)} · {s.state?.players?.length || 0} παίκτριες
             </option>
           ))}
         </select>

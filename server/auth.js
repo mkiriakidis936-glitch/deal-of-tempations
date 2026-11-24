@@ -23,6 +23,9 @@ const newId = () => crypto.randomUUID();
 // Το EventSource (realtime) δεν στέλνει headers. Αντί να βάζουμε το μόνιμο JWT στο URL (καταγράφεται σε logs),
 // δίνουμε ένα εφάπαξ «εισιτήριο» που λήγει σε 60″ και ανταλλάσσεται με τον χρήστη.
 const streamTickets = new Map(); // ticket -> { sub, exp }
+// Παλιές ανοιχτές σελίδες μπορεί να στείλουν ticket=null: θεωρείται «χωρίς εισιτήριο» (δημόσια ροή), όχι λάθος.
+export const hasStreamTicket = (req) => { const t = String(req.query?.ticket || ''); return !!t && t !== 'null' && t !== 'undefined'; };
+
 export function issueStreamTicket(userId) {
   const now = Date.now();
   for (const [k, v] of streamTickets) if (v.exp < now) streamTickets.delete(k);
@@ -37,7 +40,7 @@ export async function attachUser(req, _res, next) {
   let sub = null;
   if (header.startsWith('Bearer ')) {
     try { sub = jwt.verify(header.slice(7), JWT_SECRET).sub; } catch { /* invalid/expired token -> anonymous */ }
-  } else if (req.query.ticket) {
+  } else if (hasStreamTicket(req)) {
     const t = streamTickets.get(String(req.query.ticket));
     streamTickets.delete(String(req.query.ticket)); // εφάπαξ
     if (t && t.exp > Date.now()) sub = t.sub;

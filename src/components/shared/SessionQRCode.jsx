@@ -8,7 +8,7 @@ export default function SessionQRCode({ sessionCode, size = 200 }) {
   return (
     <ComicPanel className="bg-card text-center">
       <div className="font-heading text-lg mb-1 text-primary">📷 ΣΚΑΝΑΡΕ ΓΙΑ ΕΙΣΟΔΟ</div>
-      <div className="text-xs mb-2 font-bold text-foreground/70 font-body">Στόλισε την κάμερα του κινητού σου</div>
+      <div className="text-xs mb-2 font-bold text-foreground/70 font-body">Στρέψε την κάμερα του κινητού σου εδώ</div>
       <div className="mx-auto inline-block bg-white p-2 border-2 border-border rounded-lg">
         <QRCodeSVG value={joinUrl} size={size} level="M" />
       </div>

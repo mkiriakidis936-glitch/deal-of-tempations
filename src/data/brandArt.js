@@ -65,7 +65,7 @@ const MODE_MEDIA_DEFAULTS = {
 };
 
 export const MODE_MEDIA = Object.fromEntries(MEDIA_MODES.map(({ id }) => [id, {
-  hero: MODE_MEDIA_DEFAULTS[id]?.hero || '', cover: MODE_COVERS[`modeCover_${id}`] || '', sections: [], gallery: [...(MODE_MEDIA_DEFAULTS[id]?.gallery || [])], cards: [], trailer: '',
+  hero: MODE_MEDIA_DEFAULTS[id]?.hero || '', cover: MODE_COVERS[`modeCover_${id}`] || '', sections: [], gallery: [...(MODE_MEDIA_DEFAULTS[id]?.gallery || [])], cards: [], trailer: '', intro: '',
 }]));
 
 export const PHOTO = {
@@ -78,7 +78,7 @@ export const PHOTO = {
 };
 
 // Τα βίντεο είναι προαιρετικά. Δεν υπάρχει πλέον υποχρεωτικό/προεπιλεγμένο βίντεο.
-export const FILM = { agent: '', welcomeVideo: '', countdownVideo: '' };
+export const FILM = { agent: '', welcomeVideo: '', countdownVideo: '', gameIntroVideo: '' };
 for (const id of PHOTO_SPOT_IDS) FILM[id] = '';
 
 export const SITE_VIDEOS = [];
@@ -119,6 +119,7 @@ export function applyMediaOverrides(o = {}) {
       gallery: Array.isArray(saved.gallery) ? Array.from({ length: 6 }, (_, index) => str(saved.gallery[index]) || '') : Array.from({ length: 6 }, (_, index) => (clearPhotos ? '' : MODE_MEDIA_DEFAULTS[id]?.gallery?.[index] || '')),
       cards: Array.isArray(saved.cards) ? saved.cards : [],
       trailer: str(saved.trailer) || '',
+      intro: str(saved.intro) || '',
     };
     MODE_COVERS[coverId] = cover;
   }
@@ -129,6 +130,7 @@ export function applyMediaOverrides(o = {}) {
   FILM.agent = str(o.agent) || '';
   FILM.welcomeVideo = str(o.welcomeVideo) || '';
   FILM.countdownVideo = str(o.countdownVideo) || '';
+  FILM.gameIntroVideo = str(o.gameIntroVideo) || '';
   for (const id of PHOTO_SPOT_IDS) {
     const value = str(o[id]);
     if (emptySlots.includes(id)) {

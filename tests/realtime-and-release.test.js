@@ -67,9 +67,14 @@ test('server: σφάλμα βάσης ή μη χειρισμένο promise δε�
   assert.match(read('server/index.js'), /unhandledRejection/);
 });
 
-test('realtime: χρησιμοποιημένο εισιτήριο admin δεν γίνεται σιωπηλά ανώνυμη σύνδεση', () => {
+test('realtime: χρησιμοποιημένο εισιτήριο admin δεν γίνεται σιωπηλά ανώνυμη σύνδεση', async () => {
   const server = read('server/entities.js');
-  assert.match(server, /if \(req\.query\.ticket && !admin\) return res\.status\(401\)/);
+  assert.match(server, /if \(hasStreamTicket\(req\) && !admin\) return res\.status\(401\)/);
+  process.env.DATABASE_URL ||= 'postgres://test:test@127.0.0.1:5432/deal_of_temptation_test';
+  process.env.JWT_SECRET ||= 'test-only-secret-for-isolated-session-tests';
+  const { hasStreamTicket } = await import('../server/auth.js');
+  assert.equal(hasStreamTicket({ query: { ticket: 'abc123' } }), true);
+  for (const ticket of ['null', 'undefined', '', undefined]) assert.equal(hasStreamTicket({ query: { ticket } }), false, `ticket=${ticket} = χωρίς εισιτήριο`);
   const client = read('src/api/base44Client.js');
   assert.match(client, /\[401, 403\]\.includes\(error\?\.status\)/);
   assert.match(client, /event: ping|addEventListener\('ping'/);
@@ -84,4 +89,11 @@ test('ενημέρωση λογισμικού: ο server δίνει τις ση�
   assert.equal(releaseNotesFor('', '6.1.0'), '');
   const real = read('CHANGELOG.md');
   assert.ok(releaseNotesFor(real, JSON.parse(read('package.json')).version).length > 0, 'η τρέχουσα έκδοση έχει σημειώσεις στο CHANGELOG');
+});
+
+test('site: οι απλοί λογαριασμοί δεν παίρνουν 403 στη ζωντανή σύνδεση', () => {
+  const index = read('server/index.js');
+  assert.match(index, /app\.post\('\/api\/entities\/stream-ticket', \(req, res\) => res\.json\(\{ ticket: req\.user\?\.role === 'admin' \? issueStreamTicket\(req\.user\.id\) : null \}\)\)/);
+  const client = read('src/api/base44Client.js');
+  assert.match(client, /if \(ticket\) params\.set\('ticket', ticket\);/);
 });

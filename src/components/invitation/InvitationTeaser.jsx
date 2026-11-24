@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Image } from '@/components/ui/image';
+import { base44 } from '@/api/base44Client';
 import { ART, PHOTO, FILM, HEIST_PHOTOS } from '@/data/brandArt';
 import MediaSpot from '@/components/shared/MediaSpot';
 import MoodGallery from '@/components/shared/MoodGallery';
