@@ -1,3 +1,4 @@
+import NotifyOnboarding from '@/components/play/NotifyOnboarding';
 import ScreenWallpaper from '@/components/shared/ScreenWallpaper';
 import SoundUnlock from '@/components/shared/SoundUnlock';
 import GameCard from '@/components/shared/GameCard';
@@ -6,7 +7,7 @@ import { isNewMode } from '@/data/modes/modeRegistry';
 import { ART } from '@/data/brandArt';
 import React, { useRef, useState } from 'react';
 import { useGameSession } from '@/hooks/useGameSession';
-import { request } from '@/api/apiClient';
+import { request, setPlayerPin } from '@/api/apiClient';
 import { getActiveSessionCode, subscribeActiveSession } from '@/lib/activeSession';
 import ComicPanel from '@/components/comic/ComicPanel';
 import PlayerCard from '@/components/shared/PlayerCard';
@@ -35,6 +36,10 @@ import PajamaMobile from '@/components/play/PajamaMobile';
 function PlayInner() {
   const { session, state, loading, updateState: saveState, joinByCode } = useGameSession({ autoLoad: false });
   const [selectedPlayerId, setSelectedPlayerId] = useState(null);
+  const [pinFor, setPinFor] = useState(null); // παίκτρια που περιμένει PIN
+  const [pin, setPin] = useState('');
+  const [pinError, setPinError] = useState('');
+  const [pinBusy, setPinBusy] = useState(false);
   const updateState = React.useCallback((patch) => saveState(patch, { playerId: selectedPlayerId }), [saveState, selectedPlayerId]);
   const [scannedCode, setScannedCode] = useState(null);
   const [autoJoinTried, setAutoJoinTried] = useState(false);
@@ -80,7 +85,9 @@ function PlayInner() {
     if (restoredRef.current || !session?.sessionCode || !state?.players?.length) return;
     restoredRef.current = true;
     const saved = localStorage.getItem(`dot_player_${session.sessionCode}`);
-    if (saved && state.players.some((p) => p.id === saved)) {
+    const savedPlayer = state.players.find((p) => p.id === saved);
+    const hasStoredPin = (() => { try { return !!localStorage.getItem(`dot_pin_${session.sessionCode.toUpperCase()}`); } catch { return false; } })();
+    if (savedPlayer && (!savedPlayer.hasPin || hasStoredPin)) {
       setSelectedPlayerId(saved);
       joinByCode(session.sessionCode, saved);
     }
@@ -95,11 +102,27 @@ function PlayInner() {
   }, [selectedPlayerId, state?.players, state?.currentPlayerIndex]);
 
   function selectPlayer(id) {
+    const player = state?.players?.find((p) => p.id === id);
+    // Με PIN: πρώτα ο προσωπικός κωδικός (τον δίνει η διοργανώτρια από το Tablet).
+    if (player?.hasPin) { setPinFor(player); setPin(''); setPinError(''); return; }
     setSelectedPlayerId(id);
     if (session?.sessionCode) {
       localStorage.setItem(`dot_player_${session.sessionCode}`, id);
       joinByCode(session.sessionCode, id);
     }
+  }
+
+  async function submitPin() {
+    if (!pinFor || !session?.sessionCode || pin.length !== 4) return;
+    setPinBusy(true);
+    setPinError('');
+    setPlayerPin(session.sessionCode, pin);
+    const ok = await joinByCode(session.sessionCode, pinFor.id);
+    setPinBusy(false);
+    if (!ok) { setPlayerPin(session.sessionCode, ''); setPinError('Λάθος PIN. Ζήτα τον σωστό από τη διοργανώτρια.'); return; }
+    localStorage.setItem(`dot_player_${session.sessionCode}`, pinFor.id);
+    setSelectedPlayerId(pinFor.id);
+    setPinFor(null);
   }
 
   // Επανασύνδεση μετά από refresh/crash: URL κωδικός ή η ενεργή συνεδρία του Admin/Tablet.
@@ -213,6 +236,24 @@ function PlayInner() {
     );
   }
 
+  if (!selectedPlayerId && pinFor) {
+    return (
+      <Page center>
+        <Header eyebrow="Deal of Temptation" title={`Γεια σου, ${pinFor.name}`} subtitle="Γράψε τον προσωπικό σου PIN (4 ψηφία). Τον δίνει η διοργανώτρια — έτσι κανείς άλλος δεν βλέπει τις μυστικές σου αποστολές." right={<Badge tone="gold">{session.sessionCode}</Badge>} />
+        <Card>
+          <input inputMode="numeric" autoFocus maxLength={4} value={pin} onChange={(e) => { setPin(e.target.value.replace(/\D/g, '').slice(0, 4)); setPinError(''); }}
+            onKeyDown={(e) => { if (e.key === 'Enter') submitPin(); }} aria-label="PIN" placeholder="••••"
+            className="h-16 w-full rounded-2xl bg-[#2C2C2E] text-center text-4xl font-bold tracking-[0.6em] text-white" />
+          {pinError && <div role="alert" className="mt-2 text-center text-sm text-[#FF6961]">{pinError}</div>}
+          <div className="mt-3 grid gap-2">
+            <Button variant="primary" block disabled={pin.length !== 4 || pinBusy} onClick={submitPin}>{pinBusy ? 'Έλεγχος…' : 'Είσοδος'}</Button>
+            <Button block onClick={() => setPinFor(null)}>← Άλλο όνομα</Button>
+          </div>
+        </Card>
+      </Page>
+    );
+  }
+
   if (!selectedPlayerId) {
     return (
       <Page>
@@ -238,6 +279,7 @@ function PlayInner() {
       <ConnectionBanner />
       {state.stopActive && <div className="fixed inset-0 z-[100] bg-destructive/85 flex items-center justify-center text-center pointer-events-auto"><div className="font-heading text-5xl text-white">⏸ ΣΤΟΠ</div></div>}
       <div className="max-w-md mx-auto space-y-3">
+        <NotifyOnboarding sessionCode={session.sessionCode} playerId={selectedPlayerId} />
         <div className="sticky top-0 z-20 -mx-4 px-4 py-2" style={{ background: 'var(--ui-bg)' }}>
           <ComicPanel className="bg-card">
             <PlayerCard player={myPlayer} showRole compact />

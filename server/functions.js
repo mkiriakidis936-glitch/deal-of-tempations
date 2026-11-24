@@ -69,6 +69,7 @@ async function archiveSessionData({ sessionCode, mode, winner, playerNames, stat
       sessionCode, mode, winner: winner || '', playerNames: names, stats: safeStats,
       confessions: safeConfessions, highlights: safeHighlights, showScenes: safeShowScenes,
       episodeSchedule: safeEpisodeSchedule, eventHistory: safeEventHistory, eventDate, volume: 1,
+      shareToken: crypto.randomBytes(16).toString('base64url'), memoryPhotos: [],
     });
 
     const { rows: chronicles } = await client.query(

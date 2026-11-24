@@ -172,7 +172,7 @@ export default function AdminSite() {
           <Group title="Κυλιόμενες λέξεις" footer="Η χρυσή ταινία κάτω από το hero. Μία λέξη ή φράση ανά γραμμή.">
             <Row label="Λέξεις"><Area rows={5} value={linesOf(d.marquee)} onChange={(v) => up({ marquee: toLines(v) })} /></Row>
           </Group>
-          <Group title="Ημερολόγιο διαθεσιμότητας" footer="Οι επόμενες βραδιές στην Αρχική. Οι περασμένες κρύβονται μόνες τους. Αν βάλεις θέσεις, εμφανίζονται «Χ θέσεις» ή «Sold out».">
+          <Group title="Ημερολόγιο διαθεσιμότητας" footer="Οι επόμενες βραδιές στην Αρχική (οι περασμένες κρύβονται μόνες τους). Οι «Κλεισμένες» μετριούνται αυτόματα: στις Αιτήσεις διαλέγεις «Βραδιά» και εγκρίνεις.">
             <ListEditor
               items={d.calendar || []}
               onChange={(calendar) => up({ calendar })}
@@ -183,7 +183,7 @@ export default function AdminSite() {
                   <div><div className={sub}>Ημερομηνία & ώρα</div><input type="datetime-local" className={INPUT} value={it.date || ''} onChange={(e) => set({ date: e.target.value })} /></div>
                   <div><div className={sub}>Εμπειρία</div><select className={INPUT} value={it.event} onChange={(e) => set({ event: e.target.value })}>{SITE_EVENTS.map((ev) => <option key={ev.id} value={ev.id}>{ev.label}</option>)}</select></div>
                   <div><div className={sub}>Θέσεις</div><input type="number" min="0" className={INPUT} value={it.seats ?? ''} onChange={(e) => set({ seats: e.target.value === '' ? '' : Number(e.target.value) })} /></div>
-                  <div><div className={sub}>Κλεισμένες</div><input type="number" min="0" className={INPUT} value={it.booked ?? ''} onChange={(e) => set({ booked: e.target.value === '' ? '' : Number(e.target.value) })} /></div>
+                  <div><div className={sub}>Κλεισμένες</div><div className={`${INPUT} tabular-nums text-white/70`} title="Μετριούνται αυτόματα από τις εγκεκριμένες αιτήσεις με αυτή τη βραδιά">{it.booked || 0}</div></div>
                 </div>
               )}
             />

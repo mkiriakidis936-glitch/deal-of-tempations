@@ -129,7 +129,13 @@ const deepMerge = (target, patch, field = '', allowClear = false) => {
   return merged;
 };
 
-const PRIVATE_PLAYER_KEYS = ['vipProfile', 'role'];
+const PRIVATE_PLAYER_KEYS = ['vipProfile', 'role', 'pin'];
+// Προσωπικός PIN παίκτριας: χωρίς σωστό PIN δεν δίνεται τίποτα προσωπικό. Παλιές βραδιές χωρίς PIN λειτουργούν όπως πριν.
+export const pinOk = (state, playerId, pin) => {
+  const player = (state?.players || []).find((item) => item?.id === playerId);
+  if (!player) return false;
+  return !player.pin || String(pin ?? '') === String(player.pin);
+};
 const INBOX_KEYS = new Set(['type', 'at', 'text', 'target', 'qid', 'answers']);
 const shortText = (value, max) => typeof value === 'string' && value.trim().length > 0 && value.length <= max;
 export function isValidInboxEntry(entry, validTarget) {
@@ -350,7 +356,8 @@ export function validatePlayerPatch(current, patch, playerId) {
 
   if ('players' in patch) {
     const old = current.players || [];
-    const next = patch.players;
+    // Το κινητό βλέπει μόνο την ένδειξη «hasPin» — δεν είναι αλλαγή της παίκτριας.
+    const next = Array.isArray(patch.players) ? patch.players.map((p) => (isObject(p) ? withoutKeys(p, ['hasPin']) : p)) : patch.players;
     if (!Array.isArray(next) || old.length !== next.length) return false;
     // Το κινητό στέλνει τη λίστα όπως τη βλέπει (χωρίς VIP προφίλ/ρόλους των άλλων): αυτά δεν μετρούν ως αλλαγή,
     // αλλά αν σταλούν, πρέπει να είναι ίδια με τα αποθηκευμένα.
@@ -358,7 +365,7 @@ export function validatePlayerPatch(current, patch, playerId) {
     const changed = old.filter((p, i) => !sameJson(withoutKeys(p, PRIVATE_PLAYER_KEYS), withoutKeys(next[i], PRIVATE_PLAYER_KEYS)) || !privateKeysUnchanged(p, next[i]));
     const before = old.find((p) => p.id === playerId);
     const after = next.find((p) => p.id === playerId);
-    if (!before || !after || !sameExceptKeys(withoutKeys(before, ['vipProfile']), withoutKeys(after, ['vipProfile']), ['penaltyStep']) || !privateKeysUnchanged(before, after)) return false;
+    if (!before || !after || !sameExceptKeys(withoutKeys(before, ['vipProfile', 'pin']), withoutKeys(after, ['vipProfile', 'pin']), ['penaltyStep']) || !privateKeysUnchanged(before, after)) return false;
     const delta = (after.penaltyStep || 0) - (before.penaltyStep || 0);
     const doubleDown = patch.history?.[0];
     const validPenaltyChange =
@@ -394,7 +401,8 @@ export function sanitizePublicSession(record, playerId = null) {
     // Το VIP προφίλ (όρια, προτιμήσεις) το βλέπει μόνο το Tablet. Ο κρυφός ρόλος μόνο η ίδια η παίκτρια.
     state.players = state.players.map((player) => {
       if (!isObject(player)) return player;
-      const { vipProfile: _vip, role, ...publicPlayer } = player;
+      const { vipProfile: _vip, role, pin, ...rest } = player;
+      const publicPlayer = pin ? { ...rest, hasPin: true } : rest;
       return playerId && player.id === playerId && role !== undefined ? { ...publicPlayer, role } : publicPlayer;
     });
   }
@@ -755,6 +763,24 @@ export function entityRoutes() {
     return next();
   };
   const guard = (op) => (req, res, next) => (needsAdmin(req.entity, op) ? requireAdmin(req, res, next) : next());
+
+  // Σελίδα αναμνήσεων: μόνο με το ιδιωτικό link (token). Επιστρέφει ό,τι είναι ασφαλές να μοιραστεί.
+  r.get('/memories/:token', async (req, res, next) => {
+    try {
+      const token = String(req.params.token || '');
+      if (!/^[A-Za-z0-9_-]{16,60}$/.test(token)) return res.status(404).json({ error: 'Η σελίδα δεν βρέθηκε.' });
+      const { rows } = await query("SELECT data, created_date FROM records WHERE entity = 'SessionArchive' AND data->>'shareToken' = $1 LIMIT 1", [token]);
+      if (!rows[0]) return res.status(404).json({ error: 'Η σελίδα δεν βρέθηκε.' });
+      const d = rows[0].data || {};
+      return res.json({
+        mode: d.mode || '', eventDate: d.eventDate || rows[0].created_date, winner: d.winner || '',
+        playerNames: Array.isArray(d.playerNames) ? d.playerNames : [],
+        highlights: Array.isArray(d.highlights) ? d.highlights.filter((h) => typeof h === 'string').slice(0, 12) : [],
+        photos: d.photosConsent === true && Array.isArray(d.memoryPhotos) ? d.memoryPhotos.filter((u) => typeof u === 'string' && /^\/media\/[A-Za-z0-9._-]+$/.test(u)).slice(0, 30) : [],
+        message: typeof d.memoryMessage === 'string' ? d.memoryMessage.slice(0, 600) : '',
+      });
+    } catch (error) { return next(error); }
+  });
 
   r.get('/event-info/:sessionCode', async (req, res, next) => {
     try {
@@ -1367,7 +1393,7 @@ export function entityRoutes() {
         [sessionCode],
       );
       const state = rows[0]?.data?.state || {};
-      if (!rows[0] || !(state.players || []).some((player) => player.id === playerId)) {
+      if (!rows[0] || !pinOk(state, playerId, req.body?.pin)) {
         return res.status(404).json({ error: 'Η παίκτρια δεν ανήκει σε αυτή τη συνεδρία.' });
       }
       const now = Date.now();
@@ -1418,7 +1444,7 @@ export function entityRoutes() {
         if (sessionCode) {
           const { rows } = await query("SELECT data FROM records WHERE entity = 'GameSession' AND data->>'sessionCode' = $1 LIMIT 1", [sessionCode]);
           if (!rows[0]) continue;
-          if (!admin && playerId && !(rows[0].data?.state?.players || []).some((player) => player.id === playerId)) continue;
+          if (!admin && playerId && !pinOk(rows[0].data?.state || {}, playerId, item?.pin)) continue;
         }
       } else {
         sessionCode = null;
@@ -1451,7 +1477,7 @@ export function entityRoutes() {
       if (sessionCode) {
         const { rows } = await query("SELECT data FROM records WHERE entity = 'GameSession' AND data->>'sessionCode' = $1 LIMIT 1", [sessionCode]);
         if (!rows[0]) return res.status(404).json({ error: 'Session not found' });
-        if (!isAdmin(req) && playerId && !(rows[0].data?.state?.players || []).some((player) => player.id === playerId)) {
+        if (!isAdmin(req) && playerId && !pinOk(rows[0].data?.state || {}, playerId, req.query.pin)) {
           return res.status(403).json({ error: 'Unknown player' });
         }
       }
@@ -1477,7 +1503,9 @@ export function entityRoutes() {
     }
     if (req.entity === 'GameSession' && !isAdmin(req)) {
       const keys = Object.keys(effectiveQuery);
-      if (keys.some((key) => !['sessionCode', 'playerId'].includes(key)) ||
+      const viewerPin = effectiveQuery.pin;
+      delete effectiveQuery.pin;
+      if (keys.filter((key) => key !== 'pin').some((key) => !['sessionCode', 'playerId'].includes(key)) ||
           (keys.includes('playerId') && (!keys.includes('sessionCode') || typeof effectiveQuery.playerId !== 'string')) ||
           (keys.includes('sessionCode') && typeof effectiveQuery.sessionCode !== 'string')) {
         return res.status(403).json({ error: 'Only session-code lookup is available' });
@@ -1485,6 +1513,7 @@ export function entityRoutes() {
       const playerId = effectiveQuery.playerId || null;
       effectiveQuery = keys.includes('sessionCode') ? { sessionCode: effectiveQuery.sessionCode.trim().toUpperCase() } : {};
       req.sessionViewerPlayerId = playerId;
+      req.sessionViewerPin = viewerPin;
       effectiveSort = '-created_date';
       effectiveLimit = 1;
       effectiveSkip = 0;
@@ -1498,6 +1527,10 @@ export function entityRoutes() {
     if (req.entity === 'GameSession' && !isAdmin(req) && req.sessionViewerPlayerId &&
         items.length && !(items[0].state?.players || []).some((player) => player.id === req.sessionViewerPlayerId)) {
       return res.status(403).json({ error: 'Unknown player' });
+    }
+    if (req.entity === 'GameSession' && !isAdmin(req) && req.sessionViewerPlayerId && items.length &&
+        !pinOk(items[0].state || {}, req.sessionViewerPlayerId, req.sessionViewerPin)) {
+      return res.status(403).json({ error: 'Λάθος PIN', code: 'bad_pin' });
     }
     res.json({ items: req.entity === 'GameSession' && !isAdmin(req) ? items.map((item) => sanitizePublicSession(item, req.sessionViewerPlayerId)) : items });
   });
@@ -1871,11 +1904,13 @@ export function entityRoutes() {
         }
         if (typeof sessionCode !== 'string' || !playerId || !isObject(statePatch) ||
             current.sessionCode !== sessionCode.trim().toUpperCase() ||
+            !pinOk(current.state || {}, playerId, req.body?.pin) ||
             !validatePlayerPatch(current.state || {}, statePatch, playerId)) {
           await client.query('ROLLBACK');
           return res.status(403).json({ error: 'Player update is not permitted' });
         }
         const safePlayerPatch = { ...statePatch };
+        if (Array.isArray(safePlayerPatch.players)) safePlayerPatch.players = safePlayerPatch.players.map((p) => (isObject(p) ? withoutKeys(p, ['hasPin']) : p));
         if (isObject(safePlayerPatch.pajama)) {
           safePlayerPatch.pajama = { ...safePlayerPatch.pajama };
           delete safePlayerPatch.pajama.saboteurId;

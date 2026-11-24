@@ -22,6 +22,18 @@ self.addEventListener('fetch', (event) => {
   if (req.method !== 'GET' || req.headers.has('range')) return;
   const url = new URL(req.url);
   if (url.origin !== self.location.origin) return;
+  // Φωτογραφίες του Admin (/media/…): μοναδικά ονόματα → cache-first, ώστε να φαίνονται και χωρίς internet.
+  if (url.pathname.startsWith('/media/') && STATIC.test(url.pathname) && !url.pathname.startsWith('/media/published-')) {
+    event.respondWith((async () => {
+      const cache = await caches.open(RUNTIME);
+      const hit = await cache.match(req);
+      if (hit) return hit;
+      const res = await fetch(req);
+      if (res.ok) cache.put(req, res.clone());
+      return res;
+    })());
+    return;
+  }
   if (url.pathname.startsWith('/api/') || url.pathname.startsWith('/media/') || url.pathname === '/sw.js') return;
 
   // Σελίδες: πρώτα δίκτυο, αλλιώς το τελευταίο κέλυφος της εφαρμογής (SPA)

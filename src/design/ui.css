@@ -284,8 +284,8 @@
   border: 0 !important;
   border-radius: 999px !important;
   box-shadow: none !important;
-  background-image: none !important;
 }
+/* Κουμπιά με σκούρο κείμενο (χρυσά/κίτρινα): το φόντο τους μένει πάντα ορατό (το «ΡΙΞΕ ΖΑΡΙ» κ.λπ.). */
 :root:not(:has(.dot-site)):not(:has(#admin-root)) .comic-text-stroke,
 :root:not(:has(.dot-site)):not(:has(#admin-root)) .comic-text-stroke-thin { -webkit-text-stroke: 0 !important; text-shadow: none !important; }
 :root:not(:has(.dot-site)):not(:has(#admin-root)) .comic-dots { background-image: none !important; }

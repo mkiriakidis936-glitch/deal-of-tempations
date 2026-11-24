@@ -58,8 +58,9 @@ import ConnectionHealth from '@/components/tablet/ConnectionHealth';
 import ConnectionBanner from '@/components/shared/ConnectionBanner';
 import { useSyncTimerAutoFire } from '@/hooks/useSyncTimerAutoFire';
 import { calculateMostWanted, getWantedLevel } from '@/lib/gameLogic';
+import { championOf } from '@/lib/modeRanking';
 import { canAssignVipActivity } from '@/lib/playerIntelligence';
-import { appApi } from '@/api/apiClient';
+import { appApi, request } from '@/api/apiClient';
 import { awardAchievements } from '@/lib/achievements';
 import { setGameStopActive } from '@/lib/modeKit';
 import { BriefingTablet, PhaseGuideTablet, briefingPending } from '@/components/modes/ModeBriefing';
@@ -111,6 +112,12 @@ export default function Tablet() {
   }
 
   const [showQR, setShowQR] = React.useState(false);
+  const [pushPlayers, setPushPlayers] = React.useState([]);
+  // Όταν ανοίγει το QR: ποιες παίκτριες έχουν ενεργές ειδοποιήσεις στο κινητό τους.
+  React.useEffect(() => {
+    if (!showQR || !session?.sessionCode) return;
+    request('GET', `/api/push/session/${encodeURIComponent(session.sessionCode)}`).then((r) => setPushPlayers(r?.players || [])).catch(() => {});
+  }, [showQR, session?.sessionCode]);
   const [intakeProfiles, setIntakeProfiles] = React.useState([]);
   const [intakeProfilesReady, setIntakeProfilesReady] = React.useState(false);
   const [intakeProfilesError, setIntakeProfilesError] = React.useState('');
@@ -216,16 +223,17 @@ export default function Tablet() {
       if (state.mode === 'marathon') {
         winner = (state.teamAlpha?.loot || 0) >= (state.teamBeta?.loot || 0) ? 'Team Alpha' : 'Team Beta';
       } else if (state.mode === 'arrest_heist') {
-        winner = (state.teamA?.points || 0) >= (state.teamB?.points || 0) ? 'Team A' : 'Team B';
+        // Ίδια νικήτρια με τη στέψη της TV: όποια ομάδα άνοιξε το χρηματοκιβώτιο, αλλιώς οι πόντοι.
+        const team = state.grandHeist?.winner || ((state.teamA?.points || 0) >= (state.teamB?.points || 0) ? 'A' : 'B');
+        winner = team === 'A' ? 'Team Alpha' : 'Team Beta';
       } else if (isNewMode(state.mode)) {
-        const sc = (p) => ((state.mg?.scores || {})[p.id] || 0) + ((state.mg?.tokens || {})[p.id] || 0);
-        winner = [...(state.players || [])].sort((a, b) => sc(b) - sc(a))[0]?.name || '';
+        winner = championOf(state.players || [], state.mg || {})?.player?.name || '';
       } else if (state.mode === 'pajama') {
         const scores = state.pajama?.scores || {};
         winner = [...(state.players || [])].sort((a, b) => (scores[b.id] || 0) - (scores[a.id] || 0))[0]?.name || '';
       } else {
-        const sorted = [...(state.players || [])].sort((a, b) => (b.bounty || 0) - (a.bounty || 0));
-        winner = sorted[0]?.name || '';
+        // Classic: η πιο καταζητούμενη (αυτή στέφεται στο Φινάλε).
+        winner = calculateMostWanted(state.players || [])?.name || '';
       }
       const stats = {};
       (state.players || []).forEach((p) => {
@@ -480,10 +488,21 @@ export default function Tablet() {
 
   function renderQR() {
     if (!showQR) return null;
+    const pushOn = new Set(pushPlayers);
     return (
       <div className="fixed inset-0 z-[100] bg-background/70 flex items-center justify-center p-4" onClick={() => setShowQR(false)}>
         <div onClick={(e) => e.stopPropagation()} className="max-w-sm w-full">
           <SessionQRCode sessionCode={session.sessionCode} size={240} />
+          {(state?.players || []).some((p) => p.pin) && (
+            <div className="mt-3 rounded-2xl bg-[#1C1C1E] p-3 text-white">
+              <div className="mb-1 text-[13px] font-semibold text-white/60">🔑 Προσωπικοί PIN — δώσε σε κάθε παίκτρια τον δικό της</div>
+              {(state.players || []).map((p) => (
+                <div key={p.id} className="flex items-center justify-between border-b border-white/10 py-1.5 text-[15px] last:border-0">
+                  <span>{p.name} <span title={pushOn.has(p.id) ? 'Ειδοποιήσεις ενεργές' : 'Χωρίς ειδοποιήσεις'}>{pushOn.has(p.id) ? '🔔' : '🔕'}</span></span><b className="tabular-nums tracking-[0.3em] text-[#E8C26B]">{p.pin || '—'}</b>
+                </div>
+              ))}
+            </div>
+          )}
           <ComicButton variant="red" size="md" onClick={() => setShowQR(false)} className="w-full mt-3">
             ✕ ΚΛΕΙΣΙΜΟ
           </ComicButton>

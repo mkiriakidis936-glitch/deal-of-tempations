@@ -1,3 +1,4 @@
+import { loadCalendar, calendarOptionsFor, syncCalendarBookings } from '@/lib/calendarBookings';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { appApi, request } from '@/api/apiClient';
 import ComicPanel from '@/components/comic/ComicPanel';
@@ -63,6 +64,10 @@ export default function AdminInbox({ sessions = [] }) {
       && (!unreadOnly || !item.readAt);
   }), [items, search, eventFilter, statusFilter, unreadOnly]);
 
+  const [calendar, setCalendar] = useState([]);
+  useEffect(() => { loadCalendar().then(setCalendar).catch(() => {}); }, []);
+  const resync = () => syncCalendarBookings().catch(() => {});
+
   async function updateItem(item, patch) {
     try {
       const updated = await appApi.entities[item._entity].update(item.id, patch);
@@ -78,6 +83,7 @@ export default function AdminInbox({ sessions = [] }) {
         : entry));
       if (approved && item.status !== 'Επιβεβαιώθηκε') appApi.entities[item._entity].update(item.id, { status: 'Επιβεβαιώθηκε', readAt: item.readAt || new Date().toISOString() }).catch(() => {});
       setMessage(approved ? `Η ${nameFor(item)} εγκρίθηκε και εμφανίζεται στο Tablet.` : `Η έγκριση της ${nameFor(item)} ανακλήθηκε.`);
+      if (item.calendarDate) resync();
     } catch (error) { setMessage(error.message || 'Η έγκριση απέτυχε.'); }
   }
 
@@ -128,6 +134,12 @@ export default function AdminInbox({ sessions = [] }) {
             {item.approved
               ? <ComicButton size="sm" variant="dark" onClick={() => setApproval(item, false)}>ΑΚΥΡΩΣΗ ΕΓΚΡΙΣΗΣ</ComicButton>
               : <ComicButton size="sm" variant="green" onClick={() => setApproval(item, true)}>ΕΓΚΡΙΣΗ ΓΙΑ ΤΟ ΠΑΙΧΝΙΔΙ</ComicButton>}
+            {calendarOptionsFor(calendar, item).length > 0 && (
+              <select aria-label="Βραδιά" value={item.calendarDate || ''} onChange={async (e) => { await updateItem(item, { calendarDate: e.target.value || null }); resync(); }} className="rounded border border-border bg-background p-2 text-xs">
+                <option value="">Βραδιά: —</option>
+                {calendarOptionsFor(calendar, item).map((entry) => <option key={entry.date} value={entry.date}>Βραδιά: {new Date(entry.date).toLocaleString('el-GR', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</option>)}
+              </select>
+            )}
           </div>
         )}
         {(item.message || item.suggestion) && <div className="rounded-lg bg-secondary p-2 text-sm whitespace-pre-wrap">{item.message || item.suggestion}</div>}

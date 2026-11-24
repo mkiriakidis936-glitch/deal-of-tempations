@@ -19,6 +19,7 @@ const Promo = lazy(() => import('@/pages/Promo'));
 const GiftUnlock = lazy(() => import('@/pages/GiftUnlock'));
 const Site = lazy(() => import('@/pages/Site'));
 import AvSetup from '@/pages/AvSetup';
+import Memories from '@/pages/Memories';
 const ProductionConsent = lazy(() => import('@/pages/ProductionConsent'));
 const Login = lazy(() => import('@/pages/Login'));
 const Register = lazy(() => import('@/pages/Register'));
@@ -43,6 +44,7 @@ const PublicVisitTracker = () => {
   const location = useLocation();
   useEffect(() => {
     const path = location.pathname;
+    if (path.startsWith('/memories/')) return;
     if (['/', '/tv', '/play', '/admin', '/av-setup', '/login', '/register', '/forgot-password', '/reset-password'].includes(path)) return;
     let trackedPath = path;
     if (path === '/site') {
@@ -87,6 +89,7 @@ const AuthenticatedApp = () => {
       <Route path="/gift-unlock" element={<GiftUnlock />} />
       <Route path="/site" element={<Site />} />
       <Route path="/av-setup" element={<AvSetup />} />
+      <Route path="/memories/:token" element={<Memories />} />
       <Route path="/production-consent" element={<ProductionConsent />} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>

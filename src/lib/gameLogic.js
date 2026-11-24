@@ -121,8 +121,21 @@ export function createPlayer(id, name, footwearLevel, toenailPerk) {
   };
 }
 
+// Μοναδικός τετραψήφιος PIN ανά παίκτρια (τον βλέπει μόνο το Tablet· τον ζητά το κινητό).
+export function assignPins(players, rng = Math.random) {
+  const used = new Set();
+  return players.map((p) => {
+    if (p.pin) { used.add(p.pin); return p; }
+    let pin = '';
+    do { pin = String(Math.floor(rng() * 9000) + 1000); } while (used.has(pin));
+    used.add(pin);
+    return { ...p, pin };
+  });
+}
+
 export function createInitialState(mode, intensity, players) {
-  let assignedPlayers = players.map((p, i) => ({
+  let assignedPlayers = assignPins(players).map((p, i) => ({
+    pin: p.pin,
     ...createPlayer(`p${i}`, p.name, p.footwearLevel, p.toenailPerk),
     slipperType: p.slipperType || '',
     nailColor: p.nailColor || '',

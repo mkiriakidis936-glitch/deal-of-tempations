@@ -1,3 +1,4 @@
+import NotifyOnboarding from '@/components/play/NotifyOnboarding';
 import { useModesContentRev } from '@/lib/modesContentStore';
 import React, { useEffect, useRef, useState } from 'react';
 import GameCard from '@/components/shared/GameCard';
@@ -108,6 +109,7 @@ export default function ModeMobile({ state, me, updateState, onChangePlayer, ses
       <div className="ui-stack">
         <Header eyebrow={me.name} title={`${meta.icon} ${meta.name}`} gold />
         <ModeArt state={state} alt={meta.name} className="aspect-[16/9] rounded-2xl" />
+        <NotifyOnboarding sessionCode={sessionCode} playerId={me?.id} />
         <PlayerDashboard state={state} me={me} />
         <div className="flex justify-center"><GameDurationClock state={state} inline /></div>
 

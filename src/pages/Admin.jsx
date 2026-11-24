@@ -17,6 +17,8 @@ const AdminEventManager = lazy(() => import('@/components/admin/AdminEventManage
 const AdminInterestParticipation = lazy(() => import('@/components/admin/AdminInterestParticipation'));
 const AdminSettings = lazy(() => import('@/components/admin/AdminSettings'));
 const AdminSocialCard = lazy(() => import('@/components/admin/AdminSocialCard'));
+const AdminPlayerHistory = lazy(() => import('@/components/admin/AdminPlayerHistory'));
+const AdminMemories = lazy(() => import('@/components/admin/AdminMemories'));
 const AdminRehearsal = lazy(() => import('@/components/admin/AdminRehearsal'));
 const AdminGuide = lazy(() => import('@/components/admin/AdminGuide'));
 const AdminBackup = lazy(() => import('@/components/admin/AdminBackup'));
@@ -73,6 +75,7 @@ const NAV_GROUPS = [
       { id: 'invitations', label: 'Προσκλήσεις', icon: Mail },
       { id: 'forms', label: 'Ερωτήσεις φορμών', icon: FileText },
       { id: 'interest', label: 'Ενδιαφέρον & συμμετοχή', icon: Users },
+      { id: 'history', label: 'Ιστορικό παικτριών', icon: History },
       { id: 'links', label: 'Σύνδεσμοι & QR', icon: Link2 },
     ],
   },
@@ -336,6 +339,8 @@ export default function Admin() {
         return <AdminSettings />;
       case 'social':
         return <AdminSocialCard />;
+      case 'history':
+        return <AdminPlayerHistory />;
       case 'rehearsal':
         return <AdminRehearsal />;
       case 'guide':
@@ -344,14 +349,17 @@ export default function Admin() {
         return <AdminBackup />;
       case 'sessions':
         return (
-          <AdminSessions
-            sessions={sessions}
-            loading={loading}
-            onSelect={selectSession}
-            onDelete={handleDeleteSession}
-            onRestart={handleRestartSession}
-            onRefresh={loadSessions}
-          />
+          <div className="space-y-6">
+            <AdminMemories />
+            <AdminSessions
+              sessions={sessions}
+              loading={loading}
+              onSelect={selectSession}
+              onDelete={handleDeleteSession}
+              onRestart={handleRestartSession}
+              onRefresh={loadSessions}
+            />
+          </div>
         );
       case 'casting':
         return <AdminShowCasting />;

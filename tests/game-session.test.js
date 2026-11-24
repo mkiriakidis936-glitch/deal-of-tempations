@@ -261,3 +261,19 @@ test('villa engine: unique roles, hourly schedule, PASS never penalises, code ch
   assert.equal(V.tryCode(v, 'p1', '0000' === v.code ? '1111' : '0000').ok, false);
   assert.equal(V.cluesFound(V.awardClue(V.awardClue(v, 1, 'p0'), 1, 'p3')), 1);
 });
+
+test('προσωπικός PIN: ποτέ δημόσιος, απαραίτητος για προσωπικά δεδομένα, παλιές βραδιές χωρίς PIN λειτουργούν', async () => {
+  const { pinOk } = await import('../server/entities.js');
+  const state = { players: [{ id: 'p0', name: 'Α', pin: '4821', role: 'cop' }, { id: 'p1', name: 'Β' }] };
+  assert.equal(pinOk(state, 'p0', '4821'), true);
+  assert.equal(pinOk(state, 'p0', '0000'), false);
+  assert.equal(pinOk(state, 'p0', undefined), false);
+  assert.equal(pinOk(state, 'p1', undefined), true, 'παλιά παίκτρια χωρίς PIN');
+  assert.equal(pinOk(state, 'p9', '4821'), false);
+  const own = sanitizePublicSession({ state }, 'p0').state.players[0];
+  assert.equal('pin' in own, false);
+  assert.equal(own.hasPin, true);
+  const patch = { mg: { playerAction: { playerId: 'p0', type: 'board_roll', at: 1 } } };
+  assert.equal(validatePlayerPatch({ ...state, mg: {} }, { players: sanitizePublicSession({ state }, 'p0').state.players.map((p) => ({ ...p })) , history: [{ type: 'double_down', player: 'Α', result: 'ελευθερία', timestamp: 1 }] }, 'p0'), true);
+  assert.ok(patch);
+});

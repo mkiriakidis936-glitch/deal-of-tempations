@@ -2,6 +2,7 @@ import express from 'express';
 import webpush from 'web-push';
 import { query } from './db.js';
 import { requireAdmin } from './auth.js';
+import { pinOk } from './entities.js';
 
 // VAPID κλειδιά: από env (VAPID_PUBLIC_KEY / VAPID_PRIVATE_KEY) ή, αν λείπουν, δημιουργούνται μία φορά και μένουν στη βάση.
 let ready = null;
@@ -119,8 +120,7 @@ export function pushRoutes() {
       "SELECT data FROM records WHERE entity = 'GameSession' AND data->>'sessionCode' = $1 LIMIT 1",
       [sessionCode],
     );
-    const players = sessions[0]?.data?.state?.players || [];
-    if (!players.some((player) => player.id === playerId)) return res.status(404).json({ error: 'Δεν βρέθηκε η παίκτρια στη συνεδρία' });
+    if (!sessions[0] || !pinOk(sessions[0].data?.state || {}, playerId, req.body?.pin)) return res.status(404).json({ error: 'Δεν βρέθηκε η παίκτρια στη συνεδρία' });
     await query(
       `INSERT INTO push_subscriptions (endpoint, user_id, subscription, device, session_code, player_id)
        VALUES ($1,NULL,$2,$3,$4,$5)
@@ -131,6 +131,10 @@ export function pushRoutes() {
     res.json({ success: true });
   });
 
+  r.get('/session/:code', requireAdmin, async (req, res) => {
+    const { rows } = await query('SELECT DISTINCT player_id FROM push_subscriptions WHERE session_code = $1 AND player_id IS NOT NULL', [String(req.params.code || '').trim().toUpperCase()]);
+    res.json({ players: rows.map((row) => row.player_id) });
+  });
   r.post('/player-unsubscribe', async (req, res) => {
     const sessionCode = String(req.body?.sessionCode || '').trim().toUpperCase();
     const playerId = String(req.body?.playerId || '').trim();

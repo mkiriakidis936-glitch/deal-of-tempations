@@ -8,7 +8,7 @@ export const TAB_TONE = {
   modes: '#E8C26B', media: '#30D158',
   events: '#FF9F0A', invitations: '#0A84FF', forms: '#64D2FF', interest: '#30D158', links: '#5E5CE6',
   website: '#0A84FF', statistics: '#30D158',
-  settings: '#8E8E93', notifications: '#FF453A', sessions: '#5E5CE6', backup: '#636366', guide: '#FF9F0A', rehearsal: '#30D158', social: '#FF375F',
+  settings: '#8E8E93', notifications: '#FF453A', sessions: '#5E5CE6', backup: '#636366', guide: '#FF9F0A', rehearsal: '#30D158', social: '#FF375F', history: '#BF5AF2',
 };
 
 export default function AdminNav({ groups, active, onChange }) {

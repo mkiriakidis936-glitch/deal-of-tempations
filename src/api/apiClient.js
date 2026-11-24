@@ -11,8 +11,19 @@ const storeToken = (t) => {
   try { t ? localStorage.setItem(TOKEN_KEY, t) : localStorage.removeItem(TOKEN_KEY); } catch { /* ignore */ }
 };
 
-export async function request(method, path, body) {
+// PIN της παίκτριας σε αυτό το κινητό (αποθηκεύεται όταν μπαίνει με το όνομά της).
+const pinFor = (code) => { try { return localStorage.getItem(`dot_pin_${String(code || '').trim().toUpperCase()}`) || ''; } catch { return ''; } };
+export const setPlayerPin = (code, pin) => { try { if (pin) localStorage.setItem(`dot_pin_${String(code).toUpperCase()}`, pin); else localStorage.removeItem(`dot_pin_${String(code).toUpperCase()}`); } catch { /* χωρίς storage */ } };
+function withPin(body) {
+  if (!body || typeof body !== 'object' || Array.isArray(body)) return body;
+  if (body.playerId && body.sessionCode && body.pin === undefined) return { ...body, pin: pinFor(body.sessionCode) };
+  if (body.query?.playerId && body.query?.sessionCode && body.query.pin === undefined) return { ...body, query: { ...body.query, pin: pinFor(body.query.sessionCode) } };
+  return body;
+}
+
+export async function request(method, path, rawBody) {
   const token = getToken();
+  const body = withPin(rawBody);
   const res = await fetch(`${API_URL}${path}`, {
     method,
     headers: {
@@ -55,7 +66,7 @@ function closeLive() {
 
 async function openLive(reason) {
   if (live.timer) { clearTimeout(live.timer); live.timer = null; }
-  const subs = [...subscriptions.values()].map(({ entity, sessionCode, playerId }) => ({ entity, ...(sessionCode ? { sessionCode } : {}), ...(playerId ? { playerId } : {}) }));
+  const subs = [...subscriptions.values()].map(({ entity, sessionCode, playerId }) => ({ entity, ...(sessionCode ? { sessionCode } : {}), ...(playerId ? { playerId, pin: pinFor(sessionCode) } : {}) }));
   if (!subs.length) { closeLive(); return; }
   const signature = JSON.stringify(subs);
   const params = new URLSearchParams({ subs: signature });
@@ -74,7 +85,7 @@ async function openLive(reason) {
       }
     }
   }
-  if (JSON.stringify([...subscriptions.values()].map(({ entity, sessionCode, playerId }) => ({ entity, ...(sessionCode ? { sessionCode } : {}), ...(playerId ? { playerId } : {}) }))) !== signature) return;
+  if (JSON.stringify([...subscriptions.values()].map(({ entity, sessionCode, playerId }) => ({ entity, ...(sessionCode ? { sessionCode } : {}), ...(playerId ? { playerId, pin: pinFor(sessionCode) } : {}) }))) !== signature) return;
   live.pending?.close();
   const es = new EventSource(`${API_URL}/api/entities/multi/stream?${params.toString()}`);
   live.pending = es;
