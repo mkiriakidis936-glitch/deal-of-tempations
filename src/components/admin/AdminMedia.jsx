@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useId, useRef, useState } from 'react';
-import { base44 } from '@/api/base44Client';
+import { appApi } from '@/api/apiClient';
 import ComicPanel from '@/components/comic/ComicPanel';
 import ComicButton from '@/components/comic/ComicButton';
 import { ART, DEFAULTS, applyMediaOverrides } from '@/data/brandArt';
@@ -128,9 +128,9 @@ export default function AdminMedia() {
     const record = rec?.id ? rec : await fetchOverrides();
     if (record?.id) {
       if (!rec?.id) setRec(record);
-      await base44.entities.AppSetting.update(record.id, { value: clean });
+      await appApi.entities.AppSetting.update(record.id, { value: clean });
     }
-    else setRec(await base44.entities.AppSetting.create({ key: MEDIA_KEY, value: clean }));
+    else setRec(await appApi.entities.AppSetting.create({ key: MEDIA_KEY, value: clean }));
     applyMediaOverrides(clean);
     setOv(clean);
   };
@@ -263,7 +263,7 @@ export default function AdminMedia() {
       }
       if (used || ['libraryCategories', 'librarySurfaces', 'libraryFocalPoints'].some((key) => ov[key]?.[f.url] !== undefined)) await save(next);
 
-      const avResult = await base44.entities.AppSetting.filter({ key: 'av_control_room_v1' }, { limit: 1 });
+      const avResult = await appApi.entities.AppSetting.filter({ key: 'av_control_room_v1' }, { limit: 1 });
       const avRecord = avResult.items?.[0];
       if (avRecord?.id) {
         const avValue = avRecord.value || {};
@@ -276,12 +276,12 @@ export default function AdminMedia() {
           if (queueIndex === removedIndex) queueIndex = -1;
           else if (queueIndex > removedIndex) queueIndex -= 1;
         }
-        await base44.entities.AppSetting.update(avRecord.id, { value: { ...avValue, metadata, queue, queueIndex } });
+        await appApi.entities.AppSetting.update(avRecord.id, { value: { ...avValue, metadata, queue, queueIndex } });
       }
 
-      const cueResult = await base44.entities.ProductionCue.filter({ source: f.url }, { limit: 1000 });
+      const cueResult = await appApi.entities.ProductionCue.filter({ source: f.url }, { limit: 1000 });
       for (const cue of cueResult.items || []) {
-        if (cue?.id) await base44.entities.ProductionCue.update(cue.id, {
+        if (cue?.id) await appApi.entities.ProductionCue.update(cue.id, {
           active: false,
           source: '',
           mediaItemId: null,
@@ -343,7 +343,7 @@ export default function AdminMedia() {
       };
       await save(next);
 
-      const avResult = await base44.entities.AppSetting.filter({ key: 'av_control_room_v1' }, { limit: 1 });
+      const avResult = await appApi.entities.AppSetting.filter({ key: 'av_control_room_v1' }, { limit: 1 });
       const avRecord = avResult.items?.[0];
       if (avRecord?.id) {
         const avValue = avRecord.value || {};
@@ -354,12 +354,12 @@ export default function AdminMedia() {
         const removedBefore = oldIndex >= 0 ? oldQueue.slice(0, oldIndex).filter((item) => deletedUrls.has(item?.url)).length : 0;
         const queueIndex = currentDeleted ? -1 : oldIndex < 0 ? -1 : oldIndex - removedBefore;
         const metadata = Object.fromEntries(Object.entries(avValue.metadata || {}).filter(([url]) => !deletedUrls.has(url)));
-        await base44.entities.AppSetting.update(avRecord.id, { value: { ...avValue, metadata, queue, queueIndex } });
+        await appApi.entities.AppSetting.update(avRecord.id, { value: { ...avValue, metadata, queue, queueIndex } });
       }
 
       await Promise.all([...deletedUrls].map(async (url) => {
-        const cueResult = await base44.entities.ProductionCue.filter({ source: url }, { limit: 1000 });
-        await Promise.all((cueResult.items || []).filter((cue) => cue?.id).map((cue) => base44.entities.ProductionCue.update(cue.id, {
+        const cueResult = await appApi.entities.ProductionCue.filter({ source: url }, { limit: 1000 });
+        await Promise.all((cueResult.items || []).filter((cue) => cue?.id).map((cue) => appApi.entities.ProductionCue.update(cue.id, {
           active: false,
           source: '',
           mediaItemId: null,

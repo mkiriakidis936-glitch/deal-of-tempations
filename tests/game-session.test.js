@@ -12,9 +12,9 @@ const players = [
   { id: 'p1', name: 'Player 1', vipProfile: { boundaries: ['own-only'] } },
 ];
 
-test('the three active digital modes keep their specified durations', () => {
-  assert.deepEqual(NEW_MODES.map((mode) => mode.id), ['lockdown', 'beach_bar', 'marathon_4h']);
-  assert.deepEqual(NEW_MODES.map((mode) => mode.minutes), [60, 150, 105]);
+test('the active digital modes keep their specified durations', () => {
+  assert.deepEqual(NEW_MODES.map((mode) => mode.id), ['lockdown', 'beach_bar', 'marathon_4h', 'villa_takeover']);
+  assert.deepEqual(NEW_MODES.map((mode) => mode.minutes), [60, 150, 105, 2880]);
 });
 
 test('player session response never exposes VIP profiles, and hidden roles only to their owner', () => {
@@ -222,4 +222,42 @@ test('double down from the phone works with the redacted player list but cannot 
   assert.equal(validatePlayerPatch(current, roleSwap, 'p1'), false);
   const otherRole = { ...patch, players: patch.players.map((p) => (p.id === 'p0' ? { ...p, role: 'driver' } : p)) };
   assert.equal(validatePlayerPatch(current, otherRole, 'p1'), false);
+});
+
+test('villa takeover: phones see only their own role, clues, alliances and alerts — never the code', async () => {
+  const villa = {
+    sq: 6, code: '4721', roles: { p0: 'hacker', p1: 'phantom' }, clues: { p0: [0, 2] },
+    alliances: [{ id: 'a1', members: ['p0', 'p1'] }, { id: 'a2', members: ['p1', 'p2'] }],
+    alerts: [{ id: 'n1', to: 'all', title: 'A' }, { id: 'n2', to: 'p1', title: 'B' }],
+  };
+  const rec = { state: { players: [...players, { id: 'p2', name: 'Player 2' }], mg: { villa } } };
+  const p0 = sanitizePublicSession(rec, 'p0').state.mg.villa;
+  assert.equal(p0.code, undefined);
+  assert.deepEqual(p0.myDigits, { 0: '4', 2: '2' });
+  assert.deepEqual(p0.roles, { p0: 'hacker' });
+  assert.deepEqual(p0.alliances.map((a) => a.id), ['a1']);
+  assert.deepEqual(p0.alerts.map((a) => a.id), ['n1']);
+  const tv = sanitizePublicSession(rec).state.mg.villa;
+  assert.deepEqual([tv.code, tv.roles, tv.alliances.length], [undefined, {}, 0]);
+  const current = { players, mg: { stop: false } };
+  assert.equal(validatePlayerPatch(current, { mg: { playerAction: { playerId: 'p1', type: 'villa_code', code: '4721', at: 1 } } }, 'p1'), true);
+  assert.equal(validatePlayerPatch(current, { mg: { playerAction: { playerId: 'p1', type: 'villa_vote', target: 'p1', at: 1 } } }, 'p1'), false);
+  assert.equal(validatePlayerPatch(current, { mg: { playerAction: { playerId: 'p1', type: 'villa_quiet', value: true, at: 1 } } }, 'p1'), true);
+});
+
+test('villa engine: unique roles, hourly schedule, PASS never penalises, code check', async () => {
+  const V = await import('../src/lib/villaEngine.js');
+  const ps = Array.from({ length: 8 }, (_, i) => ({ id: `p${i}` }));
+  const v = V.initVilla(ps, { rng: () => 0.3, now: 0 });
+  const roles = Object.values(v.roles).filter((r) => r !== 'guest');
+  assert.equal(new Set(roles).size, roles.length);
+  assert.match(v.code, /^\d{4}$/);
+  assert.equal(V.scheduledSquare(v, 3 * 3600000 + 5), 4);
+  assert.equal(V.scheduledSquare(v, 99 * 3600000), 48);
+  assert.equal(V.scheduledSquare({ ...v, extended: true }, 99 * 3600000), 56);
+  assert.equal(V.pointsFor(V.squareAt(26), 'pass'), 0);
+  assert.ok(V.pointsFor(V.squareAt(26), 'lose') < 0);
+  assert.equal(V.tryCode(v, 'p1', v.code).ok, true);
+  assert.equal(V.tryCode(v, 'p1', '0000' === v.code ? '1111' : '0000').ok, false);
+  assert.equal(V.cluesFound(V.awardClue(V.awardClue(v, 1, 'p0'), 1, 'p3')), 1);
 });

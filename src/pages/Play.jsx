@@ -6,7 +6,7 @@ import { isNewMode } from '@/data/modes/modeRegistry';
 import { ART } from '@/data/brandArt';
 import React, { useRef, useState } from 'react';
 import { useGameSession } from '@/hooks/useGameSession';
-import { request } from '@/api/base44Client';
+import { request } from '@/api/apiClient';
 import { getActiveSessionCode, subscribeActiveSession } from '@/lib/activeSession';
 import ComicPanel from '@/components/comic/ComicPanel';
 import PlayerCard from '@/components/shared/PlayerCard';

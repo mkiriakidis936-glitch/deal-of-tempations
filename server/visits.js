@@ -40,48 +40,54 @@ export function visitRoutes() {
 
   // Συγκεντρωτικά στατιστικά συνεδριών με ένα scan της βάσης — χωρίς φόρτωση όλων των sessions στο browser.
   r.get('/session-stats', requireAdmin, async (_req, res) => {
+    // Ζωντανές παρτίδες + όσες αρχειοθετήθηκαν (το Tablet σβήνει την παρτίδα όταν τελειώνει, αλλά κρατά SessionArchive).
     const { rows } = await query(`
-      WITH sessions AS MATERIALIZED (
+      WITH live AS MATERIALIZED (
         SELECT
-          id,
-          data,
-          updated_date,
+          id, updated_date, data->>'sessionCode' AS code,
           COALESCE(NULLIF(data->'state'->>'stage', '')::int, 0) AS stage,
           COALESCE(data->'state'->>'mode', data->>'mode', 'unknown') AS mode,
           COALESCE(data->'state'->>'intensity', data->>'intensity', 'unknown') AS intensity,
-          jsonb_array_length(
-            CASE WHEN jsonb_typeof(data->'state'->'players') = 'array'
-              THEN data->'state'->'players' ELSE '[]'::jsonb END
-          )::int AS players
-        FROM records
-        WHERE entity = 'GameSession'
+          COALESCE(COALESCE(NULLIF(data->'state'->>'stage', '')::int, 0) >= 3 OR data->'state'->'mg'->>'finishedAll' = 'true', false) AS done,
+          jsonb_array_length(CASE WHEN jsonb_typeof(data->'state'->'players') = 'array' THEN data->'state'->'players' ELSE '[]'::jsonb END)::int AS players
+        FROM records WHERE entity = 'GameSession'
+      ),
+      archived AS MATERIALIZED (
+        SELECT id, created_date AS updated_date, data->>'sessionCode' AS code, COALESCE(data->>'mode', 'unknown') AS mode,
+          jsonb_array_length(CASE WHEN jsonb_typeof(data->'playerNames') = 'array' THEN data->'playerNames' ELSE '[]'::jsonb END)::int AS players
+        FROM records WHERE entity = 'SessionArchive' AND COALESCE(data->>'sessionCode', '') NOT IN (SELECT COALESCE(code, '') FROM live)
+      ),
+      everything AS (
+        SELECT id, updated_date, code, mode, players, stage, done, false AS is_archived FROM live
+        UNION ALL SELECT id, updated_date, code, mode, players, 3 AS stage, true AS done, true AS is_archived FROM archived
       ),
       summary AS (
         SELECT
           count(*)::int AS total,
-          count(*) FILTER (WHERE stage >= 3)::int AS completed,
-          count(*) FILTER (WHERE stage < 3 AND updated_date >= now() - interval '24 hours')::int AS active,
-          count(*) FILTER (WHERE stage < 3 AND updated_date < now() - interval '24 hours')::int AS inactive,
+          count(*) FILTER (WHERE done)::int AS completed,
+          count(*) FILTER (WHERE NOT done AND NOT is_archived AND updated_date >= now() - interval '24 hours')::int AS active,
+          count(*) FILTER (WHERE NOT done AND NOT is_archived AND updated_date < now() - interval '24 hours')::int AS inactive,
+          count(*) FILTER (WHERE is_archived)::int AS archived,
           COALESCE(sum(players), 0)::int AS player_participations
-        FROM sessions
+        FROM everything
       ),
       by_mode AS (
         SELECT COALESCE(json_agg(json_build_object('id', id, 'count', n)), '[]'::json) AS value
-        FROM (SELECT mode AS id, count(*)::int AS n FROM sessions GROUP BY mode) grouped
+        FROM (SELECT mode AS id, count(*)::int AS n FROM everything GROUP BY mode) grouped
       ),
       by_intensity AS (
         SELECT COALESCE(json_agg(json_build_object('id', id, 'count', n)), '[]'::json) AS value
-        FROM (SELECT intensity AS id, count(*)::int AS n FROM sessions GROUP BY intensity) grouped
+        FROM (SELECT intensity AS id, count(*)::int AS n FROM live GROUP BY intensity) grouped
       ),
       by_stage AS (
         SELECT COALESCE(json_agg(json_build_object('stage', stage, 'count', n)), '[]'::json) AS value
-        FROM (SELECT stage, count(*)::int AS n FROM sessions GROUP BY stage) grouped
+        FROM (SELECT stage, count(*)::int AS n FROM everything GROUP BY stage) grouped
       ),
       recent AS (
         SELECT COALESCE(json_agg(row_to_json(item)), '[]'::json) AS value
         FROM (
-          SELECT id, data->>'sessionCode' AS "sessionCode", mode, stage, players, updated_date
-          FROM sessions ORDER BY updated_date DESC LIMIT 10
+          SELECT id, code AS "sessionCode", mode, stage, players, updated_date, is_archived AS archived
+          FROM everything ORDER BY updated_date DESC LIMIT 10
         ) item
       )
       SELECT summary.*, by_mode.value AS "byMode", by_intensity.value AS "byIntensity",
@@ -107,23 +113,22 @@ export function visitRoutes() {
          count(*) FILTER (WHERE created_date > now() - interval '7 days')::int AS week,
          count(*) FILTER (WHERE created_date > now() - interval '30 days')::int AS month,
          count(DISTINCT visitor) FILTER (WHERE created_date > now() - interval '30 days')::int AS visitors_month
-       FROM page_views WHERE (($1 = 'all' AND path LIKE '/site%') OR path = $1)`, [path, tz],
+       FROM page_views WHERE ($1 = 'all' OR path = $1)`, [path, tz],
     )).rows;
     const days = (await query(
       `SELECT to_char(d, 'YYYY-MM-DD') AS day, coalesce(c.n, 0)::int AS views
        FROM generate_series(((now() AT TIME ZONE $2)::date - 29)::timestamp, (now() AT TIME ZONE $2)::date::timestamp, interval '1 day') d
        LEFT JOIN (
-         SELECT (created_date AT TIME ZONE $2)::date AS day, count(*) AS n FROM page_views WHERE (($1 = 'all' AND path LIKE '/site%') OR path = $1) GROUP BY 1
+         SELECT (created_date AT TIME ZONE $2)::date AS day, count(*) AS n FROM page_views WHERE ($1 = 'all' OR path = $1) GROUP BY 1
        ) c ON c.day = d::date
        ORDER BY d`, [path, tz],
     )).rows;
     const refs = (await query(
-      `SELECT ref, count(*)::int AS views FROM page_views WHERE (($1 = 'all' AND path LIKE '/site%') OR path = $1) AND ref IS NOT NULL GROUP BY ref ORDER BY views DESC LIMIT 6`, [path],
+      `SELECT ref, count(*)::int AS views FROM page_views WHERE ($1 = 'all' OR path = $1) AND ref IS NOT NULL GROUP BY ref ORDER BY views DESC LIMIT 6`, [path],
     )).rows;
     const pages = (await query(
       `SELECT path, count(*)::int AS views, count(DISTINCT visitor)::int AS visitors
        FROM page_views
-       WHERE path LIKE '/site%'
        GROUP BY path
        ORDER BY views DESC
        LIMIT 25`,

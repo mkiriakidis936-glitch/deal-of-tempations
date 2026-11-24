@@ -3,10 +3,12 @@ import { PAJAMA_ACTS } from '@/data/pajamaProgram';
 // Περιεχόμενο του /site για κάθε event. Όλα επεξεργάζονται από Admin → 🌐 Site & Σενάριο.
 // Οι 4 εμπειρίες του /site (με τη σειρά που εμφανίζονται). Η Αρχική επεξεργάζεται ξεχωριστά (SITE_HOME_ID).
 export const SITE_EVENTS = [
+  { id: 'classic', label: '🎲 Classic Night' },
   { id: 'heist', label: '🚨 Heist Night' },
   { id: 'lockdown', label: '🔒 Pajama Lockdown' },
   { id: 'beachbar', label: '🏖️ Beach Bar Lockdown' },
   { id: 'marathon4h', label: '🚓 Pajama Heist & Arrest' },
+  { id: 'villa', label: '🏝️ Villa Takeover 48/72' },
 ];
 export const SITE_HOME_ID = 'home';
 
@@ -30,6 +32,8 @@ export const DEFAULT_SITE = {
     finalTitle: 'Η επόμενη βραδιά σε περιμένει',
     finalText: 'Διάλεξε εμπειρία, συμπλήρωσε τη φόρμα σε 3 λεπτά και περίμενε την πρόσκλησή σου.',
     finalLabel: 'Διάλεξε εμπειρία',
+    // Ημερολόγιο διαθεσιμότητας: { date: 'YYYY-MM-DDTHH:mm', event: id του SITE_EVENTS, seats, booked }
+    calendar: [],
     faq: [
       { q: 'Τι είναι το Deal of Temptation;', a: 'Ιδιωτικές εμπειρίες παιχνιδιού για παρέες ενηλίκων (18+): κάρτες, ταμπλό, γρίφοι και αποστολές, με TV, tablet και κινητά σαν πραγματικό τηλεπαιχνίδι. Η λίστα καλεσμένων είναι κλειστή.' },
       { q: 'Ποια εμπειρία να διαλέξω;', a: 'Για βραδιά με κάρτες, ομάδες και ληστεία, το Heist Night. Για ψηφιακό escape room 60 λεπτών, το Pajama Lockdown. Για πάρτι με χορό και σαγιονάρες, το Beach Bar Lockdown. Για ταμπλό, αστυνόμο και ανάκριση, το Pajama Heist & Arrest.' },
@@ -262,6 +266,64 @@ Object.assign(DEFAULT_SITE, {
     participation: 'Κλειστή λίστα, 18+. Στη φόρμα δηλώνεις τα όριά σου. Το ΣΤΟΠ και η λέξη ασφαλείας ισχύουν πάντα.',
     faq: modeFaq('Παιχνίδι ταμπλό με ρόλους Αστυνόμου/Fugitives, Wanted αστέρια, χειροπέδες, ανάκριση και φινάλε Barefoot Escape.', '105 λεπτά.')
   },
+  classic: {
+    tab: 'Classic Night',
+    overline: 'Classic Night · Επιτραπέζιο 18+',
+    titleLines: ['CLASSIC', 'NIGHT'],
+    tagline: 'Ζάρι, ταμπλό 24 θέσεων, κρυφοί ρόλοι και η πιο καταζητούμενη της βραδιάς.',
+    date: '',
+    cta: { label: 'Κλείσε θέση', path: '/forms?mode=classic' },
+    scenarioKicker: 'Το παιχνίδι',
+    scenarioTitle: 'ΤΙ ΕΙΝΑΙ ΤΟ CLASSIC',
+    scenario: [
+      'Το αυθεντικό επιτραπέζιο του Deal of Temptation για 2–6 κοπέλες: κάθε παίκτρια ρίχνει το ζάρι και η θέση στο ταμπλό φέρνει Αλήθεια ή Θάρρος, αστυνομικό έλεγχο, μαύρη αγορά ή ένταλμα.',
+      'Κάθε μία έχει κρυφό ρόλο στο κινητό της. Κάθε αποτυχία ανεβάζει τη σκάλα ποινών — και η πιο καταζητούμενη περνά από ανάκριση.',
+      'Στο φινάλε η πιο καταζητούμενη απαντά στις τελικές αλήθειες και στέφεται στην TV.',
+    ],
+    highlights: ['Ταμπλό 24 θέσεων', 'Κρυφοί ρόλοι', 'Σκάλα ποινών', 'Ανάκριση & Φινάλε'],
+    videoKicker: 'Το τρέιλερ',
+    videoTitle: 'ΜΙΑ ΖΑΡΙΑ ΑΡΚΕΙ',
+    programKicker: 'Πώς παίζεται',
+    programTitle: 'ΤΡΙΑ ΣΤΑΔΙΑ',
+    programNote: 'Περίπου 2–3 ώρες, με διαλείμματα.',
+    program: [
+      { roman: 'I', title: 'Περιπολία', subtitle: '', meta: '', group: '', lines: ['Ζάρι, κάρτες και ποινές στο ταμπλό.'] },
+      { roman: 'II', title: 'Ανάκριση', subtitle: '', meta: '', group: '', lines: ['Η πιο καταζητούμενη απέναντι στην παρέα.'] },
+      { roman: 'III', title: 'Φινάλε', subtitle: '', meta: '', group: '', lines: ['Τελικές αλήθειες και στέψη.'] },
+    ],
+    info: modeInfo('Ό,τι σε κάνει να νιώθεις άνετα — μαύρο είναι πάντα καλή ιδέα.', 'Κινητό με φόρτιση και διάθεση για παιχνίδι.'),
+    participation: 'Κλειστή λίστα, 18+, 2–6 κοπέλες. Στη φόρμα δηλώνεις τα όριά σου· ΣΤΟΠ και PASS ισχύουν πάντα.',
+    faq: modeFaq('Επιτραπέζιο 18+ με ζάρι, κάρτες Αλήθειας/Θάρρους, κρυφούς ρόλους και ανάκριση.', 'Περίπου 2–3 ώρες.'),
+  },
+  villa: {
+    tab: 'Villa Takeover 48/72',
+    overline: 'Villa Takeover · 48H / 72H · 18+',
+    titleLines: ['VILLA', 'TAKEOVER'],
+    tagline: '48 ώρες. Τρεις κύκλοι. Μία Villa. Κανείς δεν ξέρει τι έρχεται μετά.',
+    date: '',
+    cta: { label: 'Κλείσε θέση', path: '/forms?mode=villa_takeover' },
+    scenarioKicker: 'Το παιχνίδι',
+    scenarioTitle: 'ΤΙ ΕΙΝΑΙ ΤΟ VILLA TAKEOVER',
+    scenario: [
+      'Ένα πολυήμερο ψηφιακό παιχνίδι 18+ σε Villa ή Airbnb για 3–8 κοπέλες. Δεν είναι μικρά παιχνίδια το ένα μετά το άλλο: είναι μία ενιαία ιστορία 48 ωρών, με προαιρετική επέκταση στις 72.',
+      'Κάθε ώρα ανοίγει ένα από τα 48 τετράγωνα του ταμπλό. Μυστικοί ρόλοι, συμμαχίες και προδοσίες, Truth or Dare 18+, μυστικές αποστολές στο κινητό, νυχτερινά events και ένας κωδικός 4 ψηφίων που κανείς δεν έχει ολόκληρο.',
+      'Στο Grand Finale αποκαλύπτονται ρόλοι και συμμαχίες, μοιράζονται τα βραβεία και στέφεται η Queen of the Villa.',
+    ],
+    highlights: ['48 ώρες, 3 κύκλοι', 'Ταμπλό 48 τετραγώνων', 'Μυστικοί ρόλοι & συμμαχίες', 'Night Sock Heist', 'Queen of the Villa'],
+    videoKicker: 'Το τρέιλερ',
+    videoTitle: 'ΜΙΑ ΒΙΛΑ. 48 ΩΡΕΣ.',
+    programKicker: 'Ροή παιχνιδιού',
+    programTitle: 'ΤΡΕΙΣ ΚΥΚΛΟΙ',
+    programNote: 'Προαιρετικά: After Dark — The Final 24, μόνο αν το αποφασίσει η ομάδα.',
+    program: [
+      { roman: 'I', title: 'The Arrival', subtitle: '', meta: 'Ώρες 1–16', group: '', lines: ['Check-in, μυστικοί ρόλοι, πρώτες αλήθειες, η πρώτη ψηφοφορία και η πρώτη προδοσία.'] },
+      { roman: 'II', title: 'The Temptation', subtitle: '', meta: 'Ώρες 17–32', group: '', lines: ['Temptation Cards, μυστικές συμμαχίες, Blackmail Market και η δεύτερη νύχτα.'] },
+      { roman: 'III', title: 'The Final Takeover', subtitle: '', meta: 'Ώρες 33–48', group: '', lines: ['Night Sock Heist, Sealed Votes, ο κωδικός της Villa και η στέψη.'] },
+    ],
+    info: modeInfo('Άνετα ρούχα για 2–3 μέρες, πιτζάμες, κάλτσες (πολλές!) και κάτι για το Grand Finale.', 'Κινητό με φορτιστή, ό,τι χρειάζεσαι για διανυκτέρευση.'),
+    participation: 'Κλειστή λίστα, 18+, 3–8 κοπέλες. Στη φόρμα δηλώνεις τα όριά σου· PASS και ΣΤΟΠ ισχύουν πάντα και ο ύπνος δεν τιμωρείται.',
+    faq: modeFaq('Πολυήμερο ψηφιακό παιχνίδι 18+ σε Villa: ταμπλό 48 τετραγώνων, μυστικοί ρόλοι, συμμαχίες, Truth or Dare 18+ και τελικό show.', '48 ώρες, με προαιρετική επέκταση στις 72.'),
+  },
   beachbar: {
     tab: 'Beach Bar Lockdown',
     overline: 'Beach Bar Lockdown · Shots, Flip-Flops & Tickle Chaos · 18+',
@@ -304,7 +366,7 @@ export function getSiteContent(ev) {
   const d = DEFAULT_SITE[id];
   const o = overrides[id] || {};
   const merged = { ...d, ...o, cta: { ...d.cta, ...(o.cta || {}) } };
-  for (const k of ['scenario', 'highlights', 'program', 'info', 'faq', 'titleLines', 'marquee']) {
+  for (const k of ['scenario', 'highlights', 'program', 'info', 'faq', 'titleLines', 'marquee', 'calendar']) {
     if (!Array.isArray(merged[k])) merged[k] = d[k];
   }
   return merged;

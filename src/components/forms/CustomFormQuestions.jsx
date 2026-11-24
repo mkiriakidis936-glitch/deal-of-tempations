@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { base44 } from '@/api/base44Client';
+import { appApi } from '@/api/apiClient';
 
 export default function CustomFormQuestions({ formType, value = {}, onChange, onValidityChange, className = '', questionsOverride }) {
   const [questions, setQuestions] = useState([]);
@@ -9,7 +9,7 @@ export default function CustomFormQuestions({ formType, value = {}, onChange, on
       return undefined;
     }
     let active = true;
-    base44.entities.AppSetting.filter({ key: 'admin_form_questions' }, { limit: 1 }).then(({ items }) => {
+    appApi.entities.AppSetting.filter({ key: 'admin_form_questions' }, { limit: 1 }).then(({ items }) => {
       if (active) setQuestions(items?.[0]?.value?.forms?.[formType] || []);
     }).catch(() => {});
     return () => { active = false; };

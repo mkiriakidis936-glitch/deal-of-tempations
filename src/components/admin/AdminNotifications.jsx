@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { request } from '@/api/base44Client';
+import { request } from '@/api/apiClient';
 import ComicPanel from '@/components/comic/ComicPanel';
 import ComicButton from '@/components/comic/ComicButton';
 import {

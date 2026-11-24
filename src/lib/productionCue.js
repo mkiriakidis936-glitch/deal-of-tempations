@@ -1,10 +1,10 @@
-import { base44 } from '@/api/base44Client';
+import { appApi } from '@/api/apiClient';
 
 const commandId = () => globalThis.crypto?.randomUUID?.() || `cue-${Date.now()}-${Math.random().toString(36).slice(2)}`;
 
 export async function getProductionCue(sessionCode) {
   if (!sessionCode) return null;
-  const { items = [] } = await base44.entities.ProductionCue.filter({ sessionCode }, { limit: 1 });
+  const { items = [] } = await appApi.entities.ProductionCue.filter({ sessionCode }, { limit: 1 });
   return items[0] || null;
 }
 
@@ -25,14 +25,14 @@ export async function publishProductionCue(sessionCode, data) {
     activatedAt: new Date().toISOString(),
   };
   return existing?.id
-    ? base44.entities.ProductionCue.update(existing.id, cue)
-    : base44.entities.ProductionCue.create(cue);
+    ? appApi.entities.ProductionCue.update(existing.id, cue)
+    : appApi.entities.ProductionCue.create(cue);
 }
 
 export async function commandProductionCue(sessionCode, playbackCommand, volume) {
   const existing = await getProductionCue(sessionCode);
   if (!existing?.id || !existing.active) throw new Error('Δεν υπάρχει ενεργό Media στην TV.');
-  return base44.entities.ProductionCue.update(existing.id, {
+  return appApi.entities.ProductionCue.update(existing.id, {
     playbackCommand,
     ...(Number.isFinite(volume) ? { volume } : {}),
     commandId: commandId(),
@@ -45,7 +45,7 @@ export async function commandProductionCue(sessionCode, playbackCommand, volume)
 export async function stopProductionCue(sessionCode) {
   const existing = await getProductionCue(sessionCode);
   if (!existing?.id) return null;
-  return base44.entities.ProductionCue.update(existing.id, {
+  return appApi.entities.ProductionCue.update(existing.id, {
     active: true,
     playbackCommand: 'close',
     commandId: commandId(),

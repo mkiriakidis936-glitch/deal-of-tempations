@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { audioConstraints } from '@/lib/avDevices';
 
 export default function DecibelMeter({ onThreshold, threshold = 0.6, label = 'DECIBEL METER', size = 'md' }) {
   const [active, setActive] = useState(false);
@@ -34,7 +35,7 @@ export default function DecibelMeter({ onThreshold, threshold = 0.6, label = 'DE
   const start = useCallback(async () => {
     setDenied(false);
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: audioConstraints() });
       streamRef.current = stream;
       const ctx = new (window.AudioContext || window.webkitAudioContext)();
       audioCtxRef.current = ctx;

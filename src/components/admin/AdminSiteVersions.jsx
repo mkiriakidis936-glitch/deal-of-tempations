@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { base44 } from '@/api/base44Client';
+import { appApi } from '@/api/apiClient';
 import ComicPanel from '@/components/comic/ComicPanel';
 import ComicButton from '@/components/comic/ComicButton';
 
@@ -7,14 +7,14 @@ const VERSION_KEY = 'admin_site_versions';
 const LIMIT = 20;
 
 async function getVersionRecord() {
-  const result = await base44.entities.AppSetting.filter({ key: VERSION_KEY }, { limit: 1 });
+  const result = await appApi.entities.AppSetting.filter({ key: VERSION_KEY }, { limit: 1 });
   return result.items?.[0] || null;
 }
 
 export async function saveSiteVersion(allContent, eventId, nextContent) {
   const previous = allContent?.[eventId];
   if (!previous) return;
-  const [record, user] = await Promise.all([getVersionRecord(), base44.auth.me().catch(() => null)]);
+  const [record, user] = await Promise.all([getVersionRecord(), appApi.auth.me().catch(() => null)]);
   const versions = Array.isArray(record?.value?.items) ? record.value.items : [];
   const snapshot = {
     id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
@@ -25,8 +25,8 @@ export async function saveSiteVersion(allContent, eventId, nextContent) {
     content: JSON.parse(JSON.stringify(previous)),
   };
   const value = { items: [snapshot, ...versions].slice(0, LIMIT) };
-  if (record?.id) await base44.entities.AppSetting.update(record.id, { value });
-  else await base44.entities.AppSetting.create({ key: VERSION_KEY, value });
+  if (record?.id) await appApi.entities.AppSetting.update(record.id, { value });
+  else await appApi.entities.AppSetting.create({ key: VERSION_KEY, value });
 }
 
 export default function AdminSiteVersions({ eventId, onRestore }) {

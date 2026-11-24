@@ -1,8 +1,10 @@
-import { base44 } from '@/api/base44Client';
+import { useEffect, useState } from 'react';
+import { appApi } from '@/api/apiClient';
 import * as EXT from '@/data/modes/extendedContent';
 import * as LD from '@/data/modes/lockdownContent';
 import * as BB from '@/data/modes/beachBarContent';
 import * as LG from '@/data/modes/loungeContent';
+import * as VL from '@/data/modes/villaContent';
 
 // Λίστες περιεχομένου των νέων modes που επεξεργάζονται από Admin → 🎮 Νέα Modes.
 // Οι αλλαγές αποθηκεύονται στο AppSetting (key modes_content) και εφαρμόζονται "επί τόπου" στις λίστες.
@@ -46,7 +48,20 @@ export const COLLECTIONS = [
   { id: 'lounge_restraints', group: '🚔 Pajama Heist & Arrest', label: 'Κλιμάκωση δεσιμάτων (αστέρια)', arr: LG.RESTRAINT_LEVELS, fixedItems: true, blank: {}, fields: [T('name', 'Όνομα'), A('text', 'Περιγραφή')] },
   { id: 'lounge_phases', group: '🚔 Pajama Heist & Arrest', label: 'Φάσεις βραδιάς', arr: LG.LOUNGE_PHASES, fixedItems: true, blank: {}, fields: [T('name', 'Όνομα'), N('minutes', 'Λεπτά'), A('text', 'Περιγραφή')] },
   { id: 'lounge_hell_wheel', group: '🚔 Pajama Heist & Arrest', label: 'Τροχός της Κόλασης', arr: LG.HELL_WHEEL, strings: true },
+  { id: 'villa_cards', group: '🏝️ Villa Takeover 48/72', label: 'Κάρτες Θάρρος ή Αλήθεια 18+', arr: VL.VILLA_CARDS, blank: { id: '', kind: 'truth', title: '', text: '' }, fields: [{ key: 'kind', label: 'Είδος', type: 'select', options: [['truth', 'Αλήθεια 18+'], ['dare', 'Θάρρος 18+'], ['either', 'Τελεσίγραφο (επιλογή)']] }, T('title', 'Τίτλος'), A('text', 'Κείμενο'), N('secs', 'Χρονόμετρο (δευτ.)'), I()] },
+  { id: 'villa_squares', group: '🏝️ Villa Takeover 48/72', label: 'Τα 56 τετράγωνα του ταμπλό', arr: VL.VILLA_SQUARES, fixedItems: true, blank: {}, fields: [{ key: 'type', label: 'Τύπος', type: 'select', options: [['flow', '🌀 Ροής'], ['tease', '💋 Πειράγματος'], ['penalty', '⛓️ Ποινής'], ['key', '🔑 Κλειδιού']] }, T('title', 'Τίτλος'), A('text', 'Τι γίνεται'), N('secs', 'Χρονόμετρο (δευτ.)')] },
+  { id: 'villa_missions', group: '🏝️ Villa Takeover 48/72', label: 'Μυστικές αποστολές (κινητό)', arr: VL.VILLA_MISSIONS, blank: { id: '', title: '', text: '', mins: 60 }, fields: [T('title', 'Τίτλος'), A('text', 'Κείμενο που βλέπει στο κινητό'), N('mins', 'Λεπτά διορίας'), I()] },
+  { id: 'villa_roles', group: '🏝️ Villa Takeover 48/72', label: 'Μυστικοί ρόλοι', arr: VL.VILLA_ROLES, fixedItems: true, blank: {}, fields: [T('icon', 'Εικονίδιο'), T('name', 'Όνομα'), A('text', 'Τι μπορεί να κάνει')] },
+  { id: 'villa_alerts', group: '🏝️ Villa Takeover 48/72', label: 'Έτοιμες ειδοποιήσεις', arr: VL.VILLA_ALERTS, blank: { id: '', title: '', text: '' }, fields: [T('title', 'Τίτλος'), A('text', 'Μήνυμα')] },
+  { id: 'villa_cycles', group: '🏝️ Villa Takeover 48/72', label: 'Κύκλοι', arr: VL.VILLA_CYCLES, fixedItems: true, blank: {}, fields: [T('title', 'Όνομα κύκλου'), A('subtitle', 'Περιγραφή')] },
+  { id: 'villa_awards', group: '🏝️ Villa Takeover 48/72', label: 'Βραβεία Grand Finale', arr: VL.VILLA_AWARDS, strings: true },
 ];
+
+// Σε ποιο mode ανήκει κάθε λίστα (για την καρτέλα «Κάρτες & περιεχόμενο» ανά mode).
+const GROUP_MODE = [
+  [/Pajama Lockdown/, 'lockdown'], [/Beach Bar/, 'beach_bar'], [/Pajama Heist & Arrest/, 'marathon_4h'], [/Villa Takeover/, 'villa_takeover'],
+];
+export const modeOfCollection = (collection) => GROUP_MODE.find(([re]) => re.test(collection.group))?.[1] || 'retired';
 
 const DEFAULTS = Object.fromEntries(COLLECTIONS.map((c) => [c.id, JSON.parse(JSON.stringify(c.arr))]));
 export const defaultsOf = (id) => JSON.parse(JSON.stringify(DEFAULTS[id]));
@@ -71,7 +86,7 @@ export function applyModesContent(overrides = {}) {
 }
 
 export async function fetchModesRecord() {
-  const { items } = await base44.entities.AppSetting.filter({ key: MODES_KEY }, { limit: 1 });
+  const { items } = await appApi.entities.AppSetting.filter({ key: MODES_KEY }, { limit: 1 });
   return items?.[0] || null;
 }
 
@@ -86,7 +101,7 @@ export function loadModesContent(force = false) {
 }
 
 export function subscribeModesContent(onChange) {
-  return base44.entities.AppSetting.subscribe((event) => {
+  return appApi.entities.AppSetting.subscribe((event) => {
     if (event?.type === 'resync') { loadModesContent(true).then(() => onChange()); return; }
     if (event?.data?.key !== MODES_KEY) return;
     applyModesContent(event.type === 'delete' ? {} : (event.data.value || {}));
@@ -97,8 +112,8 @@ export function subscribeModesContent(onChange) {
 
 export async function saveModesContent(next) {
   const rec = await fetchModesRecord();
-  if (rec?.id) await base44.entities.AppSetting.update(rec.id, { value: next });
-  else await base44.entities.AppSetting.create({ key: MODES_KEY, value: next });
+  if (rec?.id) await appApi.entities.AppSetting.update(rec.id, { value: next });
+  else await appApi.entities.AppSetting.create({ key: MODES_KEY, value: next });
   applyModesContent(next);
   loading = null;
 }
@@ -111,6 +126,7 @@ export function applyScenarioCollections(modeId, selectedIds = []) {
     if (modeId === 'lockdown') return /Pajama Lockdown/i.test(collection.group);
     if (modeId === 'beach_bar') return /Beach Bar/i.test(collection.group);
     if (modeId === 'marathon_4h') return /Pajama Heist & Arrest/i.test(collection.group);
+    if (modeId === 'villa_takeover') return /Villa Takeover/i.test(collection.group);
     return false;
   });
   const snapshots = [];
@@ -131,4 +147,16 @@ export function applyScenarioCollections(modeId, selectedIds = []) {
     target.splice(0, target.length, ...restored);
     if (!collection.targetArr && collection.toRuntime) collection.toRuntime(values);
   });
+}
+
+// TV & κινητά: φορτώνουν το περιεχόμενο του Admin και ξανασχεδιάζονται όταν αλλάζει.
+export function useModesContentRev() {
+  const [rev, setRev] = useState(0);
+  useEffect(() => {
+    let alive = true;
+    loadModesContent().then(() => { if (alive) setRev((n) => n + 1); });
+    const off = subscribeModesContent(() => { if (alive) setRev((n) => n + 1); });
+    return () => { alive = false; off?.(); };
+  }, []);
+  return rev;
 }

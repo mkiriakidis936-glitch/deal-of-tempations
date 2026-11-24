@@ -1,4 +1,4 @@
-import { request } from '@/api/base44Client';
+import { request } from '@/api/apiClient';
 
 export const pushSupported = () =>
   'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window;

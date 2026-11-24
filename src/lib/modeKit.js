@@ -4,6 +4,7 @@ import { timerStart, timerLeft, timerAdd, timerPause, timerResume } from '@/lib/
 import { applyDelta, undoLast } from '@/lib/modeUndo';
 import { randomExitCode } from '@/lib/consent';
 import { withCustomSounds } from '@/lib/gameSounds';
+import { applyOutputToContext } from '@/lib/avDevices';
 
 export const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
 export function shuffle(arr) {
@@ -36,6 +37,8 @@ export function setGameStopActive(active) {
 
 export function fmt(sec) {
   const s = Math.max(0, Math.ceil(sec || 0));
+  // Πάνω από 1 ώρα (π.χ. Villa 48h): ώρες:λεπτά:δευτερόλεπτα.
+  if (s >= 3600) return `${Math.floor(s / 3600)}:${String(Math.floor((s % 3600) / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
   return `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
 }
 
@@ -127,7 +130,7 @@ export function unlockModeAudio() {
   try { ac(); } catch { /* χωρίς WebAudio */ }
 }
 function ac() {
-  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if (!audioCtx) { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); applyOutputToContext(audioCtx); }
   if (audioCtx.state === 'suspended') audioCtx.resume().catch(() => {});
   return audioCtx;
 }
@@ -329,10 +332,10 @@ export function initialMg(modeId, extra = {}) {
     startedAt: Date.now(),
   };
   // Ψηφιακά modes: consent check-in πριν ξεκινήσει το παιχνίδι + τυχαίος Exit Code ανά συνεδρία.
-  if (['pedi_glam', 'pedi_extended', 'lockdown', 'beach_bar', 'marathon_4h'].includes(modeId) || String(modeId || '').startsWith('custom_')) base.consentRequired = true;
+  if (['pedi_glam', 'pedi_extended', 'lockdown', 'beach_bar', 'marathon_4h', 'villa_takeover'].includes(modeId) || String(modeId || '').startsWith('custom_')) base.consentRequired = true;
   if (modeId === 'lockdown') base.exitCode = extra.exitCode || randomExitCode();
   // Νέες παρτίδες: εισαγωγή με κανόνες σε Tablet/TV/κινητά πριν την πρώτη φάση.
-  if (['lockdown', 'beach_bar', 'marathon_4h'].includes(modeId)) base.briefingRequired = true;
+  if (['lockdown', 'beach_bar', 'marathon_4h', 'villa_takeover'].includes(modeId)) base.briefingRequired = true;
   return base;
 }
 

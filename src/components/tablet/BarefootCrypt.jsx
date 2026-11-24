@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { base44 } from '@/api/base44Client';
+import { appApi } from '@/api/apiClient';
 import ComicPanel from '@/components/comic/ComicPanel';
 import ComicButton from '@/components/comic/ComicButton';
 import Timer from '@/components/comic/Timer';
@@ -56,7 +56,7 @@ export default function BarefootCrypt({ state, updateState, onClose }) {
   useEffect(() => {
     async function load() {
       try {
-        const { items } = await base44.entities.PlayerIntake.filter({}, { sort: '-created_date', limit: 50 });
+        const { items } = await appApi.entities.PlayerIntake.filter({}, { sort: '-created_date', limit: 50 });
         const trio = pickThreeDistinct(items || []);
         if (!trio) {
           setPhase('nodata');

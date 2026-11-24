@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { base44 } from '@/api/base44Client';
+import { appApi } from '@/api/apiClient';
 import { PAJAMA_TITLE, PAJAMA_SUBTITLE, PAJAMA_EQUIPMENT, PAJAMA_GEAR, PAJAMA_FLOW, PAJAMA_SCORING } from '@/data/pajamaContent';
 
 const ORIGIN = window.location.origin;
@@ -14,7 +14,7 @@ export default function PajamaSetup({ players = [], sessionCode = '', onStart })
 
   const loadApproved = React.useCallback(async () => {
     try {
-      const { items } = await base44.entities.PajamaIntake.filter(sessionCode ? { sessionCode } : {}, { sort: '-created_date', limit: 100 });
+      const { items } = await appApi.entities.PajamaIntake.filter(sessionCode ? { sessionCode } : {}, { sort: '-created_date', limit: 100 });
       const list = (items || []).filter((i) => i.approved === true && i.name && (i.formType || 'pajama') !== 'modes' && (sessionCode ? i.sessionCode === sessionCode : !i.sessionCode));
       setApproved(list);
       setLoadError(false);
@@ -37,7 +37,7 @@ export default function PajamaSetup({ players = [], sessionCode = '', onStart })
     loadApproved();
     let unsub;
     try {
-      unsub = base44.entities.PajamaIntake.subscribe(() => loadApproved());
+      unsub = appApi.entities.PajamaIntake.subscribe(() => loadApproved());
     } catch (e) { console.error('intake subscribe failed', e); }
     return () => { if (typeof unsub === 'function') unsub(); };
   }, [loadApproved]);

@@ -1,4 +1,4 @@
-import { base44 } from '@/api/base44Client';
+import { appApi } from '@/api/apiClient';
 import { staticGameContentRecords } from '@/lib/gameContentStore';
 import { defaultRows as pajamaDefaultRows } from '@/lib/pajamaContentStore';
 import { COLLECTIONS, MODES_KEY, defaultsOf, fetchModesRecord, saveModesContent } from '@/lib/modesContentStore';
@@ -7,26 +7,26 @@ const PLACEHOLDER = /Safe Digital Challenge|SAFE DIGITAL CHALLENGE|Προαιρ�
 const hasPlaceholder = (value) => PLACEHOLDER.test(JSON.stringify(value ?? ''));
 
 async function repairGameContent() {
-  const { items = [] } = await base44.entities.GameContent.filter({}, { limit: 1000 });
+  const { items = [] } = await appApi.entities.GameContent.filter({}, { limit: 1000 });
   const defaults = new Map(staticGameContentRecords().map((record) => [`${record.category}|${record.itemId}`, record.data]));
   let fixed = 0;
   for (const row of items) {
     const original = defaults.get(`${row.category}|${row.itemId}`);
     if (!original || !hasPlaceholder(row.data) || hasPlaceholder(original)) continue;
-    await base44.entities.GameContent.update(row.id, { data: original });
+    await appApi.entities.GameContent.update(row.id, { data: original });
     fixed += 1;
   }
   return fixed;
 }
 
 async function repairPajamaContent() {
-  const { items = [] } = await base44.entities.PajamaContent.filter({}, { limit: 500 });
+  const { items = [] } = await appApi.entities.PajamaContent.filter({}, { limit: 500 });
   const defaults = new Map(pajamaDefaultRows().map((row) => [row.itemId, row]));
   let fixed = 0;
   for (const row of items) {
     const original = defaults.get(row.itemId);
     if (!original || !(hasPlaceholder(row.title) || hasPlaceholder(row.text))) continue;
-    await base44.entities.PajamaContent.update(row.id, { title: original.title || '', text: original.text || '' });
+    await appApi.entities.PajamaContent.update(row.id, { title: original.title || '', text: original.text || '' });
     fixed += 1;
   }
   return fixed;

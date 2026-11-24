@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { GAME_MODES } from '@/data/gameConfig';
+import { MODE_STEPS, TROUBLESHOOTING, AFTER_NIGHT } from '@/data/modes/guideSteps';
 import { MODE_GUIDE, SAFETY_RULES, PLAYER_REMINDERS, SCREENS } from '@/data/modes/modeGuide';
 
 // Admin → Οδηγός: ο πλήρης οδηγός παιχνιδιού, από την προετοιμασία μέχρι το φινάλε.
 // Τα κείμενα των modes έρχονται από το ίδιο αρχείο που χρησιμοποιούν Tablet, TV και κινητά.
 const PREP_STEPS = [
-  { title: 'Επιλογή παιχνιδιού', text: 'Στο Tablet διαλέγεις μία από τις δύο μηχανές παιχνιδιού ή ένα από τα τρία ψηφιακά modes.' },
+  { title: 'Επιλογή παιχνιδιού', text: 'Στο Tablet διαλέγεις μία από τις δύο μηχανές παιχνιδιού (Classic, Arrest Heist) ή ένα από τα τέσσερα ψηφιακά modes (Lockdown, Beach Bar, Pajama Heist & Arrest, Villa Takeover).' },
   { title: 'Συμμετοχές', text: 'Οι καλεσμένες συμπληρώνουν τη φόρμα /forms: όνομα, προτιμήσεις, όρια, επαφή, αλκοόλ, αποδοχή κανόνων. Η συμμετοχή ενεργοποιείται μόνο αφού την εγκρίνεις (Admin → Αιτήσεις ή στο Tablet).' },
   { title: 'Δημιουργία παιχνιδιού', text: 'Στο Tablet οι εγκεκριμένες του mode μπαίνουν μόνες τους με τα στοιχεία της φόρμας. Ορίζεις λέξη ασφαλείας και πατάς ΕΝΑΡΞΗ. Η TV δείχνει κωδικό και QR.' },
   { title: 'Σύνδεση κινητών', text: 'Κάθε παίκτρια ανοίγει /play, μπαίνει με τον κωδικό της βραδιάς και διαλέγει το όνομά της.' },
@@ -68,14 +69,25 @@ export default function AdminGuide() {
                   <div className="space-y-3 px-4 pb-4 text-sm">
                     <p className="text-white/80">{guide.tagline}</p>
                     <p><b>Στόχος:</b> {guide.goal}</p>
-                    <ol className="space-y-1.5">{guide.phases.map((phase) => <li key={phase.id} className="rounded-xl bg-white/5 p-2"><b>{phase.title}</b><div className="text-white/70">{phase.text}</div></li>)}</ol>
+                    <ol className="space-y-1.5">{guide.phases.map((phase) => <li key={phase.id} className="rounded-xl bg-white/5 p-2"><b>{phase.title}</b><div className="text-white/70">{phase.text}</div>{phase.next && <div className="mt-1 text-[#F7E3A8]">➜ {phase.next}</div>}</li>)}</ol>
                     <p><b>Νίκη:</b> {guide.win}</p>
+                    {MODE_STEPS[mode.id] && [['🧳 Τι χρειάζεσαι', 'props'], ['① Πριν ξεκινήσει', 'before'], ['② Κατά τη διάρκεια — τι πατάς', 'during'], ['③ Κλείσιμο', 'end']].map(([label, key]) => (
+                      <div key={key}><div className="mb-1 font-bold text-[#E8C26B]">{label}</div><ul className="space-y-1">{MODE_STEPS[mode.id][key].map((line) => <li key={line} className="flex gap-2 text-white/85"><span className="text-[#E8C26B]">•</span><span>{line}</span></li>)}</ul></div>
+                    ))}
                   </div>
                 )}
               </div>
             );
           })}
         </div>
+      </Section>
+
+      <Section title="Αν κάτι δεν δουλεύει">
+        <div className="space-y-2">{TROUBLESHOOTING.map((item) => <div key={item.q} className="rounded-2xl bg-black/30 p-3"><div className="font-bold">{item.q}</div><div className="text-sm text-white/75">{item.a}</div></div>)}</div>
+      </Section>
+
+      <Section title="Μετά τη βραδιά">
+        <ol className="list-decimal space-y-1 pl-5 text-sm text-white/80">{AFTER_NIGHT.map((r) => <li key={r}>{r}</li>)}</ol>
       </Section>
 
       <Section title="Τι πρέπει να θυμάται κάθε παίκτρια">

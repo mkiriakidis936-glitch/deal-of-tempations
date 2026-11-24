@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { base44 } from '@/api/base44Client';
+import { appApi } from '@/api/apiClient';
 
 const field = 'w-full rounded-xl border border-[#b99a45]/50 bg-black px-4 py-3 text-[#f5ebd1] outline-none focus:border-[#E8C26B]';
 const panel = 'w-full max-w-lg rounded-2xl border border-[#b99a45]/60 bg-[#111] p-6 shadow-2xl';
@@ -23,10 +23,10 @@ export default function DealPage() {
     setError('');
     try {
       if (roomCode) {
-        await base44.entities.Participation.create({ roomCode, name: name.trim(), choice });
+        await appApi.entities.Participation.create({ roomCode, name: name.trim(), choice });
         setMessage('Η δήλωσή σου για το συγκεκριμένο Event καταχωρήθηκε.');
       } else {
-        await base44.entities.Interest.create({ name: name.trim(), eventType, declaration: choice });
+        await appApi.entities.Interest.create({ name: name.trim(), eventType, declaration: choice });
         setMessage('Η δήλωσή σου καταχωρήθηκε. Η διοργανώτρια θα ενημερωθεί.');
       }
       setName('');

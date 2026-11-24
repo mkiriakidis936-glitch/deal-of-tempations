@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { base44, request } from '@/api/base44Client';
+import { appApi, request } from '@/api/apiClient';
 import ComicPanel from '@/components/comic/ComicPanel';
 import ComicButton from '@/components/comic/ComicButton';
 import { HIDDEN_ROLES, FOOTWEAR_LEVELS, TOENAIL_PERKS, getPenaltyLadder } from '@/data/gameConfig';
@@ -20,7 +20,7 @@ export default function AdminPlayers({ sessions, selectedSession, onSelect, onUp
       })
       .catch(() => {});
     refresh();
-    const unsubscribe = base44.entities.PlayerPresence.subscribe((event) => {
+    const unsubscribe = appApi.entities.PlayerPresence.subscribe((event) => {
       if (!alive || event?.data?.sessionCode !== sessionCode || !event.data.playerId) return;
       setPresence((current) => ({ ...current, [event.data.playerId]: Number(event.data.lastSeenAt) || Date.now() }));
     });

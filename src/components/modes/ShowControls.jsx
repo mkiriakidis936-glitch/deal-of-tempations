@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import * as E from '@/lib/boardEngine';
-import { base44 } from '@/api/base44Client';
+import { appApi } from '@/api/apiClient';
 import {
   computeAwards, highlights, checkRecords, DOSSIER_QUESTIONS, DIRECTOR_CUES,
   BETRAY_SHARE, BET_REWARD, DOSSIER_REWARD,
@@ -13,12 +13,12 @@ const uid = () => Math.random().toString(36).slice(2, 10);
 const money = (n) => `${Math.round(Number(n) || 0).toLocaleString('el-GR')}€`;
 
 async function loadRecords() {
-  const { items } = await base44.entities.AppSetting.filter({ key: RECORDS_KEY }, { limit: 1 });
+  const { items } = await appApi.entities.AppSetting.filter({ key: RECORDS_KEY }, { limit: 1 });
   return items?.[0] || null;
 }
 async function saveRecords(record, value) {
-  if (record?.id) await base44.entities.AppSetting.update(record.id, { value });
-  else await base44.entities.AppSetting.create({ key: RECORDS_KEY, value });
+  if (record?.id) await appApi.entities.AppSetting.update(record.id, { value });
+  else await appApi.entities.AppSetting.create({ key: RECORDS_KEY, value });
 }
 
 // Tablet: όλα τα «εργαλεία εκπομπής» του PAJAMA HEIST πάνω στο ίδιο lounge state.

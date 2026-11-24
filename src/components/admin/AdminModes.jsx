@@ -6,16 +6,19 @@ import MediaField from '@/components/admin/MediaField';
 import CardPreviewPair, { cardFromItem } from '@/components/admin/CardPreviewPair';
 import { saveAdminSettingVersion } from '@/lib/adminVersionHistory';
 import { NEW_MODES } from '@/data/modes/modeRegistry';
-import { COLLECTIONS, defaultsOf, fetchModesRecord, saveModesContent } from '@/lib/modesContentStore';
+import { COLLECTIONS, defaultsOf, fetchModesRecord, saveModesContent, modeOfCollection } from '@/lib/modesContentStore';
 
 const inp = 'w-full px-3 py-2 rounded-lg border-2 border-border bg-background text-foreground font-body text-sm';
 const ORIGIN = typeof window !== 'undefined' ? window.location.origin : '';
-const SITE_IDS = { pedi_glam: 'pedi_glam', pedi_extended: 'pedi_extended', lockdown: 'lockdown', beach_bar: 'beachbar', marathon_4h: 'marathon4h' };
+const SITE_IDS = { pedi_glam: 'pedi_glam', pedi_extended: 'pedi_extended', lockdown: 'lockdown', beach_bar: 'beachbar', marathon_4h: 'marathon4h', villa_takeover: 'villa' };
 
-export default function AdminModes() {
+// modeId: δείχνει μόνο τις λίστες ενός mode (Admin → Κάρτες & περιεχόμενο → καρτέλα του mode).
+export default function AdminModes({ modeId }) {
+  const visible = useMemo(() => COLLECTIONS.filter((c) => (modeId ? modeOfCollection(c) === modeId : modeOfCollection(c) !== 'retired')), [modeId]);
+  const modes = modeId ? NEW_MODES.filter((m) => m.id === modeId) : NEW_MODES;
   const [saved, setSaved] = useState({});
   const [loaded, setLoaded] = useState(false);
-  const [sel, setSel] = useState(COLLECTIONS[0].id);
+  const [sel, setSel] = useState(visible[0]?.id);
   const [list, setList] = useState([]);
   const [msg, setMsg] = useState(null);
   const [busy, setBusy] = useState(false);
@@ -36,9 +39,9 @@ export default function AdminModes() {
 
   const groups = useMemo(() => {
     const g = {};
-    COLLECTIONS.forEach((c) => { (g[c.group] = g[c.group] || []).push(c); });
+    visible.forEach((c) => { (g[c.group] = g[c.group] || []).push(c); });
     return Object.entries(g);
-  }, []);
+  }, [visible]);
 
   const setItem = (i, v) => setList((l) => l.map((x, k) => (k === i ? v : x)));
   const move = (i, d) => setList((l) => { const j = i + d; if (j < 0 || j >= l.length) return l; const n = [...l]; [n[i], n[j]] = [n[j], n[i]]; return n; });
@@ -93,12 +96,11 @@ export default function AdminModes() {
   return (
     <div className="space-y-3">
       <ComicPanel className="bg-card space-y-3">
-        <div className="font-heading text-xl text-primary">🎮 ΝΕΑ MODES</div>
-        <p className="text-xs text-foreground/70">
-          Επεξεργάσου τις κάρτες, τις ερωτήσεις και τις αποστολές των 5 ψηφιακών modes. Ό,τι δεν αλλάξεις μένει όπως ήταν στο PDF.
+        <p className="text-sm text-foreground/70">
+          Οι κάρτες, οι ερωτήσεις και οι αποστολές του mode. Ό,τι αλλάξεις εμφανίζεται αμέσως σε Tablet, TV και κινητά· ό,τι δεν αλλάξεις μένει όπως στο αρχικό σενάριο.
         </p>
         <div className="grid sm:grid-cols-2 gap-2">
-          {NEW_MODES.map((m) => (
+          {modes.map((m) => (
             <div key={m.id} className="rounded-lg border-2 border-border/40 bg-secondary/40 p-2 text-sm">
               <div className="font-heading">{m.icon} {m.name}</div>
               <div className="text-[11px] opacity-70">Παίκτριες {m.min}-{m.max} · Δραστηριότητες: {m.acts.join(' → ')}</div>

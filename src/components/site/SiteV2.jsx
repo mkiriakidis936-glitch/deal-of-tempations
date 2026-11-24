@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import MediaSpot from '@/components/shared/MediaSpot';
-import { ART, PHOTO, FILM, MODE_COVERS, MODE_MEDIA, HEIST_PHOTOS, videosFor } from '@/data/brandArt';
+import { ART, PHOTO, FILM, MODE_COVERS, MODE_MEDIA, HEIST_PHOTOS, PAJAMA_PHOTOS, videosFor } from '@/data/brandArt';
 import { SITE_EVENTS, getSiteContent } from '@/data/siteContent';
 import { modeMeta } from '@/data/modes/modeRegistry';
 import { MODE_GUIDE, SAFETY_RULES } from '@/data/modes/modeGuide';
@@ -10,7 +10,7 @@ import { MODE_GUIDE, SAFETY_RULES } from '@/data/modes/modeGuide';
 // Admin → Site & Σενάριο και όλα τα media από το MODE MEDIA CENTER.
 // ------------------------------------------------------------------
 
-export const SITE_MODE_IDS = { heist: 'arrest_heist', lockdown: 'lockdown', beachbar: 'beach_bar', marathon4h: 'marathon_4h' };
+export const SITE_MODE_IDS = { classic: 'classic', heist: 'arrest_heist', lockdown: 'lockdown', beachbar: 'beach_bar', marathon4h: 'marathon_4h', villa: 'villa_takeover' };
 
 const imageFor = (ev) => {
   const modeId = SITE_MODE_IDS[ev];
@@ -135,9 +135,9 @@ export function ExperiencesRail({ onOpen, onBook }) {
   return (
     <section id="experiences" className="relative py-20 sm:py-28">
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
-        <SectionTitle kicker="Οι εμπειρίες" title={<>Διάλεξε τη <span className="dot-gold-text">βραδιά σου</span></>} text="Τέσσερις διαφορετικές εμπειρίες, μία ιδιωτική παρέα. Κάθε μία με δικό της σενάριο, ρυθμό και φινάλε." />
+        <SectionTitle kicker="Οι εμπειρίες" title={<>Διάλεξε τη <span className="dot-gold-text">βραδιά σου</span></>} text="Έξι διαφορετικές εμπειρίες, μία ιδιωτική παρέα. Κάθε μία με δικό της σενάριο, ρυθμό και φινάλε." />
       </div>
-      <div className="dot-rail flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-6 sm:gap-6 sm:px-6 lg:mx-auto lg:grid lg:max-w-7xl lg:grid-cols-4 lg:overflow-visible">
+      <div className="dot-rail flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-6 sm:gap-6 sm:px-6 lg:mx-auto lg:grid lg:max-w-7xl lg:grid-cols-3 lg:overflow-visible">
         {SITE_EVENTS.map((event, index) => {
           const c = getSiteContent(event.id);
           const facts = factsFor(event.id);
@@ -262,9 +262,11 @@ export function TrailerSection({ eventId, title, kicker }) {
 export function GallerySection({ eventId }) {
   const modeId = SITE_MODE_IDS[eventId];
   const modeGallery = (id) => (MODE_MEDIA[id]?.gallery || []).filter(Boolean);
+  // Γκαλερί του Admin: του mode αν υπάρχει· αλλιώς η Heist γκαλερί (Arrest Heist) ή η Pajama γκαλερί (modes με πιτζάμες).
+  const fallback = modeId === 'arrest_heist' ? HEIST_PHOTOS : ['lockdown', 'marathon_4h', 'villa_takeover'].includes(modeId) ? PAJAMA_PHOTOS : [];
   const photos = modeId
-    ? (modeGallery(modeId).length ? modeGallery(modeId) : (modeId === 'arrest_heist' ? HEIST_PHOTOS.filter(Boolean) : []))
-    : [...new Set([...HEIST_PHOTOS.filter(Boolean), ...Object.values(SITE_MODE_IDS).flatMap(modeGallery)])];
+    ? (modeGallery(modeId).length ? modeGallery(modeId) : fallback.filter(Boolean))
+    : [...new Set([...HEIST_PHOTOS.filter(Boolean), ...PAJAMA_PHOTOS.filter(Boolean), ...Object.values(SITE_MODE_IDS).flatMap(modeGallery)])];
   const [open, setOpen] = useState(-1);
   useEffect(() => {
     if (open < 0) return undefined;
@@ -469,5 +471,44 @@ export function SiteFooter({ onHome }) {
         <a href="/deal" className="hover:text-white">Δήλωση ενδιαφέροντος</a>
       </div>
     </footer>
+  );
+}
+
+// Ημερολόγιο διαθεσιμότητας (Admin → Ιστοσελίδα → Αρχική). Δείχνει μόνο μελλοντικές ημερομηνίες.
+export function CalendarSection({ items = [], onBook }) {
+  const upcoming = (items || [])
+    .filter((item) => item?.date && !Number.isNaN(Date.parse(item.date)) && Date.parse(item.date) > Date.now())
+    .sort((a, b) => Date.parse(a.date) - Date.parse(b.date));
+  if (!upcoming.length) return null;
+  return (
+    <section id="calendar" className="relative py-16 sm:py-24">
+      <div className="mx-auto max-w-5xl px-4 sm:px-6">
+        <SectionTitle kicker="Ημερολόγιο" title={<>Οι επόμενες <span className="dot-gold-text">βραδιές</span></>} text="Διάλεξε ημερομηνία και κλείσε θέση πριν γεμίσει." />
+        <ul className="mt-8 divide-y divide-white/10 overflow-hidden rounded-[28px] bg-[#111] ring-1 ring-white/10">
+          {upcoming.map((item, i) => {
+            const c = getSiteContent(item.event);
+            const left = Math.max(0, Number(item.seats || 0) - Number(item.booked || 0));
+            const soldOut = Number(item.seats || 0) > 0 && left === 0;
+            const d = new Date(item.date);
+            return (
+              <li key={`${item.date}-${i}`} className="flex flex-wrap items-center gap-4 p-4 sm:p-5">
+                <div className="w-16 shrink-0 text-center">
+                  <div className="text-xs font-semibold uppercase tracking-[0.15em] text-[#E8C26B]">{d.toLocaleDateString('el-GR', { month: 'short' })}</div>
+                  <div className="font-display text-3xl leading-none text-white">{d.getDate()}</div>
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="font-semibold text-white">{c.tab || (c.titleLines || []).join(' ')}</div>
+                  <div className="text-sm text-white/60">{d.toLocaleDateString('el-GR', { weekday: 'long' })} · {d.toLocaleTimeString('el-GR', { hour: '2-digit', minute: '2-digit' })}</div>
+                </div>
+                <div className={`rounded-full px-3 py-1 text-sm font-semibold ${soldOut ? 'bg-white/10 text-white/50' : left > 0 && left <= 3 ? 'bg-[#FF453A]/15 text-[#FF8A80]' : 'bg-[#30D158]/15 text-[#7BE495]'}`}>
+                  {soldOut ? 'Sold out' : Number(item.seats || 0) > 0 ? `${left} ${left === 1 ? 'θέση' : 'θέσεις'}` : 'Διαθέσιμο'}
+                </div>
+                <button type="button" disabled={soldOut} onClick={() => onBook(item.event)} className="h-11 rounded-full bg-[#E8C26B] px-5 text-sm font-bold text-black disabled:opacity-30">Κλείσε θέση</button>
+              </li>
+            );
+          })}
+        </ul>
+      </div>
+    </section>
   );
 }

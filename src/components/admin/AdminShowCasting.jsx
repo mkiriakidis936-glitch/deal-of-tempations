@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { base44 } from '@/api/base44Client';
+import { appApi } from '@/api/apiClient';
 import ComicPanel from '@/components/comic/ComicPanel';
 import ComicButton from '@/components/comic/ComicButton';
 import { GAME_MODES, TOENAIL_PERKS } from '@/data/gameConfig';
@@ -48,10 +48,10 @@ export default function AdminShowCasting() {
     setMessage('');
     try {
       const [players, pajama, settings, eventResult] = await Promise.all([
-        base44.entities.PlayerIntake.filter({}, { sort: '-created_date', limit: 500 }),
-        base44.entities.PajamaIntake.filter({}, { sort: '-created_date', limit: 500 }),
-        base44.entities.AppSetting.filter({ key: CAST_KEY }, { limit: 1 }),
-        base44.entities.DotEvent.filter({}, { sort: '-created_date', limit: 200 }),
+        appApi.entities.PlayerIntake.filter({}, { sort: '-created_date', limit: 500 }),
+        appApi.entities.PajamaIntake.filter({}, { sort: '-created_date', limit: 500 }),
+        appApi.entities.AppSetting.filter({ key: CAST_KEY }, { limit: 1 }),
+        appApi.entities.DotEvent.filter({}, { sort: '-created_date', limit: 200 }),
       ]);
       const loadedEvents = eventResult.items || [];
       setEvents(loadedEvents);
@@ -72,10 +72,10 @@ export default function AdminShowCasting() {
 
   useEffect(() => {
     load();
-    const offPlayers = base44.entities.PlayerIntake.subscribe(load);
-    const offPajama = base44.entities.PajamaIntake.subscribe(load);
-    const offEvents = base44.entities.DotEvent.subscribe(load);
-    const offSettings = base44.entities.AppSetting.subscribe((event) => {
+    const offPlayers = appApi.entities.PlayerIntake.subscribe(load);
+    const offPajama = appApi.entities.PajamaIntake.subscribe(load);
+    const offEvents = appApi.entities.DotEvent.subscribe(load);
+    const offSettings = appApi.entities.AppSetting.subscribe((event) => {
       if (event?.data?.key === CAST_KEY) load();
     });
     return () => {
@@ -192,9 +192,9 @@ export default function AdminShowCasting() {
         } : {}),
       };
       if (plan?.settingId) {
-        await base44.entities.AppSetting.update(plan.settingId, { value });
+        await appApi.entities.AppSetting.update(plan.settingId, { value });
       } else {
-        const record = await base44.entities.AppSetting.create({ key: CAST_KEY, value });
+        const record = await appApi.entities.AppSetting.create({ key: CAST_KEY, value });
         setPlan({ ...value, settingId: record.id });
       }
       setPlan((current) => ({ ...(current || {}), ...value }));

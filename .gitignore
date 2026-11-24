@@ -35,8 +35,6 @@ dist-ssr
 .env
 .vite
 
-# Local link to a Base44 app, written by `base44 link`
-base44/.app.jsonc
 #env
 .env
 .env.*
@@ -74,10 +72,8 @@ dist-ssr
 .env
 .vite
 
-# Local link to a Base44 app, written by `base44 link`
-base44/.app.jsonc
 
-# personal data exported from Base44 - NEVER commit
+# προσωπικά δεδομένα (exports) — ΠΟΤΕ commit
 data-export/
 
 # local backups / uploads (στο Railway ζουν στο Volume)

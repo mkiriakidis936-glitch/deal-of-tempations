@@ -1,9 +1,9 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { request, getToken } from '@/api/base44Client';
+import { request, getToken } from '@/api/apiClient';
 import ComicPanel from '@/components/comic/ComicPanel';
 import ComicButton from '@/components/comic/ComicButton';
 
-const KIND_LABEL = { auto: 'Αυτόματο', manual: 'Χειροκίνητο', 'pre-restore': 'Πριν από επαναφορά' };
+const KIND_LABEL = { auto: 'Αυτόματο (παλιό)', manual: 'Χειροκίνητο', 'pre-restore': 'Πριν από επαναφορά', 'media-pre-restore': 'Φωτογραφίες πριν από επαναφορά' };
 const mb = (n) => (n >= 1048576 ? `${(n / 1048576).toFixed(1)} MB` : `${Math.max(1, Math.round(n / 1024))} KB`);
 const when = (ms) => new Date(ms).toLocaleString('el-GR');
 
@@ -28,13 +28,19 @@ export default function AdminBackup() {
   const [msg, setMsg] = useState(null);
   const [picked, setPicked] = useState(null); // { name, data }
   const latestBackup = items.length ? [...items].sort((a, b) => Number(b.modified) - Number(a.modified))[0] : null;
+  const [totalSize, setTotalSize] = useState(0);
   const fileRef = useRef(null);
   const mediaFileRef = useRef(null);
 
   const load = useCallback(async () => {
-    try { setItems((await request('GET', '/api/backup/list')).items || []); } catch (e) { setMsg({ ok: false, text: e.message }); }
+    try { const data = await request('GET', '/api/backup/list'); setItems(data.items || []); setTotalSize(data.totalSize || 0); } catch (e) { setMsg({ ok: false, text: e.message }); }
   }, []);
   useEffect(() => { load(); }, [load]);
+
+  const cleanup = (kind, label) => {
+    if (!window.confirm(`Οριστική διαγραφή: ${label}; Δεν αναιρείται.`)) return;
+    run(async () => { const r = await request('DELETE', `/api/backup/cleanup?kind=${kind}`); await load(); return r; }, 'Ο χώρος ελευθερώθηκε.');
+  };
 
   async function run(fn, okText) {
     setBusy(true);
@@ -145,7 +151,7 @@ export default function AdminBackup() {
           <ComicButton variant="dark" size="md" disabled={busy} onClick={saveNow}>💾 ΑΠΟΘΗΚΕΥΣΗ ΣΤΟΝ SERVER</ComicButton>
         </div>
         <div className="text-xs text-foreground/60 font-body">
-          Ο server κρατά μόνος του αντίγραφο κάθε μέρα (τα 14 τελευταία), μέσα στο Volume. Το JSON περιλαμβάνει τα δεδομένα της εφαρμογής. Φωτογραφίες και βίντεο διαχειρίζονται ξεχωριστά από το Media Backup παρακάτω.
+          Τα αντίγραφα γίνονται <b>μόνο όταν πατήσεις</b> «Αποθήκευση στον server» (κρατιούνται τα 20 τελευταία), μέσα στο Volume. Το JSON περιλαμβάνει τα δεδομένα της εφαρμογής. Φωτογραφίες και βίντεο διαχειρίζονται ξεχωριστά από το Media Backup παρακάτω.
         </div>
       </ComicPanel>
 
@@ -176,19 +182,27 @@ export default function AdminBackup() {
 
       <ComicPanel className="bg-card space-y-2">
         <div className="flex justify-between items-center">
-          <div className="font-heading text-lg text-primary">ΑΠΟΘΗΚΕΥΜΕΝΑ ΣΤΟΝ SERVER</div>
+          <div className="font-heading text-lg text-primary">ΑΠΟΘΗΚΕΥΜΕΝΑ ΣΤΟΝ SERVER · {items.length} · {mb(totalSize || 0)}</div>
           <ComicButton variant="dark" size="sm" onClick={load}>↻</ComicButton>
         </div>
-        {!items.length && <div className="text-sm text-foreground/60 font-body">Δεν υπάρχουν ακόμα. Το πρώτο αυτόματο δημιουργείται λίγο μετά την εκκίνηση του server.</div>}
+        {!items.length && <div className="text-sm text-foreground/60 font-body">Δεν υπάρχουν αποθηκευμένα αντίγραφα.</div>}
+        {items.length > 0 && (
+          <div className="flex flex-wrap gap-2">
+            {items.some((it) => it.kind === 'auto') && <ComicButton variant="red" size="sm" disabled={busy} onClick={() => cleanup('auto', 'όλα τα παλιά αυτόματα αντίγραφα')}>🗑 Όλα τα αυτόματα</ComicButton>}
+            {items.some((it) => it.kind === 'media-pre-restore') && <ComicButton variant="red" size="sm" disabled={busy} onClick={() => cleanup('media', 'τα αντίγραφα φωτογραφιών πριν από επαναφορά')}>🗑 Φωτογραφίες πριν από επαναφορά</ComicButton>}
+            <ComicButton variant="red" size="sm" disabled={busy} onClick={() => cleanup('all', 'ΟΛΑ τα αντίγραφα του server')}>🗑 Όλα</ComicButton>
+          </div>
+        )}
         {items.map((it) => (
           <div key={it.name} className="flex items-center gap-2 border-t border-border pt-2">
             <div className="flex-1 min-w-0">
               <div className="text-sm font-heading truncate">{KIND_LABEL[it.kind] || it.kind}</div>
               <div className="text-xs text-foreground/60">{when(it.modified)} · {mb(it.size)}</div>
             </div>
-            <ComicButton variant="dark" size="sm" disabled={busy} onClick={() => run(() => download(`/api/backup/file/${encodeURIComponent(it.name)}`, it.name), 'Το αρχείο κατέβηκε.')}>⬇</ComicButton>
+            {!it.folder && <ComicButton variant="dark" size="sm" disabled={busy} onClick={() => run(() => download(`/api/backup/file/${encodeURIComponent(it.name)}`, it.name), 'Το αρχείο κατέβηκε.')}>⬇</ComicButton>}
             {it.name.endsWith('.json') && <ComicButton variant="dark" size="sm" disabled={busy} onClick={() => testStored(it.name)}>ΕΛΕΓΧΟΣ</ComicButton>}
-            <ComicButton variant="red" size="sm" disabled={busy} onClick={() => restoreStored(it.name)}>ΕΠΑΝΑΦΟΡΑ</ComicButton>
+            {!it.folder && <ComicButton variant="dark" size="sm" disabled={busy} onClick={() => restoreStored(it.name)}>ΕΠΑΝΑΦΟΡΑ</ComicButton>}
+            <ComicButton variant="red" size="sm" disabled={busy} aria-label="Διαγραφή" onClick={() => { if (window.confirm(`Οριστική διαγραφή του «${KIND_LABEL[it.kind] || it.kind}» (${when(it.modified)});`)) run(async () => { await request('DELETE', `/api/backup/file/${encodeURIComponent(it.name)}`); await load(); }, 'Διαγράφηκε.'); }}>🗑</ComicButton>
           </div>
         ))}
       </ComicPanel>

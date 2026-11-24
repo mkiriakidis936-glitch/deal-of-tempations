@@ -1,4 +1,5 @@
-import { getToken } from '@/api/base44Client';
+import { loadAv } from '@/lib/avDevices';
+import { getToken } from '@/api/apiClient';
 
 // Ζωντανή κάμερα → TV μέσω WebRTC. Η εικόνα πηγαίνει απευθείας από συσκευή σε συσκευή (ίδιο WiFi)·
 // ο server μεταφέρει μόνο τη «χειραψία». Μόνο εικόνα, χωρίς ήχο (για να μη γίνεται μικροφωνισμός).
@@ -29,7 +30,7 @@ const code = (c) => encodeURIComponent(String(c || '').toUpperCase());
 
 export async function openCameraStream(facingMode = 'environment') {
   if (!navigator.mediaDevices?.getUserMedia) throw new Error('Αυτή η συσκευή δεν δίνει πρόσβαση σε κάμερα από τον browser.');
-  return navigator.mediaDevices.getUserMedia({ video: { facingMode, width: { ideal: 1280 }, height: { ideal: 720 }, frameRate: { ideal: 24, max: 30 } }, audio: false });
+  return navigator.mediaDevices.getUserMedia({ video: { ...(loadAv().camera ? { deviceId: { exact: loadAv().camera } } : { facingMode }), width: { ideal: 1280 }, height: { ideal: 720 }, frameRate: { ideal: 24, max: 30 } }, audio: false });
 }
 
 // ---------- Αποστολέας (Tablet / κινητό admin) ----------

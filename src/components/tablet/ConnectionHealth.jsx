@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { request } from '@/api/base44Client';
+import { request } from '@/api/apiClient';
 import { DockItem, Card, Button, Badge } from '@/design/ui';
 import { useConnectionStatus } from '@/components/shared/ConnectionBanner';
 

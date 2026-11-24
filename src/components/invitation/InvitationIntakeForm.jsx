@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { request } from '@/api/base44Client';
+import { request } from '@/api/apiClient';
 import { ARREST_HEIST_INTENSITY } from '@/data/gameConfig';
 import { ART } from '@/data/brandArt';
 import CustomFormQuestions from '@/components/forms/CustomFormQuestions';

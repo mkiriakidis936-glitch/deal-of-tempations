@@ -264,3 +264,41 @@
   .dot-reveal { opacity: 1; transform: none; transition: none; }
   .dot-kenburns, .dot-marquee, .dot-shine { animation: none; }
 }
+
+/* ======================================================================
+   iOS 27 · ΕΝΙΑΙΑ ΕΜΦΑΝΙΣΗ TABLET / TV / ΚΙΝΗΤΩΝ (7.0.0) — ίδια με το Admin
+   Επίπεδες κάρτες συστήματος, χωρίς θόλωμα, λάμψεις και comic σκιές.
+   Το /site και το Admin έχουν δικό τους θέμα και δεν επηρεάζονται.
+   ====================================================================== */
+:root:not(:has(.dot-site)):not(:has(#admin-root)) .comic-panel,
+:root:not(:has(.dot-site)):not(:has(#admin-root)) .comic-panel-sm {
+  background: #1C1C1E !important;
+  background-image: none !important;
+  border: 0 !important;
+  border-radius: 20px !important;
+  box-shadow: none !important;
+}
+:root:not(:has(.dot-site)):not(:has(#admin-root)) .comic-panel .comic-panel,
+:root:not(:has(.dot-site)):not(:has(#admin-root)) .comic-panel .comic-panel-sm { background: #2C2C2E !important; border-radius: 14px !important; }
+:root:not(:has(.dot-site)):not(:has(#admin-root)) .comic-boom {
+  border: 0 !important;
+  border-radius: 999px !important;
+  box-shadow: none !important;
+  background-image: none !important;
+}
+:root:not(:has(.dot-site)):not(:has(#admin-root)) .comic-text-stroke,
+:root:not(:has(.dot-site)):not(:has(#admin-root)) .comic-text-stroke-thin { -webkit-text-stroke: 0 !important; text-shadow: none !important; }
+:root:not(:has(.dot-site)):not(:has(#admin-root)) .comic-dots { background-image: none !important; }
+:root:not(:has(.dot-site)):not(:has(#admin-root)) * { -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
+:root:not(:has(.dot-site)):not(:has(#admin-root)) .ui-card { border: 0; }
+
+/* Tablet & κινητά (όχι TV): χωρίς animations και μεταβάσεις — όλα εμφανίζονται αμέσως.
+   Μένουν μόνο οι δείκτες φόρτωσης. Η TV κρατά τα εφέ του show (μεταβάσεις φάσεων, στέψη). */
+:root:not(:has(.dot-site)):not(:has(#admin-root)):not(:has(.ui-tv)) *:not(.animate-spin),
+:root:not(:has(.dot-site)):not(:has(#admin-root)):not(:has(.ui-tv)) *:not(.animate-spin)::before,
+:root:not(:has(.dot-site)):not(:has(#admin-root)):not(:has(.ui-tv)) *:not(.animate-spin)::after {
+  animation: none !important;
+  transition: none !important;
+}
+:root:not(:has(.dot-site)):not(:has(#admin-root)):not(:has(.ui-tv)) [class*="active:scale"]:active,
+:root:not(:has(.dot-site)):not(:has(#admin-root)):not(:has(.ui-tv)) [class*="hover:scale"]:hover { transform: none !important; }

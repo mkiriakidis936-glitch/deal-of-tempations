@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { base44 } from '@/api/base44Client';
+import { appApi } from '@/api/apiClient';
 import { NEW_MODES } from '@/data/modes/modeRegistry';
 import CustomFormQuestions from '@/components/forms/CustomFormQuestions';
 import { FormShell, Section, Field, TextInput, TextArea, ChoiceGroup, Scale, Toggle, ConsentCheck, FooterBar, SuccessScreen, formImageFor } from '@/components/forms/FormKit';
@@ -50,7 +50,7 @@ export default function ModeForm() {
   const set = (k, v) => setForm((f) => ({ ...f, [k]: v }));
   const selectMode = (id) => set('mode', id);
   const has = (...ids) => ids.includes(form.mode);
-  const pajamaish = has('pedi_glam', 'pedi_extended', 'lockdown', 'marathon_4h');
+  const pajamaish = has('pedi_glam', 'pedi_extended', 'lockdown', 'marathon_4h', 'villa_takeover');
   const beachish = has('beach_bar');
   const canSend = form.name.trim() && NEW_MODES.some((m) => m.id === form.mode) && form.adult && form.safeWordConfirmed && customQuestionsValid && !saving;
 
@@ -59,7 +59,7 @@ export default function ModeForm() {
     setSaving(true);
     setError('');
     try {
-      await base44.entities.PajamaIntake.create({
+      await appApi.entities.PajamaIntake.create({
         formType: 'modes',
         ...(sessionCode ? { sessionCode: sessionCode.trim().toUpperCase() } : {}),
         ...(dotEventId ? { dotEventId } : {}),

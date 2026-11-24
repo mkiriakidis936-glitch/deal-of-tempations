@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { base44 } from '@/api/base44Client';
+import { appApi } from '@/api/apiClient';
 import ComicPanel from '@/components/comic/ComicPanel';
 import ComicButton from '@/components/comic/ComicButton';
 
@@ -28,8 +28,8 @@ export default function AdminInterestParticipation() {
   async function loadAll() {
     try {
       const [interestResult, eventResult] = await Promise.all([
-        base44.entities.Interest.filter({}, { sort: '-created_date', limit: 500 }),
-        base44.entities.DotEvent.filter({}, { sort: '-created_date', limit: 200 }),
+        appApi.entities.Interest.filter({}, { sort: '-created_date', limit: 500 }),
+        appApi.entities.DotEvent.filter({}, { sort: '-created_date', limit: 200 }),
       ]);
       setInterests(interestResult.items || []);
       setEvents(eventResult.items || []);
@@ -43,7 +43,7 @@ export default function AdminInterestParticipation() {
     const event = eventRows.find((item) => item.id === eventId);
     if (!event?.room_code) { setResponses([]); return; }
     try {
-      const { items } = await base44.entities.Participation.filter({ roomCode: event.room_code }, { sort: '-created_date', limit: 500 });
+      const { items } = await appApi.entities.Participation.filter({ roomCode: event.room_code }, { sort: '-created_date', limit: 500 });
       setResponses(items || []);
     } catch (error) {
       setMessage(error.message || 'Δεν φορτώθηκαν οι συμμετοχές του Event.');
@@ -52,9 +52,9 @@ export default function AdminInterestParticipation() {
 
   useEffect(() => {
     loadAll();
-    const offInterest = base44.entities.Interest.subscribe(() => loadAll());
-    const offEvents = base44.entities.DotEvent.subscribe(() => loadAll());
-    const offParticipation = base44.entities.Participation.subscribe(() => loadAll());
+    const offInterest = appApi.entities.Interest.subscribe(() => loadAll());
+    const offEvents = appApi.entities.DotEvent.subscribe(() => loadAll());
+    const offParticipation = appApi.entities.Participation.subscribe(() => loadAll());
     return () => { offInterest?.(); offEvents?.(); offParticipation?.(); };
   }, []);
 
@@ -82,11 +82,11 @@ export default function AdminInterestParticipation() {
       let roomCode = '';
       for (let attempt = 0; attempt < 8; attempt += 1) {
         const candidate = makeRoomCode();
-        const { items } = await base44.entities.DotEvent.filter({ room_code: candidate }, { limit: 1 });
+        const { items } = await appApi.entities.DotEvent.filter({ room_code: candidate }, { limit: 1 });
         if (!items?.length) { roomCode = candidate; break; }
       }
       if (!roomCode) throw new Error('Δεν δημιουργήθηκε μοναδικός κωδικός χώρου.');
-      const event = await base44.entities.DotEvent.create({
+      const event = await appApi.entities.DotEvent.create({
         title: EVENT_TYPES.find((item) => item.id === type)?.label || type,
         type,
         status: 'prep',
@@ -97,7 +97,7 @@ export default function AdminInterestParticipation() {
         expectedCount: selectedInterests.length,
       });
       for (const item of selectedInterests) {
-        await base44.entities.Interest.update(item.id, { dotEventId: event.id });
+        await appApi.entities.Interest.update(item.id, { dotEventId: event.id });
       }
       setSelectedIds([]);
       setSelectedEventId(event.id);
@@ -113,7 +113,7 @@ export default function AdminInterestParticipation() {
   async function updateParticipation(item, choice) {
     setBusy(true);
     try {
-      const updated = await base44.entities.Participation.update(item.id, { choice, submittedAt: new Date().toISOString() });
+      const updated = await appApi.entities.Participation.update(item.id, { choice, submittedAt: new Date().toISOString() });
       setResponses((current) => current.map((row) => row.id === item.id ? updated : row));
     } catch (error) {
       setMessage(error.message || 'Δεν ενημερώθηκε η δήλωση.');
@@ -124,7 +124,7 @@ export default function AdminInterestParticipation() {
     if (!window.confirm(`Να διαγραφεί η δήλωση της/του ${item.name};`)) return;
     setBusy(true);
     try {
-      await base44.entities.Participation.delete(item.id);
+      await appApi.entities.Participation.delete(item.id);
       setResponses((current) => current.filter((row) => row.id !== item.id));
     } catch (error) {
       setMessage(error.message || 'Δεν διαγράφηκε η δήλωση.');

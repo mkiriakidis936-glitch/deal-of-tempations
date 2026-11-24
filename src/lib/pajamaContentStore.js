@@ -1,4 +1,4 @@
-import { base44 } from '@/api/base44Client';
+import { appApi } from '@/api/apiClient';
 import { PAJAMA_CATEGORIES, PAJAMA_SECRETS } from '@/data/pajamaContent';
 
 export function defaultRows() {
@@ -58,15 +58,15 @@ export function defaultPajamaContent() {
 }
 
 export async function listPajamaRows() {
-  let { items } = await base44.entities.PajamaContent.filter({}, { sort: 'order', limit: 500 });
+  let { items } = await appApi.entities.PajamaContent.filter({}, { sort: 'order', limit: 500 });
   if (!items || items.length === 0) {
-    items = await base44.entities.PajamaContent.bulkCreate(defaultRows());
+    items = await appApi.entities.PajamaContent.bulkCreate(defaultRows());
     return items || [];
   }
   const existing = new Set(items.map((i) => i.itemId).filter(Boolean));
   const missing = defaultRows().filter((r) => !existing.has(r.itemId));
   if (missing.length > 0) {
-    const created = await base44.entities.PajamaContent.bulkCreate(missing);
+    const created = await appApi.entities.PajamaContent.bulkCreate(missing);
     items = [...items, ...(created || [])];
   }
   return items || [];
@@ -77,13 +77,13 @@ export async function loadPajamaContent() {
 }
 
 export function createPajamaRow(data) {
-  return base44.entities.PajamaContent.create(data);
+  return appApi.entities.PajamaContent.create(data);
 }
 
 export function updatePajamaRow(id, data) {
-  return base44.entities.PajamaContent.update(id, data);
+  return appApi.entities.PajamaContent.update(id, data);
 }
 
 export function deletePajamaRow(id) {
-  return base44.entities.PajamaContent.delete(id);
+  return appApi.entities.PajamaContent.delete(id);
 }

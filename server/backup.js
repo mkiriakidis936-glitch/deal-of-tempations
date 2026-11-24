@@ -18,9 +18,9 @@ export const BACKUP_DIR = path.join(path.dirname(UPLOAD_DIR), 'backups');
 fs.mkdirSync(BACKUP_DIR, { recursive: true });
 
 const NAME_RE = /^[A-Za-z0-9._-]+\.json$/;
-const KEEP = { auto: 14, manual: 20, 'pre-restore': 5 };
+const KEEP = { auto: 0, manual: 20, 'pre-restore': 2 };
 
-const MEDIA_KEEP = 3;
+const MEDIA_KEEP = 1;
 const MEDIA_MAX_TOTAL = 2 * 1024 * 1024 * 1024;
 const MEDIA_MAX_FILE = 300 * 1024 * 1024;
 const mediaNameIsSafe = (name) => /^[A-Za-z0-9._-]+\.(jpg|jpeg|png|webp|gif|avif|svg|mp4|m4v|webm|mov|mp3|wav|ogg|m4a|aac)$/i.test(name);
@@ -189,11 +189,28 @@ export async function restoreBackup(data, mode) {
   return { restored: data.records.length, mode };
 }
 
-export function startAutoBackup() {
-  const run = () => saveBackup('auto').catch((e) => console.error('[backup] auto backup failed', e));
-  setTimeout(run, 30 * 1000).unref();
-  setInterval(run, 24 * 60 * 60 * 1000).unref();
+// Τα αντίγραφα γίνονται ΜΟΝΟ χειροκίνητα από το Admin (όχι αυτόματα), για να μη γεμίζει ο server.
+export function startAutoBackup() {}
+
+// Όσα πιάνουν χώρο στον server: αντίγραφα δεδομένων (.json) και αντίγραφα φωτογραφιών πριν από επαναφορά.
+async function storedItems() {
+  const entries = await fsp.readdir(BACKUP_DIR, { withFileTypes: true });
+  const items = [];
+  for (const entry of entries) {
+    if (entry.isFile() && NAME_RE.test(entry.name) && !entry.name.startsWith('.')) {
+      const st = await fsp.stat(path.join(BACKUP_DIR, entry.name));
+      items.push({ name: entry.name, kind: entry.name.startsWith('pre-restore-') ? 'pre-restore' : entry.name.split('-')[0], size: st.size, modified: st.mtimeMs });
+    } else if (entry.isDirectory() && entry.name.startsWith('media-pre-restore-')) {
+      const dir = path.join(BACKUP_DIR, entry.name);
+      let size = 0;
+      for (const f of await fsp.readdir(dir)) size += (await fsp.stat(path.join(dir, f)).catch(() => ({ size: 0 }))).size;
+      const st = await fsp.stat(dir);
+      items.push({ name: entry.name, kind: 'media-pre-restore', size, modified: st.mtimeMs, folder: true });
+    }
+  }
+  return items.sort((a, b) => b.modified - a.modified);
 }
+const deletableName = (name) => (NAME_RE.test(name) || /^media-pre-restore-[0-9-]+$/.test(name)) && !name.startsWith('.') && !name.includes('/');
 
 export function backupRoutes() {
   const r = express.Router();
@@ -222,13 +239,23 @@ export function backupRoutes() {
   });
 
   r.get('/list', async (_req, res) => {
-    const names = (await fsp.readdir(BACKUP_DIR)).filter((n) => NAME_RE.test(n));
-    const items = await Promise.all(names.map(async (n) => {
-      const st = await fsp.stat(path.join(BACKUP_DIR, n));
-      return { name: n, kind: n.split('-')[0], size: st.size, modified: st.mtimeMs };
-    }));
-    items.sort((a, b) => b.modified - a.modified);
-    res.json({ items });
+    const items = await storedItems();
+    res.json({ items, totalSize: items.reduce((sum, item) => sum + item.size, 0) });
+  });
+  // Διαγραφή ενός αντιγράφου (ή φακέλου φωτογραφιών πριν από επαναφορά).
+  r.delete('/file/:name', async (req, res) => {
+    const name = String(req.params.name || '');
+    if (!deletableName(name)) return res.status(400).json({ error: 'Μη έγκυρο όνομα' });
+    await fsp.rm(path.join(BACKUP_DIR, name), { recursive: true, force: true });
+    res.json({ success: true });
+  });
+  // Μαζική διαγραφή: kind=auto | pre-restore | media | all
+  r.delete('/cleanup', async (req, res) => {
+    const kind = String(req.query.kind || 'auto');
+    if (!['auto', 'pre-restore', 'media', 'all'].includes(kind)) return res.status(400).json({ error: 'Μη έγκυρος τύπος' });
+    const items = (await storedItems()).filter((item) => kind === 'all' || (kind === 'media' ? item.kind === 'media-pre-restore' : item.kind === kind));
+    await Promise.all(items.map((item) => fsp.rm(path.join(BACKUP_DIR, item.name), { recursive: true, force: true })));
+    res.json({ success: true, deleted: items.length, freed: items.reduce((sum, item) => sum + item.size, 0) });
   });
 
   r.post('/now', async (_req, res) => { res.json({ success: true, ...(await saveBackup('manual')) }); });

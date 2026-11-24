@@ -1,4 +1,4 @@
-import { base44 } from '@/api/base44Client';
+import { appApi } from '@/api/apiClient';
 
 export const VERSIONED_SETTINGS = [
   { key: 'admin_global_design', label: 'Σχεδίαση εφαρμογής' },
@@ -13,7 +13,7 @@ const LIMIT = 30;
 const historyKey = (settingKey) => `admin_setting_versions_${settingKey}`;
 
 async function findSetting(key) {
-  const result = await base44.entities.AppSetting.filter({ key }, { limit: 1 });
+  const result = await appApi.entities.AppSetting.filter({ key }, { limit: 1 });
   return result.items?.[0] || null;
 }
 
@@ -21,7 +21,7 @@ export async function saveAdminSettingVersion(settingKey, fallbackValue, note = 
   const [record, current, user] = await Promise.all([
     findSetting(historyKey(settingKey)),
     findSetting(settingKey),
-    base44.auth.me().catch(() => null),
+    appApi.auth.me().catch(() => null),
   ]);
   const currentValue = current?.value ?? fallbackValue;
   if (currentValue === undefined) return;
@@ -36,8 +36,8 @@ export async function saveAdminSettingVersion(settingKey, fallbackValue, note = 
     value: JSON.parse(JSON.stringify(currentValue)),
   };
   const value = { items: [snapshot, ...items].slice(0, LIMIT) };
-  if (record?.id) await base44.entities.AppSetting.update(record.id, { value });
-  else await base44.entities.AppSetting.create({ key: historyKey(settingKey), value });
+  if (record?.id) await appApi.entities.AppSetting.update(record.id, { value });
+  else await appApi.entities.AppSetting.create({ key: historyKey(settingKey), value });
 }
 
 export async function loadAdminSettingVersions(settingKey) {
@@ -48,7 +48,7 @@ export async function loadAdminSettingVersions(settingKey) {
 
 export async function restoreAdminSettingVersion(settingKey, snapshot) {
   const record = await findSetting(settingKey);
-  if (record?.id) await base44.entities.AppSetting.update(record.id, { value: snapshot.value });
-  else await base44.entities.AppSetting.create({ key: settingKey, value: snapshot.value });
+  if (record?.id) await appApi.entities.AppSetting.update(record.id, { value: snapshot.value });
+  else await appApi.entities.AppSetting.create({ key: settingKey, value: snapshot.value });
   return snapshot.value;
 }

@@ -4,7 +4,7 @@
 // ===== 44-SQUARE BOARD =====
 const BOARD_SQUARES = [
   { type: 'street', name: 'START' },
-  { type: 'glitch', name: 'Base44 Glitch' },
+  { type: 'glitch', name: 'Glitch' },
   { type: 'glitch', name: 'Σφάλμα' },
   { type: 'street', name: 'Ο Καθρέφτης' },
   { type: 'street', name: 'Το Ψέμα' },
@@ -24,7 +24,7 @@ const BOARD_SQUARES = [
   { type: 'street', name: 'Δρόμος 7' },
   { type: 'warrant', name: 'Ένταλμα' },
   { type: 'glitch', name: 'Σφάλμα' },
-  { type: 'glitch', name: 'Base44 Glitch' },
+  { type: 'glitch', name: 'Glitch' },
   { type: 'police', name: 'Αστυνομία' },
   { type: 'blackmarket', name: 'Μαύρη Αγορά' },
   { type: 'street', name: 'Δρόμος 9' },
@@ -60,7 +60,7 @@ export const SQUARE_TYPES = {
   safehouse: { label: 'Safehouse', icon: '🏠', color: 'bg-green-400', desc: 'Πλήρης Ασυλία. Δεν μπορεί να σε αγγίξει κανείς μέχρι τον επόμενο γύρο.' },
   blackmarket: { label: 'Black Market', icon: '🛍️', color: 'bg-purple-400', desc: 'Αγόρασε ασυλία, επαναφόρτισε Perk ή δωροδοκία.' },
   warrant: { label: 'Warrant', icon: '📜', color: 'bg-red-400', desc: 'Διάλεξε άλλη παίκτρια και επίβαλε challenge ή σύλληψη.' },
-  glitch: { label: 'Base44 Glitch', icon: '⚡', color: 'bg-pink-400', desc: 'Τυχαίο event που επηρεάζει όλη την παρέα.' },
+  glitch: { label: 'Glitch', icon: '⚡', color: 'bg-pink-400', desc: 'Τυχαίο event που επηρεάζει όλη την παρέα.' },
 };
 
 // ===== PENALTY LADDER =====

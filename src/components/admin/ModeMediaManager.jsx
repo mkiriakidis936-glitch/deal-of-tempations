@@ -22,8 +22,8 @@ function expectedNameFor(modeId, field, item) {
 function validateSelectedFile(file, expectedName, video) {
   if (!file) return 'Δεν επιλέχθηκε αρχείο.';
   const extension = file.name.split('.').pop()?.toLowerCase();
-  const allowed = video ? ['mp4', 'webm', 'mov'] : ['jpg', 'jpeg', 'png', 'webp', 'gif', 'avif', 'svg', 'heic', 'heif'];
-  if (!allowed.includes(extension)) return video ? 'Για βίντεο επίλεξε MP4, WEBM ή MOV.' : 'Για εικόνα επίλεξε JPG, PNG, WEBP, GIF, AVIF, SVG ή HEIC.';
+  const allowed = video ? ['mp4', 'm4v', 'webm', 'mov'] : ['jpg', 'jpeg', 'png', 'webp', 'gif', 'avif', 'svg', 'heic', 'heif'];
+  if (!allowed.includes(extension)) return video ? 'Για βίντεο επίλεξε MP4, M4V, WEBM ή MOV.' : 'Για εικόνα επίλεξε JPG, PNG, WEBP, GIF, AVIF, SVG ή HEIC.';
   return '';
 }
 
@@ -39,9 +39,8 @@ export default function ModeMediaManager({ value = {}, files = [], onSave, onRef
     ...emptyMode,
     cover: MODE_COVERS[`modeCover_${selected}`] || '',
     ...saved,
-    sections: Array.isArray(saved.sections) && saved.sections.length
-      ? saved.sections
-      : (MODE_MEDIA_SECTIONS[selected] || []).map((item) => ({ ...item, image: '' })),
+    // Πάντα η τρέχουσα λίστα θέσεων (και οι νέες), με όποια φωτογραφία έχει ήδη αποθηκευτεί για το ίδιο id.
+    sections: (MODE_MEDIA_SECTIONS[selected] || []).map((item) => ({ ...item, image: (Array.isArray(saved.sections) ? saved.sections : []).find((s) => s?.id === item.id)?.image || '' })),
     gallery: Array.from({ length: 6 }, (_, index) => saved.gallery?.[index] || ''),
   };
   const imageFiles = files.filter((file) => file.kind === 'image' || file.kind === 'graphic');

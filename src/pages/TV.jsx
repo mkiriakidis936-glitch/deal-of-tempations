@@ -6,10 +6,12 @@ import SoundUnlock from '@/components/shared/SoundUnlock';
 import ModeTV from '@/components/modes/ModeTV';
 import { QRCodeSVG } from 'qrcode.react';
 import GameIntroTV from '@/components/tv/GameIntroTV';
+import { modeArtUrl, artSectionFor } from '@/components/modes/ModeArt';
 import { BriefingTV, PhaseTransitionTV, ChampionCeremonyTV, briefingPending } from '@/components/modes/ModeBriefing';
 import TVExperienceLayer from '@/components/tv/TVExperienceLayer';
 import { isNewMode } from '@/data/modes/modeRegistry';
 import { ART } from '@/data/brandArt';
+import { startOutputRouting } from '@/lib/avDevices';
 import React, { useMemo, useState } from 'react';
 import { useGameSession } from '@/hooks/useGameSession';
 import { getActiveSessionCode, subscribeActiveSession } from '@/lib/activeSession';
@@ -155,6 +157,8 @@ function formatEvent(event) {
 const IS_PREVIEW = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('preview') === '1';
 
 export default function TVScreen() {
+  // Έξοδος ήχου της συσκευής (κάρτα ήχου USB-C / ακουστικά) από τη σελίδα /av-setup.
+  React.useEffect(() => startOutputRouting(), []);
   const { session, state, loading, joinByCode } = useGameSession({ autoLoad: false });
   const [fullscreen, setFullscreen] = useState(Boolean(document.fullscreenElement));
   const [networkOnline, setNetworkOnline] = useState(typeof navigator === 'undefined' ? true : navigator.onLine);
@@ -229,13 +233,17 @@ export default function TVScreen() {
   const isEngine = state.mode === 'classic' || state.mode === 'arrest_heist';
   const engineBriefing = isEngine && state.stage === 0 && briefingPending(state.mg, state.mode);
   const engineCeremony = isEngine && state.stage === 3;
+  // Classic/Arrest Heist: η φωτογραφία της στιγμής (κάρτα, ποινή, φάση) από το MODE MEDIA CENTER, ως φόντο.
+  const engineArt = isEngine && state.stage > 0 ? modeArtUrl(state.mode, artSectionFor(state)) : '';
 
   return (
     <div className={`dot-tv-shell ui-tv min-h-screen text-foreground flex flex-col ${fullscreen ? 'dot-tv-fullscreen' : ''}`}>
       <ScreenWallpaper src={ART.wallpaperTv} />
       {!IS_PREVIEW && <SoundUnlock variant="screen" />}
-      <div className="fixed inset-0 -z-10 pointer-events-none opacity-20">
-        <MediaSpot src={PHOTO.tv || FILM.tv} slot="tv" className="w-full h-full object-cover" />
+      <div className="fixed inset-0 -z-10 pointer-events-none" style={{ opacity: engineArt ? 0.3 : 0.2 }}>
+        {engineArt
+          ? <img key={engineArt} src={engineArt} alt="" onError={(e) => { e.currentTarget.style.display = 'none'; }} className="h-full w-full object-cover" />
+          : <MediaSpot src={PHOTO.tv || FILM.tv} slot="tv" className="w-full h-full object-cover" />}
       </div>
       {state.stopActive && <div className="fixed inset-0 z-[100] bg-destructive/90 flex items-center justify-center text-center pointer-events-auto"><div className="font-heading text-7xl text-white">⏸ ΣΤΟΠ</div></div>}
       <TVExperienceLayer sessionCode={session.sessionCode} mode={state.mode} playerCount={state.players?.length || 0} stage={state.stage} online={networkOnline} fullscreen={fullscreen} onToggleFullscreen={toggleFullscreen} event={currentEvent} />
@@ -313,14 +321,16 @@ export default function TVScreen() {
 
           <div className="flex-1 flex items-center justify-center">
             {state.stage === 0 && !isPajama ? (
-              <div className="ui-card flex w-full max-w-[min(88vw,1700px)] items-center gap-12 p-12">
-                <div className="flex-1 space-y-4 text-left">
+              <div className="ui-card relative flex w-full max-w-[min(88vw,1700px)] items-center gap-12 overflow-hidden p-12">
+                {(PHOTO.tv || ART.heist5) && <img src={PHOTO.tv || ART.heist5} alt="" onError={(e) => { e.currentTarget.style.display = 'none'; }} className="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-35" />}
+                <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-black via-black/70 to-black/20" />
+                <div className="relative flex-1 space-y-4 text-left">
                   <div className="ui-tv-eyebrow ui-tv-eyebrow--gold">Deal of Temptation</div>
                   <div className="ui-tv-title ui-tv-title--xl">Αναμονή έναρξης</div>
                   <div className="ui-tv-text">Σκανάρετε το QR με το κινητό σας για να μπείτε στο παιχνίδι.</div>
                   <div className="ui-tv-muted">Κωδικός: <b className="ui-tv-num" style={{ color: 'var(--ui-gold)' }}>{session.sessionCode}</b> · Ο Game Master ετοιμάζει το παιχνίδι στο Tablet.</div>
                 </div>
-                <div className="shrink-0">
+                <div className="relative shrink-0">
                   <SessionQRCode sessionCode={session.sessionCode} size={300} />
                 </div>
               </div>

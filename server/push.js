@@ -69,24 +69,36 @@ export async function notifyPlayerMission(sessionCode, playerId, mission) {
   }));
 }
 
+// Ειδοποίηση παιχνιδιού (π.χ. Villa Takeover) στο κινητό μίας παίκτριας.
+export async function notifyPlayerAlert(sessionCode, playerId, alert) {
+  if (!sessionCode || !playerId || !alert?.title) return;
+  await init();
+  const { rows } = await query('SELECT endpoint, subscription FROM push_subscriptions WHERE session_code = $1 AND player_id = $2', [sessionCode, playerId]);
+  const payload = JSON.stringify({ title: clip(alert.title, 60), body: clip(alert.text, 160), url: `/play?code=${encodeURIComponent(sessionCode)}` });
+  await Promise.all(rows.map(async (row) => {
+    try {
+      await webpush.sendNotification(row.subscription, payload, { TTL: 60 * 60, urgency: 'high' });
+    } catch (e) {
+      if (e.statusCode === 404 || e.statusCode === 410) await query('DELETE FROM push_subscriptions WHERE endpoint = $1', [row.endpoint]);
+      else console.error('[player-push] αποτυχία αποστολής:', e.statusCode || e.message);
+    }
+  }));
+}
+
 // Καλείται από το entities.js μόλις αποθηκευτεί νέα εγγραφή (δημόσιες φόρμες).
 export function notifyNewSubmission(entity, rec) {
   let msg = null;
   const name = clip(rec.name, 80) || 'Κάποια κοπέλα';
   if (entity === 'PlayerIntake') {
     const mode = clip(rec.gameMode || rec.vipGameMode, 80);
-    msg = { title: '📝 Νέα αίτηση συμμετοχής', body: `${name} υπέβαλε νέα αίτηση${mode ? ` · ${mode}` : ''} μέσω της δημόσιας φόρμας`, url: '/admin?tab=forms' };
+    msg = { title: '📝 Νέα αίτηση συμμετοχής', body: `${name} υπέβαλε νέα αίτηση${mode ? ` · ${mode}` : ''} μέσω της δημόσιας φόρμας`, url: '/admin?tab=inbox' };
   } else if (entity === 'InvitationRSVP' && rec.event === 'pajama') {
-    msg = { title: '🩴 Νέα κράτηση θέσης', body: `${name} κράτησε θέση στο /pajama-invite`, url: '/admin?tab=forms' };
+    msg = { title: '🩴 Νέα κράτηση θέσης', body: `${name} κράτησε θέση στο /pajama-invite`, url: '/admin?tab=inbox' };
   } else if (entity === 'VIPInvitationSubmission') {
     msg = { title: '✦ Νέο VIP Ερωτηματολόγιο', body: `${clip(rec.displayName || name, 80)} συμπλήρωσε το VIP Questionnaire`, url: '/admin?tab=invitations' };
   } else if (entity === 'PajamaIntake') {
     const modes = Array.isArray(rec.preferredModes) && rec.preferredModes.length ? ` · ${clip(rec.preferredModes.join(', '), 80)}` : '';
-    msg = { title: '📝 Νέα αίτηση συμμετοχής', body: `${name} υπέβαλε νέα αίτηση μέσω της δημόσιας φόρμας${modes}`, url: '/admin?tab=forms' };
-  } else if (entity === 'BacheloretteIntake') {
-    const leader = clip(rec.leaderName, 80) || 'Κάποια ομάδα';
-    const code = clip(rec.sessionCode, 8);
-    msg = { title: '🎲 Νέο Intake ομάδας', body: `${leader} συμπλήρωσε το Intake${code ? ` (κωδικός ${code})` : ''}`, url: '/admin?tab=forms' };
+    msg = { title: '📝 Νέα αίτηση συμμετοχής', body: `${name} υπέβαλε νέα αίτηση μέσω της δημόσιας φόρμας${modes}`, url: '/admin?tab=inbox' };
   }
   if (msg) notifyAdmins(msg).catch((e) => console.error('[push] notify error:', e.message));
 }

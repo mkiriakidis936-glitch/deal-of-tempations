@@ -1,10 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import ComicPanel from '@/components/comic/ComicPanel';
 import ComicButton from '@/components/comic/ComicButton';
 import Timer from '@/components/comic/Timer';
 import WheelOfMisfortune from '@/components/comic/WheelOfMisfortune';
 import SpeakButton from '@/components/comic/VoiceReader';
-import { base44 } from '@/api/base44Client';
 import { ARREST_HEIST_LADDER, BOARD } from '@/data/gameConfig';
 import MonopolyBoard from '@/components/tv/MonopolyBoard';
 import { ARREST_HEIST_DARES, ARREST_HEIST_TRUTHS, MINI_GAMES, PLOT_TWISTS, ULTIMATE_TRUTHS } from '@/data/gameContent';
@@ -29,18 +28,12 @@ export default function ArrestHeistScreen({ state, updateState, onEnd, playerPro
   const [codeRevealed, setCodeRevealed] = useState(false);
   const [tickleImmunity, setTickleImmunity] = useState(false);
   const [redeemTruth, setRedeemTruth] = useState(null);
-  const [intake, setIntake] = useState(null);
+  // Το παλιό ερωτηματολόγιο ομάδας καταργήθηκε: ένταση και μυστικά από τις προεπιλογές.
+  const intake = null;
 
   const REDEMPTION_COST = 3;
   const vipCtx = { playerProfiles, playerProfilesReady };
 
-  async function loadIntake() {
-    if (!state.sessionCode) return;
-    const { items } = await base44.entities.BacheloretteIntake.filter({ sessionCode: state.sessionCode }, { sort: '-created_date', limit: 1 });
-    setIntake(items?.[0] || null);
-  }
-
-  useEffect(() => { loadIntake(); }, [state.sessionCode]);
 
   // === STAGE 1 VARS ===
   const currentTeam = state.currentTeam || 'A';
@@ -215,17 +208,9 @@ export default function ArrestHeistScreen({ state, updateState, onEnd, playerPro
           <HeistBoardPanel state={state} updateState={updateState} />
           <HighStakesPanel state={state} updateState={updateState} />
 
-          {intake ? (
-            <ComicPanel className="bg-tarot-wine/30 p-2 text-sm">
-              <div className="font-heading text-sm">⭐ ΑΡΧΗΓΟΣ ALPHA: {intake.leaderName}</div>
-              <div className="text-xs">ΑΡΧΗΓΟΣ BETA: {intake.opponentName || '—'} · Safe Word: {intake.safeWordConfirmed ? '✓' : '✗'} · Ένταση: {intake.intensity} · 🤫 {secretTruths.length} μυστικά{intake.musicPreferences ? ` · 🎤 ${intake.musicPreferences}` : ''}</div>
-            </ComicPanel>
-          ) : (
-            <ComicPanel className="bg-tarot-wine/30 p-2 text-sm flex flex-wrap items-center justify-between gap-2">
-              <div className="text-xs">📝 Δεν υπάρχει φόρμα intake για τον κωδικό <b>{state.sessionCode}</b>. Άνοιξε: <b>{window.location.origin}/intake?code={state.sessionCode}</b></div>
-              <ComicButton variant="white" size="sm" onClick={loadIntake}>🔄 ΕΛΕΓΧΟΣ</ComicButton>
-            </ComicPanel>
-          )}
+          <ComicPanel className="bg-tarot-wine/30 p-2 text-sm">
+            <div className="font-heading text-sm">⭐ ΑΡΧΗΓΙΝΑ ALPHA: {leaderA?.name || '—'} · ΑΡΧΗΓΙΝΑ BETA: {leaderB?.name || '—'}</div>
+          </ComicPanel>
 
           {phase === 'round_intro' && (
             <ComicPanel className="bg-primary text-center py-8">

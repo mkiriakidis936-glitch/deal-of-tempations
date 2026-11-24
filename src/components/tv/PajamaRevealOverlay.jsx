@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { base44 } from '@/api/base44Client';
+import { appApi } from '@/api/apiClient';
 
 const SHOW_MS = 5000;
 
@@ -11,7 +11,7 @@ export default function PajamaRevealOverlay() {
     let alive = true;
     async function load() {
       try {
-        const { items } = await base44.entities.AppSetting.filter({ key: 'pajama_reveal' }, { limit: 1 });
+        const { items } = await appApi.entities.AppSetting.filter({ key: 'pajama_reveal' }, { limit: 1 });
         if (!alive) return;
         const raw = items?.[0]?.value;
         if (!raw) return;

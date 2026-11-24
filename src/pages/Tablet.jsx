@@ -1,4 +1,5 @@
 import ScreenWallpaper from '@/components/shared/ScreenWallpaper';
+import { startOutputRouting } from '@/lib/avDevices';
 import React from 'react';
 import { useGameSession } from '@/hooks/useGameSession';
 import { getActiveSessionCode, setActiveSessionCode, subscribeActiveSession } from '@/lib/activeSession';
@@ -58,12 +59,14 @@ import ConnectionBanner from '@/components/shared/ConnectionBanner';
 import { useSyncTimerAutoFire } from '@/hooks/useSyncTimerAutoFire';
 import { calculateMostWanted, getWantedLevel } from '@/lib/gameLogic';
 import { canAssignVipActivity } from '@/lib/playerIntelligence';
-import { base44 } from '@/api/base44Client';
+import { appApi } from '@/api/apiClient';
 import { awardAchievements } from '@/lib/achievements';
 import { setGameStopActive } from '@/lib/modeKit';
 import { BriefingTablet, PhaseGuideTablet, briefingPending } from '@/components/modes/ModeBriefing';
 
 export default function Tablet() {
+  // Έξοδος ήχου της συσκευής (κάρτα ήχου USB-C / ακουστικά) από τη σελίδα /av-setup.
+  React.useEffect(() => startOutputRouting(), []);
   const { session, state, loading, updateState, createSession, deleteSession, refresh, joinByCode } = useGameSession();
   React.useEffect(() => {
     setGameStopActive(!!(state?.stopActive || state?.mg?.stop));
@@ -84,7 +87,7 @@ export default function Tablet() {
 
   async function startNewSession(data) {
     const linkedEvent = data.dotEventId
-      ? (await base44.entities.DotEvent.filter({ id: data.dotEventId }, { limit: 1 })).items?.[0]
+      ? (await appApi.entities.DotEvent.filter({ id: data.dotEventId }, { limit: 1 })).items?.[0]
       : null;
     const created = await createSession({
       ...data,
@@ -97,10 +100,10 @@ export default function Tablet() {
       },
     });
     if (linkedEvent) {
-      await base44.entities.DotEvent.update(linkedEvent.id, { gameSessionId: created.id, gameSessionCode: data.sessionCode, status: 'active' });
-      const { items: profiles } = await base44.entities.PlayerIntake.filter({ dotEventId: linkedEvent.id }, { limit: 500 });
+      await appApi.entities.DotEvent.update(linkedEvent.id, { gameSessionId: created.id, gameSessionCode: data.sessionCode, status: 'active' });
+      const { items: profiles } = await appApi.entities.PlayerIntake.filter({ dotEventId: linkedEvent.id }, { limit: 500 });
       await Promise.all((profiles || []).filter((profile) => profile.approved === true).map((profile) =>
-        base44.entities.PlayerIntake.update(profile.id, { sessionCode: data.sessionCode })
+        appApi.entities.PlayerIntake.update(profile.id, { sessionCode: data.sessionCode })
       ));
     }
     setActiveSessionCode(data.sessionCode);
@@ -133,7 +136,7 @@ export default function Tablet() {
     }
     setIntakeProfilesReady(false);
     setIntakeProfilesError('');
-    base44.entities.PlayerIntake.filter({}, { sort: '-created_date', limit: 500 })
+    appApi.entities.PlayerIntake.filter({}, { sort: '-created_date', limit: 500 })
       .then((result) => {
         if (active) {
           setIntakeProfiles(result.items || []);
@@ -245,7 +248,7 @@ export default function Tablet() {
         .filter((e) => ['bomb_exploded', 'bomb_timeout', 'midnight_pact', 'warrant', 'trial_verdict', 'plot_twist', 'arrest', 'heist', 'glitch'].includes(e.type))
         .map((e) => e.description || e.message || e.text || e.type)
         .slice(0, 10);
-      await base44.functions.invoke('archiveSession', {
+      await appApi.functions.invoke('archiveSession', {
         sessionCode: session.sessionCode,
         mode: state.mode,
         winner,
@@ -467,7 +470,7 @@ export default function Tablet() {
     const previous = historyRef.current.pop();
     setUndoDepth(historyRef.current.length);
     if (!previous || !session) return;
-    await base44.entities.GameSession.update(session.id, { state: previous });
+    await appApi.entities.GameSession.update(session.id, { state: previous });
     await refresh();
   }
 

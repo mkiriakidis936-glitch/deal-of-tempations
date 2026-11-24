@@ -3,31 +3,16 @@
 React (Vite) + Express + PostgreSQL. Τρέχει σε ένα service στο Railway: ο server σερβίρει το build του frontend και το API.
 
 ```
-src/        frontend (το ίδιο με πριν· το src/api/base44Client.js μιλάει πλέον με τον δικό μας server)
+src/        frontend (το src/api/apiClient.js μιλάει με τον server)
 server/     Express API: auth (JWT), entities (Postgres JSONB), realtime (SSE), functions
-scripts/    migrate-assets.mjs (εικόνες/βίντεο από Base44) και import-data.mjs (δεδομένα)
+scripts/    e2e-night.mjs (πλήρης δοκιμή μιας βραδιάς)
 ```
 
-## 0. ΠΡΙΝ κλείσεις τον λογαριασμό Base44
-
-1. **Εικόνες/βίντεο:** η μετανάστευση γίνεται σε δύο ασφαλή βήματα. Χρειάζεται το δημόσιο `DATABASE_URL` της PostgreSQL από το Railway.
-   ```bash
-   npm install
-   DATABASE_URL="postgresql://..." node scripts/migrate-assets.mjs
-   ```
-   Το πρώτο βήμα κατεβάζει κώδικα και αποθηκευμένες εικόνες/βίντεο στο `public/assets` με μοναδικά SHA-256 ονόματα και διορθώνει τα paths στον κώδικα. Δεν αλλάζει ακόμη τις εγγραφές της βάσης.
-   Κάνε commit και deploy τα νέα αρχεία. **Μόνο μετά την επιτυχή δημοσίευσή τους**, τρέξε:
-   ```bash
-   DATABASE_URL="postgresql://..." node scripts/migrate-assets.mjs --apply-database
-   ```
-   Το δεύτερο βήμα ενημερώνει συναλλακτικά τις διευθύνσεις media στα JSONB records. Αν δεν δοθεί `DATABASE_URL`, δεν ελέγχονται οι αποθηκευμένες εγγραφές της βάσης.
-2. **Δεδομένα** (ερωτηματολόγια, RSVP, περιεχόμενο, προφίλ…): κάνε export κάθε entity σε JSON και βάλε τα στο `data-export/` ως `PlayerIntake.json`, `GameContent.json` κ.λπ. (Ο φάκελος είναι στο `.gitignore` — έχει προσωπικά δεδομένα, μην τον κάνεις commit.)
-3. Σημείωσε την τιμή του secret `CONTROL_PANEL_API_KEY` αν χρησιμοποιείς το ξεχωριστό Control Panel app.
 
 ## 1. GitHub
 
 ```bash
-git init && git add . && git commit -m "Move off Base44"
+git init && git add . && git commit -m "Πρώτη έκδοση"
 git branch -M main
 git remote add origin https://github.com/<user>/<repo>.git
 git push -u origin main
@@ -49,12 +34,6 @@ git push -u origin main
 
 > Τρέξε **ένα** replica. Το realtime (SSE) κρατιέται στη μνήμη του process· με πολλά replicas οι κινητές/TV δεν θα βλέπουν ο ένας τον άλλον.
 
-## 3. Εισαγωγή των παλιών δεδομένων
-
-```bash
-# DATABASE_URL = το PUBLIC url της βάσης από το Railway (Postgres → Connect)
-DATABASE_URL="postgresql://..." node scripts/import-data.mjs
-```
 
 ## 4. Τοπική ανάπτυξη
 
@@ -65,12 +44,12 @@ npm run dev:server          # API στο :3000
 npm run dev                 # frontend στο :5173 (proxy προς το API)
 ```
 
-## Τι άλλαξε σε σχέση με το Base44
+## Σημειώσεις λειτουργίας
 
 - **Auth:** email+κωδικός με JWT. Έφυγε η επιβεβαίωση με OTP στο email και το MFA. Το «Continue with Google» δουλεύει μόνο αν βάλεις `GOOGLE_CLIENT_ID/SECRET`. Επαναφορά κωδικού: στέλνει email αν βάλεις `RESEND_API_KEY` + `MAIL_FROM`, αλλιώς τυπώνει το link στα logs του Railway.
 - **Πρόσβαση:** το tablet (`/`) και το `/admin` θέλουν admin σύνδεση. Τα `/tv`, `/play`, φόρμες και προσκλήσεις μένουν ανοιχτά. Τα ερωτηματολόγια (`PlayerIntake`, `PajamaIntake`, `BacheloretteIntake`) διαβάζονται μόνο από admin· οι ρυθμίσεις/περιεχόμενο αλλάζουν μόνο από admin. Οι κανόνες είναι στο πάνω μέρος του `server/entities.js`.
 - **Control Panel API:** νέο URL `https://<domain>/api/functions/controlPanelApi` (ίδιο header `X-Control-Panel-Key`).
-- Τα links/QR χρησιμοποιούν πλέον το domain που τρέχει η εφαρμογή (δεν είναι hard-coded στο `deal-of-game.base44.app`).
+- Τα links/QR χρησιμοποιούν το domain όπου τρέχει η εφαρμογή.
 
 ## 5. Δικές σου φωτογραφίες & βίντεο (Admin → 🖼️ Φωτογραφίες & Βίντεο)
 

@@ -1,5 +1,5 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
-import { base44, getToken } from '@/api/base44Client';
+import { appApi, getToken } from '@/api/apiClient';
 import { hydrateGameContent } from '@/lib/gameContentStore';
 
 const AuthContext = createContext();
@@ -20,7 +20,7 @@ export const AuthProvider = ({ children }) => {
     setIsLoadingPublicSettings(true);
     // Best-effort: load DB-backed game content before any screen renders.
     try { await hydrateGameContent(); } catch (e) { /* keep static defaults */ }
-    setAppPublicSettings(await base44.app.getPublicSettings());
+    setAppPublicSettings(await appApi.app.getPublicSettings());
     setIsLoadingPublicSettings(false);
     if (getToken()) await checkUserAuth();
     else { setIsLoadingAuth(false); setIsAuthenticated(false); setAuthChecked(true); }
@@ -29,12 +29,12 @@ export const AuthProvider = ({ children }) => {
   const checkUserAuth = async () => {
     try {
       setIsLoadingAuth(true);
-      const currentUser = await base44.auth.me();
+      const currentUser = await appApi.auth.me();
       setUser(currentUser);
       setIsAuthenticated(true);
     } catch (error) {
       // expired / invalid token: just behave as logged out
-      base44.auth.setToken('');
+      appApi.auth.setToken('');
       setUser(null);
       setIsAuthenticated(false);
     } finally {
@@ -46,10 +46,10 @@ export const AuthProvider = ({ children }) => {
   const logout = (shouldRedirect = true) => {
     setUser(null);
     setIsAuthenticated(false);
-    base44.auth.logout(shouldRedirect ? window.location.href : undefined);
+    appApi.auth.logout(shouldRedirect ? window.location.href : undefined);
   };
 
-  const navigateToLogin = () => base44.auth.redirectToLogin(window.location.pathname);
+  const navigateToLogin = () => appApi.auth.redirectToLogin(window.location.pathname);
 
   return (
     <AuthContext.Provider value={{

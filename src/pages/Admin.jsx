@@ -2,12 +2,11 @@ import React, { lazy, Suspense, useState, useEffect, useCallback, useRef } from 
 import SectionErrorBoundary from '@/components/shared/SectionErrorBoundary';
 import './admin-theme.css';
 import { useSearchParams } from 'react-router-dom';
-import { base44, request } from '@/api/base44Client';
+import { appApi, request } from '@/api/apiClient';
 import { getActiveSessionCode, setActiveSessionCode, subscribeActiveSession } from '@/lib/activeSession';
 import {
   LayoutDashboard, Inbox, Ticket, BarChart3, Gamepad2, Radio, AudioLines, Clapperboard, Video, Users, Layers,
-  Images, Globe, Mail, FileText, Link2, History, HardDrive, Settings, Bell, Search, RefreshCw, BookOpen,
-} from 'lucide-react';
+  Images, Globe, Mail, FileText, Link2, History, HardDrive, Settings, Bell, Search, RefreshCw, BookOpen, FlaskConical, Instagram } from 'lucide-react';
 import AdminNav, { AdminTabBar } from '@/components/admin/AdminNav';
 import AdminSessionBar from '@/components/admin/AdminSessionBar';
 const AdminContentHub = lazy(() => import('@/components/admin/AdminContentHub'));
@@ -17,22 +16,21 @@ const AdminInbox = lazy(() => import('@/components/admin/AdminInbox'));
 const AdminEventManager = lazy(() => import('@/components/admin/AdminEventManager'));
 const AdminInterestParticipation = lazy(() => import('@/components/admin/AdminInterestParticipation'));
 const AdminSettings = lazy(() => import('@/components/admin/AdminSettings'));
+const AdminSocialCard = lazy(() => import('@/components/admin/AdminSocialCard'));
+const AdminRehearsal = lazy(() => import('@/components/admin/AdminRehearsal'));
 const AdminGuide = lazy(() => import('@/components/admin/AdminGuide'));
 const AdminBackup = lazy(() => import('@/components/admin/AdminBackup'));
 const AdminSessions = lazy(() => import('@/components/admin/AdminSessions'));
 const AdminPlayers = lazy(() => import('@/components/admin/AdminPlayers'));
 const AdminLiveControl = lazy(() => import('@/components/admin/AdminLiveControl'));
-const AdminIntakes = lazy(() => import('@/components/admin/AdminIntakes'));
 const AdminShowCasting = lazy(() => import('@/components/admin/AdminShowCasting'));
 const AdminLinks = lazy(() => import('@/components/admin/AdminLinks'));
-const AdminRSVP = lazy(() => import('@/components/admin/AdminRSVP'));
 const AdminMedia = lazy(() => import('@/components/admin/AdminMedia'));
 const AdminSite = lazy(() => import('@/components/admin/AdminSite'));
 const AdminFormsBuilder = lazy(() => import('@/components/admin/AdminFormsBuilder'));
 const AdminNotifications = lazy(() => import('@/components/admin/AdminNotifications'));
 const AdminVisits = lazy(() => import('@/components/admin/AdminVisits'));
 const AdminDigitalInvitations = lazy(() => import('@/components/admin/AdminDigitalInvitations'));
-const AdminPublicSubmissions = lazy(() => import('@/components/admin/AdminPublicSubmissions'));
 const AdminProduction = lazy(() => import('@/components/admin/AdminProduction'));
 const AdminAVControlRoom = lazy(() => import('@/components/admin/AdminAVControlRoom'));
 const AdminLiveShow = lazy(() => import('@/components/admin/AdminLiveShow'));
@@ -73,7 +71,7 @@ const NAV_GROUPS = [
     tabs: [
       { id: 'events', label: 'Διοργανώσεις', icon: Ticket },
       { id: 'invitations', label: 'Προσκλήσεις', icon: Mail },
-      { id: 'forms', label: 'Φόρμες & δηλώσεις', icon: FileText },
+      { id: 'forms', label: 'Ερωτήσεις φορμών', icon: FileText },
       { id: 'interest', label: 'Ενδιαφέρον & συμμετοχή', icon: Users },
       { id: 'links', label: 'Σύνδεσμοι & QR', icon: Link2 },
     ],
@@ -84,6 +82,7 @@ const NAV_GROUPS = [
     tabs: [
       { id: 'website', label: 'Ιστοσελίδα', icon: Globe },
       { id: 'statistics', label: 'Στατιστικά & επισκέψεις', icon: BarChart3 },
+      { id: 'social', label: 'Κάρτα για social', icon: Instagram },
     ],
   },
   {
@@ -94,11 +93,14 @@ const NAV_GROUPS = [
       { id: 'notifications', label: 'Ειδοποιήσεις', icon: Bell },
       { id: 'sessions', label: 'Ιστορικό παρτίδων', icon: History },
       { id: 'backup', label: 'Αντίγραφα ασφαλείας', icon: HardDrive },
+      { id: 'rehearsal', label: 'Πρόβα 2′', icon: FlaskConical },
       { id: 'guide', label: 'Οδηγός', icon: BookOpen },
     ],
   },
 ];
 const LEGACY_TABS = {
+  intakes: 'inbox',
+  rsvp: 'inbox',
   content: 'modes',
   editor: 'modes',
   pajama: 'modes',
@@ -116,8 +118,6 @@ const LEGACY_TABS = {
   archive: 'sessions',
   recovery: 'sessions',
   visits: 'statistics',
-  intakes: 'forms',
-  rsvp: 'forms',
   blitz: 'players',
   leaderboard: 'modes',
 };
@@ -138,7 +138,7 @@ export default function Admin() {
   const loadSessions = useCallback(async () => {
     setLoading(true);
     try {
-      const { items } = await base44.entities.GameSession.filter({}, { sort: '-created_date', limit: 50 });
+      const { items } = await appApi.entities.GameSession.filter({}, { sort: '-created_date', limit: 50 });
       const next = items || [];
       sessionsRef.current = next;
       setSessions(next);
@@ -154,7 +154,7 @@ export default function Admin() {
 
   useEffect(() => {
     let mounted = true;
-    const unsubscribe = base44.entities.GameSession.subscribe((event) => {
+    const unsubscribe = appApi.entities.GameSession.subscribe((event) => {
       if (!mounted || !event?.id) return;
       if (event.type === 'delete') {
         setSessions((current) => {
@@ -254,7 +254,7 @@ export default function Admin() {
   async function handleRestartSession(session) {
     try {
       const state = session.state || {};
-      await base44.entities.GameSessionSnapshot.create({
+      await appApi.entities.GameSessionSnapshot.create({
         sessionId: session.id,
         sessionCode: session.sessionCode,
         mode: state.mode || session.mode || '',
@@ -279,7 +279,7 @@ export default function Admin() {
         safetyProfile: state.safetyProfile || null,
         ...(state.customScenario ? { customScenario: state.customScenario } : {}),
       };
-      await base44.entities.GameSession.update(session.id, { state: newState });
+      await appApi.entities.GameSession.update(session.id, { state: newState });
       setSessions((prev) => prev.map((s) => s.id === session.id ? { ...s, state: newState } : s));
       setPickedSession((prev) => (prev?.id === session.id ? { ...prev, state: newState } : prev));
     } catch (e) {
@@ -301,7 +301,15 @@ export default function Admin() {
       case 'production':
         return <AdminProduction sessions={sessions} selectedSession={activeSession} onSelect={selectSession} />;
       case 'av':
-        return <AdminAVControlRoom />;
+        return (
+          <div className="space-y-4">
+            <a href="/av-setup" target="_blank" rel="noreferrer" className="flex items-center justify-between rounded-2xl bg-[#1C1C1E] p-4 text-white">
+              <span><span className="block font-semibold">🎛️ Συσκευές ήχου & κάμερας</span><span className="text-sm text-white/60">Άνοιξε το /av-setup στη συσκευή της TV ή του Tablet: κάμερα, μικρόφωνο USB-C, κάρτα ήχου USB-C, ασύρματα ακουστικά.</span></span>
+              <span className="text-xl text-white/40">›</span>
+            </a>
+            <AdminAVControlRoom />
+          </div>
+        );
       case 'website':
         return <AdminSite />;
       case 'media':
@@ -312,11 +320,9 @@ export default function Admin() {
         return <AdminNotifications />;
       case 'forms':
         return (
-          <div className="space-y-6">
+          <div className="space-y-4">
+            <p className="text-[15px] text-white/60">Εδώ προσθέτεις δικές σου ερωτήσεις στις φόρμες. Οι αιτήσεις που στέλνουν οι καλεσμένες είναι στις «Αιτήσεις».</p>
             <AdminFormsBuilder />
-            <AdminIntakes />
-            <AdminRSVP />
-            <AdminPublicSubmissions />
           </div>
         );
       case 'statistics':
@@ -328,6 +334,10 @@ export default function Admin() {
         );
       case 'settings':
         return <AdminSettings />;
+      case 'social':
+        return <AdminSocialCard />;
+      case 'rehearsal':
+        return <AdminRehearsal />;
       case 'guide':
         return <AdminGuide />;
       case 'backup':
@@ -376,10 +386,6 @@ export default function Admin() {
         return <AdminLinks sessions={sessions} selectedSession={activeSession} />;
       case 'visits':
         return <AdminVisits />;
-      case 'intakes':
-        return <AdminIntakes />;
-      case 'rsvp':
-        return <AdminRSVP />;
       default:
         return <AdminOverview sessions={sessions} loading={loading} onNavigate={setTab} />;
     }

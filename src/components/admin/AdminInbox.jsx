@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { base44, request } from '@/api/base44Client';
+import { appApi, request } from '@/api/apiClient';
 import ComicPanel from '@/components/comic/ComicPanel';
 import ComicButton from '@/components/comic/ComicButton';
 import { modeDisplayName } from '@/data/gameConfig';
@@ -8,15 +8,13 @@ const SOURCES = [
   ['PublicFormSubmission', 'Δημόσια φόρμα'],
   ['PlayerIntake', 'Αίτηση παίκτριας'],
   ['PajamaIntake', 'Αίτηση συμμετοχής'],
-  ['BacheloretteIntake', 'Bachelorette αίτηση'],
   ['InvitationRSVP', 'Επιβεβαίωση πρόσκλησης'],
   ['VIPInvitationSubmission', 'VIP πρόσκληση'],
 ];
 const STATUSES = ['Νέο', 'Επικοινωνία', 'Επιβεβαιώθηκε', 'Απορρίφθηκε'];
-const GAME_ENTITIES = new Set(['PlayerIntake', 'PajamaIntake', 'BacheloretteIntake', 'VIPInvitationSubmission']);
+const GAME_ENTITIES = new Set(['PlayerIntake', 'PajamaIntake', 'VIPInvitationSubmission']);
 const modeName = (id) => modeDisplayName(id);
 const modesFor = (item) => {
-  if (item._entity === 'BacheloretteIntake') return ['arrest_heist'];
   if (Array.isArray(item.preferredModes) && item.preferredModes.length) return item.preferredModes;
   const single = item.vipGameMode || item.gameMode;
   return single ? [single] : item._entity === 'PajamaIntake' ? ['pajama'] : [];
@@ -38,7 +36,7 @@ export default function AdminInbox({ sessions = [] }) {
     setLoading(true);
     try {
       const results = await Promise.all(SOURCES.map(([entity]) =>
-        base44.entities[entity].filter({}, { sort: '-created_date', limit: 500 })
+        appApi.entities[entity].filter({}, { sort: '-created_date', limit: 500 })
           .then(({ items: rows }) => (rows || []).map((item) => ({ ...item, _entity: entity })))
           .catch((error) => { console.error('Inbox source failed:', entity, error); return []; })
       ));
@@ -67,7 +65,7 @@ export default function AdminInbox({ sessions = [] }) {
 
   async function updateItem(item, patch) {
     try {
-      const updated = await base44.entities[item._entity].update(item.id, patch);
+      const updated = await appApi.entities[item._entity].update(item.id, patch);
       setItems((current) => current.map((entry) => entry.id === item.id && entry._entity === item._entity ? { ...updated, _entity: item._entity } : entry));
     } catch (error) { setMessage(error.message || 'Η ενημέρωση απέτυχε.'); }
   }
@@ -78,7 +76,7 @@ export default function AdminInbox({ sessions = [] }) {
       setItems((current) => current.map((entry) => entry.id === item.id && entry._entity === item._entity
         ? { ...entry, approved, approvalStatus: approved ? 'approved' : 'pending', status: approved ? 'Επιβεβαιώθηκε' : entry.status, readAt: entry.readAt || (approved ? new Date().toISOString() : entry.readAt) }
         : entry));
-      if (approved && item.status !== 'Επιβεβαιώθηκε') base44.entities[item._entity].update(item.id, { status: 'Επιβεβαιώθηκε', readAt: item.readAt || new Date().toISOString() }).catch(() => {});
+      if (approved && item.status !== 'Επιβεβαιώθηκε') appApi.entities[item._entity].update(item.id, { status: 'Επιβεβαιώθηκε', readAt: item.readAt || new Date().toISOString() }).catch(() => {});
       setMessage(approved ? `Η ${nameFor(item)} εγκρίθηκε και εμφανίζεται στο Tablet.` : `Η έγκριση της ${nameFor(item)} ανακλήθηκε.`);
     } catch (error) { setMessage(error.message || 'Η έγκριση απέτυχε.'); }
   }
@@ -93,7 +91,7 @@ export default function AdminInbox({ sessions = [] }) {
       } else if (item._entity === 'PlayerIntake') {
         await request('DELETE', `/api/entities/player-intakes/${item.id}`);
       } else {
-        await base44.entities[item._entity].delete(item.id);
+        await appApi.entities[item._entity].delete(item.id);
       }
       setItems((current) => current.filter((entry) => !(entry.id === item.id && entry._entity === item._entity)));
     } catch (error) { setMessage(error.message || 'Η διαγραφή απέτυχε.'); }
@@ -136,7 +134,17 @@ export default function AdminInbox({ sessions = [] }) {
         <div className="flex flex-wrap items-center gap-2">
           <select value={status} onChange={(e) => updateItem(item, { status: e.target.value })} className="rounded border border-border bg-background p-2 text-xs">{STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}</select>
           {!item.readAt && <ComicButton size="sm" variant="dark" onClick={() => updateItem(item, { readAt: new Date().toISOString() })}>ΣΗΜΑΝΣΗ ΩΣ ΑΝΑΓΝΩΣΜΕΝΟ</ComicButton>}
-          {contact && <a className="rounded border border-border px-3 py-2 text-xs font-bold" href={`https://wa.me/${String(contact).replace(/[^0-9]/g, '')}?text=${encodeURIComponent('Γεια σου ' + nameFor(item) + ', επικοινωνώ σχετικά με το ενδιαφέρον σου για το Deal of Temptation.')}`} target="_blank" rel="noreferrer">WHATSAPP</a>}
+          {contact && (() => {
+            // Μετά την έγκριση: έτοιμο μήνυμα επιβεβαίωσης θέσης (WhatsApp ή SMS / email).
+            const text = item.approved
+              ? `Γεια σου ${nameFor(item)}! Η θέση σου στο Deal of Temptation${modesFor(item).length ? ` (${modesFor(item).map(modeName).join(', ')})` : ''} επιβεβαιώθηκε ✨ Σύντομα θα λάβεις διεύθυνση, ώρα και τον κωδικό της βραδιάς.`
+              : `Γεια σου ${nameFor(item)}, επικοινωνώ σχετικά με το ενδιαφέρον σου για το Deal of Temptation.`;
+            const isMail = String(contact).includes('@');
+            const href = isMail
+              ? `mailto:${contact}?subject=${encodeURIComponent('Deal of Temptation')}&body=${encodeURIComponent(text)}`
+              : `https://wa.me/${String(contact).replace(/[^0-9]/g, '')}?text=${encodeURIComponent(text)}`;
+            return <a className={`rounded px-3 py-2 text-xs font-bold ${item.approved ? 'bg-[#30D158] text-black' : 'border border-border'}`} href={href} target="_blank" rel="noreferrer">{item.approved ? (isMail ? '✉️ ΕΙΔΟΠΟΙΗΣΕ ΤΗΝ (EMAIL)' : '📲 ΕΙΔΟΠΟΙΗΣΕ ΤΗΝ (WHATSAPP)') : (isMail ? 'EMAIL' : 'WHATSAPP')}</a>;
+          })()}
           <ComicButton size="sm" variant="red" onClick={() => remove(item)}>ΔΙΑΓΡΑΦΗ</ComicButton>
         </div>
       </ComicPanel>;

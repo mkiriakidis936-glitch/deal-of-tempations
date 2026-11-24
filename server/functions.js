@@ -4,7 +4,7 @@ import { requireAdmin } from './auth.js';
 import { entityApi } from './entities.js';
 import { pool } from './db.js';
 
-// ---- port of base44/shared/archiveLogic.ts ----
+// ---- port of appApi/shared/archiveLogic.ts ----
 async function archiveSessionData({ sessionCode, mode, winner, playerNames, stats, confessions, highlights, showScenes, episodeSchedule, eventHistory }) {
   const eventDate = new Date().toISOString().split('T')[0];
   const names = [...new Set((Array.isArray(playerNames) ? playerNames : []).filter((name) => typeof name === 'string' && name.trim()).map((name) => name.trim()))];
@@ -170,7 +170,7 @@ export function functionRoutes() {
   });
 
   // GET /api/functions/controlPanelApi  — read-only, protected by X-Control-Panel-Key
-  // (same payload as the old Base44 function, for the separate CONTROL PANEL app)
+  // (για την ξεχωριστή εφαρμογή CONTROL PANEL)
   r.get('/controlPanelApi', async (req, res) => {
     const expected = process.env.CONTROL_PANEL_API_KEY || '';
     const provided = String(req.get('x-control-panel-key') || '');

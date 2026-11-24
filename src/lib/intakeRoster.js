@@ -21,7 +21,6 @@ export function buildRoster(sources) {
   };
   for (const item of sources.player || []) push(item, 'PlayerIntake', item.name, item.preferredModes?.length ? item.preferredModes : [item.vipGameMode || item.gameMode || 'classic']);
   for (const item of sources.pajama || []) push(item, 'PajamaIntake', item.name, item.preferredModes || []);
-  for (const item of sources.heist || []) [item.name, item.leaderName, item.opponentName].forEach((name) => push(item, 'BacheloretteIntake', name, ['arrest_heist']));
   for (const item of sources.vip || []) push(item, 'VIPInvitationSubmission', item.name, [item.gameMode || 'classic']);
   return rows.filter((row) => !row.rejected);
 }

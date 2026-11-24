@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { base44, request } from '@/api/base44Client';
+import { appApi, request } from '@/api/apiClient';
 
 export default function TVProductionOutput({ sessionCode }) {
   const [cue, setCue] = useState(null);
@@ -22,7 +22,7 @@ export default function TVProductionOutput({ sessionCode }) {
     const refresh = async () => {
       if (!sessionCode) return;
       try {
-        const { items = [] } = await base44.entities.ProductionCue.filter({ sessionCode }, { limit: 1 });
+        const { items = [] } = await appApi.entities.ProductionCue.filter({ sessionCode }, { limit: 1 });
         if (alive && activeSessionRef.current === sessionCode) {
           const next = items[0] || null;
           cueRef.current = next;
@@ -36,7 +36,7 @@ export default function TVProductionOutput({ sessionCode }) {
     };
 
     refresh();
-    const off = base44.entities.ProductionCue.subscribe((event) => {
+    const off = appApi.entities.ProductionCue.subscribe((event) => {
       if (event?.type === 'resync' || event?.data?.sessionCode === sessionCode) refresh();
     }, { sessionCode });
 

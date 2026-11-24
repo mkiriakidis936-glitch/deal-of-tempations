@@ -3,7 +3,7 @@ import ComicPanel from '@/components/comic/ComicPanel';
 import { Image } from '@/components/ui/image';
 import { GAME_MODES, INTENSITY_LEVELS } from '@/data/gameConfig';
 import { ART } from '@/data/brandArt';
-import { base44, request } from '@/api/base44Client';
+import { appApi, request } from '@/api/apiClient';
 
 export default function AdminDashboard() {
   const [stats, setStats] = useState(null);
@@ -19,7 +19,7 @@ export default function AdminDashboard() {
       .finally(() => { if (mounted) setLoading(false); });
 
     loadStats();
-    const unsubscribe = base44.entities.GameSession.subscribe(() => {
+    const unsubscribe = appApi.entities.GameSession.subscribe(() => {
       if (refreshTimer) clearTimeout(refreshTimer);
       refreshTimer = setTimeout(() => { if (mounted) loadStats(); }, 350);
     });
@@ -56,7 +56,7 @@ export default function AdminDashboard() {
   const cards = [
     { label: 'Σύνολο Συνεδριών', value: total, icon: '🎮', color: 'bg-primary' },
     { label: 'Ενεργές · 24 ώρες', value: stats.active, icon: '▶️', color: 'bg-tarot-forest' },
-    { label: 'Ολοκληρωμένες', value: stats.completed, icon: '🏆', color: 'bg-tarot-royal/60' },
+    { label: 'Ολοκληρωμένες (και αρχειοθετημένες)', value: stats.completed, icon: '🏆', color: 'bg-tarot-royal/60' },
     { label: 'Αδρανείς · άνω 24 ωρών', value: stats.inactive, icon: '⏸', color: 'bg-secondary' },
     { label: 'Συμμετοχές Παικτριών', value: stats.player_participations, icon: '👥', color: 'bg-tarot-wine/60' },
     { label: 'Μοναδικές Παίκτριες με αποθηκευμένο προφίλ', value: stats.unique_players ?? 0, icon: '🧍', color: 'bg-secondary' },

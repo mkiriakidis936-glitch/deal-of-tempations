@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { base44 } from '@/api/base44Client';
+import { appApi } from '@/api/apiClient';
 import ComicPanel from '@/components/comic/ComicPanel';
 import ComicButton from '@/components/comic/ComicButton';
 import AdminSettingVersionHistory from '@/components/admin/AdminSettingVersionHistory';
@@ -15,7 +15,7 @@ export default function AdminGlobalDesign() {
   const [message, setMessage] = useState('');
 
   useEffect(() => {
-    base44.entities.AppSetting.filter({ key: GLOBAL_DESIGN_KEY }, { limit: 1 }).then(({ items }) => {
+    appApi.entities.AppSetting.filter({ key: GLOBAL_DESIGN_KEY }, { limit: 1 }).then(({ items }) => {
       const found = items?.[0] || null;
       setRecord(found);
       if (found?.value) setValue({ ...GLOBAL_DESIGN_DEFAULTS, ...found.value });
@@ -33,8 +33,8 @@ export default function AdminGlobalDesign() {
       const payload = { ...value };
       if (record?.id) await saveAdminSettingVersion(GLOBAL_DESIGN_KEY, record.value || GLOBAL_DESIGN_DEFAULTS);
       const saved = record?.id
-        ? await base44.entities.AppSetting.update(record.id, { value: payload })
-        : await base44.entities.AppSetting.create({ key: GLOBAL_DESIGN_KEY, value: payload });
+        ? await appApi.entities.AppSetting.update(record.id, { value: payload })
+        : await appApi.entities.AppSetting.create({ key: GLOBAL_DESIGN_KEY, value: payload });
       if (saved?.id) setRecord(saved);
       applySavedGlobalDesign(payload);
       window.dispatchEvent(new CustomEvent('admin-global-design-updated', { detail: payload }));
@@ -55,8 +55,8 @@ export default function AdminGlobalDesign() {
     try {
       if (record?.id) await saveAdminSettingVersion(GLOBAL_DESIGN_KEY, record.value || GLOBAL_DESIGN_DEFAULTS);
       const saved = record?.id
-        ? await base44.entities.AppSetting.update(record.id, { value: payload })
-        : await base44.entities.AppSetting.create({ key: GLOBAL_DESIGN_KEY, value: payload });
+        ? await appApi.entities.AppSetting.update(record.id, { value: payload })
+        : await appApi.entities.AppSetting.create({ key: GLOBAL_DESIGN_KEY, value: payload });
       if (saved?.id) setRecord(saved);
       applySavedGlobalDesign(payload);
       window.dispatchEvent(new CustomEvent('admin-global-design-updated', { detail: payload }));

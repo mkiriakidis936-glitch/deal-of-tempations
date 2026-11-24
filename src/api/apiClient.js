@@ -1,7 +1,5 @@
-// Drop-in replacement for the old Base44 SDK client.
-// Keeps the same `base44.entities / auth / functions / app` surface so the
-// ~45 files that import `@/api/base44Client` keep working unchanged,
-// but talks to our own Express + Postgres backend (see /server).
+// Η σύνδεση της εφαρμογής με τον δικό μας server (Express + Postgres).
+// Περιέχει: appApi.entities (δεδομένα + realtime), auth, functions.
 
 const API_URL = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
 const TOKEN_KEY = 'auth_token';
@@ -240,5 +238,5 @@ const app = {
   getPublicSettings: async () => ({ id: 'deal-of-temptation', public_settings: {} }),
 };
 
-export const base44 = { entities, auth, functions, app };
-export default base44;
+export const appApi = { entities, auth, functions, app };
+export default appApi;

@@ -14,7 +14,7 @@ export const WARRANT_CARDS = [
   { id: 'WARR-10', name: 'Ένταλμα Διπλής Ποινής', icon: '⚡', desc: 'Η παίκτρια παίρνει +2 ποινές στη σκάλα αντί για 1. Αν είναι ήδη δεμένη, πάει απευθείας στο Stage 2.' },
 ];
 
-// ===== GLITCH CARDS (Base44 Glitch) =====
+// ===== GLITCH CARDS (Glitch) =====
 export const GLITCH_CARDS = [
   { id: 'GLT-01', name: 'Barefoot Malfunction', icon: '🦶', desc: 'Όλες οι παίκτριες που φοράνε ακόμα κάλτσες ή παπούτσια, βγάζουν αμέσως 1 αντικείμενο από τα πόδια τους.' },
   { id: 'GLT-02', name: 'Double Penalty Overclock', icon: '⚡', desc: 'Για τον επόμενο 1 γύρο, κάθε λάθος απάντηση πηδάει 2 στάδια στη Σκάλα Ποινών αντί για 1.' },

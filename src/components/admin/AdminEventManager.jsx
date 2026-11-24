@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { base44 } from '@/api/base44Client';
+import { appApi } from '@/api/apiClient';
 import ComicPanel from '@/components/comic/ComicPanel';
 import ComicButton from '@/components/comic/ComicButton';
 
@@ -52,11 +52,11 @@ export default function AdminEventManager() {
       let roomCode = '';
       for (let attempt = 0; attempt < 12 && !roomCode; attempt += 1) {
         const candidate = Array.from({ length: 4 }, () => 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'[Math.floor(Math.random() * 32)]).join('');
-        const { items } = await base44.entities.DotEvent.filter({ room_code: candidate }, { limit: 1 });
+        const { items } = await appApi.entities.DotEvent.filter({ room_code: candidate }, { limit: 1 });
         if (!items?.length) roomCode = candidate;
       }
       if (!roomCode) throw new Error('Δεν δημιουργήθηκε μοναδικός κωδικός.');
-      await base44.entities.DotEvent.create({ title: newTitle.trim() || (newType === 'villa_48h' ? '48H VILLA' : 'ONE NIGHT'), type: newType, status: 'prep', phase: 'arrival', room_code: roomCode, notes: '', interestIds: [], expectedCount: 0 });
+      await appApi.entities.DotEvent.create({ title: newTitle.trim() || (newType === 'villa_48h' ? '48H VILLA' : 'ONE NIGHT'), type: newType, status: 'prep', phase: 'arrival', room_code: roomCode, notes: '', interestIds: [], expectedCount: 0 });
       setNewTitle('');
       setMessage(`Δημιουργήθηκε νέο Event με κωδικό ${roomCode}.`);
       await loadEvents();
@@ -69,7 +69,7 @@ export default function AdminEventManager() {
 
   async function loadEvents() {
     try {
-      const { items } = await base44.entities.DotEvent.filter({}, { sort: '-created_date', limit: 200 });
+      const { items } = await appApi.entities.DotEvent.filter({}, { sort: '-created_date', limit: 200 });
       setEvents(items || []);
     } catch (error) {
       setMessage(error.message || 'Δεν φορτώθηκαν τα Events.');
@@ -80,7 +80,7 @@ export default function AdminEventManager() {
 
   useEffect(() => {
     loadEvents();
-    const off = base44.entities.DotEvent.subscribe(() => loadEvents());
+    const off = appApi.entities.DotEvent.subscribe(() => loadEvents());
     return () => off?.();
   }, []);
 
@@ -88,7 +88,7 @@ export default function AdminEventManager() {
     setSavingId(event.id);
     setMessage('');
     try {
-      const updated = await base44.entities.DotEvent.update(event.id, patch);
+      const updated = await appApi.entities.DotEvent.update(event.id, patch);
       setEvents((current) => current.map((item) => item.id === event.id ? updated : item));
       setMessage('Το Event ενημερώθηκε.');
     } catch (error) {

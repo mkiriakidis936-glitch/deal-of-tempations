@@ -33,6 +33,17 @@ export const NEW_MODES = [
     actDurations: { lounge: 105 },
     minutes: 105,
   },
+  {
+    id: 'villa_takeover',
+    name: 'VILLA TAKEOVER 48/72',
+    icon: '🏝️',
+    desc: 'Πολυήμερο ψηφιακό παιχνίδι 18+ σε Villa / Airbnb: 48 ώρες σε 3 κύκλους (+24 ώρες After Dark), ταμπλό 48 τετραγώνων, μυστικοί ρόλοι, συμμαχίες, Truth or Dare 18+, Night Sock Heist, κωδικός 4 ψηφίων και Queen of the Villa.',
+    min: 3,
+    max: 8,
+    acts: ['villa'],
+    actDurations: { villa: 2880 },
+    minutes: 2880,
+  },
 
 ];
 
@@ -81,6 +92,14 @@ export const MODE_MEDIA_SECTIONS = {
     { id: 'escape', label: 'Grand Heist Escape', filename: 'heist_escape.jpg' },
     { id: 'victory', label: 'Νίκη & στέψη', filename: 'heist_victory.jpg' },
   ],
+  villa_takeover: [
+    { id: 'arrival', label: 'Κύκλος 1 — The Arrival', filename: 'villa_cycle1.jpg' },
+    { id: 'temptation', label: 'Κύκλος 2 — The Temptation', filename: 'villa_cycle2.jpg' },
+    { id: 'takeover', label: 'Κύκλος 3 — The Final Takeover', filename: 'villa_cycle3.jpg' },
+    { id: 'afterdark', label: 'After Dark — The Final 24', filename: 'villa_afterdark.jpg' },
+    { id: 'night', label: 'Night Mode / Night Sock Heist', filename: 'villa_night.jpg' },
+    { id: 'crown', label: 'Grand Finale & Queen of the Villa', filename: 'villa_crown.jpg' },
+  ],
   marathon_4h: [
     { id: 'phase1', label: 'Φάση 1 — Warm-up & Slipper Grabbing', filename: 'lounge_phase1.jpg' },
     { id: 'phase2', label: 'Φάση 2 — The Handcuff Escalation', filename: 'lounge_phase2.jpg' },
@@ -113,6 +132,7 @@ export const MODE_THEMES = {
   pedi_glam: { bg: '#000000', accent: '#E8C26B', accent2: '#F7E3A8', danger: '#FF453A' },
   pedi_extended: { bg: '#000000', accent: '#E8C26B', accent2: '#F7E3A8', danger: '#FF453A' },
   marathon_4h: { bg: '#000000', accent: '#D9B45B', accent2: '#F7E3A8', danger: '#FF453A' },
+  villa_takeover: { bg: '#000000', accent: '#E8C26B', accent2: '#F7E3A8', danger: '#FF453A' },
 };
 
 export const ACT_META = {
@@ -122,6 +142,7 @@ export const ACT_META = {
   morning: { title: 'Act 4 · Extended Morning Escape & VIP Vault', minutes: 45 },
   beach: { title: 'Beach Bar Home Lockdown', minutes: 150 },
   lounge: { title: 'The Ultimate Lounge Lockdown', minutes: 105 },
+  villa: { title: 'Villa Takeover · 48/72', minutes: 2880 },
 };
 
 

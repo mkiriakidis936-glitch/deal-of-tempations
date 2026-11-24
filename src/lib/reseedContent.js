@@ -1,6 +1,6 @@
 import * as GCFG from '@/data/gameConfig';
 import * as GCNT from '@/data/gameContent';
-import { base44 } from '@/api/base44Client';
+import { appApi } from '@/api/apiClient';
 
 // Χτίζει τον πίνακα εγγραφών GameContent από τα static αρχεία (ίδιο mapping με την αρχική σπορά).
 export function buildGameContentRecords() {
@@ -70,12 +70,12 @@ export async function reseedGameContent(sourceRecords) {
   // καθαρισμός
   let more = true;
   while (more) {
-    const res = await base44.entities.GameContent.deleteMany({});
+    const res = await appApi.entities.GameContent.deleteMany({});
     more = res?.has_more;
   }
   // δημιουργία σε παρτίδες
   for (let i = 0; i < records.length; i += 400) {
-    await base44.entities.GameContent.bulkCreate(records.slice(i, i + 400));
+    await appApi.entities.GameContent.bulkCreate(records.slice(i, i + 400));
   }
   return records.length;
 }

@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { request } from '@/api/base44Client';
+import { request } from '@/api/apiClient';
 import ComicPanel from '@/components/comic/ComicPanel';
 import ComicButton from '@/components/comic/ComicButton';
 
@@ -31,7 +31,7 @@ export default function AdminVisits() {
       <ComicPanel className="bg-card flex items-center justify-between gap-2 flex-wrap">
         <div>
           <div className="font-heading text-xl text-primary">📈 ΕΠΙΣΚΕΨΕΙΣ ΣΤΗΝ ΙΣΤΟΣΕΛΙΔΑ</div>
-          <div className="text-xs text-foreground/70">Συγκεντρώνει όλες τις δημόσιες σελίδες και τα event pages. Μετράει 1 επίσκεψη ανά άτομο και σελίδα ανά 30 λεπτά.</div>
+          <div className="text-xs text-foreground/70">Όλες οι δημόσιες σελίδες: Site (κάθε εμπειρία), φόρμες, VIP πρόσκληση, promo. 1 επίσκεψη ανά επισκέπτρια και σελίδα κάθε 30 λεπτά. <b>Δεν μετράνε</b> οι συσκευές όπου είσαι συνδεδεμένη στο Admin· για δοκιμή άνοιξε το site σε ιδιωτικό παράθυρο.</div>
         </div>
         <ComicButton variant="dark" size="sm" onClick={load}>🔄 Ανανέωση</ComicButton>
       </ComicPanel>
@@ -39,7 +39,7 @@ export default function AdminVisits() {
       {err && <div className="text-sm font-bold text-red-400">{err}</div>}
 
       <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-        <Stat label="ΣΥΝΟΛΟ ΕΠΙΣΚΕΨΕΩΝ ΙΣΤΟΣΕΛΙΔΑΣ" value={s?.views} />
+        <Stat label="ΣΥΝΟΛΟ ΕΠΙΣΚΕΨΕΩΝ" value={s?.views} />
         <Stat label="ΜΟΝΑΔΙΚΟΙ ΕΠΙΣΚΕΠΤΕΣ" value={s?.visitors} />
         <Stat label="ΣΗΜΕΡΑ" value={s?.today} />
         <Stat label="ΤΕΛΕΥΤΑΙΕΣ 7 ΜΕΡΕΣ" value={s?.week} />

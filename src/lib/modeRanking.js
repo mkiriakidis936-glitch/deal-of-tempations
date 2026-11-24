@@ -9,6 +9,7 @@ export const rankPlayers = (players = [], mg = {}) => [...players].sort((a, b) =
 export function championOf(players = [], mg = {}) {
   const find = (id) => players.find((p) => p.id === id);
   if (mg.bb?.queen && find(mg.bb.queen)) return { player: find(mg.bb.queen), title: 'Beach Queen' };
+  if (mg.villaQueen && find(mg.villaQueen)) return { player: find(mg.villaQueen), title: 'Queen of the Villa' };
   if (mg.loungeQueen && find(mg.loungeQueen)) return { player: find(mg.loungeQueen), title: 'Ultimate Pajama Police Queen' };
   const top = rankPlayers(players, mg)[0];
   return top ? { player: top, title: mg.lockdownResult === 'won' ? 'Απόδραση — VIP Vault' : 'Νικήτρια' } : null;
@@ -19,4 +20,20 @@ export function finalStandings(players = [], mg = {}) {
   const champion = championOf(players, mg)?.player;
   const ranked = rankPlayers(players, mg);
   return champion ? [champion, ...ranked.filter((p) => p.id !== champion.id)] : ranked;
+}
+
+// Ζωντανή κατάταξη για την TV (ανάμεσα στις φάσεις), για κάθε είδος mode.
+export function liveStandings(state = {}) {
+  const players = state.players || [];
+  const mg = state.mg || {};
+  if (state.mode === 'arrest_heist') {
+    return [['A', '💖 Team Alpha'], ['B', '💎 Team Beta']]
+      .map(([id, name]) => ({ id, name, value: state[id === 'A' ? 'teamA' : 'teamB']?.points || 0, unit: 'πόντοι' }))
+      .sort((a, b) => b.value - a.value);
+  }
+  if (state.mode === 'classic') {
+    return [...players].sort((a, b) => (b.bounty || 0) - (a.bounty || 0)).slice(0, 5)
+      .map((p) => ({ id: p.id, name: p.name, value: (p.bounty || 0).toLocaleString('el-GR'), unit: '€' }));
+  }
+  return rankPlayers(players, mg).slice(0, 5).map((p) => ({ id: p.id, name: p.name, value: pointsOf(mg, p.id), unit: 'πόντοι' }));
 }

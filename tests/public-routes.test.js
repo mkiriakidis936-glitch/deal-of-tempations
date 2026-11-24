@@ -39,23 +39,9 @@ test('mode submissions retain Event identity and Tablet filters by that Event', 
 
 
 
-test('Bachelorette intake submissions can be approved and only approved players enter Arrest & Heist', () => {
-  const server = read('../server/entities.js');
-  const setup = read('../src/components/tablet/SetupScreen.jsx');
-  assert.match(server, /'BacheloretteIntake', 'VIPInvitationSubmission'/);
-  assert.match(setup, /sourceEntity: 'BacheloretteIntake', modeIds: \['arrest_heist'\]/);
-  assert.match(setup, /scopeToEvent\(heistRes\.items\)\.filter\(\(item\) => item\.approved === true\)/);
-  assert.match(setup, /BacheloretteIntake\.subscribe\(refresh\)/);
-});
-
-
-
-
-test('Admin can approve Arrest & Heist intake directly from its form record', () => {
-  const adminIntakes = read('../src/components/admin/AdminIntakes.jsx');
-  assert.match(adminIntakes, /intake-approvals\/BacheloretteIntake/);
-  assert.match(adminIntakes, /handleApproveBach/);
-  assert.match(adminIntakes, /ΕΓΚΡΙΣΗ & ΠΡΟΣΘΗΚΗ ΣΤΟ TABLET/);
+test('Admin approves every kind of application (incl. Arrest & Heist) from the Inbox', () => {
+  const inbox = read('../src/components/admin/AdminInbox.jsx');
+  assert.match(inbox, /intake-approvals\/\$\{item\._entity\}/);
 });
 
 
@@ -74,7 +60,7 @@ test('mobile player heartbeat is validated and visible in live Admin presence', 
   assert.match(server, /PLAYER_PRESENCE_TTL_MS = 45_000/);
   assert.match(server, /broadcast\('PlayerPresence'/);
   assert.match(play, /\/api\/entities\/player-presence/);
-  assert.match(adminPlayers, /base44\.entities\.PlayerPresence\.subscribe/);
+  assert.match(adminPlayers, /appApi\.entities\.PlayerPresence\.subscribe/);
   assert.match(adminPlayers, /ΣΥΝΔΕΔΕΜΕΝΗ/);
 });
 
@@ -128,12 +114,13 @@ test('Tablet: μετράει σωστά ποιες συμπλήρωσαν φόρ
       { id: 'a', name: 'Άννα', approved: true, preferredModes: ['classic', 'lockdown'] },
       { id: 'b', name: 'Βίκυ', approved: false, gameMode: 'classic' },
       { id: 'c', name: 'Γιώτα', approved: true, gameMode: 'marathon' },
+      { id: 'f', name: 'Ελένη', approved: true, gameMode: 'arrest_heist' },
+      { id: 'z', name: 'Ζωή', approved: true, gameMode: 'arrest_heist' },
     ],
     pajama: [
       { id: 'd', name: 'Δήμητρα', approved: true, preferredModes: ['beach_bar'] },
       { id: 'e', name: 'άννα ', approved: true, preferredModes: ['lockdown'] },
     ],
-    heist: [{ id: 'f', name: 'Ελένη', leaderName: 'Ζωή', approved: true }],
     vip: [{ id: 'g', name: 'Ήρα', gameMode: 'marathon_4h', approvalStatus: 'rejected' }],
   });
   const by = Object.fromEntries(modeCounts(roster).map((row) => [row.id, row]));

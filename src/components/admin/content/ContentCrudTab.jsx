@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import CardPreviewPair, { cardFromItem } from '@/components/admin/CardPreviewPair';
-import { base44 } from '@/api/base44Client';
+import { appApi } from '@/api/apiClient';
 import ComicPanel from '@/components/comic/ComicPanel';
 import ComicButton from '@/components/comic/ComicButton';
 
@@ -68,7 +68,7 @@ export default function ContentCrudTab({ category }) {
     setLoading(true);
     setError('');
     try {
-      const { items } = await base44.entities.GameContent.filter(
+      const { items } = await appApi.entities.GameContent.filter(
         { category: id },
         { sort: 'order', limit: 500 }
       );
@@ -85,7 +85,7 @@ export default function ContentCrudTab({ category }) {
   const versionKey = `admin_content_versions_${id}`;
   const loadVersions = useCallback(async () => {
     try {
-      const result = await base44.entities.AppSetting.filter({ key: versionKey }, { limit: 1 });
+      const result = await appApi.entities.AppSetting.filter({ key: versionKey }, { limit: 1 });
       const found = result.items?.[0] || null;
       setVersionRecord(found);
       setVersions(found?.value?.items || []);
@@ -107,8 +107,8 @@ export default function ContentCrudTab({ category }) {
     };
     const next = [snapshot, ...versions].slice(0, 30);
     const value = { items: next };
-    if (versionRecord?.id) await base44.entities.AppSetting.update(versionRecord.id, { value });
-    else setVersionRecord(await base44.entities.AppSetting.create({ key: versionKey, value }));
+    if (versionRecord?.id) await appApi.entities.AppSetting.update(versionRecord.id, { value });
+    else setVersionRecord(await appApi.entities.AppSetting.create({ key: versionKey, value }));
     setVersions(next);
   }
 
@@ -121,9 +121,9 @@ export default function ContentCrudTab({ category }) {
         || records.find((item) => item.itemId === version.itemId);
       if (current) {
         await saveVersion(current);
-        await base44.entities.GameContent.update(current.id, { data: version.data });
+        await appApi.entities.GameContent.update(current.id, { data: version.data });
       } else {
-        await base44.entities.GameContent.create({
+        await appApi.entities.GameContent.create({
           category: id, itemId: String(version.itemId || `restored-${Date.now()}`),
           data: version.data, order: records.length,
         });
@@ -165,7 +165,7 @@ export default function ContentCrudTab({ category }) {
       if (editing.id) {
         const previous = records.find((rec) => rec.id === editing.id);
         if (previous) await saveVersion(previous);
-        await base44.entities.GameContent.update(editing.id, { data: payload });
+        await appApi.entities.GameContent.update(editing.id, { data: payload });
       } else {
         const order = shape === 'list' || shape === 'stringList' ? records.length : 0;
         const itemId = shape === 'list'
@@ -173,7 +173,7 @@ export default function ContentCrudTab({ category }) {
           : shape === 'stringList'
             ? `s${order}`
             : 'main';
-        await base44.entities.GameContent.create({ category: id, itemId: String(itemId), data: payload, order });
+        await appApi.entities.GameContent.create({ category: id, itemId: String(itemId), data: payload, order });
       }
       setEditing(null);
       await load();
@@ -188,7 +188,7 @@ export default function ContentCrudTab({ category }) {
     if (!confirm('Διαγραφή;')) return;
     try {
       await saveVersion(rec);
-      await base44.entities.GameContent.delete(rec.id);
+      await appApi.entities.GameContent.delete(rec.id);
       await load();
     } catch (e) {
       setError('Διαγραφή: ' + (e.message || 'σφάλμα'));

@@ -2,12 +2,12 @@ import crypto from 'node:crypto';
 import express from 'express';
 import { query, pool } from './db.js';
 import { requireAdmin, hasStreamTicket } from './auth.js';
-import { notifyNewSubmission, notifyPlayerMission } from './push.js';
+import { notifyNewSubmission, notifyPlayerMission, notifyPlayerAlert } from './push.js';
 import { isValidConsentEntry } from '../src/lib/consent.js';
 
-// Entities that used to live in base44/entities/*.jsonc
+// Entities that used to live in appApi/entities/*.jsonc
 export const ENTITIES = [
-  'Achievement', 'AppSetting', 'BacheloretteIntake', 'BlackmailVault', 'Chronicle', 'GameContent',
+  'Achievement', 'AppSetting', 'BlackmailVault', 'Chronicle', 'GameContent',
   'DotEvent', 'GameSession', 'GameSessionSnapshot', 'Haunting', 'Interest', 'InvitationRSVP', 'Memorial', 'Participation', 'PajamaContent', 'PajamaIntake',
   'PlayerIntake', 'PlayerPresence', 'PlayerProfile', 'SessionArchive', 'VIPInvitation', 'VIPInvitationSubmission',
   'PublicFormSubmission', 'VIPAccessSession', 'ShowProduction', 'ProductionConsent', 'ProductionCue',
@@ -26,7 +26,6 @@ const rules = {
   PlayerIntake:       { read: ADMIN, create: ADMIN, update: ADMIN, delete: ADMIN },
   PlayerPresence:     { read: ADMIN, create: ADMIN, update: ADMIN, delete: ADMIN },
   PajamaIntake:       { read: ADMIN, update: ADMIN, delete: ADMIN },
-  BacheloretteIntake: { read: ADMIN, create: ADMIN, update: ADMIN, delete: ADMIN },
   InvitationRSVP:     { read: ADMIN, update: ADMIN, delete: ADMIN },
   VIPInvitation: { read: ADMIN, create: ADMIN, update: ADMIN, delete: ADMIN },
   VIPInvitationSubmission: { read: ADMIN, create: ADMIN, update: ADMIN, delete: ADMIN },
@@ -326,6 +325,7 @@ export function validatePlayerPatch(current, patch, playerId) {
       'midnight_pass', 'lockdown_exit_code', 'morning_clue', 'morning_code',
       'beach_checkin', 'beach_finale_response', 'beach_freeze_loser', 'beach_wheel_spin', 'beach_wheel_done', 'beach_wheel_again', 'beach_truth_response',
       'lounge_code', 'lounge_mission_done', 'lounge_roll',
+      'villa_code', 'villa_vote', 'villa_quiet', 'villa_response',
     ]);
     let validAction = Object.keys(next).length === 1 && isObject(action) &&
       action.playerId === playerId && actionTypes.has(action.type) && Number.isFinite(action.at);
@@ -336,6 +336,10 @@ export function validatePlayerPatch(current, patch, playerId) {
     if (validAction && action.type === 'morning_clue') validAction = Number.isInteger(action.index) && action.index >= 0 && action.index < 4;
     if (validAction && action.type === 'morning_code') validAction = /^\d{4}$/.test(String(action.code || ''));
     if (validAction && action.type === 'lounge_code') validAction = /^\d{4}$/.test(String(action.code || ''));
+    if (validAction && action.type === 'villa_code') validAction = /^\d{4}$/.test(String(action.code || ''));
+    if (validAction && action.type === 'villa_vote') validAction = validTarget(action.target);
+    if (validAction && action.type === 'villa_quiet') validAction = typeof action.value === 'boolean';
+    if (validAction && action.type === 'villa_response') validAction = ['done', 'pass'].includes(action.value);
     // Consent check-in: κάθε παίκτρια γράφει ΜΟΝΟ τη δική της καταχώρηση, και μόνο πριν ξεκινήσει το παιχνίδι.
     const consentPlayers = next.consent?.players;
     const consentPatch = Object.keys(next).length === 1 && isObject(next.consent) && Object.keys(next.consent).length === 1 &&
@@ -437,6 +441,22 @@ export function sanitizePublicSession(record, playerId = null) {
     if (!lg.betrayRevealed && Array.isArray(lg.betrayals)) lg.betrayals = lg.betrayals.map(() => ({}));
     state.mg = { ...state.mg, lounge: lg };
   }
+  if (isObject(state.mg?.villa)) {
+    // Villa Takeover: κωδικός, ρόλοι, ενδείξεις, συμμαχίες και προσωπικές ειδοποιήσεις — μόνο για την ίδια την παίκτρια.
+    const v = state.mg.villa;
+    const ownClues = playerId && Array.isArray(v.clues?.[playerId]) ? v.clues[playerId] : [];
+    state.mg = { ...state.mg, villa: {
+      ...v,
+      code: undefined,
+      myDigits: Object.fromEntries(ownClues.map((idx) => [idx, String(v.code || '')[idx]])),
+      roles: playerId && v.roles?.[playerId] ? { [playerId]: v.roles[playerId] } : {},
+      clues: playerId && v.clues?.[playerId] ? { [playerId]: v.clues[playerId] } : {},
+      alliances: (Array.isArray(v.alliances) ? v.alliances : []).filter((a) => playerId && Array.isArray(a?.members) && a.members.includes(playerId)),
+      alerts: (Array.isArray(v.alerts) ? v.alerts : []).filter((a) => a?.to === 'all' || (playerId && a?.to === playerId)),
+      vote: isObject(v.vote) ? { ...v.vote, votes: Object.fromEntries(Object.keys(v.vote.votes || {}).map((id, i) => (playerId && id === playerId ? [id, v.vote.votes[id]] : [`__redacted_${i}`, true]))) } : v.vote,
+      attempts: (Array.isArray(v.attempts) ? v.attempts : []).map((a) => ({ pid: a?.pid, ok: !!a?.ok, at: a?.at })),
+    } };
+  }
   if (state.mg?.lounge?.finale?.code) state.mg = { ...state.mg, lounge: { ...state.mg.lounge, finale: { ...state.mg.lounge.finale, code: undefined } } };
   if (state.pajama && isObject(state.pajama)) {
     state.pajama = {
@@ -524,7 +544,7 @@ function orderBy(sort) {
   return `(CASE WHEN data->>'${field}' ~ '^-?[0-9]+(\\.[0-9]+)?$' THEN (data->>'${field}')::numeric END) ${dir} NULLS LAST, data->>'${field}' ${dir}, id ${dir}`;
 }
 
-// ---------- where (equality filters, like the Base44 SDK usage in this app) ----------
+// ---------- where (φίλτρα ισότητας στα πεδία της εγγραφής) ----------
 function buildWhere(entity, q, params) {
   params.push(entity);
   let sql = `entity = $${params.length}`;
@@ -719,7 +739,7 @@ export function entityRoutes() {
     next();
   });
   // Public forms are open to everyone; cap how many submissions one IP can send so bots can't flood the DB.
-  const FORM_ENTITIES = new Set(['PlayerIntake', 'PajamaIntake', 'BacheloretteIntake', 'InvitationRSVP', 'VIPInvitationSubmission', 'ProductionConsent']);
+  const FORM_ENTITIES = new Set(['PlayerIntake', 'PajamaIntake', 'InvitationRSVP', 'VIPInvitationSubmission', 'ProductionConsent']);
   const formBuckets = new Map();
   const formLimit = (req, res, next) => {
     if (isAdmin(req) || !FORM_ENTITIES.has(req.entity)) return next();
@@ -1013,7 +1033,7 @@ export function entityRoutes() {
           !allowedPreferences.every((key) => ['yes', 'no'].includes(answers.activityPreferences[key] || 'no'))) {
         return res.status(400).json({ error: 'Έλεγξε τις απαντήσεις της VIP φόρμας και δοκίμασε ξανά.' });
       }
-      const allowedGameModes = ['classic', 'marathon', 'arrest_heist', 'pajama', 'pedi_glam', 'pedi_extended', 'lockdown', 'beach_bar', 'marathon_4h'];
+      const allowedGameModes = ['classic', 'marathon', 'arrest_heist', 'pajama', 'pedi_glam', 'pedi_extended', 'lockdown', 'beach_bar', 'marathon_4h', 'villa_takeover'];
       const gameMode = String(body.gameMode || invitations[0].data.gameMode || '');
       if (!allowedGameModes.includes(gameMode)) return res.status(400).json({ error: 'Επίλεξε ένα έγκυρο Mode παιχνιδιού.' });
       const answerLabels = {
@@ -1221,10 +1241,6 @@ export function entityRoutes() {
         "DELETE FROM records WHERE entity = 'PublicFormSubmission' AND data->>'sessionCode' = $1 RETURNING id",
         [sessionCode],
       );
-      const { rows: bacheloretteRows } = await client.query(
-        "DELETE FROM records WHERE entity = 'BacheloretteIntake' AND data->>'sessionCode' = $1 RETURNING id",
-        [sessionCode],
-      );
       const { rows: pajamaRows } = await client.query(
         "DELETE FROM records WHERE entity = 'PajamaIntake' AND data->>'sessionCode' = $1 RETURNING id",
         [sessionCode],
@@ -1254,7 +1270,6 @@ export function entityRoutes() {
       playerRows.forEach(({ id }) => broadcast('PlayerIntake', { type: 'delete', id, data: { id } }));
       rsvpRows.forEach(({ id }) => broadcast('InvitationRSVP', { type: 'delete', id, data: { id } }));
       publicRows.forEach(({ id }) => broadcast('PublicFormSubmission', { type: 'delete', id, data: { id } }));
-      bacheloretteRows.forEach(({ id }) => broadcast('BacheloretteIntake', { type: 'delete', id, data: { id } }));
       pajamaRows.forEach(({ id }) => broadcast('PajamaIntake', { type: 'delete', id, data: { id } }));
       deletedVipRows.forEach(({ id }) => broadcast('VIPInvitationSubmission', { type: 'delete', id, data: { id } }));
       deletedInvitationRows.forEach(({ id }) => broadcast('VIPInvitation', { type: 'delete', id, data: { id } }));
@@ -1264,7 +1279,7 @@ export function entityRoutes() {
         success: true,
         deleted: {
           playerIntakes: playerRows.length, rsvps: rsvpRows.length, publicForms: publicRows.length,
-          bacheloretteIntakes: bacheloretteRows.length, pajamaIntakes: pajamaRows.length,
+          pajamaIntakes: pajamaRows.length,
           vipSubmissions: deletedVipRows.length, vipInvitations: deletedInvitationRows.length,
         },
         snapshotId: snapshotRows[0].id,
@@ -1601,27 +1616,21 @@ export function entityRoutes() {
       req.body = { sessionCode: code, participantName: participant, contact: typeof body.contact === 'string' ? body.contact.trim().slice(0,160) : '', recordingConsent: body.recordingConsent, privateUseConsent: body.privateUseConsent, publicUseConsent: body.publicUseConsent, withdrawn: body.withdrawn, adultConfirmed: true, consentVersion: '2026-11-17', submittedAt: new Date().toISOString() };
     }
     if (req.entity === 'ProductionCue' && !isAdmin(req)) return res.status(403).json({ error: 'Forbidden' });
-    if (!isAdmin(req) && ['PajamaIntake', 'BacheloretteIntake'].includes(req.entity)) {
+    if (!isAdmin(req) && req.entity === 'PajamaIntake') {
       const body = req.body || {};
       if (body.adultConfirmed !== true || body.safeWordConfirmed !== true) {
         return res.status(400).json({ error: 'Απαιτείται επιβεβαίωση 18+ και αποδοχή του STOP.' });
       }
-      if (req.entity === 'BacheloretteIntake') {
-        const sessionCode = String(body.sessionCode || '').trim().toUpperCase();
-        if (typeof body.leaderName !== 'string' || !body.leaderName.trim() ||
-            !['house', 'oneday'].includes(body.accommodation) || !/^[A-Z0-9]{4}$/.test(sessionCode)) {
-          return res.status(400).json({ error: 'Συμπλήρωσε σωστά τα υποχρεωτικά στοιχεία της φόρμας.' });
-        }
-      } else if (typeof body.name !== 'string' || !body.name.trim()) {
+      if (typeof body.name !== 'string' || !body.name.trim()) {
         return res.status(400).json({ error: 'Το όνομα είναι υποχρεωτικό.' });
       }
       if (req.entity === 'PajamaIntake' && body.formType === 'modes') {
         const modes = body.preferredModes;
-        if (!Array.isArray(modes) || !modes.length || modes.some((mode) => !['pedi_glam', 'pedi_extended', 'lockdown', 'beach_bar', 'marathon_4h'].includes(mode))) {
+        if (!Array.isArray(modes) || !modes.length || modes.some((mode) => !['pedi_glam', 'pedi_extended', 'lockdown', 'beach_bar', 'marathon_4h', 'villa_takeover'].includes(mode))) {
           return res.status(400).json({ error: 'Επίλεξε τουλάχιστον ένα διαθέσιμο Mode.' });
         }
       }
-      const formType = req.entity === 'BacheloretteIntake' ? 'heist' : (body.formType === 'modes' ? 'modes' : 'pajama');
+      const formType = body.formType === 'modes' ? 'modes' : 'pajama';
       const { rows: settings } = await query("SELECT data FROM records WHERE entity = 'AppSetting' AND data->>'key' = 'admin_form_questions' LIMIT 1");
       const questions = settings[0]?.data?.value?.forms?.[formType] || [];
       const answers = body.customAnswers || {};
@@ -1667,7 +1676,7 @@ export function entityRoutes() {
   // Approve a submitted form and create/update its unified PlayerIntake profile.
   r.post('/intake-approvals/:entity/:id', requireAdmin, async (req, res, next) => {
     const entity = String(req.params.entity || '');
-    if (!['PlayerIntake', 'PajamaIntake', 'BacheloretteIntake', 'VIPInvitationSubmission'].includes(entity)) {
+    if (!['PlayerIntake', 'PajamaIntake', 'VIPInvitationSubmission'].includes(entity)) {
       return res.status(400).json({ error: 'Μη υποστηριζόμενη φόρμα.' });
     }
     const client = await pool.connect();
@@ -1820,6 +1829,28 @@ export function entityRoutes() {
             broadcast(req.entity, { type: 'update', id: rec.id, data: rec });
             const beforeMissions = current.state?.mg?.missions || {};
             const afterMissions = rec.state?.mg?.missions || {};
+            // Σειρά παίκτριας (Classic) και νέα κάρτα για συγκεκριμένη παίκτρια (όλα τα modes) → push στο κινητό της.
+            const sendTo = (pid, title, text) => pid && notifyPlayerAlert(current.sessionCode, pid, { title, text }).catch((error) => console.error('[player-push] failed:', error.message));
+            const stBefore = current.state || {};
+            const stAfter = rec.state || {};
+            if (stAfter.mode === 'classic' && Number(stAfter.stage) >= 1 && stAfter.currentPlayerIndex !== stBefore.currentPlayerIndex) {
+              sendTo(stAfter.players?.[stAfter.currentPlayerIndex]?.id, 'ΣΕΙΡΑ ΣΟΥ', 'Ρίξε το ζάρι — έχεις σειρά στο ταμπλό.');
+            }
+            const cardOwner = (mgState) => mgState?.card?.playerId || mgState?.card?.pid || mgState?.villa?.card?.pid || mgState?.lounge?.card?.pid || '';
+            const cardStamp = (mgState) => mgState?.card?.at || mgState?.villa?.card?.at || mgState?.lounge?.card?.at || 0;
+            if (cardStamp(stAfter.mg) && cardStamp(stAfter.mg) !== cardStamp(stBefore.mg)) {
+              const card = stAfter.mg?.villa?.card || stAfter.mg?.lounge?.card || stAfter.mg?.card || {};
+              if (!stAfter.mg?.villa?.quiet?.[cardOwner(stAfter.mg)]) sendTo(cardOwner(stAfter.mg), 'ΚΑΡΤΑ ΓΙΑ ΣΕΝΑ', String(card.title || 'Δες το κινητό σου').slice(0, 120));
+            }
+            // Villa: νέες ειδοποιήσεις → push στα κινητά (όχι σε όσες έχουν ώρες ησυχίας).
+            const beforeAlerts = new Set((current.state?.mg?.villa?.alerts || []).map((a) => a?.id));
+            const villa = rec.state?.mg?.villa;
+            for (const alert of (villa?.alerts || []).filter((a) => a?.id && !beforeAlerts.has(a.id))) {
+              const targets = alert.to === 'all' ? (rec.state?.players || []).map((p) => p.id) : [alert.to];
+              for (const target of targets.filter((id) => id && !villa?.quiet?.[id])) {
+                notifyPlayerAlert(current.sessionCode, target, alert).catch((error) => console.error('[player-push] villa alert failed:', error.message));
+              }
+            }
             for (const [playerId, mission] of Object.entries(afterMissions)) {
               if (mission?.status === 'active' && mission.sentAt && mission.sentAt !== beforeMissions[playerId]?.sentAt) {
                 notifyPlayerMission(current.sessionCode, playerId, mission).catch((error) =>

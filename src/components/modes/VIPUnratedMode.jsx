@@ -1,6 +1,6 @@
 import React,{useEffect,useMemo,useState} from 'react';
 import {Panel,Btn} from '@/components/modes/ModeShell';
-import {base44} from '@/api/base44Client';
+import {appApi} from '@/api/apiClient';
 
 const DEFAULT_MODES=[
  {id:'midnight-interrogation',name:'Midnight Interrogation Room',description:'Γύροι ερωτήσεων, μυστικών και επιλογών PASS.',active:true},
@@ -27,7 +27,7 @@ export default function VIPUnratedMode({ctx}){
  const [code,setCode]=useState(''),[token,setToken]=useState(''),[error,setError]=useState(''),[unlocked,setUnlocked]=useState(false),[busy,setBusy]=useState(false);
  const [content,setContent]=useState(DEFAULT_CONTENT),[profiles,setProfiles]=useState([]),[loadingContent,setLoadingContent]=useState(false);
  const game=mg.vipUnrated||{};
- useEffect(()=>{if(!token)return;let live=true;setLoadingContent(true);Promise.all([base44.entities.AppSetting.filter({key:'vip_unrated_content'},{limit:1}),fetch('/api/entities/vip-access/vault',{headers:{Authorization:`Bearer ${token}`}}).then(async r=>{const d=await r.json();if(!r.ok)throw new Error(d.error||'Δεν φορτώθηκε το VIP Vault.');return d;})]).then(([settings,vault])=>{if(!live)return;const saved=settings.items?.[0]?.value;if(saved?.modes&&saved?.deck)setContent(saved);setProfiles(vault.profiles||[]);}).catch(e=>setError(e.message||'Δεν φορτώθηκαν τα VIP δεδομένα.')).finally(()=>{if(live)setLoadingContent(false)});return()=>{live=false}},[token]);
+ useEffect(()=>{if(!token)return;let live=true;setLoadingContent(true);Promise.all([appApi.entities.AppSetting.filter({key:'vip_unrated_content'},{limit:1}),fetch('/api/entities/vip-access/vault',{headers:{Authorization:`Bearer ${token}`}}).then(async r=>{const d=await r.json();if(!r.ok)throw new Error(d.error||'Δεν φορτώθηκε το VIP Vault.');return d;})]).then(([settings,vault])=>{if(!live)return;const saved=settings.items?.[0]?.value;if(saved?.modes&&saved?.deck)setContent(saved);setProfiles(vault.profiles||[]);}).catch(e=>setError(e.message||'Δεν φορτώθηκαν τα VIP δεδομένα.')).finally(()=>{if(live)setLoadingContent(false)});return()=>{live=false}},[token]);
  const modes=useMemo(()=>content.modes.filter(m=>m.active!==false),[content]);
  const availableProfiles=useMemo(()=>players.map(player=>({player,profile:profiles.find(p=>String(p.displayName||'').trim().toLocaleLowerCase()===String(player.name||'').trim().toLocaleLowerCase())})),[players,profiles]);
  async function unlock(){setBusy(true);setError('');try{const res=await fetch('/api/entities/vip-access/unlock',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code})});const data=await res.json();if(!res.ok)throw new Error(data.error||'Ο κωδικός δεν έγινε δεκτός.');setToken(data.token);setUnlocked(true);setCode('');}catch(e){setError(e.message)}finally{setBusy(false)}}

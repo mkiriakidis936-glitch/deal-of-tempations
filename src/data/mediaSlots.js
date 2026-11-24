@@ -28,7 +28,7 @@ export const IMAGE_SLOTS = [
   { id: 'wallpaperPhone', label: 'Wallpaper κινητού 9:16', where: 'wallpaper_phone_9x16.jpg — φόντο κινητού', surfaces: ['mobile'] },
   { id: 'wallpaperTablet', label: 'Wallpaper tablet 4:3', where: 'wallpaper_tablet_4x3.jpg — φόντο tablet', surfaces: ['tablet'] },
   { id: 'wallpaperTv', label: 'Wallpaper TV 16:9', where: 'wallpaper_tv_16x9.jpg — φόντο TV', surfaces: ['tv'] },
-  { id: 'patternSeamless', label: 'Seamless pattern', where: 'pattern_seamless.jpg — επαναλαμβανόμενο μοτίβο', surfaces: ['site'] },
+  { id: 'patternSeamless', label: 'Seamless pattern', where: 'pattern_seamless.jpg — επαναλαμβανόμενο μοτίβο', surfaces: ['site'], retired: true },
 ];
 
 export const PHOTO_SPOTS = [
@@ -42,8 +42,8 @@ export const PHOTO_SPOTS = [
 export const PHOTO_SPOT_IDS = PHOTO_SPOTS.map((v) => v.id);
 
 export const GALLERIES = [
-  { id: 'heistPhotos', label: 'Heist — γκαλερί', where: '12 αριθμημένες εικόνες: heist_01 έως heist_12', requiredCount: 12, surfaces: ['site', 'forms'] },
-  { id: 'pajamaPhotos', label: 'Pajama — γκαλερί', where: '12 αριθμημένες εικόνες: pajama_01 έως pajama_12', requiredCount: 12, surfaces: ['site', 'forms'], retired: true },
+  { id: 'heistPhotos', label: 'Heist — γκαλερί', where: 'Site: γκαλερί της Αρχικής και του Heist Night (όταν το Arrest Heist δεν έχει δική του)', requiredCount: 0, surfaces: ['site', 'forms'] },
+  { id: 'pajamaPhotos', label: 'Pajama — γκαλερί', where: 'Site: γκαλερί της Αρχικής και των Pajama Lockdown, Pajama Heist & Arrest, Villa Takeover (όταν δεν έχουν δική τους)', requiredCount: 0, surfaces: ['site'] },
   { id: 'siteVideos', kind: 'video', label: 'Επιπλέον βίντεο', where: 'Όσα θες. Σε κάθε βίντεο διαλέγεις πού εμφανίζεται: Αρχική Site ή σελίδα συγκεκριμένου mode (Site + Tablet Setup).', surfaces: ['site', 'tablet'] },
 ];
 
@@ -57,6 +57,7 @@ export const MODE_COVER_SLOTS = [
   { id: 'modeCover_beach_bar', modeId: 'beach_bar', label: 'BEACH BAR HOME LOCKDOWN', filename: 'cover.jpg', surfaces: ['tablet', 'forms'] },
   { id: 'modeCover_pedi_glam', modeId: 'pedi_glam', label: 'Pajama Pedi-Glam 90′', filename: '', surfaces: ['tablet', 'forms'], retired: true },
   { id: 'modeCover_marathon_4h', modeId: 'marathon_4h', label: 'Pajama Heist & Arrest', filename: '', surfaces: ['tablet', 'forms'] },
+  { id: 'modeCover_villa_takeover', modeId: 'villa_takeover', label: 'Villa Takeover 48/72', filename: '', surfaces: ['tablet', 'forms'] },
 ];
 
 // Τα βίντεο έναρξης της τηλεόρασης.

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Image } from '@/components/ui/image';
-import { base44 } from '@/api/base44Client';
+import { appApi } from '@/api/apiClient';
 import { ART, PHOTO, FILM, HEIST_PHOTOS } from '@/data/brandArt';
 import MediaSpot from '@/components/shared/MediaSpot';
 import MoodGallery from '@/components/shared/MoodGallery';
@@ -22,7 +22,7 @@ export default function InvitationTeaser({ onOpen }) {
   useEffect(() => {
     async function load() {
       try {
-        const total = await base44.entities.PlayerIntake.count({});
+        const total = await appApi.entities.PlayerIntake.count({});
         setCount(total || 0);
       } catch (e) { /* ignore */ }
     }

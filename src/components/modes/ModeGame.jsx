@@ -7,6 +7,7 @@ import ActLockdown from '@/components/modes/ActLockdown';
 import ActMorning from '@/components/modes/ActMorning';
 import BeachBarGame from '@/components/modes/BeachBarGame';
 import ActLounge from '@/components/modes/ActLounge';
+import ActVilla from '@/components/modes/ActVilla';
 import VIPUnratedMode from '@/components/modes/VIPUnratedMode';
 import { modeMeta, ACT_META, MODE_THEMES } from '@/data/modes/modeRegistry';
 import { useModeCtx, useTick, timerStart } from '@/lib/modeKit';
@@ -141,6 +142,7 @@ export default function ModeGame({ state, updateState, onEnd, onQR, playerProfil
       {act === 'morning' && <ActMorning ctx={ctx} onFinish={finishAll} />}
       {act === 'beach' && <BeachBarGame ctx={ctx} onEnd={finishAll} />}
       {act === 'lounge' && <ActLounge ctx={ctx} state={state} onFinish={finishAll} />}
+      {act === 'villa' && <ActVilla ctx={ctx} state={state} updateState={updateState} onFinish={finishAll} />}
     </ModeShell>
   );
 }

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { base44, request } from '@/api/base44Client';
+import { appApi, request } from '@/api/apiClient';
 import { GAME_MODES, FOOTWEAR_LEVELS, TOENAIL_PERKS } from '@/data/gameConfig';
 import { createInitialState, generateSessionCode } from '@/lib/gameLogic';
 import { isNewMode, modeMeta, MODE_MEDIA_SECTIONS } from '@/data/modes/modeRegistry';
@@ -51,13 +51,12 @@ export default function SetupScreen({ onStart }) {
 
   const loadIntakes = async () => {
     try {
-      const [classicRes, pajamaRes, heistRes, castingRes, eventRes, vipRes] = await Promise.all([
-        base44.entities.PlayerIntake.filter({}, { sort: '-created_date', limit: 500 }),
-        base44.entities.PajamaIntake.filter({}, { sort: '-created_date', limit: 500 }),
-        base44.entities.BacheloretteIntake.filter({}, { sort: '-created_date', limit: 500 }),
-        base44.entities.AppSetting.filter({ key: 'show_casting_plan' }, { limit: 1 }),
-        base44.entities.DotEvent.filter({}, { sort: '-created_date', limit: 200 }),
-        base44.entities.VIPInvitationSubmission.filter({}, { sort: '-created_date', limit: 500 }),
+      const [classicRes, pajamaRes, castingRes, eventRes, vipRes] = await Promise.all([
+        appApi.entities.PlayerIntake.filter({}, { sort: '-created_date', limit: 500 }),
+        appApi.entities.PajamaIntake.filter({}, { sort: '-created_date', limit: 500 }),
+        appApi.entities.AppSetting.filter({ key: 'show_casting_plan' }, { limit: 1 }),
+        appApi.entities.DotEvent.filter({}, { sort: '-created_date', limit: 200 }),
+        appApi.entities.VIPInvitationSubmission.filter({}, { sort: '-created_date', limit: 500 }),
       ]);
       const loadedEvents = eventRes.items || [];
       setDotEvents(loadedEvents);
@@ -71,11 +70,10 @@ export default function SetupScreen({ onStart }) {
       const pending = [
         ...scopeToEvent(classicRes.items).filter((item) => item.approved !== true).map((item) => ({ ...item, sourceEntity: 'PlayerIntake', modeIds: item.preferredModes?.length ? item.preferredModes : [item.vipGameMode || item.gameMode || 'classic'] })),
         ...allPajama.filter((item) => item.approved !== true).map((item) => ({ ...item, sourceEntity: 'PajamaIntake', modeIds: item.preferredModes?.length ? item.preferredModes : ['pajama'] })),
-        ...scopeToEvent(heistRes.items).filter((item) => item.approved !== true).map((item) => ({ ...item, sourceEntity: 'BacheloretteIntake', modeIds: ['arrest_heist'] })),
         ...scopeToEvent(vipRes.items).filter((item) => item.approved !== true && item.approvalStatus !== 'rejected').map((item) => ({ ...item, sourceEntity: 'VIPInvitationSubmission', modeIds: [item.gameMode || 'classic'] })),
       ].sort((a, b) => new Date(b.created_date || b.submittedAt || 0) - new Date(a.created_date || a.submittedAt || 0));
       setPendingIntakes(pending);
-      const builtRoster = buildRoster({ player: scopeToEvent(classicRes.items), pajama: allPajama, heist: scopeToEvent(heistRes.items), vip: scopeToEvent(vipRes.items).filter((item) => item.approved !== true) });
+      const builtRoster = buildRoster({ player: scopeToEvent(classicRes.items), pajama: allPajama, vip: scopeToEvent(vipRes.items).filter((item) => item.approved !== true) });
       setRoster(builtRoster);
 
       const castingRecord = castingRes.items?.[0] || null;
@@ -90,9 +88,6 @@ export default function SetupScreen({ onStart }) {
       };
       allClassic.forEach((item) => addEligible(item.name, item.preferredModes?.length ? item.preferredModes : [item.vipGameMode || item.gameMode || 'classic']));
       approved.forEach((item) => addEligible(item.name, item.preferredModes?.length ? item.preferredModes : (item.formType === 'modes' ? [] : ['pajama'])));
-      scopeToEvent(heistRes.items).filter((item) => item.approved === true).forEach((item) => {
-        [item.name, item.leaderName, item.opponentName].forEach((name) => addEligible(name, ['arrest_heist']));
-      });
       const planMatchesEvent = selectedDotEventId
         ? savedCastingPlan?.dotEventId === selectedDotEventId ||
           (!!savedCastingPlan?.roomCode && savedCastingPlan.roomCode === selectedEvent?.room_code) ||
@@ -129,12 +124,11 @@ export default function SetupScreen({ onStart }) {
 
   useEffect(() => {
     const refresh = () => loadIntakes();
-    const offPlayers = base44.entities.PlayerIntake.subscribe(refresh);
-    const offPajama = base44.entities.PajamaIntake.subscribe(refresh);
-    const offEvents = base44.entities.DotEvent.subscribe(refresh);
-    const offHeist = base44.entities.BacheloretteIntake.subscribe(refresh);
-    const offVip = base44.entities.VIPInvitationSubmission.subscribe(refresh);
-    return () => { offPlayers?.(); offPajama?.(); offEvents?.(); offHeist?.(); offVip?.(); };
+    const offPlayers = appApi.entities.PlayerIntake.subscribe(refresh);
+    const offPajama = appApi.entities.PajamaIntake.subscribe(refresh);
+    const offEvents = appApi.entities.DotEvent.subscribe(refresh);
+    const offVip = appApi.entities.VIPInvitationSubmission.subscribe(refresh);
+    return () => { offPlayers?.(); offPajama?.(); offEvents?.(); offVip?.(); };
   }, [selectedDotEventId]);
 
 
@@ -214,7 +208,7 @@ export default function SetupScreen({ onStart }) {
     await onStart({ sessionCode: generateSessionCode(), dotEventId: selectedDotEventId, mode, duration: String(durationMinutes), intensity: 'standard', stage: state.stage, state });
     if (castingPlan?.settingId && castingPlan.mode === mode) {
       try {
-        await base44.entities.AppSetting.update(castingPlan.settingId, { value: { ...castingPlan, usedAt: new Date().toISOString() } });
+        await appApi.entities.AppSetting.update(castingPlan.settingId, { value: { ...castingPlan, usedAt: new Date().toISOString() } });
       } catch (error) {
         console.warn('Episode cast usage timestamp could not be saved', error);
       }

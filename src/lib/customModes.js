@@ -1,4 +1,4 @@
-import { base44 } from '@/api/base44Client';
+import { appApi } from '@/api/apiClient';
 import { NEW_MODES, MODE_THEMES } from '@/data/modes/modeRegistry';
 import { GAME_MODES } from '@/data/gameConfig';
 import { saveAdminSettingVersion } from '@/lib/adminVersionHistory';
@@ -28,7 +28,7 @@ export function registerCustomModes(list = []) {
 }
 
 export async function fetchCustomModesRecord() {
-  const { items } = await base44.entities.AppSetting.filter({ key: CUSTOM_MODES_KEY }, { limit: 1 });
+  const { items } = await appApi.entities.AppSetting.filter({ key: CUSTOM_MODES_KEY }, { limit: 1 });
   return items?.[0] || null;
 }
 
@@ -47,9 +47,9 @@ export async function saveCustomModes(items) {
   const record = await fetchCustomModesRecord();
   if (record?.id) {
     await saveAdminSettingVersion(CUSTOM_MODES_KEY, record.value);
-    await base44.entities.AppSetting.update(record.id, { value: { items: clean } });
+    await appApi.entities.AppSetting.update(record.id, { value: { items: clean } });
   } else {
-    await base44.entities.AppSetting.create({ key: CUSTOM_MODES_KEY, value: { items: clean } });
+    await appApi.entities.AppSetting.create({ key: CUSTOM_MODES_KEY, value: { items: clean } });
   }
   registerCustomModes(clean);
   loading = Promise.resolve(clean);
@@ -57,7 +57,7 @@ export async function saveCustomModes(items) {
 }
 
 export function subscribeCustomModes(onChange) {
-  return base44.entities.AppSetting.subscribe((event) => {
+  return appApi.entities.AppSetting.subscribe((event) => {
     if (event?.type === 'resync') { loadCustomModes(true).then(onChange); return; }
     if (event?.data?.key !== CUSTOM_MODES_KEY) return;
     registerCustomModes(event.data.value?.items || []);

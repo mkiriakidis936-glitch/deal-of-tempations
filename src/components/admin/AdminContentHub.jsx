@@ -3,25 +3,28 @@ import AdminContent from '@/components/admin/AdminContent';
 import AdminBoardSquares from '@/components/admin/AdminBoardSquares';
 import AdminCards from '@/components/admin/AdminCards';
 import AdminModes from '@/components/admin/AdminModes';
-import AdminPajama from '@/components/admin/AdminPajama';
 import AdminModeBuilder from '@/components/admin/AdminModeBuilder';
 import { repairSanitizedContent } from '@/lib/repairContent';
+import { NEW_MODES } from '@/data/modes/modeRegistry';
 
+// Ανά mode: κάθε καρτέλα δείχνει ΜΟΝΟ τις κάρτες και τα κείμενα του συγκεκριμένου mode.
 const SUB_TABS = [
-  { id: 'builder', label: '🛠️ Κατασκευαστής modes' },
-  { id: 'new_modes', label: '✨ Ψηφιακά Modes' },
-  { id: 'classic', label: '🎲 Κλασικό' },
-  { id: 'marathon', label: '🏆 Marathon' },
+  { id: 'classic', label: '🎲 Classic' },
   { id: 'arrest_heist', label: '🚨 Arrest & Heist' },
+  ...NEW_MODES.map((mode) => ({ id: mode.id, label: `${mode.icon} ${mode.name}`, digital: true })),
   { id: 'special', label: '🎭 Special & Bomb' },
-  { id: 'board', label: '🗺️ Κουτιά 1–24' },
-  { id: 'cards', label: '🃏 Κάρτες' },
-  { id: 'pajama', label: '🩴 Pajama Mode' },
+  { id: 'builder', label: '🛠️ Κατασκευαστής modes' },
   { id: 'all', label: '📚 Όλο το περιεχόμενο' },
+];
+const CLASSIC_PARTS = [
+  { id: 'content', label: 'Κείμενα & κανόνες' },
+  { id: 'board', label: 'Κουτιά 1–24' },
+  { id: 'cards', label: 'Κάρτες' },
 ];
 
 export default function AdminContentHub() {
-  const [sub, setSub] = useState('new_modes');
+  const [sub, setSub] = useState('classic');
+  const [classicPart, setClassicPart] = useState('content');
   const [repairing, setRepairing] = useState(false);
   const [repairMessage, setRepairMessage] = useState('');
 
@@ -47,29 +50,33 @@ export default function AdminContentHub() {
         <button type="button" className="adm-pill" disabled={repairing} onClick={repair}>{repairing ? 'Επαναφορά…' : '↺ Επαναφορά αρχικών κειμένων καρτών'}</button>
         {repairMessage && <span className="text-xs">{repairMessage}</span>}
       </div>
-      <div className="flex gap-1.5 flex-wrap">
+      <div className="-mx-1 flex gap-1.5 overflow-x-auto px-1 pb-1" role="tablist" aria-label="Mode">
         {SUB_TABS.map((t) => (
-          <button
-            key={t.id}
-            onClick={() => setSub(t.id)}
-            className={`px-3 py-1.5 rounded-lg border-2 text-xs font-bold ${
-              sub === t.id ? 'bg-primary text-tarot-dark border-primary' : 'bg-card border-border/40 hover:bg-secondary'
-            }`}
-          >
+          <button key={t.id} type="button" role="tab" aria-selected={sub === t.id} onClick={() => setSub(t.id)}
+            className={`shrink-0 rounded-full px-4 py-2 text-[14px] font-semibold ${sub === t.id ? 'bg-white text-black' : 'bg-[#1C1C1E] text-white/80'}`}>
             {t.label}
           </button>
         ))}
       </div>
 
-      {sub === 'board' && <AdminBoardSquares />}
-      {sub === 'cards' && <AdminCards />}
-      {sub === 'pajama' && <AdminPajama />}
-      {sub === 'new_modes' && <AdminModes />}
+      {sub === 'classic' && (
+        <>
+          <div className="inline-flex rounded-xl bg-[#1C1C1E] p-1" role="tablist" aria-label="Classic">
+            {CLASSIC_PARTS.map((part) => (
+              <button key={part.id} type="button" role="tab" aria-selected={classicPart === part.id} onClick={() => setClassicPart(part.id)}
+                className={`rounded-lg px-3.5 py-1.5 text-[13px] font-semibold ${classicPart === part.id ? 'bg-[#3A3A3C] text-white' : 'text-white/60'}`}>{part.label}</button>
+            ))}
+          </div>
+          {classicPart === 'content' && <AdminContent key="classic" modeFilter="classic" />}
+          {classicPart === 'board' && <AdminBoardSquares />}
+          {classicPart === 'cards' && <AdminCards />}
+        </>
+      )}
+      {sub === 'arrest_heist' && <AdminContent key="arrest_heist" modeFilter="arrest_heist" />}
+      {sub === 'special' && <AdminContent key="special" modeFilter="special" />}
+      {SUB_TABS.find((t) => t.id === sub)?.digital && <AdminModes key={sub} modeId={sub} />}
       {sub === 'builder' && <AdminModeBuilder />}
       {sub === 'all' && <AdminContent />}
-      {['classic', 'marathon', 'arrest_heist', 'special'].includes(sub) && (
-        <AdminContent key={sub} modeFilter={sub} />
-      )}
     </div>
   );
 }

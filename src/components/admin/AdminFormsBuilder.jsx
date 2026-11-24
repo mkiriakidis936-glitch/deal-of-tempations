@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { base44 } from '@/api/base44Client';
+import { appApi } from '@/api/apiClient';
 import ComicPanel from '@/components/comic/ComicPanel';
 import ComicButton from '@/components/comic/ComicButton';
 import AdminSettingVersionHistory from '@/components/admin/AdminSettingVersionHistory';
@@ -7,7 +7,8 @@ import { saveAdminSettingVersion } from '@/lib/adminVersionHistory';
 import { listMedia } from '@/lib/media';
 
 const KEY = 'admin_form_questions';
-const FORM_TYPES = [{ id: 'modes', label: 'Επιλογή Modes' }, { id: 'pajama', label: 'Φόρμα Pajama' }, { id: 'heist', label: 'Ερωτηματολόγιο Arrest & Heist' }, { id: 'invitation', label: 'Φόρμα πρόσκλησης' }];
+// Οι φόρμες που υπάρχουν: ψηφιακά modes (Lockdown, Beach Bar, Pajama Heist & Arrest, Villa) και Classic / Arrest Heist + VIP πρόσκληση.
+const FORM_TYPES = [{ id: 'modes', label: 'Φόρμα ψηφιακών modes (Lockdown, Beach Bar, Pajama Heist, Villa)' }, { id: 'invitation', label: 'Φόρμα Classic / Arrest Heist και VIP πρόσκληση' }];
 const blank = () => ({ id: `q-${Date.now()}-${Math.random().toString(36).slice(2,6)}`, label: '', type: 'text', options: [], required: false, image: '' });
 
 export default function AdminFormsBuilder() {
@@ -24,7 +25,7 @@ export default function AdminFormsBuilder() {
   }, []);
 
   useEffect(() => {
-    base44.entities.AppSetting.filter({ key: KEY }, { limit: 1 }).then(({ items }) => {
+    appApi.entities.AppSetting.filter({ key: KEY }, { limit: 1 }).then(({ items }) => {
       const found = items?.[0] || null;
       setRecord(found);
       if (found?.value?.forms) setForms({ modes: [], pajama: [], heist: [], invitation: [], ...found.value.forms });
@@ -45,8 +46,8 @@ export default function AdminFormsBuilder() {
       if (record?.id) await saveAdminSettingVersion(KEY, { forms });
       const value = { forms: nextForms };
       let saved;
-      if (record?.id) saved = await base44.entities.AppSetting.update(record.id, { value });
-      else saved = await base44.entities.AppSetting.create({ key: KEY, value });
+      if (record?.id) saved = await appApi.entities.AppSetting.update(record.id, { value });
+      else saved = await appApi.entities.AppSetting.create({ key: KEY, value });
       setRecord(saved?.id ? saved : record); setForms(nextForms); setEditing(null); setMessage('Η ερώτηση αποθηκεύτηκε.');
     } catch (error) { setMessage(error.message || 'Αποτυχία αποθήκευσης.'); }
     finally { setBusy(false); }
@@ -58,7 +59,7 @@ export default function AdminFormsBuilder() {
     setBusy(true);
     try {
       if (record?.id) await saveAdminSettingVersion(KEY, { forms });
-      if (record?.id) await base44.entities.AppSetting.update(record.id, { value: { forms: nextForms } });
+      if (record?.id) await appApi.entities.AppSetting.update(record.id, { value: { forms: nextForms } });
       setForms(nextForms); if (editing?.id === id) setEditing(null); setMessage('Η ερώτηση διαγράφηκε.');
     } catch (error) { setMessage(error.message || 'Αποτυχία διαγραφής.'); }
     finally { setBusy(false); }

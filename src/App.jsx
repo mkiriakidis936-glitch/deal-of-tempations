@@ -18,6 +18,7 @@ const VIPInvitationPage = lazy(() => import('@/pages/VIPInvitationPage'));
 const Promo = lazy(() => import('@/pages/Promo'));
 const GiftUnlock = lazy(() => import('@/pages/GiftUnlock'));
 const Site = lazy(() => import('@/pages/Site'));
+import AvSetup from '@/pages/AvSetup';
 const ProductionConsent = lazy(() => import('@/pages/ProductionConsent'));
 const Login = lazy(() => import('@/pages/Login'));
 const Register = lazy(() => import('@/pages/Register'));
@@ -42,7 +43,7 @@ const PublicVisitTracker = () => {
   const location = useLocation();
   useEffect(() => {
     const path = location.pathname;
-    if (['/', '/tv', '/play', '/admin', '/login', '/register', '/forgot-password', '/reset-password'].includes(path)) return;
+    if (['/', '/tv', '/play', '/admin', '/av-setup', '/login', '/register', '/forgot-password', '/reset-password'].includes(path)) return;
     let trackedPath = path;
     if (path === '/site') {
       const event = new URLSearchParams(location.search).get('event');
@@ -85,6 +86,7 @@ const AuthenticatedApp = () => {
       <Route path="/deal/:roomCode" element={<DealPage />} />
       <Route path="/gift-unlock" element={<GiftUnlock />} />
       <Route path="/site" element={<Site />} />
+      <Route path="/av-setup" element={<AvSetup />} />
       <Route path="/production-consent" element={<ProductionConsent />} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>

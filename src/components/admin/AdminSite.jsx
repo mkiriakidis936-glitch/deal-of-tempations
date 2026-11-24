@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { ExternalLink, Plus, Trash2, ChevronUp, ChevronDown } from 'lucide-react';
-import { base44 } from '@/api/base44Client';
+import { appApi } from '@/api/apiClient';
 import { SITE_EVENTS, SITE_HOME_ID, DEFAULT_SITE } from '@/data/siteContent';
 import { SITE_KEY, fetchSiteRecord } from '@/lib/media';
 import AdminSiteVersions, { saveSiteVersion } from '@/components/admin/AdminSiteVersions';
@@ -104,8 +104,8 @@ export default function AdminSite() {
     try {
       if (rec?.id) {
         await saveSiteVersion(all, ev, d);
-        await base44.entities.AppSetting.update(rec.id, { value: next });
-      } else setRec(await base44.entities.AppSetting.create({ key: SITE_KEY, value: next }));
+        await appApi.entities.AppSetting.update(rec.id, { value: next });
+      } else setRec(await appApi.entities.AppSetting.create({ key: SITE_KEY, value: next }));
       setAll(next);
       setMsg({ ok: true, text: okText });
     } catch (e) { setMsg({ ok: false, text: e.message }); }
@@ -171,6 +171,22 @@ export default function AdminSite() {
         <>
           <Group title="Κυλιόμενες λέξεις" footer="Η χρυσή ταινία κάτω από το hero. Μία λέξη ή φράση ανά γραμμή.">
             <Row label="Λέξεις"><Area rows={5} value={linesOf(d.marquee)} onChange={(v) => up({ marquee: toLines(v) })} /></Row>
+          </Group>
+          <Group title="Ημερολόγιο διαθεσιμότητας" footer="Οι επόμενες βραδιές στην Αρχική. Οι περασμένες κρύβονται μόνες τους. Αν βάλεις θέσεις, εμφανίζονται «Χ θέσεις» ή «Sold out».">
+            <ListEditor
+              items={d.calendar || []}
+              onChange={(calendar) => up({ calendar })}
+              blank={{ date: '', event: SITE_EVENTS[0]?.id || 'heist', seats: 8, booked: 0 }}
+              addLabel="Προσθήκη ημερομηνίας"
+              render={(it, set) => (
+                <div className="grid gap-2 sm:grid-cols-[1fr_1fr_90px_90px]">
+                  <div><div className={sub}>Ημερομηνία & ώρα</div><input type="datetime-local" className={INPUT} value={it.date || ''} onChange={(e) => set({ date: e.target.value })} /></div>
+                  <div><div className={sub}>Εμπειρία</div><select className={INPUT} value={it.event} onChange={(e) => set({ event: e.target.value })}>{SITE_EVENTS.map((ev) => <option key={ev.id} value={ev.id}>{ev.label}</option>)}</select></div>
+                  <div><div className={sub}>Θέσεις</div><input type="number" min="0" className={INPUT} value={it.seats ?? ''} onChange={(e) => set({ seats: e.target.value === '' ? '' : Number(e.target.value) })} /></div>
+                  <div><div className={sub}>Κλεισμένες</div><input type="number" min="0" className={INPUT} value={it.booked ?? ''} onChange={(e) => set({ booked: e.target.value === '' ? '' : Number(e.target.value) })} /></div>
+                </div>
+              )}
+            />
           </Group>
           <Group title="Τελικό κάλεσμα" footer="Η τελευταία ενότητα πριν από το υποσέλιδο.">
             <Row label="Τίτλος"><Text value={d.finalTitle} onChange={(v) => up({ finalTitle: v })} /></Row>

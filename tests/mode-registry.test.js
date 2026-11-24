@@ -8,6 +8,7 @@ test('all approved digital modes are registered with their exact durations', () 
     lockdown: 60,
     beach_bar: 150,
     marathon_4h: 105,
+    villa_takeover: 2880,
   };
   const actual = Object.fromEntries(NEW_MODES.map((mode) => [mode.id, mode.minutes]));
   assert.deepEqual(actual, expected);
@@ -52,7 +53,7 @@ test('οδηγός: κάθε ενεργό mode έχει οδηγό, και κά�
   const { MODE_GUIDE, phaseIdFor, currentPhase } = await import('../src/data/modes/modeGuide.js');
   const { ENGINE_MODES, NEW_MODES: active, MODE_MEDIA_SECTIONS } = await import('../src/data/modes/modeRegistry.js');
   for (const mode of [...ENGINE_MODES, ...active]) assert.ok(MODE_GUIDE[mode.id], `λείπει οδηγός για ${mode.id}`);
-  for (const id of ['classic', 'arrest_heist', 'lockdown', 'beach_bar', 'marathon_4h']) {
+  for (const id of ['classic', 'arrest_heist', 'lockdown', 'beach_bar', 'marathon_4h', 'villa_takeover']) {
     const sectionIds = (MODE_MEDIA_SECTIONS[id] || []).map((s) => s.id);
     for (const phase of MODE_GUIDE[id].phases) assert.ok(sectionIds.includes(phase.id), `${id}: η φάση ${phase.id} δεν έχει ενότητα φωτογραφίας`);
   }
@@ -66,7 +67,7 @@ test('οδηγός: κάθε ενεργό mode έχει οδηγό, και κά�
 
 test('νέες ψηφιακές παρτίδες ξεκινούν με εισαγωγή κανόνων· οι παλιές δεν μπλοκάρονται', async () => {
   const src = (await import('node:fs')).readFileSync(new URL('../src/lib/modeKit.js', import.meta.url), 'utf8');
-  assert.match(src, /\['lockdown', 'beach_bar', 'marathon_4h'\]\.includes\(modeId\)\) base\.briefingRequired = true/);
+  assert.match(src, /\['lockdown', 'beach_bar', 'marathon_4h', 'villa_takeover'\]\.includes\(modeId\)\) base\.briefingRequired = true/);
   const { pointsOf, rankPlayers, championOf } = await import('../src/lib/modeRanking.js');
   const players = [{ id: 'a', name: 'Α' }, { id: 'b', name: 'Β' }];
   const mg = { scores: { a: 3, b: 5 }, tokens: { a: 4 }, lounge: { stats: { b: { loot: 2000 } } } };

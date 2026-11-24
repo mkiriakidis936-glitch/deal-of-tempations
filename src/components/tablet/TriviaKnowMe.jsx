@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { base44 } from '@/api/base44Client';
+import { appApi } from '@/api/apiClient';
 import ComicPanel from '@/components/comic/ComicPanel';
 import ComicButton from '@/components/comic/ComicButton';
 import { addHistory, applyPenaltyStep } from '@/lib/gameLogic';
@@ -62,7 +62,7 @@ export default function TriviaKnowMe({ state, updateState, onClose }) {
   useEffect(() => {
     (async () => {
       try {
-        const { items } = await base44.entities.PlayerIntake.filter({}, { sort: '-created_date', limit: 50 });
+        const { items } = await appApi.entities.PlayerIntake.filter({}, { sort: '-created_date', limit: 50 });
         setRounds(buildRounds(items || []));
       } catch (e) {
         console.error('Trivia load error', e);

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { base44 } from '@/api/base44Client';
+import { appApi } from '@/api/apiClient';
 import ComicPanel from '@/components/comic/ComicPanel';
 import ComicButton from '@/components/comic/ComicButton';
 import { addHistory, categorizeGrandJuryLogs } from '@/lib/gameLogic';
@@ -40,7 +40,7 @@ export default function GrandJuryControl({ state, updateState, onClose }) {
   async function startCountdown() {
     let reward = '';
     try {
-      const { items } = await base44.entities.GameContent.filter({ category: 'grand_jury_rewards' }, { limit: 1 });
+      const { items } = await appApi.entities.GameContent.filter({ category: 'grand_jury_rewards' }, { limit: 1 });
       if (items?.length) reward = items[0].data?.text || '';
     } catch (e) { /* ignore */ }
     const duration = minutes * 60;

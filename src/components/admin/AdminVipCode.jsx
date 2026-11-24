@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { request } from '@/api/base44Client';
+import { request } from '@/api/apiClient';
 import ComicPanel from '@/components/comic/ComicPanel';
 
 export default function AdminVipCode() {

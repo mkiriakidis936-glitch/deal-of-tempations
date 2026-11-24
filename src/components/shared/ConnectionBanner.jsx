@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { realtimeHealth } from '@/api/base44Client';
+import { realtimeHealth } from '@/api/apiClient';
 import { getPendingWrites, subscribePendingWrites } from '@/lib/connectionStatus';
 
 // Μικρή ειδοποίηση σύνδεσης: εμφανίζεται ΜΟΝΟ όταν κάτι δεν πάει καλά (χωρίς δίκτυο, αλλαγές σε αναμονή, επανασύνδεση).

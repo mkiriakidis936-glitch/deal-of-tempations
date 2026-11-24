@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { base44 } from '@/api/base44Client';
+import { appApi } from '@/api/apiClient';
 import ComicPanel from '@/components/comic/ComicPanel';
 
 const FIELDS = [
@@ -21,7 +21,7 @@ export default function EventPortal() {
   const [error, setError] = useState(false);
 
   useEffect(() => {
-    Promise.all(FIELDS.map(([key]) => base44.entities.AppSetting.filter({ key }, { limit: 1 })))
+    Promise.all(FIELDS.map(([key]) => appApi.entities.AppSetting.filter({ key }, { limit: 1 })))
       .then((results) => {
         const next = {};
         FIELDS.forEach(([key], index) => {

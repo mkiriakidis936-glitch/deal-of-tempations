@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { base44, request } from '@/api/base44Client';
+import { appApi, request } from '@/api/apiClient';
 
 export default function PajamaRSVP() {
   const [count, setCount] = useState(0);
@@ -24,7 +24,7 @@ export default function PajamaRSVP() {
     if (!clean || saving) return;
     setSaving(true);
     try {
-      await base44.entities.InvitationRSVP.create({ name: clean, confirmed: true, event: 'pajama', ...(sessionCode ? { sessionCode } : {}) });
+      await appApi.entities.InvitationRSVP.create({ name: clean, confirmed: true, event: 'pajama', ...(sessionCode ? { sessionCode } : {}) });
       setName('');
       setDone(true);
       await load();

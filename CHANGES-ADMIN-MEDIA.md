@@ -24,7 +24,7 @@
 - Το banner του Admin Dashboard διαβάζεται κατά το render (όχι σταθερά στο import).
 
 ## 4 · Ασφάλεια & συνέπεια (2η φάση)
-- Realtime (SSE): το μόνιμο JWT του admin ΔΕΝ μπαίνει πια στο URL (καταγραφόταν σε logs). Νέο `POST /api/entities/stream-ticket` δίνει εισιτήριο μιας χρήσης που λήγει σε 60″ (`server/auth.js`, `server/index.js`, `src/api/base44Client.js`). Σε κάθε διακοπή η σύνδεση ανοίγει με νέο εισιτήριο.
+- Realtime (SSE): το μόνιμο JWT του admin ΔΕΝ μπαίνει πια στο URL (καταγραφόταν σε logs). Νέο `POST /api/entities/stream-ticket` δίνει εισιτήριο μιας χρήσης που λήγει σε 60″ (`server/auth.js`, `server/index.js`, `src/api/apiClient.js`). Σε κάθε διακοπή η σύνδεση ανοίγει με νέο εισιτήριο.
 - `ModeMediaManager` / `GameMediaLibraries`: οι αποθηκεύσεις εφαρμόζονται πάνω στις πιο πρόσφατες ρυθμίσεις (`saveChanged` στο `AdminMedia.jsx`).
 - Ο έλεγχος αρχείων μπήκε σε δικό του module `server/upload-validate.js` με tests (`tests/upload-validate.test.js`, 3/3 περνούν).
 

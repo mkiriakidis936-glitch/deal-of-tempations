@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { base44 } from '@/api/base44Client';
+import { appApi } from '@/api/apiClient';
 import { GAME_MODES, modeDisplayName } from '@/data/gameConfig';
-import { request } from '@/api/base44Client';
+import { request } from '@/api/apiClient';
 import { fetchOverrides } from '@/lib/media';
 import { PHOTO_SPOT_IDS, VIDEO_SLOTS } from '@/data/mediaSlots';
 import { NEW_MODES } from '@/data/modes/modeRegistry';
@@ -24,9 +24,9 @@ export default function AdminOverview({ sessions = [], loading = false, onNaviga
   useEffect(() => {
     let mounted = true;
     Promise.allSettled([
-      base44.entities.Achievement.filter({}, { limit: 500 }),
-      Promise.all([base44.entities.PublicFormSubmission.filter({ status: 'new' }, { limit: 500 }), base44.entities.PlayerIntake.filter({}, { limit: 500 }), base44.entities.PajamaIntake.filter({}, { limit: 500 }), base44.entities.BacheloretteIntake.filter({}, { limit: 500 })]),
-      base44.entities.VIPInvitation.filter({ active: true }, { limit: 100 }),
+      appApi.entities.Achievement.filter({}, { limit: 500 }),
+      Promise.all([appApi.entities.PublicFormSubmission.filter({ status: 'new' }, { limit: 500 }), appApi.entities.PlayerIntake.filter({}, { limit: 500 }), appApi.entities.PajamaIntake.filter({}, { limit: 500 })]),
+      appApi.entities.VIPInvitation.filter({ active: true }, { limit: 100 }),
       request('GET', '/api/backup/list'),
       request('GET', '/api/push/status'),
       fetchOverrides(),
@@ -87,10 +87,10 @@ export default function AdminOverview({ sessions = [], loading = false, onNaviga
       </div>
     </section>
     <section className="grid grid-cols-2 xl:grid-cols-4 gap-3">
-      <MetricCard icon="🎮" label="Λειτουργίες παιχνιδιού" value={GAME_MODES.length} note="Διαθέσιμες λειτουργίες" accent="bg-[#d4af37]" />
+      <MetricCard icon="🎮" label="Modes παιχνιδιού" value={GAME_MODES.length} note="2 μηχανές · 4 ψηφιακά" accent="bg-[#d4af37]" />
       <MetricCard icon="👥" label="Παίκτριες" value={playerCount} note="Μοναδικοί παίκτες στις αποθηκευμένες παρτίδες" accent="bg-[#d4af37]" />
       <MetricCard icon="🎲" label="Συνεδρίες παιχνιδιού" value={loading ? '…' : sessions.length} note={`${activity.active.length} ενεργές · ${activity.finished.length} ολοκληρωμένες`} accent="bg-[#d4af37]" />
-      <MetricCard icon="🏆" label="Επιτεύγματα" value={extra.achievements ?? '—'} note={extra.achievements === null ? 'Μη διαθέσιμα δεδομένα' : 'Καταχωρισμένα επιτεύγματα'} accent="bg-[#d4af37]" />
+      <MetricCard icon="📨" label="Νέες αιτήσεις" value={extra.newRequests ?? '—'} note="Περιμένουν έγκριση στις Αιτήσεις" accent="bg-[#d4af37]" />
     </section>
 
     <section className="grid grid-cols-1 xl:grid-cols-[1.15fr_.85fr] gap-3">

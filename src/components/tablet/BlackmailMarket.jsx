@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { base44 } from '@/api/base44Client';
+import { appApi } from '@/api/apiClient';
 import ComicPanel from '@/components/comic/ComicPanel';
 import ComicButton from '@/components/comic/ComicButton';
 import { addHistory } from '@/lib/gameLogic';
@@ -17,7 +17,7 @@ export default function BlackmailMarket({ state, updateState, onClose }) {
   useEffect(() => {
     (async () => {
       try {
-        const { items } = await base44.entities.BlackmailVault.filter(
+        const { items } = await appApi.entities.BlackmailVault.filter(
           { sessionCode: state.sessionCode, redeemed: false },
           { sort: '-created_date', limit: 50 }
         );
@@ -33,7 +33,7 @@ export default function BlackmailMarket({ state, updateState, onClose }) {
     if ((buyer.tokens || 0) < cost) return;
     setBusyId(entry.id);
     try {
-      await base44.entities.BlackmailVault.update(entry.id, { redeemed: true, heldBy: buyer.name });
+      await appApi.entities.BlackmailVault.update(entry.id, { redeemed: true, heldBy: buyer.name });
       const updatedPlayers = state.players.map((p) => (p.id === buyer.id ? { ...p, tokens: (p.tokens || 0) - cost } : p));
       const history = addHistory({ ...state, players: updatedPlayers }, {
         type: 'blackmail_buy',

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { base44 } from '@/api/base44Client';
+import { appApi } from '@/api/apiClient';
 import { PAJAMA_BOARD, PAJAMA_NIGHT_LENGTH, SQUARE_META } from '@/data/pajamaBoard';
 
 const PHASE_LABEL = {
@@ -21,7 +21,7 @@ export default function AdminPajamaLive() {
 
     (async () => {
       try {
-        const { items } = await base44.entities.GameSession.filter(
+        const { items } = await appApi.entities.GameSession.filter(
           { mode: 'pajama' },
           { sort: '-created_date', limit: 1 }
         );
@@ -30,7 +30,7 @@ export default function AdminPajamaLive() {
         setSession(found);
         setLoading(false);
         if (found) {
-          unsub = base44.entities.GameSession.subscribe((event) => {
+          unsub = appApi.entities.GameSession.subscribe((event) => {
             if (event.id === found.id) {
               setSession((prev) => (prev ? { ...prev, ...event.data } : prev));
             }

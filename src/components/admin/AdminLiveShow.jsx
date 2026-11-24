@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { Tablet, Tv, Smartphone, Square, Play, Copy } from 'lucide-react';
-import { base44, request } from '@/api/base44Client';
+import { appApi, request } from '@/api/apiClient';
 import ComicPanel from '@/components/comic/ComicPanel';
 import { publishProductionCue, stopProductionCue } from '@/lib/productionCue';
 import { useTick } from '@/lib/modeKit';
@@ -87,9 +87,9 @@ export default function AdminLiveShow({ sessions = [], selectedSession, onSelect
   useEffect(() => {
     if (!code) return undefined;
     let alive = true;
-    const loadCue = () => base44.entities.ProductionCue.filter({ sessionCode: code }, { limit: 1 })
+    const loadCue = () => appApi.entities.ProductionCue.filter({ sessionCode: code }, { limit: 1 })
       .then(({ items = [] }) => { if (alive) setCue(items[0] || null); }).catch(() => {});
-    const loadProduction = () => base44.entities.ShowProduction.filter({ sessionCode: code }, { sort: '-updated_date', limit: 1 })
+    const loadProduction = () => appApi.entities.ShowProduction.filter({ sessionCode: code }, { sort: '-updated_date', limit: 1 })
       .then(({ items = [] }) => { if (alive) setProduction(items[0] || null); }).catch(() => {});
     const loadPresence = () => request('GET', `/api/entities/player-presence/${encodeURIComponent(code)}`)
       .then(({ players: list = [] }) => { if (alive) setPresence(Object.fromEntries(list.map((item) => [item.playerId, Number(item.lastSeenAt)]))); }).catch(() => {});
@@ -97,13 +97,13 @@ export default function AdminLiveShow({ sessions = [], selectedSession, onSelect
     loadProduction();
     loadPresence();
     const presenceTimer = setInterval(loadPresence, 20000);
-    const offCue = base44.entities.ProductionCue.subscribe((event) => {
+    const offCue = appApi.entities.ProductionCue.subscribe((event) => {
       if (event?.type === 'resync' || event?.data?.sessionCode === code) loadCue();
     }, { sessionCode: code });
-    const offProduction = base44.entities.ShowProduction.subscribe((event) => {
+    const offProduction = appApi.entities.ShowProduction.subscribe((event) => {
       if (event?.type === 'resync' || event?.data?.sessionCode === code) loadProduction();
     });
-    const offPresence = base44.entities.PlayerPresence.subscribe((event) => {
+    const offPresence = appApi.entities.PlayerPresence.subscribe((event) => {
       if (event?.data?.sessionCode !== code || !event.data.playerId) return;
       setPresence((current) => ({ ...current, [event.data.playerId]: Number(event.data.lastSeenAt) || Date.now() }));
     });
@@ -144,7 +144,7 @@ export default function AdminLiveShow({ sessions = [], selectedSession, onSelect
   const goSegment = (segment) => run('segment', async () => {
     await publishProductionCue(code, { kind: 'scene', label: segment.title });
     if (production?.id) {
-      const saved = await base44.entities.ShowProduction.update(production.id, { liveSegmentId: segment.id, liveSegmentAt: new Date().toISOString() });
+      const saved = await appApi.entities.ShowProduction.update(production.id, { liveSegmentId: segment.id, liveSegmentAt: new Date().toISOString() });
       setProduction(saved);
     }
     return true;

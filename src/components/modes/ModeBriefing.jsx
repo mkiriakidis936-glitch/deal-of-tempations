@@ -1,8 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { MODE_GUIDE, SAFETY_RULES, PLAYER_REMINDERS, SCREENS, currentPhase, phaseIdFor } from '@/data/modes/modeGuide';
 import { modeMeta } from '@/data/modes/modeRegistry';
-import { modeArtUrl } from '@/components/modes/ModeArt';
-import { rankPlayers, pointsOf, championOf, finalStandings } from '@/lib/modeRanking';
+import { modeArtUrl, artSectionFor } from '@/components/modes/ModeArt';
+import { rankPlayers, pointsOf, championOf, finalStandings, liveStandings } from '@/lib/modeRanking';
 import { GAME_MODES } from '@/data/gameConfig';
 import { introVideoFor } from '@/components/tv/GameIntroTV';
 
@@ -143,7 +143,7 @@ export function PhaseTransitionTV({ state }) {
   }, [briefingDoneAt]);
   useEffect(() => {
     if (!shownAt) return undefined;
-    const t = setTimeout(() => setShownAt(0), 6000);
+    const t = setTimeout(() => setShownAt(0), 9000);
     return () => clearTimeout(t);
   }, [shownAt]);
   const phase = currentPhase(state);
@@ -156,6 +156,17 @@ export function PhaseTransitionTV({ state }) {
         <div className="text-[1.6vw] font-semibold uppercase tracking-[0.4em] text-[#E8C26B]">Φάση {phase.index + 1} από {phase.total}</div>
         <div className="mt-[1vw] max-w-[80vw] text-[4.5vw] font-bold leading-tight text-white">{phase.title}</div>
         <div className="mx-auto mt-[1vw] max-w-[60vw] text-[1.8vw] text-white/75">{phase.text}</div>
+        {phase.index > 0 && liveStandings(state).length > 0 && (
+          <div className="mx-auto mt-[2vw] w-[min(46vw,820px)] rounded-3xl bg-black/60 p-[1.2vw] text-left">
+            <div className="text-[1vw] font-semibold uppercase tracking-[0.3em] text-[#E8C26B]">Κατάταξη μέχρι τώρα</div>
+            {liveStandings(state).map((row, i) => (
+              <div key={row.id} className="flex items-center justify-between border-b border-white/10 py-[0.5vw] text-[1.6vw] last:border-0">
+                <span><span className="inline-block w-[2.4vw] text-white/45">{i + 1}</span>{i === 0 ? '👑 ' : ''}{row.name}</span>
+                <span className="font-bold tabular-nums text-[#E8C26B]">{row.value} <span className="text-[1vw] font-normal text-white/50">{row.unit}</span></span>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
@@ -214,7 +225,7 @@ export function ChampionCeremonyTV({ state }) {
   const mg = state.mg || {};
   const champion = championOf(players, mg);
   const podium = finalStandings(players, mg).slice(0, 3);
-  const art = modeArtUrl(state.mode, '');
+  const art = modeArtUrl(state.mode, artSectionFor(state));
   const meta = metaFor(state.mode);
   return (
     <div className="relative min-h-screen overflow-hidden bg-black text-white">

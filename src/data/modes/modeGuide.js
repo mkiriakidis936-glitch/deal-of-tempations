@@ -78,6 +78,17 @@ export const MODE_GUIDE = {
       { id: 'last_queen', title: 'Στάδιο 5 — Last Queen Finale', text: 'Αντίστροφη μέτρηση και τελική πρόκληση για την ανάδειξη της Last Queen.', next: 'Ξεκινήστε την αντίστροφη μέτρηση του φινάλε.' },
     ],
   },
+  villa_takeover: {
+    tagline: 'Πολυήμερη εμπειρία 18+ σε Villa: 48 ώρες, 3 κύκλοι, μυστικοί ρόλοι, συμμαχίες και ένας κωδικός 4 ψηφίων.',
+    goal: 'Κάθε ώρα ανοίγει ένα τετράγωνο του ταμπλό (48 συνολικά). Παίξτε δοκιμασίες και Truth or Dare 18+, ολοκληρώστε μυστικές αποστολές, κλείστε (και προδώστε) συμμαχίες και μαζέψτε τις 4 ενδείξεις του κωδικού.',
+    win: 'Η νικήτρια αναδεικνύεται από πόντους, αποστολές και διακρίσεις: Queen of the Villa στο Grand Finale. Όποια σπάσει τον κωδικό παίρνει +50.',
+    phases: [
+      { id: 'arrival', title: 'Κύκλος 1 — The Arrival', text: 'Ώρες 1–16: check-in, μυστικοί ρόλοι, πρώτες αλήθειες, πρώτη ψηφοφορία και πρώτη προδοσία.', next: 'Μοίρασε τους ρόλους (γίνεται αυτόματα) και στείλε την ειδοποίηση «VILLA TAKEOVER».' },
+      { id: 'temptation', title: 'Κύκλος 2 — The Temptation', text: 'Ώρες 17–32: Temptation Cards, συμμαχίες, Blackmail Market, δοκιμασίες ισορροπίας και η δεύτερη νύχτα.', next: 'Κράτα ζωντανές τις συμμαχίες και στείλε μυστικές αποστολές.' },
+      { id: 'takeover', title: 'Κύκλος 3 — The Final Takeover', text: 'Ώρες 33–48: Night Sock Heist, Sealed Votes, οι τελευταίες ενδείξεις και ο τελικός κωδικός.', next: 'Ενεργοποίησε το Night Mode και ετοίμασε το Grand Finale.' },
+      { id: 'afterdark', title: 'After Dark — The Final 24', text: 'Προαιρετική επέκταση 72h, μόνο με απόφαση της ομάδας: νέες αποστολές, revenge, τελική κατάταξη.', next: 'Ξεκλείδωσε την επέκταση μόνο αν συμφωνούν όλες.' },
+    ],
+  },
   marathon_4h: {
     tagline: 'The Ultimate Lounge Lockdown: ταμπλό, αστυνομική καταδίωξη, λεία, ανάκριση και απόδραση — 105 λεπτά.',
     goal: 'Ρίξτε ζάρι, μαζέψτε λεία, αποφύγετε τις χειροπέδες και επιβιώστε στην ανάκριση.',
@@ -100,6 +111,10 @@ export function phaseIdFor(state) {
   const mg = state?.mg || {};
   if (state?.mode === 'lockdown') return LOCKDOWN_STAGE[mg.ld?.stage || 'init'] || 'level1';
   if (state?.mode === 'beach_bar') return BEACH_PHASE[mg.bb?.phase || 'checkin'] || 'checkin';
+  if (state?.mode === 'villa_takeover') {
+    const sq = Number(mg.villa?.sq || 1);
+    return sq > 48 ? 'afterdark' : sq > 32 ? 'takeover' : sq > 16 ? 'temptation' : 'arrival';
+  }
   if (state?.mode === 'marathon_4h') return `phase${Math.min(4, (mg.lounge?.phase || 0) + 1)}`;
   // Μηχανές: η φάση είναι το πραγματικό στάδιο του παιχνιδιού (state.stage 0–3).
   const engine = ENGINE_GUIDE_MODES.includes(state?.mode) ? MODE_GUIDE[state.mode].phases : null;

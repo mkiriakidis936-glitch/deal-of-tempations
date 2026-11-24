@@ -7,7 +7,7 @@ const root = path.resolve(import.meta.dirname, '..');
 const read = (file) => fs.readFileSync(path.join(root, file), 'utf8');
 
 test('realtime: όλες οι συνδρομές μιας σελίδας μοιράζονται μία σύνδεση SSE', () => {
-  const client = read('src/api/base44Client.js');
+  const client = read('src/api/apiClient.js');
   assert.match(client, /\/api\/entities\/multi\/stream\?/);
   assert.doesNotMatch(client, /\/api\/entities\/\$\{name\}\/stream/);
   assert.match(client, /type: 'resync'/);
@@ -75,7 +75,7 @@ test('realtime: χρησιμοποιημένο εισιτήριο admin δεν �
   const { hasStreamTicket } = await import('../server/auth.js');
   assert.equal(hasStreamTicket({ query: { ticket: 'abc123' } }), true);
   for (const ticket of ['null', 'undefined', '', undefined]) assert.equal(hasStreamTicket({ query: { ticket } }), false, `ticket=${ticket} = χωρίς εισιτήριο`);
-  const client = read('src/api/base44Client.js');
+  const client = read('src/api/apiClient.js');
   assert.match(client, /\[401, 403\]\.includes\(error\?\.status\)/);
   assert.match(client, /event: ping|addEventListener\('ping'/);
 });
@@ -94,6 +94,6 @@ test('ενημέρωση λογισμικού: ο server δίνει τις ση�
 test('site: οι απλοί λογαριασμοί δεν παίρνουν 403 στη ζωντανή σύνδεση', () => {
   const index = read('server/index.js');
   assert.match(index, /app\.post\('\/api\/entities\/stream-ticket', \(req, res\) => res\.json\(\{ ticket: req\.user\?\.role === 'admin' \? issueStreamTicket\(req\.user\.id\) : null \}\)\)/);
-  const client = read('src/api/base44Client.js');
+  const client = read('src/api/apiClient.js');
   assert.match(client, /if \(ticket\) params\.set\('ticket', ticket\);/);
 });

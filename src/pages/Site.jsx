@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { base44 } from '@/api/base44Client';
+import { appApi } from '@/api/apiClient';
 import {
   SiteTopBar, SiteHeroV2, Marquee, ExperiencesRail, HowItWorks, ThreeScreens, TrailerSection,
   GallerySection, SafetySection, FaqSection, FinalCta, StorySection, FlowSection, InfoSection,
-  MobileBookBar, SiteFooter, SITE_MODE_IDS,
+  MobileBookBar, SiteFooter, SITE_MODE_IDS, CalendarSection,
 } from '@/components/site/SiteV2';
 import { getSiteContent, SITE_EVENTS, SITE_HOME_ID } from '@/data/siteContent';
 import { ART, PHOTO, MODE_COVERS, MODE_MEDIA } from '@/data/brandArt';
@@ -30,7 +30,7 @@ export default function Site() {
     : (MODE_MEDIA[modeId]?.hero || MODE_MEDIA[modeId]?.cover || MODE_COVERS[`modeCover_${modeId}`] || (ev === 'heist' ? ART.heistNight : ART.poster));
 
   useEffect(() => {
-    base44.entities.AppSetting.filter({ key: 'event_date' }, { limit: 1 })
+    appApi.entities.AppSetting.filter({ key: 'event_date' }, { limit: 1 })
       .then(({ items }) => { if (items?.[0]?.value) setGlobalDate(items[0].value); })
       .catch(() => {});
   }, []);
@@ -70,6 +70,7 @@ export default function Site() {
         />
         <Marquee words={(h.marquee || []).filter(Boolean)} />
         <ExperiencesRail onOpen={openEvent} onBook={book} />
+        <CalendarSection items={h.calendar} onBook={book} />
         <HowItWorks />
         <ThreeScreens />
         <TrailerSection title="Δες πώς είναι" />

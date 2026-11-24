@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { base44 } from '@/api/base44Client';
+import { appApi } from '@/api/apiClient';
 import { publishProductionCue, commandProductionCue, stopProductionCue } from '@/lib/productionCue';
 import { getActiveSessionCode, setActiveSessionCode, subscribeActiveSession } from '@/lib/activeSession';
 import ComicPanel from '@/components/comic/ComicPanel';
@@ -110,8 +110,8 @@ export default function AVControlRoom({ mediaFiles = [], onRefreshMedia }) {
     setBusy(true);
     try {
       const [sessionResult, settingResult] = await Promise.all([
-        base44.entities.GameSession.filter({}, { sort: '-created_date', limit: 100 }),
-        base44.entities.AppSetting.filter({ key: SETTINGS_KEY }, { limit: 1 }),
+        appApi.entities.GameSession.filter({}, { sort: '-created_date', limit: 100 }),
+        appApi.entities.AppSetting.filter({ key: SETTINGS_KEY }, { limit: 1 }),
       ]);
       setSessions(sessionResult.items || []);
       const rec = settingResult.items?.[0] || null;
@@ -146,7 +146,7 @@ export default function AVControlRoom({ mediaFiles = [], onRefreshMedia }) {
   useEffect(() => {
     if (!sessionCode) { setCueRecord(null); return undefined; }
     let alive = true;
-    const refreshCue = () => base44.entities.ProductionCue.filter({ sessionCode }, { limit: 1 }).then(({ items = [] }) => {
+    const refreshCue = () => appApi.entities.ProductionCue.filter({ sessionCode }, { limit: 1 }).then(({ items = [] }) => {
       if (!alive) return;
       const nextCue = items[0] || null;
       setCueRecord(nextCue);
@@ -155,7 +155,7 @@ export default function AVControlRoom({ mediaFiles = [], onRefreshMedia }) {
       }
     }).catch(() => {});
     refreshCue();
-    const off = base44.entities.ProductionCue.subscribe((event) => { if (event?.type === 'resync' || event?.data?.sessionCode === sessionCode) refreshCue(); });
+    const off = appApi.entities.ProductionCue.subscribe((event) => { if (event?.type === 'resync' || event?.data?.sessionCode === sessionCode) refreshCue(); });
     return () => { alive = false; off?.(); };
   }, [sessionCode]);
 
@@ -174,8 +174,8 @@ export default function AVControlRoom({ mediaFiles = [], onRefreshMedia }) {
   async function persist(nextMetadata = metadata, nextQueue = queue, nextIndex = queueIndex) {
     const value = { metadata: nextMetadata, queue: nextQueue, queueIndex: nextIndex };
     const saved = settingsRecord?.id
-      ? await base44.entities.AppSetting.update(settingsRecord.id, { value })
-      : await base44.entities.AppSetting.create({ key: SETTINGS_KEY, value });
+      ? await appApi.entities.AppSetting.update(settingsRecord.id, { value })
+      : await appApi.entities.AppSetting.create({ key: SETTINGS_KEY, value });
     setSettingsRecord(saved);
   }
 

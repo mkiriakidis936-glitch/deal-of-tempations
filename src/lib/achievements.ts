@@ -1,4 +1,4 @@
-import { base44 } from '@/api/base44Client';
+import { appApi } from '@/api/apiClient';
 import { ACHIEVEMENTS, getAchievement, ACHIEVEMENTS_SETTING_KEY } from '@/data/achievements';
 
 // awards = [{ achievementId, playerName }]
@@ -7,7 +7,7 @@ export async function awardAchievements(sessionCode, awards) {
 
   let configured = ACHIEVEMENTS;
   try {
-    const settings = await base44.entities.AppSetting.filter({ key: ACHIEVEMENTS_SETTING_KEY }, { limit: 1 });
+    const settings = await appApi.entities.AppSetting.filter({ key: ACHIEVEMENTS_SETTING_KEY }, { limit: 1 });
     const saved = settings.items?.[0]?.value?.items;
     if (Array.isArray(saved)) configured = ACHIEVEMENTS.map((base) => ({
       ...base,
@@ -27,7 +27,7 @@ export async function awardAchievements(sessionCode, awards) {
     });
   });
 
-  const existing = await base44.entities.Achievement.filter({ sessionCode }, { limit: 200 });
+  const existing = await appApi.entities.Achievement.filter({ sessionCode }, { limit: 200 });
   const already = existing.items || [];
 
   const toCreate = unique
@@ -44,5 +44,5 @@ export async function awardAchievements(sessionCode, awards) {
       };
     });
 
-  if (toCreate.length) await base44.entities.Achievement.bulkCreate(toCreate);
+  if (toCreate.length) await appApi.entities.Achievement.bulkCreate(toCreate);
 }

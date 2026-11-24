@@ -1,5 +1,5 @@
 import React,{useEffect,useMemo,useState} from 'react';
-import {base44,getToken} from '@/api/base44Client';
+import {appApi,getToken} from '@/api/apiClient';
 import {publishProductionCue,stopProductionCue} from '@/lib/productionCue';
 import ComicPanel from '@/components/comic/ComicPanel';
 import ComicButton from '@/components/comic/ComicButton';
@@ -47,7 +47,7 @@ export default function ProductionRuntime({selected,record,draft,onChange,onSave
    setBusy(true);setMessage('');
    const next={...draft,...patch,sessionCode:selected.sessionCode,sessionId:selected.id,mode:selected.mode||'',eventTitle:selected.event?.title||selected.mode||'DEAL OF TEMPTATIONS'};
    try{
-     const saved=record?.id?await base44.entities.ShowProduction.update(record.id,{...patch,sessionCode:selected.sessionCode,sessionId:selected.id,mode:selected.mode||'',eventTitle:selected.event?.title||selected.mode||'DEAL OF TEMPTATIONS'}):await base44.entities.ShowProduction.create(next);
+     const saved=record?.id?await appApi.entities.ShowProduction.update(record.id,{...patch,sessionCode:selected.sessionCode,sessionId:selected.id,mode:selected.mode||'',eventTitle:selected.event?.title||selected.mode||'DEAL OF TEMPTATIONS'}):await appApi.entities.ShowProduction.create(next);
      onSaved?.(saved,patch);setMessage(success||'Η παραγωγή αποθηκεύτηκε.');return saved;
    }catch(error){setMessage(error.message||'Η αποθήκευση απέτυχε.');return null;}
    finally{setBusy(false);}

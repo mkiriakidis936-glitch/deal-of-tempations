@@ -11,6 +11,8 @@ export const CONSENT_OPTIONS = [
   { id: 'camera', label: 'Χωρίς φωτογραφίες / βίντεο', re: /φωτογραφ|selfie|βιντεο|video|photo|ηχογραφ|story/ },
   { id: 'personal', label: 'Χωρίς προσωπικές ερωτήσεις / εξομολογήσεις', re: /εξομολογ|confess|αληθει|truth|προσωπικ|μυστικ|18\+/ },
   { id: 'physical', label: 'Χωρίς σωματικές προκλήσεις (χορός, ισορροπία)', re: /χορευ|χορεψ|χορο|dance|freeze|ισορροπ|τρεξ|push.?up|squat|ακινησ|γονατ/ },
+  { id: 'restraint', label: 'Χωρίς δεσίματα / χειροπέδες', re: /δεσ[ιε]|δεμεν|χειροπεδ|restraint|bound|bind|hand lock|locked feet/ },
+  { id: 'night', label: 'Χωρίς νυχτερινές επιδρομές (Night Sock Heist)', re: /night raid|sock heist|νυχτεριν\S* (επιδρομ|κλοπ)|κοιμ/ },
 ];
 export const CONSENT_IDS = CONSENT_OPTIONS.map((option) => option.id);
 

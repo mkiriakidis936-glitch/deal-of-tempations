@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
 import ComicPanel from '@/components/comic/ComicPanel';
 import ComicButton from '@/components/comic/ComicButton';
-import { base44, request } from '@/api/base44Client';
+import { appApi, request } from '@/api/apiClient';
 import { GAME_MODES } from '@/data/gameConfig';
 
 const KEY = 'digital_invitations';
@@ -36,26 +36,26 @@ export default function AdminDigitalInvitations() {
   const [selectedEventId, setSelectedEventId] = useState('');
 
   useEffect(() => {
-    base44.entities.AppSetting.filter({ key: KEY }, { limit: 1 }).then(async ({ items: rows }) => {
+    appApi.entities.AppSetting.filter({ key: KEY }, { limit: 1 }).then(async ({ items: rows }) => {
       const rec = rows?.[0] || null;
       setRecord(rec);
       const savedItems = Array.isArray(rec?.value?.items) ? rec.value.items : [];
       const currentItems = savedItems.filter((item) => item?.path && isAllowedInvitationPath(item.path));
       setItems(currentItems);
       if (rec?.id && currentItems.length !== savedItems.length) {
-        await base44.entities.AppSetting.update(rec.id, { value: { items: currentItems } });
+        await appApi.entities.AppSetting.update(rec.id, { value: { items: currentItems } });
         setMessage('Οι παλιοί σύνδεσμοι καταργήθηκαν. Διατηρήθηκαν μόνο οι σύνδεσμοι της ενιαίας φόρμας και οι προσωπικές VIP προσκλήσεις.');
       }
     }).catch((e) => setMessage(e.message));
     loadVipInvitations();
     loadEvents();
-    const offEvents = base44.entities.DotEvent.subscribe(() => loadEvents());
+    const offEvents = appApi.entities.DotEvent.subscribe(() => loadEvents());
     return () => offEvents?.();
   }, []);
 
   async function loadEvents() {
     try {
-      const { items: rows } = await base44.entities.DotEvent.filter({}, { sort: '-created_date', limit: 200 });
+      const { items: rows } = await appApi.entities.DotEvent.filter({}, { sort: '-created_date', limit: 200 });
       setEvents(rows || []);
       setSelectedEventId((current) => current || rows?.find((event) => !['closing', 'completed'].includes(event.status))?.id || '');
     } catch (e) { setVipMessage(e.message || 'Δεν φορτώθηκαν τα Events.'); }
@@ -63,7 +63,7 @@ export default function AdminDigitalInvitations() {
 
   async function loadVipInvitations() {
     try {
-      const { items: rows } = await base44.entities.VIPInvitation.filter({}, { sort: '-created_date', limit: 30 });
+      const { items: rows } = await appApi.entities.VIPInvitation.filter({}, { sort: '-created_date', limit: 30 });
       setVipInvitations(rows || []);
     } catch (e) { setVipMessage(e.message || 'Δεν φορτώθηκαν οι VIP προσκλήσεις.'); }
   }
@@ -73,8 +73,8 @@ export default function AdminDigitalInvitations() {
     try {
       const value = { items: next };
       const rec = record?.id
-        ? await base44.entities.AppSetting.update(record.id, { value })
-        : await base44.entities.AppSetting.create({ key: KEY, value });
+        ? await appApi.entities.AppSetting.update(record.id, { value })
+        : await appApi.entities.AppSetting.create({ key: KEY, value });
       setRecord(rec); setItems(next); setMessage('Αποθηκεύτηκε.');
     } catch (e) { setMessage(e.message); }
     finally { setBusy(false); }
@@ -104,7 +104,7 @@ export default function AdminDigitalInvitations() {
   async function toggleVipInvitation(invitation) {
     setVipBusy(true);
     try {
-      const updated = await base44.entities.VIPInvitation.update(invitation.id, { active: !invitation.active });
+      const updated = await appApi.entities.VIPInvitation.update(invitation.id, { active: !invitation.active });
       setVipInvitations((current) => current.map((item) => item.id === invitation.id ? updated : item));
       setVipMessage(updated.active ? 'Η VIP πρόσκληση ενεργοποιήθηκε.' : 'Η VIP πρόσκληση απενεργοποιήθηκε.');
     } catch (e) { setVipMessage(e.message || 'Δεν ενημερώθηκε η πρόσκληση.'); }
@@ -155,7 +155,7 @@ export default function AdminDigitalInvitations() {
     setVipBusy(true);
     setVipMessage('');
     try {
-      const updated = await base44.entities.VIPInvitationSubmission.update(response.id, {
+      const updated = await appApi.entities.VIPInvitationSubmission.update(response.id, {
         approved: false,
         approvalStatus: 'rejected',
         rejectedAt: new Date().toISOString(),
@@ -172,7 +172,7 @@ export default function AdminDigitalInvitations() {
   async function loadVipSubmissions(invitation) {
     setVipBusy(true);
     try {
-      const { items: rows } = await base44.entities.VIPInvitationSubmission.filter({ invitationId: invitation.id }, { sort: '-created_date', limit: 500 });
+      const { items: rows } = await appApi.entities.VIPInvitationSubmission.filter({ invitationId: invitation.id }, { sort: '-created_date', limit: 500 });
       setVipSubmissions((current) => ({ ...current, [invitation.id]: rows || [] }));
     } catch (e) { setVipMessage(e.message || 'Δεν φορτώθηκαν οι απαντήσεις.'); }
     finally { setVipBusy(false); }

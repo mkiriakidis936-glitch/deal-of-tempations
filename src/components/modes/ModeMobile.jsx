@@ -1,5 +1,7 @@
+import { useModesContentRev } from '@/lib/modesContentStore';
 import React, { useEffect, useRef, useState } from 'react';
 import GameCard from '@/components/shared/GameCard';
+import VillaMobile from '@/components/modes/VillaMobile';
 import LoungeMobile from '@/components/modes/LoungeMobile';
 import { modeMeta } from '@/data/modes/modeRegistry';
 import { EXTENDED_CHAOS_MARKET_CARDS, GATE_TOKENS, ROUTES } from '@/data/modes/extendedContent';
@@ -16,6 +18,7 @@ import { Header, Button, List, Row, SafetyBar } from '@/design/ui';
 
 // Οθόνη κινητού (/play) για τα ψηφιακά modes.
 export default function ModeMobile({ state, me, updateState, onChangePlayer, sessionCode }) {
+  useModesContentRev();
   const mg = state.mg || {};
   syncExitCode(mg);
   const meta = modeMeta(state.mode);
@@ -129,6 +132,7 @@ export default function ModeMobile({ state, me, updateState, onChangePlayer, ses
         )}
 
         {act === 'lounge' && <LoungeMobile state={state} me={me} sendAction={sendAction} updateState={updateState} />}
+        {act === 'villa' && <VillaMobile state={state} me={me} sendAction={sendAction} />}
 
         {mission && mission.status === 'active' && (
           <GameCard

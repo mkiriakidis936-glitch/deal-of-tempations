@@ -1,4 +1,4 @@
-import { base44, getToken } from '@/api/base44Client';
+import { appApi, getToken } from '@/api/apiClient';
 import { applyMediaOverrides } from '@/data/brandArt';
 import { setSiteOverrides } from '@/data/siteContent';
 
@@ -10,7 +10,7 @@ const AUDIO_EXT = /\.(mp3|wav|ogg|m4a|aac)$/i;
 const HEIC = /\.(heic|heif)$/i;
 
 export async function fetchOverrides() {
-  const { items } = await base44.entities.AppSetting.filter({ key: MEDIA_KEY }, { limit: 1 });
+  const { items } = await appApi.entities.AppSetting.filter({ key: MEDIA_KEY }, { limit: 1 });
   return items?.[0] || null;
 }
 
@@ -19,7 +19,7 @@ export async function fetchOverrides() {
 export const SITE_KEY = 'site_content';
 
 export async function fetchSiteRecord() {
-  const { items } = await base44.entities.AppSetting.filter({ key: SITE_KEY }, { limit: 1 });
+  const { items } = await appApi.entities.AppSetting.filter({ key: SITE_KEY }, { limit: 1 });
   return items?.[0] || null;
 }
 
@@ -28,8 +28,8 @@ export async function patchOverrides(mutator) {
   const rec = await fetchOverrides();
   const next = mutator({ ...(rec?.value || {}) });
   const clean = Object.fromEntries(Object.entries(next).filter(([, v]) => (Array.isArray(v) ? v.length : v)));
-  if (rec?.id) await base44.entities.AppSetting.update(rec.id, { value: clean });
-  else await base44.entities.AppSetting.create({ key: MEDIA_KEY, value: clean });
+  if (rec?.id) await appApi.entities.AppSetting.update(rec.id, { value: clean });
+  else await appApi.entities.AppSetting.create({ key: MEDIA_KEY, value: clean });
   return clean;
 }
 

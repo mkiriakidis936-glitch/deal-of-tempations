@@ -1,3 +1,4 @@
+import { useModesContentRev } from '@/lib/modesContentStore';
 import React, { useEffect } from 'react';
 import GameCard from '@/components/shared/GameCard';
 import { modeMeta, ACT_META } from '@/data/modes/modeRegistry';
@@ -6,6 +7,7 @@ import { EXIT_CODE, syncExitCode } from '@/data/modes/lockdownContent';
 import { consentPending } from '@/lib/consent';
 import { ConsentTV } from '@/components/modes/ConsentCheckIn';
 import LoungeTV from '@/components/modes/LoungeTV';
+import VillaTV from '@/components/modes/VillaTV';
 import ModeArt from '@/components/modes/ModeArt';
 import { BriefingTV, PhaseTransitionTV, ChampionCeremonyTV, briefingPending } from '@/components/modes/ModeBriefing';
 import { fmt, timerLeft, useTick, setGameStopActive } from '@/lib/modeKit';
@@ -13,6 +15,7 @@ import { TvScreen, TvLeaderboard } from '@/design/ui';
 
 // Τηλεόραση (/tv) για τα 4 νέα modes. Δεν δείχνει ποτέ κρυφές κάρτες, ερωτήσεις ψιθύρων ή μυστικές αποστολές.
 export default function ModeTV({ state }) {
+  useModesContentRev();
   const mg = state.mg || {};
   syncExitCode(mg);
   const meta = modeMeta(state.mode);
@@ -30,6 +33,7 @@ export default function ModeTV({ state }) {
   if (consentPending(mg)) return <ConsentTV state={state} />;
   if (briefingPending(mg, state.mode)) return <BriefingTV state={state} />;
   if (mg.finishedAll) return <ChampionCeremonyTV state={state} />;
+  if (act === 'villa') return <><PhaseTransitionTV state={state} /><VillaTV state={state} /></>;
 
   return (
     <TvScreen className="mx-auto max-w-[min(96vw,2600px)] p-4">

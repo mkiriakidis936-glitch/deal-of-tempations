@@ -3,7 +3,7 @@
 // picks up the DB-backed content without code changes. Falls back to the
 // static defaults if the DB is empty or the call fails.
 
-import { base44 } from '@/api/base44Client';
+import { appApi } from '@/api/apiClient';
 import { buildGameContentRecords } from '@/lib/reseedContent';
 
 import {
@@ -91,7 +91,7 @@ export async function hydrateGameContent() {
   if (hydrated) return true;
   staticGameContentRecords();
   try {
-    const { items } = await base44.entities.GameContent.filter({}, { sort: 'order', limit: 1000 });
+    const { items } = await appApi.entities.GameContent.filter({}, { sort: 'order', limit: 1000 });
     if (!items || items.length === 0) {
       hydrated = true;
       return true; // DB empty → keep static defaults

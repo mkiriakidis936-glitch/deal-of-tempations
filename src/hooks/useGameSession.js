@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { base44 } from '@/api/base44Client';
+import { appApi } from '@/api/apiClient';
 import { isRetryableError, setPendingWrites } from '@/lib/connectionStatus';
 
 export function useGameSession({ autoLoad = true } = {}) {
@@ -37,7 +37,7 @@ export function useGameSession({ autoLoad = true } = {}) {
       while (queueRef.current.length) {
         const item = queueRef.current[0];
         try {
-          const updated = await base44.entities.GameSession.update(item.targetSessionId, item.payload);
+          const updated = await appApi.entities.GameSession.update(item.targetSessionId, item.payload);
           queueRef.current.shift();
           setPendingWrites(queueRef.current.length);
           if (!queueRef.current.length) applyServer(updated, item.targetSessionId);
@@ -74,7 +74,7 @@ export function useGameSession({ autoLoad = true } = {}) {
     let alive = true;
     (async () => {
       try {
-        const { items } = await base44.entities.GameSession.filter({}, { sort: '-created_date', limit: 1 });
+        const { items } = await appApi.entities.GameSession.filter({}, { sort: '-created_date', limit: 1 });
         if (!alive || operation !== operationRef.current) return;
         if (items && items.length > 0) {
           sessionRef.current = items[0];
@@ -93,7 +93,7 @@ export function useGameSession({ autoLoad = true } = {}) {
 
   useEffect(() => {
     if (!session) return;
-    const unsub = base44.entities.GameSession.subscribe((event) => {
+    const unsub = appApi.entities.GameSession.subscribe((event) => {
       if (event.type === 'resync') { refreshRef.current?.(); return; }
       if (event.id !== sessionRef.current?.id) return;
       if (event.type === 'delete') {
@@ -133,7 +133,7 @@ export function useGameSession({ autoLoad = true } = {}) {
       return true;
     }
     try {
-      const updated = await base44.entities.GameSession.update(targetSessionId, payload);
+      const updated = await appApi.entities.GameSession.update(targetSessionId, payload);
       applyServer(updated, targetSessionId);
     } catch (e) {
       if (isRetryableError(e)) {
@@ -155,7 +155,7 @@ export function useGameSession({ autoLoad = true } = {}) {
 
   const createSession = useCallback(async (sessionData) => {
     const operation = ++operationRef.current;
-    const created = await base44.entities.GameSession.create(sessionData);
+    const created = await appApi.entities.GameSession.create(sessionData);
     if (operation !== operationRef.current) return created;
     sessionRef.current = created;
     stateRef.current = created.state || {};
@@ -167,7 +167,7 @@ export function useGameSession({ autoLoad = true } = {}) {
   const deleteSession = useCallback(async () => {
     ++operationRef.current;
     const id = sessionRef.current?.id;
-    if (id) await base44.entities.GameSession.delete(id);
+    if (id) await appApi.entities.GameSession.delete(id);
     sessionRef.current = null;
     stateRef.current = null;
     setViewerPlayerId(null);
@@ -183,7 +183,7 @@ export function useGameSession({ autoLoad = true } = {}) {
       const currentCode = sessionRef.current?.sessionCode;
       const currentId = sessionRef.current?.id;
       const query = currentCode ? { sessionCode: currentCode, ...(viewerRef.current ? { playerId: viewerRef.current } : {}) } : {};
-      const { items } = await base44.entities.GameSession.filter(query, { sort: '-created_date', limit: 1 });
+      const { items } = await appApi.entities.GameSession.filter(query, { sort: '-created_date', limit: 1 });
       if (operation !== operationRef.current || currentId !== sessionRef.current?.id) return;
       if (items && items.length > 0 && (!currentCode || items[0].sessionCode === currentCode)) {
         sessionRef.current = items[0];
@@ -222,7 +222,7 @@ export function useGameSession({ autoLoad = true } = {}) {
     setViewerPlayerId(playerId || null);
     try {
       const query = { sessionCode: code, ...(playerId ? { playerId } : {}) };
-      const { items } = await base44.entities.GameSession.filter(query, { sort: '-created_date', limit: 1 });
+      const { items } = await appApi.entities.GameSession.filter(query, { sort: '-created_date', limit: 1 });
       if (operation !== operationRef.current) return false;
       if (items && items.length > 0) {
         sessionRef.current = items[0];
