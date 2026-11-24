@@ -1,9 +1,14 @@
 import { PAJAMA_ACTS } from '@/data/pajamaProgram';
 
 // Περιεχόμενο του /site για κάθε event. Όλα επεξεργάζονται από Admin → 🌐 Site & Σενάριο.
+// Οι 4 εμπειρίες του /site (με τη σειρά που εμφανίζονται). Η Αρχική επεξεργάζεται ξεχωριστά (SITE_HOME_ID).
 export const SITE_EVENTS = [
-  { id: 'heist', label: '🚨 HEIST NIGHT' },
+  { id: 'heist', label: '🚨 Heist Night' },
+  { id: 'lockdown', label: '🔒 Pajama Lockdown' },
+  { id: 'beachbar', label: '🏖️ Beach Bar Lockdown' },
+  { id: 'marathon4h', label: '🚓 Pajama Heist & Arrest' },
 ];
+export const SITE_HOME_ID = 'home';
 
 const PAJAMA_PROGRAM = PAJAMA_ACTS.map((a) => ({
   roman: a.roman,
@@ -15,6 +20,28 @@ const PAJAMA_PROGRAM = PAJAMA_ACTS.map((a) => ({
 }));
 
 export const DEFAULT_SITE = {
+  // Αρχική σελίδα του /site.
+  home: {
+    overline: 'The private reality game night · 18+',
+    titleLines: ['DEAL OF', 'TEMPTATION'],
+    tagline: 'Ιδιωτικές βραδιές παιχνιδιού σαν τηλεοπτικό reality: κάρτες, αποστολές, ανατροπές και μία νικήτρια. Μόνο για καλεσμένες.',
+    cta: { label: 'Κλείσε θέση', path: '/forms' },
+    marquee: ['Κάρτες', 'Μυστικές αποστολές', 'Χειροπέδες', 'VIP Vault', 'Beach Queen', 'Ανάκριση', 'Κωδικός εξόδου', 'Golden Minute', 'Στέψη'],
+    finalTitle: 'Η επόμενη βραδιά σε περιμένει',
+    finalText: 'Διάλεξε εμπειρία, συμπλήρωσε τη φόρμα σε 3 λεπτά και περίμενε την πρόσκλησή σου.',
+    finalLabel: 'Διάλεξε εμπειρία',
+    faq: [
+      { q: 'Τι είναι το Deal of Temptation;', a: 'Ιδιωτικές εμπειρίες παιχνιδιού για παρέες ενηλίκων (18+): κάρτες, ταμπλό, γρίφοι και αποστολές, με TV, tablet και κινητά σαν πραγματικό τηλεπαιχνίδι. Η λίστα καλεσμένων είναι κλειστή.' },
+      { q: 'Ποια εμπειρία να διαλέξω;', a: 'Για βραδιά με κάρτες, ομάδες και ληστεία, το Heist Night. Για ψηφιακό escape room 60 λεπτών, το Pajama Lockdown. Για πάρτι με χορό και σαγιονάρες, το Beach Bar Lockdown. Για ταμπλό, αστυνόμο και ανάκριση, το Pajama Heist & Arrest.' },
+      { q: 'Πόσο διαρκεί;', a: 'Από 60 λεπτά (Pajama Lockdown) και 105 λεπτά (Pajama Heist & Arrest) ως 2–3 ώρες (Beach Bar Lockdown) ή ολόκληρη βραδιά (Heist Night).' },
+      { q: 'Πρέπει να έχω κινητό;', a: 'Ναι. Με το κινητό σου μπαίνεις στη βραδιά, ρίχνεις ζάρι, ψηφίζεις και βλέπεις τις προσωπικές σου μυστικές αποστολές. Η TV δείχνει τη δράση και το tablet το διευθύνει η διοργανώτρια.' },
+      { q: 'Πού γίνεται;', a: 'Σε ιδιωτικό χώρο. Η διεύθυνση στέλνεται μαζί με την επιβεβαίωση της θέσης σου.' },
+      { q: 'Ποια είναι τα όρια και πώς προστατεύομαστε;', a: 'Παίζουν μόνο ενήλικες (18+) που συμφωνούν. Τα όρια δηλώνονται στη φόρμα και γίνονται σεβαστά. Η λέξη-στοπ ή το κουμπί ΣΤΟΠ σταματά τα πάντα αμέσως, χωρίς εξηγήσεις.' },
+      { q: 'Τι γίνεται με φωτογραφίες και ό,τι λέγεται στο παιχνίδι;', a: 'Ό,τι λέγεται στο τραπέζι δεν βγαίνει από το τραπέζι. Φωτογραφίες και βίντεο των υπόλοιπων δεν τραβιούνται ούτε μοιράζονται χωρίς τη συγκατάθεση όλων.' },
+      { q: 'Το αλκοόλ είναι υποχρεωτικό;', a: 'Όχι. Στο Beach Bar το αλκοόλ είναι προαιρετικό και υπάρχει εκδοχή με χυμούς.' },
+      { q: 'Πώς κλείνω θέση;', a: 'Διαλέγεις εμπειρία και συμπληρώνεις τη φόρμα. Η θέση επιβεβαιώνεται και λαμβάνεις τη διεύθυνση και τις τελευταίες λεπτομέρειες.' },
+    ],
+  },
   heist: {
     tab: 'Heist Night',
     overline: 'Heist Night · 18+',
@@ -273,11 +300,11 @@ export const setSiteOverrides = (o) => { overrides = o && typeof o === 'object' 
 
 // Αρχικά + ό,τι έχεις αλλάξει από το Admin
 export function getSiteContent(ev) {
-  const id = DEFAULT_SITE[ev] ? ev : 'heist';
+  const id = DEFAULT_SITE[ev] ? ev : 'heist';  // 'home' = Αρχική σελίδα
   const d = DEFAULT_SITE[id];
   const o = overrides[id] || {};
   const merged = { ...d, ...o, cta: { ...d.cta, ...(o.cta || {}) } };
-  for (const k of ['scenario', 'highlights', 'program', 'info', 'faq', 'titleLines']) {
+  for (const k of ['scenario', 'highlights', 'program', 'info', 'faq', 'titleLines', 'marquee']) {
     if (!Array.isArray(merged[k])) merged[k] = d[k];
   }
   return merged;

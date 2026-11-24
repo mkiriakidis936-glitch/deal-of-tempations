@@ -683,3 +683,5 @@
 #admin-root .adm-content .comic-panel { border-radius: 20px !important; }
 #admin-root .adm-content h2 { font-size: 1.35rem; font-weight: 750; letter-spacing: -0.02em; }
 #admin-root .adm-footer { color: var(--ios-label-3) !important; }
+/* Προεπισκόπηση του site μέσα στο Admin: όλα τα sections ορατά αμέσως (χωρίς εφέ εμφάνισης). */
+#admin-root .dot-reveal { opacity: 1 !important; transform: none !important; }

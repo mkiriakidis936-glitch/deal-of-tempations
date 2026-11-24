@@ -1,46 +1,42 @@
 import React from 'react';
-import SiteNav from '@/components/site/SiteNav';
-import SiteHero from '@/components/site/SiteHero';
-import SiteModes from '@/components/site/SiteModes';
-import SiteVideo from '@/components/site/SiteVideo';
-import SiteGallery from '@/components/site/SiteGallery';
-import SiteRegistration from '@/components/site/SiteRegistration';
-import SiteContact from '@/components/site/SiteContact';
+import {
+  SiteHeroV2, Marquee, StorySection, FlowSection, InfoSection, FaqSection, FinalCta, SITE_MODE_IDS,
+} from '@/components/site/SiteV2';
 import { ART, PHOTO, MODE_COVERS, MODE_MEDIA } from '@/data/brandArt';
-import SiteScenario from '@/components/site/SiteScenario';
-import SiteSchedule from '@/components/site/SiteSchedule';
-import SiteInfo from '@/components/site/SiteInfo';
-import SiteFaq from '@/components/site/SiteFaq';
+import { SITE_HOME_ID } from '@/data/siteContent';
 
-const MODE_IDS = { pedi_glam: 'pedi_glam', pedi_extended: 'pedi_extended', lockdown: 'lockdown', beachbar: 'beach_bar', marathon4h: 'marathon_4h' };
-
-export default function AdminSitePreview({ content, eventId = 'heist' }) {
+// Ζωντανή προεπισκόπηση με τα ΙΔΙΑ sections του νέου /site (μη αποθηκευμένες αλλαγές).
+export default function AdminSitePreview({ content, eventId = SITE_HOME_ID }) {
   const c = content || {};
-  const modeId = MODE_IDS[eventId];
-  const heroSrc = modeId ? (MODE_MEDIA[modeId]?.hero || MODE_MEDIA[modeId]?.cover || MODE_COVERS['modeCover_' + modeId]) : eventId === 'pajama' ? ART.party1 : eventId === 'heist' ? ART.heistNight : PHOTO.siteHero;
+  const isHome = eventId === SITE_HOME_ID;
+  const modeId = SITE_MODE_IDS[eventId];
+  const heroSrc = isHome
+    ? PHOTO.siteHero || ART.heist5 || ART.group
+    : MODE_MEDIA[modeId]?.hero || MODE_MEDIA[modeId]?.cover || MODE_COVERS[`modeCover_${modeId}`] || ART.poster;
+  const cta = c.cta?.label === 'ΚΛΕΙΣΕ ΘΕΣΗ' ? 'Κλείσε θέση' : (c.cta?.label || 'Κλείσε θέση');
   return (
-    <section className="rounded-xl border-2 border-primary/50 overflow-hidden bg-background text-foreground" style={ART.patternSeamless ? { backgroundImage: `url(\"${ART.patternSeamless}\")`, backgroundRepeat: 'repeat', backgroundSize: '420px auto' } : undefined}>
-      <div className="bg-primary/15 border-b border-primary/30 px-4 py-3">
-        <div className="text-xs font-bold tracking-widest text-primary">ΖΩΝΤΑΝΗ ΠΡΟΕΠΙΣΚΟΠΗΣΗ · ΜΗ ΑΠΟΘΗΚΕΥΜΕΝΕΣ ΑΛΛΑΓΕΣ</div>
-        <div className="text-[10px] text-foreground/60 mt-1">Προεπισκόπηση των πραγματικών sections του δημόσιας ιστοσελίδας.</div>
+    <section className="overflow-hidden rounded-2xl bg-black ring-1 ring-white/10">
+      <div className="flex items-center justify-between bg-[#1C1C1E] px-4 py-2.5 text-[12px] font-medium text-white/60">
+        <span>Προεπισκόπηση · μη αποθηκευμένες αλλαγές</span>
+        <span className="rounded-full bg-[#2C2C2E] px-2 py-0.5">/site{isHome ? '' : `?event=${eventId}`}</span>
       </div>
-      <SiteNav ev={eventId} onEvent={() => {}} isHome={false} onRegister={() => {}} />
-      <SiteHero c={c} ev={eventId} eventDate={c.date || ''} heroSrc={heroSrc} onCta={() => {}} />
-      <div className="text-white">
-        <SiteScenario c={c} />
-        <SiteModes onSelect={() => {}} compact />
-        <SiteVideo c={c} eventId={eventId} />
-        <SiteGallery initialTab={['heist', 'pajama'].includes(eventId) ? eventId : 'all'} eventId={eventId} />
-        <SiteSchedule c={c} />
-        <SiteInfo c={c} eventDate={c.date || ''} />
-        <SiteFaq c={c} />
-        <SiteRegistration c={c} onRegister={() => {}} />
-        <SiteContact c={c} onRegister={() => {}} />
+      <div className="dot-site pointer-events-none max-h-[70vh] overflow-y-auto bg-black text-white [&_*]:pointer-events-none" aria-hidden="true">
+        <SiteHeroV2 overline={c.overline} titleLines={c.titleLines || []} tagline={c.tagline} image={heroSrc} primary={cta} onPrimary={() => {}} secondary={isHome ? 'Πώς λειτουργεί' : 'Το παιχνίδι'} onSecondary={() => {}} eventDate={isHome ? '' : c.date} />
+        {isHome ? (
+          <>
+            <Marquee words={(c.marquee || []).filter(Boolean)} />
+            <FaqSection items={c.faq} />
+            <FinalCta title={c.finalTitle} text={c.finalText} label={c.finalLabel} onClick={() => {}} />
+          </>
+        ) : (
+          <>
+            <StorySection c={c} />
+            <FlowSection c={c} eventId={eventId} />
+            <InfoSection c={c} eventDate={c.date || ''} />
+            <FaqSection items={c.faq} />
+          </>
+        )}
       </div>
-      <footer className="border-t border-tarot-gold/15 px-4 py-8 text-center">
-        <span className="font-display text-[11px] tracking-[0.3em] text-tarot-gold/65">DEAL OF TEMPTATIONS</span>
-        <div className="mt-2 text-[9px] tracking-[0.3em] text-foreground/35 uppercase">THE PRIVATE REALITY GAME NIGHT · 18+</div>
-      </footer>
     </section>
   );
 }

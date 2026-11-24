@@ -1,22 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
-import { HOME_FAQ } from '@/components/site/SiteHomeProgram';
 import {
   SiteTopBar, SiteHeroV2, Marquee, ExperiencesRail, HowItWorks, ThreeScreens, TrailerSection,
   GallerySection, SafetySection, FaqSection, FinalCta, StorySection, FlowSection, InfoSection,
   MobileBookBar, SiteFooter, SITE_MODE_IDS,
 } from '@/components/site/SiteV2';
-import { getSiteContent, SITE_EVENTS } from '@/data/siteContent';
+import { getSiteContent, SITE_EVENTS, SITE_HOME_ID } from '@/data/siteContent';
 import { ART, PHOTO, MODE_COVERS, MODE_MEDIA } from '@/data/brandArt';
-
-const HOME = {
-  overline: 'The private reality game night · 18+',
-  titleLines: ['DEAL OF', 'TEMPTATION'],
-  tagline: 'Ιδιωτικές βραδιές παιχνιδιού σαν τηλεοπτικό reality: κάρτες, αποστολές, ανατροπές και μία νικήτρια. Μόνο για καλεσμένες.',
-};
-
-const MARQUEE = ['Κάρτες', 'Μυστικές αποστολές', 'Χειροπέδες', 'VIP Vault', 'Beach Queen', 'Ανάκριση', 'Κωδικός εξόδου', 'Golden Minute', 'Στέψη'];
 
 const scrollToId = (id) => {
   const el = document.getElementById(id);
@@ -58,33 +49,36 @@ export default function Site() {
   const bookFromHome = () => scrollToId('experiences');
 
   if (isHome) {
+    // Η Αρχική επεξεργάζεται από το Admin → Ιστοσελίδα → Αρχική.
+    const h = getSiteContent(SITE_HOME_ID);
+    const homeCta = h.cta?.label || 'Κλείσε θέση';
     return (
       <div className="dot-site min-h-screen overflow-x-clip bg-black text-white">
         <SiteTopBar isHome onHome={() => openEvent('home')} onBook={bookFromHome} />
         <SiteHeroV2
-          overline={HOME.overline}
-          titleLines={HOME.titleLines}
-          tagline={HOME.tagline}
+          overline={h.overline}
+          titleLines={h.titleLines}
+          tagline={h.tagline}
           image={heroSrc}
           slot="siteHero"
-          primary="Κλείσε θέση"
+          primary={homeCta}
           onPrimary={bookFromHome}
           secondary="Πώς λειτουργεί"
           secondaryHref="#how"
           onSecondary={(e) => { e.preventDefault(); scrollToId('how'); }}
-          facts={[{ value: '4', label: 'εμπειρίες' }, { value: '3', label: 'οθόνες' }, { value: '18+', label: 'μόνο ενήλικες' }, { value: '100%', label: 'ιδιωτικό' }]}
+          facts={[{ value: String(SITE_EVENTS.length), label: 'εμπειρίες' }, { value: '3', label: 'οθόνες' }, { value: '18+', label: 'μόνο ενήλικες' }, { value: '100%', label: 'ιδιωτικό' }]}
         />
-        <Marquee words={MARQUEE} />
+        <Marquee words={(h.marquee || []).filter(Boolean)} />
         <ExperiencesRail onOpen={openEvent} onBook={book} />
         <HowItWorks />
         <ThreeScreens />
         <TrailerSection title="Δες πώς είναι" />
         <GallerySection />
         <SafetySection />
-        <FaqSection items={HOME_FAQ} />
-        <FinalCta title={<>Η επόμενη βραδιά <span className="dot-gold-text">σε περιμένει</span></>} text="Διάλεξε εμπειρία, συμπλήρωσε τη φόρμα σε 3 λεπτά και περίμενε την πρόσκλησή σου." label="Διάλεξε εμπειρία" onClick={bookFromHome} />
+        <FaqSection items={h.faq} />
+        <FinalCta title={h.finalTitle} text={h.finalText} label={h.finalLabel || 'Διάλεξε εμπειρία'} onClick={bookFromHome} />
         <SiteFooter onHome={() => openEvent('home')} />
-        <MobileBookBar label="Κλείσε θέση" onClick={bookFromHome} />
+        <MobileBookBar label={homeCta} onClick={bookFromHome} />
       </div>
     );
   }
