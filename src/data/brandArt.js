@@ -6,6 +6,8 @@ import { setGameSounds } from '@/lib/gameSounds';
 const BASE = '/assets/';
 
 export const MEDIA_FOCAL_POINTS = {};
+// Βιβλιοθήκη σκηνών: { [sceneId]: url } (βλ. data/sceneLibrary.js)
+export const SCENE_MEDIA = {};
 
 export const ART = {
   emblem: '/icons/icon-512.png',
@@ -98,6 +100,10 @@ export const DEFAULTS = { ...ART, ...PHOTO, ...FILM, ...MODE_COVERS, heistPhotos
 export function applyMediaOverrides(o = {}) {
   for (const key of Object.keys(MEDIA_FOCAL_POINTS)) delete MEDIA_FOCAL_POINTS[key];
   Object.assign(MEDIA_FOCAL_POINTS, o.libraryFocalPoints && typeof o.libraryFocalPoints === 'object' ? o.libraryFocalPoints : {});
+  for (const key of Object.keys(SCENE_MEDIA)) delete SCENE_MEDIA[key];
+  if (o.sceneLibrary && typeof o.sceneLibrary === 'object' && !(o.clearAllPhotos || o.clearAllMedia)) {
+    for (const [id, url] of Object.entries(o.sceneLibrary)) if (typeof url === 'string' && url) SCENE_MEDIA[id] = url;
+  }
   const str = (v) => (typeof v === 'string' && v ? v : null);
   const isVideo = isVideoUrl;
   const clearPhotos = !!(o.clearAllPhotos || o.clearAllMedia);

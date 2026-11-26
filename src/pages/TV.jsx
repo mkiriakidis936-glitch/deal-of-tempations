@@ -234,7 +234,7 @@ export default function TVScreen() {
   const engineBriefing = isEngine && state.stage === 0 && briefingPending(state.mg, state.mode);
   const engineCeremony = isEngine && state.stage === 3;
   // Classic/Arrest Heist: η φωτογραφία της στιγμής (κάρτα, ποινή, φάση) από το MODE MEDIA CENTER, ως φόντο.
-  const engineArt = isEngine && state.stage > 0 ? modeArtUrl(state.mode, artSectionFor(state)) : '';
+  const engineArt = isEngine && state.stage > 0 ? modeArtUrl(state.mode, artSectionFor(state), state) : '';
 
   return (
     <div className={`dot-tv-shell ui-tv min-h-screen text-foreground flex flex-col ${fullscreen ? 'dot-tv-fullscreen' : ''}`}>

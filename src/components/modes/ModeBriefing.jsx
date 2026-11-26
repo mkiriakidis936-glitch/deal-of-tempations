@@ -225,7 +225,7 @@ export function ChampionCeremonyTV({ state }) {
   const mg = state.mg || {};
   const champion = championOf(players, mg);
   const podium = finalStandings(players, mg).slice(0, 3);
-  const art = modeArtUrl(state.mode, artSectionFor(state));
+  const art = modeArtUrl(state.mode, artSectionFor(state), state);
   const meta = metaFor(state.mode);
   return (
     <div className="relative min-h-screen overflow-hidden bg-black text-white">

@@ -1,5 +1,7 @@
 import React, { useRef, useState } from 'react';
 import { MEDIA_MODES, MODE_MEDIA_SECTIONS } from '@/data/modes/modeRegistry';
+import { MODE_COVER_SLOTS } from '@/data/mediaSlots';
+import { expectedNames, planAutoLinks, applyLinks } from '@/lib/autoLink';
 import { MODE_COVERS } from '@/data/brandArt';
 import { uploadMedia } from '@/lib/media';
 import { IMAGE_ACCEPT, VIDEO_ACCEPT } from '@/lib/mediaKind';
@@ -126,6 +128,26 @@ export default function ModeMediaManager({ value = {}, files = [], onSave, onRef
     return problem ? 'ΛΑΘΟΣ ΑΡΧΕΙΟ: ' + problem : '✓ Το όνομα και ο τύπος αρχείου είναι σωστά';
   };
 
+  // Συνδέει ΜΟΝΟ κενές θέσεις, με βάση το όνομα αρχείου της βιβλιοθήκης (π.χ. classic_setup.jpg → Classic / Προετοιμασία).
+  const autoLink = async () => {
+    const plan = planAutoLinks(files, expectedNames(MEDIA_MODES, MODE_MEDIA_SECTIONS, MODE_COVER_SLOTS).filter((e) => e.modeId));
+    if (!plan.links.length) { setError('Δεν βρέθηκε αρχείο στη βιβλιοθήκη με όνομα που ταιριάζει σε θέση. Ανέβασε πρώτα τις εικόνες (π.χ. classic_setup.jpg).'); setNotice(''); return; }
+    const nextValue = { ...value };
+    for (const { id } of MEDIA_MODES) {
+      const links = plan.links.filter((l) => l.modeId === id);
+      if (links.length) nextValue[id] = applyLinks({ ...(value[id] || {}), sections: value[id]?.sections || [] }, links);
+    }
+    const before = JSON.stringify(value);
+    if (JSON.stringify(nextValue) === before) { setNotice(`Βρέθηκαν ${plan.links.length} αρχεία, αλλά όλες οι θέσεις τους είναι ήδη γεμάτες.`); setError(''); return; }
+    setBusy('save'); setError(''); setNotice('');
+    try {
+      await onSave(nextValue);
+      setNotice(`Αυτόματη σύνδεση: ${plan.links.length} αρχεία ταίριαξαν σε θέσεις (οι ήδη γεμάτες δεν άλλαξαν).${plan.ambiguous.length ? ` Προσοχή: ${plan.ambiguous.length} θέσεις είχαν πολλά αρχεία με το ίδιο όνομα — πήρε το νεότερο.` : ''}`);
+    } catch (e) {
+      setError(e?.message || 'Η αυτόματη σύνδεση απέτυχε.');
+    } finally { setBusy(''); }
+  };
+
   const triggerUpload = (field) => fileInputs.current[field]?.click();
   const fileInput = (field, label, item = null) => (
     <input
@@ -199,6 +221,8 @@ export default function ModeMediaManager({ value = {}, files = [], onSave, onRef
         <div className="text-[11px] font-semibold uppercase tracking-[0.25em] text-[#E8C26B]">Mode Media Center</div>
         <h2 className="mt-1 text-xl font-bold sm:text-2xl">Φωτογραφίες & βίντεο ανά mode</h2>
         <p className="mt-1 text-xs text-white/60">Διάλεξε mode και πάτα σε οποιοδήποτε πλαίσιο για να ανεβάσεις. Εμφανίζονται σε Tablet, TV, κινητά και Site.</p>
+        <button type="button" disabled={disabled || !!busy} onClick={autoLink}
+          className="mt-3 h-10 rounded-full bg-[#E8C26B] px-4 text-sm font-bold text-black disabled:opacity-50">🔗 Αυτόματη σύνδεση από τη βιβλιοθήκη (όλα τα modes)</button>
         <div className="-mx-4 mt-3 flex snap-x gap-2 overflow-x-auto px-4 pb-1 sm:mx-0 sm:grid sm:grid-cols-3 sm:overflow-visible sm:px-0 xl:grid-cols-5">
           {MEDIA_MODES.map((item) => {
             const on = selected === item.id;

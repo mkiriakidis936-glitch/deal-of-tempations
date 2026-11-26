@@ -6,6 +6,7 @@ import { ART, DEFAULTS, applyMediaOverrides } from '@/data/brandArt';
 import { IMAGE_SLOTS, PHOTO_SPOTS, PHOTO_SPOT_IDS, VIDEO_SLOTS, MODE_COVER_SLOTS, GALLERIES, SURFACES } from '@/data/mediaSlots';
 import { MEDIA_MODES, MODE_MEDIA_SECTIONS } from '@/data/modes/modeRegistry';
 import ModeMediaManager from '@/components/admin/ModeMediaManager';
+import SceneLibraryManager from '@/components/admin/SceneLibraryManager';
 import { GAME_SOUND_SLOTS, playSoundFile } from '@/lib/gameSounds';
 import { sfx, tvSfx } from '@/lib/modeKit';
 import AdminMediaPreview from '@/components/admin/AdminMediaPreview';
@@ -605,6 +606,27 @@ export default function AdminMedia() {
             } finally {
               setBusy(null);
               setProgress(0);
+            }
+          }}
+        />
+      </div>
+
+      <div>
+        <SceneLibraryManager
+          value={ov.sceneLibrary || {}}
+          files={library}
+          disabled={!!busy}
+          onSave={async (sceneLibrary) => {
+            setBusy('scene-library');
+            setMsg(null);
+            try {
+              await saveChanged({ ...ov, sceneLibrary });
+              setMsg({ ok: true, text: 'Η βιβλιοθήκη σκηνών αποθηκεύτηκε ✓' });
+            } catch (error) {
+              setMsg({ ok: false, text: error.message });
+              throw error;
+            } finally {
+              setBusy(null);
             }
           }}
         />

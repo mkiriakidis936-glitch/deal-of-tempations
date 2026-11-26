@@ -75,6 +75,7 @@ export const RETIRED_MODES = [
   },
 ];
 
+// alt: η ενότητα είναι «εναλλακτική εικόνα» της φάσης alt — εναλλάσσεται ζωντανά μαζί της (βλ. src/lib/sectionVariants.js).
 export const MODE_MEDIA_SECTIONS = {
   classic: [
     { id: 'setup', label: 'Προετοιμασία', filename: 'classic_setup.jpg' },
@@ -91,6 +92,8 @@ export const MODE_MEDIA_SECTIONS = {
     { id: 'penalties', label: 'Στάδια ποινών', filename: 'heist_penalties.jpg' },
     { id: 'escape', label: 'Grand Heist Escape', filename: 'heist_escape.jpg' },
     { id: 'victory', label: 'Νίκη & στέψη', filename: 'heist_victory.jpg' },
+    { id: 'planning', label: 'Σχεδιασμός ληστείας', filename: 'heist_planning.jpg', alt: 'teams' },
+    { id: 'arrest', label: 'Σύλληψη & ανάκριση', filename: 'heist_arrest.jpg', alt: 'penalties' },
   ],
   villa_takeover: [
     { id: 'arrival', label: 'Κύκλος 1 — The Arrival', filename: 'villa_cycle1.jpg' },
@@ -99,12 +102,16 @@ export const MODE_MEDIA_SECTIONS = {
     { id: 'afterdark', label: 'After Dark — The Final 24', filename: 'villa_afterdark.jpg' },
     { id: 'night', label: 'Night Mode / Night Sock Heist', filename: 'villa_night.jpg' },
     { id: 'crown', label: 'Grand Finale & Queen of the Villa', filename: 'villa_crown.jpg' },
+    { id: 'roles', label: 'Μυστικοί ρόλοι & συμμαχίες', filename: 'villa_roles.jpg', alt: 'temptation' },
   ],
   marathon_4h: [
     { id: 'phase1', label: 'Φάση 1 — Warm-up & Slipper Grabbing', filename: 'lounge_phase1.jpg' },
     { id: 'phase2', label: 'Φάση 2 — The Handcuff Escalation', filename: 'lounge_phase2.jpg' },
     { id: 'phase3', label: 'Φάση 3 — Lockdown & Decibel Challenge', filename: 'lounge_phase3.jpg' },
     { id: 'phase4', label: 'Φάση 4 — Barefoot Escape & Crown', filename: 'lounge_phase4.jpg' },
+    { id: 'prep', label: 'Προετοιμασία & Ρόλοι', filename: 'lounge_prep.jpg', alt: 'phase1' },
+    { id: 'interrogation', label: 'Ανάκριση & μυστική ψηφοφορία', filename: 'lounge_interrogation.jpg', alt: 'phase2' },
+    { id: 'loot', label: 'Wanted αστέρια & Loot', filename: 'lounge_loot.jpg', alt: 'phase4' },
   ],
   lockdown: [
     { id: 'level1', label: 'Επίπεδο 1 — Η θυσία της ομήρου', filename: 'section1_Level1_Hostage_Sacrifice.jpg' },
@@ -112,6 +119,8 @@ export const MODE_MEDIA_SECTIONS = {
     { id: 'level3', label: 'Επίπεδο 3 — Δολιοφθορά', filename: 'section3_Level3_Sabotage_Override.jpg' },
     { id: 'level4', label: 'Επίπεδο 4 — Ο κωδικός εξόδου', filename: 'section4_Level4_Exit_Code.jpg' },
     { id: 'level5', label: 'Επίπεδο 5 — VIP Vault', filename: 'section5_Level5_VIP_Vault.jpg' },
+    { id: 'briefing', label: 'Briefing — Έναρξη Lockdown', filename: 'lockdown_briefing.jpg', alt: 'level1' },
+    { id: 'escape', label: 'Escape — Έξοδος', filename: 'lockdown_escape.jpg', alt: 'level5' },
   ],
   beach_bar: [
     { id: 'checkin', label: 'Check-in', filename: 'beach_sec1.jpg' },
@@ -119,6 +128,8 @@ export const MODE_MEDIA_SECTIONS = {
     { id: 'penalty_wheel', label: 'Τροχός Ποινών', filename: 'beach_sec3.jpg' },
     { id: 'shot_truth', label: 'Shot & Truth', filename: 'beach_sec4.jpg' },
     { id: 'last_queen', label: 'Last Queen', filename: 'beach_sec5.jpg' },
+    { id: 'flipflop_heist', label: 'Flip-Flop Heist', filename: 'beach_sec6.jpg', alt: 'penalty_wheel' },
+    { id: 'sunset_toast', label: 'Sunset Toast Finale', filename: 'beach_sec7.jpg', alt: 'last_queen' },
   ],
 };
 

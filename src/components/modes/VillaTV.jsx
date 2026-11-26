@@ -16,7 +16,7 @@ export default function VillaTV({ state }) {
   const alert = (v.alerts || []).find((a) => a.to === 'all' && Date.now() - a.at < 120000);
   const ranking = rankPlayers(players, mg).slice(0, 8);
   const found = V.cluesFound(v);
-  const art = modeArtUrl(state.mode, artSectionFor(state) || cycle.id);
+  const art = modeArtUrl(state.mode, artSectionFor(state) || cycle.id, state);
   const u = (n) => `min(${n}vw, ${n * 1.75}vh)`;
 
   return (
