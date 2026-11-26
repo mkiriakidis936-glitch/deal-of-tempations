@@ -10,7 +10,7 @@ import { COLLECTIONS, defaultsOf, fetchModesRecord, saveModesContent, modeOfColl
 
 const inp = 'w-full px-3 py-2 rounded-lg border-2 border-border bg-background text-foreground font-body text-sm';
 const ORIGIN = typeof window !== 'undefined' ? window.location.origin : '';
-const SITE_IDS = { pedi_glam: 'pedi_glam', pedi_extended: 'pedi_extended', lockdown: 'lockdown', beach_bar: 'beachbar', marathon_4h: 'marathon4h', villa_takeover: 'villa' };
+const SITE_IDS = { pedi_glam: 'pedi_glam', pedi_extended: 'pedi_extended', lockdown: 'lockdown', marathon_4h: 'marathon4h', villa_takeover: 'villa' };
 
 // modeId: δείχνει μόνο τις λίστες ενός mode (Admin → Κάρτες & περιεχόμενο → καρτέλα του mode).
 export default function AdminModes({ modeId }) {
@@ -22,6 +22,7 @@ export default function AdminModes({ modeId }) {
   const [list, setList] = useState([]);
   const [msg, setMsg] = useState(null);
   const [busy, setBusy] = useState(false);
+  const [onlyMissing, setOnlyMissing] = useState(false);
   const col = useMemo(() => COLLECTIONS.find((c) => c.id === sel), [sel]);
 
   useEffect(() => {
@@ -123,6 +124,12 @@ export default function AdminModes({ modeId }) {
           ))}
         </select>
         <div className="text-xs opacity-70">{list.length} στοιχεία {saved[sel] ? '· έχει αλλαγές' : '· αρχικό περιεχόμενο'}</div>
+        {col?.fields?.some((f) => f.type === 'image') && (
+          <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
+            <span>📷 Με εικόνα: <b>{list.filter((x) => x?.image).length}/{list.length}</b> — εμφανίζεται στην κάρτα σε TV, Tablet και κινητό.</span>
+            <label className="flex items-center gap-1.5"><input type="checkbox" checked={onlyMissing} onChange={(e) => setOnlyMissing(e.target.checked)} /> Μόνο χωρίς εικόνα</label>
+          </div>
+        )}
         {msg && <div className={`text-sm font-bold ${msg.ok ? 'text-green-400' : 'text-red-400'}`}>{msg.text}</div>}
       </ComicPanel>
 
@@ -130,7 +137,7 @@ export default function AdminModes({ modeId }) {
 
       {loaded && col && (
         <ComicPanel className="bg-card space-y-3">
-          {list.map((item, i) => (
+          {list.map((item, i) => (onlyMissing && item?.image) ? null : (
             <div key={i} className="border-2 border-border/40 rounded-lg p-2.5 bg-secondary/40 space-y-2">
               <div className="text-[11px] opacity-60">#{i + 1}</div>
               <div className="grid gap-3 lg:grid-cols-2">

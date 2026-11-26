@@ -1,10 +1,10 @@
 import React from 'react';
 import { QRCodeSVG } from 'qrcode.react';
-import { GIFT_CODE } from '@/data/giftVault';
 
 export default function GiftCodeTV({ state }) {
   const gift = state?.pajama?.gift;
   if (!gift?.success) return null;
+  const GIFT_CODE = gift.code || '—';
 
   const url = `${window.location.origin}/gift-unlock`;
   const phase = state?.pajama?.phase;

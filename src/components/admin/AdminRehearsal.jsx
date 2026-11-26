@@ -14,7 +14,6 @@ const PHASES = {
   classic: [{ stage: 0 }, { stage: 1 }, { stage: 2 }],
   arrest_heist: [{ stage: 0 }, { stage: 1 }, { stage: 2 }],
   lockdown: ['l1', 'l2', 'l3', 'exit'].map((stage) => ({ mg: { ld: { stage } } })),
-  beach_bar: ['checkin', 'dance', 'wheel', 'truth', 'finale'].map((phase) => ({ mg: { bb: { phase } } })),
   marathon_4h: [0, 1, 2, 3].map((phase) => ({ mg: { lounge: { phase } } })),
   villa_takeover: [1, 17, 33].map((sq) => ({ mg: { villa: { sq } } })),
 };

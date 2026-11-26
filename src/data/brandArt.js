@@ -53,7 +53,6 @@ export const MODE_COVERS = {
   modeCover_pajama: ART.party1,
   modeCover_pedi_extended: ART.photoPediGlam,
   modeCover_lockdown: ART.vault,
-  modeCover_beach_bar: ART.photoSlippers,
   modeCover_pedi_glam: ART.extraPediGlam || ART.photoPediGlam,
   modeCover_marathon_4h: ART.heist3,
   modeCover_villa_takeover: ART.group,

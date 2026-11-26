@@ -66,18 +66,7 @@ export const MODE_GUIDE = {
       { id: 'level5', title: 'Επίπεδο 5 — VIP Vault', text: 'Το Vault ξεκλειδώνει και εμφανίζεται η τελική ανταμοιβή.', next: 'Αποκαλύψτε την ανταμοιβή και ολοκληρώστε τη βραδιά.' },
     ],
   },
-  beach_bar: {
-    tagline: 'Beach-bar πάρτι στο σπίτι, περίπου 2,5 ώρες, σε πέντε στάδια.',
-    goal: 'Χορός, τροχός προκλήσεων, Shot & Truth και τελική αναμέτρηση. Τα ποτά είναι πάντα προαιρετικά. Παράλληλα τρέχουν μυστικές αποστολές Flip-Flop Heist στα κινητά.',
-    win: 'Η τελική αναμέτρηση αναδεικνύει τη Last Queen.',
-    phases: [
-      { id: 'checkin', title: 'Στάδιο 1 — Check-in', text: 'Επιβεβαίωση συμμετοχής, θεματική εμφάνιση με σαγιονάρες, απόφαση αν θα παιχτεί χωρίς αλκοόλ.', next: 'Επιβεβαιώστε όλες τις παίκτριες και πατήστε άνοιγμα του Beach Bar.' },
-      { id: 'dance_arena', title: 'Στάδιο 2 — Dance Arena', text: 'Μουσική, χορευτικές δοκιμασίες, Freeze Dance, εντολές και ανταγωνισμός.', next: 'Βάλτε μουσική και ξεκινήστε το Freeze Dance.' },
-      { id: 'penalty_wheel', title: 'Στάδιο 3 — Penalty Wheel', text: 'Ο τροχός προκλήσεων: χορός & σαγιονάρες, διλήμματα, δοκιμασίες, ειδικές προκλήσεις.', next: 'Γυρίστε τον τροχό για την παίκτρια που έχει σειρά.' },
-      { id: 'shot_truth', title: 'Στάδιο 4 — Shot & Truth', text: 'Ερωτήσεις, διλήμματα και προκλήσεις. Τα ποτά μπορούν να γίνουν μη αλκοολούχα.', next: 'Τραβήξτε την επόμενη ερώτηση.' },
-      { id: 'last_queen', title: 'Στάδιο 5 — Last Queen Finale', text: 'Αντίστροφη μέτρηση και τελική πρόκληση για την ανάδειξη της Last Queen.', next: 'Ξεκινήστε την αντίστροφη μέτρηση του φινάλε.' },
-    ],
-  },
+
   villa_takeover: {
     tagline: 'Πολυήμερη εμπειρία 18+ σε Villa: 48 ώρες, 3 κύκλοι, μυστικοί ρόλοι, συμμαχίες και ένας κωδικός 4 ψηφίων.',
     goal: 'Κάθε ώρα ανοίγει ένα τετράγωνο του ταμπλό (48 συνολικά). Παίξτε δοκιμασίες και Truth or Dare 18+, ολοκληρώστε μυστικές αποστολές, κλείστε (και προδώστε) συμμαχίες και μαζέψτε τις 4 ενδείξεις του κωδικού.',
@@ -104,13 +93,11 @@ export const MODE_GUIDE = {
 
 export const ENGINE_GUIDE_MODES = ['classic', 'arrest_heist'];
 const LOCKDOWN_STAGE = { init: 'level1', l1: 'level1', l2: 'level2', l3: 'level3', exit: 'level4', won: 'level5', lost: 'level4' };
-const BEACH_PHASE = { checkin: 'checkin', dance: 'dance_arena', wheel: 'penalty_wheel', truth: 'shot_truth', finale: 'last_queen' };
 
 // Η τρέχουσα φάση του παιχνιδιού ως id του οδηγού (ίδιο με τα id των ενοτήτων φωτογραφιών).
 export function phaseIdFor(state) {
   const mg = state?.mg || {};
   if (state?.mode === 'lockdown') return LOCKDOWN_STAGE[mg.ld?.stage || 'init'] || 'level1';
-  if (state?.mode === 'beach_bar') return BEACH_PHASE[mg.bb?.phase || 'checkin'] || 'checkin';
   if (state?.mode === 'villa_takeover') {
     const sq = Number(mg.villa?.sq || 1);
     return sq > 48 ? 'afterdark' : sq > 32 ? 'takeover' : sq > 16 ? 'temptation' : 'arrival';

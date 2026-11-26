@@ -25,7 +25,6 @@ export default function ModeTV({ state }) {
   useTick(true, 1000);
   const left = timerLeft(mg.timer);
   const ld = mg.ld || {};
-  const bb = mg.bb || {};
   const surge = ld.surge && !ld.surgeDone;
   const total = (p) => ((mg.scores || {})[p.id] || 0) + ((mg.tokens || {})[p.id] || 0);
   const ranking = [...players].sort((a, b) => total(b) - total(a));
@@ -75,20 +74,11 @@ export default function ModeTV({ state }) {
           {mg.vaultUnlocked ? '👑 ΤΟ VIP VAULT ΑΝΟΙΞΕ — Οι απόλυτες Pajama Queens' : `☕ The Coffee Code is Hidden · ψήγματα ${(mg.morningFound || []).length}/4`}
         </div>
       )}
-      {act === 'beach' && (
-        <div className="space-y-3">
-          <div className="text-2xl opacity-80">{({ checkin: '🩴 Check-in', dance: '🎶 Dance & Freeze', wheel: '🎡 Τροχός Ποινών', truth: '🥃 Shot & Truth', finale: '👑 Η τελευταία βασίλισσα' })[bb.phase || 'checkin']}</div>
-          {bb.freeze && <div className="ui-card ui-card--gold text-center text-4xl">📯 {bb.freeze.cmd}</div>}
-          {bb.wheel && <GameCard variant="tv" kicker="Τροχός ποινών" corner={players.find((p) => p.id === bb.wheel.pid)?.name} icon="🎡" image={bb.wheel.card.image} accent="#F0B85A" title={bb.wheel.card.title} text={bb.wheel.card.text} footLeft={bb.wheel.card.secs ? `⏱ ${bb.wheel.card.secs}″` : ''} />}
-          {bb.queen && <div className="ui-card ui-card--gold text-center text-5xl">👑 BEACH QUEEN: {players.find((p) => p.id === bb.queen)?.name}</div>}
-        </div>
-      )}
-
       {act !== 'lounge' && (
         <TvLeaderboard rows={ranking.map((p) => ({
           id: p.id,
           name: p.name,
-          extra: <span className="ui-tv-muted">{act === 'beach' ? `🥃 ${(bb.drinks || {})[p.id] || 0} · 🩴 ${(bb.flops || {})[p.id] === false ? '✗' : '✓'}` : `🪙 ${(mg.tokens || {})[p.id] || 0}`}</span>,
+          extra: <span className="ui-tv-muted">{`🪙 ${(mg.tokens || {})[p.id] || 0}`}</span>,
           value: `⭐ ${(mg.scores || {})[p.id] || 0}`,
         }))} />
       )}

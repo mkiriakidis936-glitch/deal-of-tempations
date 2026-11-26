@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { GIFT_CODE } from '@/data/giftVault';
+import { appApi } from '@/api/apiClient';
 
 export default function PajamaGiftTrial({ players, onDone, canAssign, canStart }) {
   const [sacrificedId, setSacrificedId] = useState('');
@@ -9,6 +9,14 @@ export default function PajamaGiftTrial({ players, onDone, canAssign, canStart }
   const [consentConfirmed, setConsentConfirmed] = useState(false);
   const [consentDeclined, setConsentDeclined] = useState(false);
   const [groupPlayers, setGroupPlayers] = useState([]);
+  const [giftCode, setGiftCode] = useState('');
+
+  // Ο κωδικός ορίζεται στο Admin → Σύνδεσμοι & QR → Δώρο (Gift Unlock).
+  useEffect(() => {
+    appApi.entities.AppSetting.filter({ key: 'admin_gift_vault' }, { limit: 1 })
+      .then(({ items }) => setGiftCode(String(items?.[0]?.value?.code || 'PAJAMAQUEENS')))
+      .catch(() => setGiftCode('PAJAMAQUEENS'));
+  }, []);
 
   useEffect(() => {
     if (!running || left <= 0) return;
@@ -42,6 +50,7 @@ export default function PajamaGiftTrial({ players, onDone, canAssign, canStart }
     onDone({
       success: result === 'success',
       sacrificedName: sacrificed?.name || '',
+      code: result === 'success' ? giftCode : '',
       unlockedAt: Date.now(),
     });
   }
@@ -151,7 +160,7 @@ export default function PajamaGiftTrial({ players, onDone, canAssign, canStart }
               Η {sacrificed?.name} άντεξε. Μυστικός κωδικός για το Vault:
             </div>
             <div className="font-heading text-2xl tracking-[0.25em] text-yellow-300 drop-shadow-[0_0_18px_rgba(232,194,107,0.8)]">
-              {GIFT_CODE}
+              {giftCode || '…'}
             </div>
             <div className="text-xs text-pink-200">Το link για τα κινητά:</div>
             <div className="text-xs break-all bg-slate-950/70 rounded-lg p-2 border border-fuchsia-400/50 text-fuchsia-100">

@@ -51,6 +51,7 @@ export default function VillaTV({ state }) {
               {v.card ? (
                 <div style={{ marginTop: u(1) }}>
                   <div className="font-semibold text-[#E8C26B]" style={{ fontSize: u(1.4) }}>🎴 {v.card.kind === 'truth' ? 'Αλήθεια 18+' : v.card.kind === 'dare' ? 'Θάρρος 18+' : 'Τελεσίγραφο'} για {nameOf(v.card.pid)}</div>
+                  {v.card.image && <img src={v.card.image} alt="" onError={(e) => { e.currentTarget.style.display = 'none'; }} className="w-full rounded-2xl object-cover" style={{ marginTop: u(0.6), maxHeight: u(14) }} />}
                   <div className="font-semibold" style={{ fontSize: u(2), marginTop: u(0.4) }}>{v.card.title}</div>
                   <div className="text-white/80" style={{ fontSize: u(1.5), marginTop: u(0.4) }}>{v.card.text}</div>
                 </div>

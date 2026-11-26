@@ -3,7 +3,6 @@ import assert from 'node:assert/strict';
 import * as gameContent from '../src/data/gameContent.js';
 import * as extendedContent from '../src/data/modes/extendedContent.js';
 import * as lockdownContent from '../src/data/modes/lockdownContent.js';
-import * as beachBarContent from '../src/data/modes/beachBarContent.js';
 import * as pajamaContent from '../src/data/pajamaContent.js';
 import * as pajamaSabotage from '../src/data/pajamaSabotage.js';
 import { PAJAMA_TOTAL_MINUTES } from '../src/data/pajamaProgram.js';
@@ -13,7 +12,6 @@ test('τα αρχικά κείμενα των καρτών εμφανίζοντ�
   assert.match(glam.text, /μασάζ πέλματος/);
   assert.doesNotMatch(JSON.stringify(extendedContent), /Safe Digital Challenge/);
   assert.doesNotMatch(JSON.stringify(gameContent), /SAFE DIGITAL CHALLENGE/);
-  assert.doesNotMatch(JSON.stringify(beachBarContent), /Safe Digital Challenge/);
   assert.doesNotMatch(JSON.stringify(lockdownContent), /Safe Digital Challenge/);
   assert.doesNotMatch(JSON.stringify(pajamaContent), /Safe Digital Challenge/);
   assert.ok(pajamaSabotage);

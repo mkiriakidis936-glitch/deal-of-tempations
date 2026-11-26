@@ -5,6 +5,7 @@ import { expectedNames, planAutoLinks, applyLinks } from '@/lib/autoLink';
 import { MODE_COVERS } from '@/data/brandArt';
 import { uploadMedia } from '@/lib/media';
 import { IMAGE_ACCEPT, VIDEO_ACCEPT } from '@/lib/mediaKind';
+import { modeFileName } from '@/lib/mediaManifest';
 
 const emptyMode = { hero: '', cover: '', sections: [], gallery: [], cards: [], trailer: '', intro: '' };
 // Πεδία που δέχονται βίντεο (τα υπόλοιπα δέχονται εικόνα).
@@ -14,11 +15,9 @@ const videoAccept = VIDEO_ACCEPT;
 
 
 function expectedNameFor(modeId, field, item) {
-  if (field === 'hero') return 'hero.jpg';
-  if (field === 'cover') return 'cover.jpg';
-  if (field.startsWith('section:')) return item?.filename || MODE_MEDIA_SECTIONS[modeId]?.find((section) => section.id === field.slice(8))?.filename || '';
-  if (field.startsWith('gallery:')) return ['lockdown', 'beach_bar'].includes(modeId) ? `${modeId === 'lockdown' ? 'lockdown' : 'beach'}_gallery_${String(Number(field.slice(8)) + 1).padStart(2, '0')}.jpg` : '';
-  return '';
+  // Ίδια ονόματα με τον Χάρτη media και το TXT (src/lib/mediaManifest.js).
+  if (field.startsWith('section:')) return modeFileName(modeId, field, item?.filename || MODE_MEDIA_SECTIONS[modeId]?.find((section) => section.id === field.slice(8))?.filename || '');
+  return modeFileName(modeId, field);
 }
 
 function validateSelectedFile(file, expectedName, video) {

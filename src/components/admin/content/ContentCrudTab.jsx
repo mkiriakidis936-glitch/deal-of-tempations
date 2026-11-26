@@ -3,6 +3,7 @@ import CardPreviewPair, { cardFromItem } from '@/components/admin/CardPreviewPai
 import { appApi } from '@/api/apiClient';
 import ComicPanel from '@/components/comic/ComicPanel';
 import ComicButton from '@/components/comic/ComicButton';
+import MediaField from '@/components/admin/MediaField';
 
 function blankItem(fields) {
   const obj = {};
@@ -63,6 +64,8 @@ export default function ContentCrudTab({ category }) {
   const [error, setError] = useState('');
   const [versions, setVersions] = useState([]);
   const [versionRecord, setVersionRecord] = useState(null);
+  const [onlyMissing, setOnlyMissing] = useState(false);
+  const hasImageField = fields.some((f) => f.type === 'image');
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -233,7 +236,9 @@ export default function ContentCrudTab({ category }) {
             return (
               <div key={f.key + (f.dataKey || '')}>
                 <label className="text-xs font-bold block mb-0.5">{f.label}</label>
-                {f.type === 'textarea' ? (
+                {f.type === 'image' ? (
+                  <MediaField value={val || ''} onChange={(url) => setEditing((s) => ({ ...s, data: setFieldVal(s.data, f, url || '') }))} />
+                ) : f.type === 'textarea' ? (
                   <textarea
                     value={val}
                     onChange={(e) => setEditing((s) => ({ ...s, data: setFieldVal(s.data, f, e.target.value) }))}
@@ -284,13 +289,20 @@ export default function ContentCrudTab({ category }) {
         </ComicPanel>
       ) : (
         <div className="space-y-1">
-          {records.map((rec, idx) => (
+          {hasImageField && records.length > 0 && (
+            <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-border/60 bg-card/60 px-3 py-2 text-xs">
+              <span>📷 Με εικόνα: <b>{records.filter((r) => r.data?.image).length}/{records.length}</b> · Η εικόνα είναι προαιρετική — χωρίς εικόνα η κάρτα δείχνει το εικονίδιο.</span>
+              <label className="flex items-center gap-1.5"><input type="checkbox" checked={onlyMissing} onChange={(e) => setOnlyMissing(e.target.checked)} /> Μόνο χωρίς εικόνα</label>
+            </div>
+          )}
+          {records.map((rec, idx) => (onlyMissing && rec.data?.image) ? null : (
             <div key={rec.id} className="comic-panel-sm p-2 bg-card flex items-start justify-between gap-2">
               <div className="text-sm flex-1 min-w-0">
                 <span className="text-xs text-foreground/40 mr-1">{idx + 1}.</span>
                 {shape === 'stringList'
                   ? <span>{rec.data?.text}</span>
                   : <span className="font-bold">{summary(rec.data, fields)}</span>}
+                {hasImageField && <span className={`ml-2 text-[11px] ${rec.data?.image ? 'text-green-400' : 'text-foreground/40'}`}>{rec.data?.image ? '📷 έχει εικόνα' : '— χωρίς εικόνα'}</span>}
               </div>
               <div className="flex gap-1 shrink-0">
                 <button onClick={() => startEdit(rec)} className="text-xs px-2 py-1 border-2 border-border rounded bg-primary/20 font-bold">✏️</button>

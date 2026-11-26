@@ -53,6 +53,7 @@ export const CONTENT_CATEGORIES = [
       { key: 'name', label: 'Τίτλος', type: 'text' },
       { key: 'icon', label: 'Εικονίδιο', type: 'text' },
       { key: 'desc', label: 'Περιγραφή', type: 'textarea' },
+      { key: 'image', label: 'Εικόνα κάρτας (προαιρετική)', type: 'image' },
     ],
   },
   {
@@ -62,6 +63,7 @@ export const CONTENT_CATEGORIES = [
       { key: 'name', label: 'Τίτλος', type: 'text' },
       { key: 'icon', label: 'Εικονίδιο', type: 'text' },
       { key: 'desc', label: 'Περιγραφή', type: 'textarea' },
+      { key: 'image', label: 'Εικόνα κάρτας (προαιρετική)', type: 'image' },
     ],
   },
   {
@@ -80,6 +82,7 @@ export const CONTENT_CATEGORIES = [
       { key: 'id', label: 'ID', type: 'text' },
       { key: 'name', label: 'Τίτλος', type: 'text' },
       { key: 'text', label: 'Κείμενο', type: 'textarea' },
+      { key: 'image', label: 'Εικόνα κάρτας (προαιρετική)', type: 'image' },
     ],
   },
   {
@@ -89,6 +92,7 @@ export const CONTENT_CATEGORIES = [
       { key: 'name', label: 'Τίτλος', type: 'text' },
       { key: 'text', label: 'Κείμενο', type: 'textarea' },
       { key: 'duration', label: 'Διάρκεια (″)', type: 'number' },
+      { key: 'image', label: 'Εικόνα κάρτας (προαιρετική)', type: 'image' },
     ],
   },
   {
@@ -97,6 +101,7 @@ export const CONTENT_CATEGORIES = [
       { key: 'id', label: 'ID', type: 'text' },
       { key: 'name', label: 'Τίτλος', type: 'text' },
       { key: 'text', label: 'Κείμενο', type: 'textarea' },
+      { key: 'image', label: 'Εικόνα κάρτας (προαιρετική)', type: 'image' },
     ],
   },
   {
@@ -105,6 +110,7 @@ export const CONTENT_CATEGORIES = [
       { key: 'id', label: 'ID', type: 'text' },
       { key: 'name', label: 'Τίτλος', type: 'text' },
       { key: 'text', label: 'Κείμενο', type: 'textarea' },
+      { key: 'image', label: 'Εικόνα κάρτας (προαιρετική)', type: 'image' },
     ],
   },
   {

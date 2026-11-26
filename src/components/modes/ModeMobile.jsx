@@ -67,7 +67,6 @@ export default function ModeMobile({ state, me, updateState, onChangePlayer, ses
   }
 
   const ld = mg.ld || {};
-  const bb = mg.bb || {};
   const tokens = (mg.tokens || {})[me.id] || 0;
   const hand = (mg.chaosCards || {})[me.id] || [];
   const act = meta.acts[Math.min(mg.actIndex || 0, meta.acts.length - 1)];
@@ -209,26 +208,6 @@ export default function ModeMobile({ state, me, updateState, onChangePlayer, ses
           </div>
         )}
 
-        {act === 'beach' && bb.phase === 'finale' && bb.finalChallenge?.card && (
-          <div className="ui-card ui-card--gold space-y-2">
-            <GameCard variant="compact" kicker="Τελικό ομαδικό challenge" icon="🏖️" image={bb.finalChallenge.card.image} accent="#E8C26B" title={bb.finalChallenge.card.title} text={bb.finalChallenge.card.text} />
-            {bb.finalChallenge.responses?.[me.id] ? <div className="text-center text-sm">Η επιλογή σου καταχωρήθηκε: {bb.finalChallenge.responses[me.id] === 'done' ? 'Ολοκλήρωσα' : 'PASS'}</div> : (
-              <div className="grid grid-cols-2 gap-2">
-                <button disabled={!!mg.playerAction} onClick={() => sendAction('beach_finale_response', { value: 'done' })} className="ui-btn ui-btn--success">ΟΛΟΚΛΗΡΩΣΑ</button>
-                <button disabled={!!mg.playerAction} onClick={() => sendAction('beach_finale_response', { value: 'pass' })} className="ui-btn">PASS</button>
-              </div>
-            )}
-          </div>
-        )}
-
-        {act === 'beach' && bb.phase === 'checkin' && (
-          <div className="ui-card ui-card--gold space-y-2">
-            <div className="text-[17px] font-semibold">🩴 BEACH BAR · CHECK-IN</div>
-            <div className="text-sm">{bb.checkin?.[me.id] ? 'Το check-in σου ολοκληρώθηκε.' : 'Επιβεβαίωσε ότι είσαι έτοιμη.'}</div>
-            <button disabled={!!mg.playerAction || !!bb.checkin?.[me.id]} onClick={() => sendAction('beach_checkin')} className="ui-btn ui-btn--primary ui-btn--block">ΕΠΙΒΕΒΑΙΩΣΗ CHECK-IN</button>
-          </div>
-        )}
-
         {(act === 'board' || act === 'midnight' || act === 'morning') && (
           <div className="ui-card space-y-2">
             <div className="flex justify-between"><b>🪙 Tokens</b><b className="font-display text-xl">{tokens}</b></div>
@@ -239,17 +218,6 @@ export default function ModeMobile({ state, me, updateState, onChangePlayer, ses
             {mg.card && mg.card.playerId === me.id && <GameCard variant="compact" kicker={ROUTES[mg.card.route]?.name || 'Κάρτα'} icon={ROUTES[mg.card.route]?.icon} image={mg.card.image} accent={ROUTES[mg.card.route]?.color} title={mg.card.title} text={mg.card.text} footLeft={mg.card.secs ? `⏱ ${mg.card.secs}″` : ''} />}
             {mg.branch === me.id && <div className="rounded bg-yellow-900/60 p-2 text-sm">🔀 Σε διακλάδωση! Διάλεξε Glam ή Chaos Route στο tablet.</div>}
             {(mg.pos || {})[me.id] != null && <div className="text-xs opacity-60">Θέση ταμπλό: #{(mg.pos || {})[me.id] || 0}</div>}
-          </div>
-        )}
-
-        {act === 'beach' && (
-          <div className="ui-card space-y-2">
-            <div className="text-sm">🩴 Σαγιονάρες: {(bb.flops || {})[me.id] === false ? 'έχασες! 😱' : 'ΟΚ'} · 🥃 {(bb.drinks || {})[me.id] || 0}</div>
-            {bb.freeze && <div className="ui-card ui-card--gold text-center space-y-2">📯 {bb.freeze.cmd}<button disabled={!!mg.playerAction || !!bb.loser} onClick={() => sendAction('beach_freeze_loser')} className="ui-btn ui-btn--danger ui-btn--block">ΕΙΜΑΙ Η ΤΕΛΕΥΤΑΙΑ</button></div>}
-            {bb.loser === me.id && !bb.wheel && <button disabled={!!mg.playerAction} onClick={() => sendAction('beach_wheel_spin')} className="ui-btn ui-btn--danger ui-btn--block">🎡 ΓΥΡΝΑ ΤΟΝ ΤΡΟΧΟ</button>}
-            {bb.wheel && bb.wheel.pid === me.id && <div className="space-y-2"><GameCard variant="compact" kicker="Τροχός ποινών" icon="🎡" image={bb.wheel.card.image} accent="#F0B85A" title={bb.wheel.card.title} text={bb.wheel.card.text} footLeft={bb.wheel.card.secs ? `⏱ ${bb.wheel.card.secs}″` : ''} /><div className="grid grid-cols-2 gap-2"><button disabled={!!mg.playerAction} onClick={() => sendAction('beach_wheel_done')} className="ui-btn ui-btn--success">ΕΓΙΝΕ</button><button disabled={!!mg.playerAction} onClick={() => sendAction('beach_wheel_again')} className="ui-btn">ΝΕΑ ΠΕΡΙΣΤΡΟΦΗ</button></div></div>}
-            {bb.truth && bb.truth.who === me.id && <div className="ui-card ui-card--gold text-sm space-y-2"><b>🥃 SHOT & TRUTH</b><div>{bb.truth.question || 'Η ερώτηση εμφανίζεται στην κεντρική οθόνη.'}</div>{bb.truth.status === 'decide' && <div className="grid grid-cols-2 gap-2"><button disabled={!!mg.playerAction} onClick={() => sendAction('beach_truth_response', { value: 'truth' })} className="ui-btn ui-btn--success">TRUTH</button><button disabled={!!mg.playerAction} onClick={() => sendAction('beach_truth_response', { value: 'mocktail' })} className="ui-btn ui-btn--primary">🥃 DRINK</button></div>}</div>}
-            {bb.queen === me.id && <div className="text-center font-display text-2xl" style={{ color: '#E8C26B' }}>👑 Beach Queen!</div>}
           </div>
         )}
 

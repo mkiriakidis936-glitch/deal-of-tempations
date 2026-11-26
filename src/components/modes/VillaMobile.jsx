@@ -37,6 +37,7 @@ export default function VillaMobile({ state, me, sendAction }) {
 
       {myCard && (
         <Card title={myCard.kind === 'truth' ? 'Αλήθεια 18+ για σένα' : 'Θάρρος 18+ για σένα'} tone="#2A1F0A">
+          {myCard.image && <img src={myCard.image} alt="" onError={(e) => { e.currentTarget.style.display = 'none'; }} className="mb-2 aspect-video w-full rounded-xl object-cover" />}
           <div className="text-lg font-semibold">{myCard.title}</div>
           <p className="mt-1 text-white/85">{myCard.text}</p>
           {!myCard.response ? (

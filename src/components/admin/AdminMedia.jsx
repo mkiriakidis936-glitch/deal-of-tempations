@@ -4,12 +4,13 @@ import ComicPanel from '@/components/comic/ComicPanel';
 import ComicButton from '@/components/comic/ComicButton';
 import { ART, DEFAULTS, applyMediaOverrides } from '@/data/brandArt';
 import { IMAGE_SLOTS, PHOTO_SPOTS, PHOTO_SPOT_IDS, VIDEO_SLOTS, MODE_COVER_SLOTS, GALLERIES, SURFACES } from '@/data/mediaSlots';
-import { MEDIA_MODES, MODE_MEDIA_SECTIONS } from '@/data/modes/modeRegistry';
+import { MEDIA_MODES } from '@/data/modes/modeRegistry';
 import ModeMediaManager from '@/components/admin/ModeMediaManager';
 import SceneLibraryManager from '@/components/admin/SceneLibraryManager';
 import { GAME_SOUND_SLOTS, playSoundFile } from '@/lib/gameSounds';
 import { sfx, tvSfx } from '@/lib/modeKit';
 import AdminMediaPreview from '@/components/admin/AdminMediaPreview';
+import AdminMediaMap from '@/components/admin/AdminMediaMap';
 import { MEDIA_KEY, fetchOverrides, uploadMedia, listMedia, deleteMedia, deleteAllMedia } from '@/lib/media';
 
 import { MEDIA_ACCEPT, VIDEO_ACCEPT, isVideoUrl as isVideoFile } from '@/lib/mediaKind';
@@ -82,7 +83,7 @@ export default function AdminMedia() {
   const [libraryKindFilter, setLibraryKindFilter] = useState('all');
   const [librarySearch, setLibrarySearch] = useState('');
   const [galleryAsset, setGalleryAsset] = useState({});
-  const [section, setSection] = useState('modes');
+  const [section, setSection] = useState('map');
   const [surfaceFilter, setSurfaceFilter] = useState('all');
   const [fileLoadStatus, setFileLoadStatus] = useState({});
   const [libraryStatusFilter, setLibraryStatusFilter] = useState('all');
@@ -374,41 +375,6 @@ export default function AdminMedia() {
     }, `${label}: οριστική διαγραφή από παντού ολοκληρώθηκε ✓`);
   };
 
-  const SURFACE_GROUP = { site: '🌐 Site', forms: '📝 Φόρμες', tablet: '📟 Tablet', tv: '📺 TV', mobile: '📱 Κινητό' };
-  const missingMediaPoints = () => {
-    const missing = [];
-    const clearedImages = !!(ov.clearAllPhotos || ov.clearAllMedia);
-    for (const slot of PHOTO_SPOTS.filter((item) => !item.retired)) {
-      const src = ov[slot.id] || (ov.emptySlots?.includes(slot.id) || clearedImages ? '' : DEFAULTS[slot.id]);
-      if (!src) missing.push({ surface: slot.surfaces?.[0] || 'site', label: slot.label, where: slot.where });
-    }
-    for (const slot of IMAGE_SLOTS.filter((item) => !item.retired)) if (!ov[slot.id] && (clearedImages || !DEFAULTS[slot.id])) missing.push({ surface: slot.surfaces?.[0] || 'site', label: slot.label, where: slot.where });
-    for (const slot of VIDEO_SLOTS) if (!ov[slot.id]) missing.push({ surface: 'tv', label: slot.label, where: slot.where });
-    for (const mode of MEDIA_MODES) {
-      const saved = ov.modeMedia?.[mode.id] || {};
-      const sections = Array.isArray(saved.sections) && saved.sections.length
-        ? saved.sections
-        : (MODE_MEDIA_SECTIONS[mode.id] || []).map((item) => ({ ...item, image: '' }));
-      const gallery = Array.isArray(saved.gallery) ? saved.gallery.filter(Boolean) : [];
-      if (!saved.hero) missing.push({ surface: 'site', label: `${mode.name} — Hero`, where: 'Κεντρική εικόνα παρουσίασης του Mode' });
-      if (saved.coverCleared || (!saved.cover && !ov[`modeCover_${mode.id}`] && !DEFAULTS[`modeCover_${mode.id}`])) missing.push({ surface: 'tablet', label: `${mode.name} — Cover`, where: 'Ξεχωριστό εξώφυλλο επιλογής Mode στο Tablet / Forms' });
-      for (const section of sections) {
-        if (!section.image) missing.push({ surface: 'tablet', label: `${mode.name} — ${section.label}`, where: 'Εικόνα ενότητας στο Tablet Setup' });
-      }
-      if (gallery.length < 6) missing.push({ surface: 'site', label: `${mode.name} — Gallery (${gallery.length}/6)`, where: 'Gallery του mode στο Site (6 θέσεις)' });
-      if (!saved.trailer) missing.push({ surface: 'tablet', label: `${mode.name} — Βίντεο trailer`, where: 'Tablet Setup και σελίδα του mode στο Site' });
-    }
-    for (const gallery of GALLERIES.filter((item) => !item.retired)) {
-      const count = listOf(gallery.id).filter(Boolean).length;
-      const required = gallery.requiredCount || 0;
-      if (required > 0 && count < required) missing.push({
-        surface: gallery.surfaces?.[0] || 'site',
-        label: `${gallery.label} (${count}/${required})`,
-        where: gallery.where,
-      });
-    }
-    return missing;
-  };
   const Progress = ({ id }) => busy === id ? (
     <div className="h-2 rounded bg-black/40 overflow-hidden mt-2">
       <div className="h-full bg-primary transition-all" style={{ width: `${Math.max(5, progress * 100)}%` }} />
@@ -419,8 +385,9 @@ export default function AdminMedia() {
     <div className="space-y-3">
       <input ref={libraryOne} type="file" accept={MEDIA_ACCEPT} hidden onChange={onFiles} />
 
-      <div className="grid grid-cols-1 gap-2 sm:grid-cols-3" role="tablist" aria-label="Ενότητες πολυμέσων">
+      <div className="grid grid-cols-1 gap-2 sm:grid-cols-4" role="tablist" aria-label="Ενότητες πολυμέσων">
         {[
+          { id: 'map', label: '🧭 ΧΑΡΤΗΣ & ΕΛΕΓΧΟΣ', hint: 'Τι λείπει, ονόματα, πού φαίνεται' },
           { id: 'modes', label: '🎮 MODE MEDIA CENTER', hint: 'Όλα ανά mode' },
           { id: 'site', label: '🌐 Site, TV & ήχοι', hint: 'Σημεία, gallery, βίντεο, ήχοι' },
           { id: 'library', label: '🗂️ Βιβλιοθήκη', hint: 'Ανέβασμα & όλα τα αρχεία' },
@@ -431,6 +398,10 @@ export default function AdminMedia() {
           </button>
         ))}
       </div>
+
+      {section === 'map' && (
+        <AdminMediaMap ov={ov} library={library} busy={!!busy} onSave={saveChanged} onRefresh={refreshLibrary} />
+      )}
 
       {section === 'library' && (<>
       <ComicPanel className="bg-card">
@@ -792,47 +763,6 @@ export default function AdminMedia() {
       </>)}
 
       {section === 'library' && (<>
-      {surfaceFilter !== 'preview' && (() => {
-        const missing = missingMediaPoints();
-        const groups = missing.reduce((acc, item) => {
-          const prefix = item.label.includes(' — ') ? item.label.split(' — ')[0].trim() : '';
-          const mode = MEDIA_MODES.find((m) => m.name.toLowerCase() === prefix.toLowerCase());
-          const key = mode ? `${mode.icon || '🎮'} ${mode.name}` : (SURFACE_GROUP[item.surface] || 'Γενικά');
-          (acc[key] = acc[key] || []).push(item);
-          return acc;
-        }, {});
-        return (
-          <section className="rounded-3xl bg-[#1C1C1E] p-4 text-[#F5F1E8] sm:p-5">
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <h3 className="text-base font-bold">📋 Κενά σημεία</h3>
-                <p className="text-xs text-white/55">{missing.length ? 'Πάτα σε μια ομάδα για να δεις τι λείπει.' : 'Όλα τα σημεία έχουν φωτογραφία ή βίντεο.'}</p>
-              </div>
-              <span className={`shrink-0 rounded-full px-3 py-1 text-sm font-bold ${missing.length ? 'bg-[#E8C26B]/15 text-[#F7E3A8]' : 'bg-[#30D158]/15 text-[#7BE495]'}`}>{missing.length || '✓'}</span>
-            </div>
-            {missing.length > 0 && (
-              <div className="mt-3 divide-y divide-white/10 rounded-2xl bg-black/30">
-                {Object.entries(groups).map(([name, items]) => (
-                  <details key={name} className="group px-3">
-                    <summary className="flex min-h-[48px] cursor-pointer list-none items-center justify-between gap-2 text-sm font-semibold">
-                      <span className="truncate">{name}</span>
-                      <span className="flex shrink-0 items-center gap-2 text-xs text-white/55">{items.length} <span className="transition-transform group-open:rotate-90">›</span></span>
-                    </summary>
-                    <ul className="space-y-1.5 pb-3">
-                      {items.map((item, index) => (
-                        <li key={item.label + index} className="rounded-xl bg-white/5 px-3 py-2">
-                          <div className="text-sm">{item.label.includes(' — ') ? item.label.split(' — ').slice(1).join(' — ') : item.label}</div>
-                          <div className="text-[11px] text-white/50">{item.where}</div>
-                        </li>
-                      ))}
-                    </ul>
-                  </details>
-                ))}
-              </div>
-            )}
-          </section>
-        );
-      })()}
 
       {surfaceFilter !== 'preview' && (
       <section className="space-y-3 rounded-3xl bg-[#1C1C1E] p-4 text-[#F5F1E8] sm:p-5">

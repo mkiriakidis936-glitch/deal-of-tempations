@@ -47,14 +47,12 @@ export default function SetupScreen({ onStart }) {
   const [pendingIntakes, setPendingIntakes] = useState([]);
   const [approvalMessage, setApprovalMessage] = useState('');
   const [roster, setRoster] = useState([]);
-  const [castingPlan, setCastingPlan] = useState(null);
 
   const loadIntakes = async () => {
     try {
-      const [classicRes, pajamaRes, castingRes, eventRes, vipRes] = await Promise.all([
+      const [classicRes, pajamaRes, eventRes, vipRes] = await Promise.all([
         appApi.entities.PlayerIntake.filter({}, { sort: '-created_date', limit: 500 }),
         appApi.entities.PajamaIntake.filter({}, { sort: '-created_date', limit: 500 }),
-        appApi.entities.AppSetting.filter({ key: 'show_casting_plan' }, { limit: 1 }),
         appApi.entities.DotEvent.filter({}, { sort: '-created_date', limit: 200 }),
         appApi.entities.VIPInvitationSubmission.filter({}, { sort: '-created_date', limit: 500 }),
       ]);
@@ -64,9 +62,7 @@ export default function SetupScreen({ onStart }) {
       const scopeToEvent = (items) => (items || []).filter((item) => selectedDotEventId
         ? item.dotEventId === selectedDotEventId || item.roomCode === selectedEvent?.room_code || item.sessionCode === selectedEvent?.room_code
         : eventCode ? item.sessionCode === eventCode || item.roomCode === eventCode : !item.sessionCode && !item.roomCode && !item.dotEventId);
-      const allClassic = scopeToEvent(classicRes.items).filter((item) => item.approved === true);
       const allPajama = scopeToEvent(pajamaRes.items);
-      const approved = allPajama.filter((i) => i.approved === true && i.name);
       const pending = [
         ...scopeToEvent(classicRes.items).filter((item) => item.approved !== true).map((item) => ({ ...item, sourceEntity: 'PlayerIntake', modeIds: item.preferredModes?.length ? item.preferredModes : [item.vipGameMode || item.gameMode || 'classic'] })),
         ...allPajama.filter((item) => item.approved !== true).map((item) => ({ ...item, sourceEntity: 'PajamaIntake', modeIds: item.preferredModes?.length ? item.preferredModes : ['pajama'] })),
@@ -76,43 +72,7 @@ export default function SetupScreen({ onStart }) {
       const builtRoster = buildRoster({ player: scopeToEvent(classicRes.items), pajama: allPajama, vip: scopeToEvent(vipRes.items).filter((item) => item.approved !== true) });
       setRoster(builtRoster);
 
-      const castingRecord = castingRes.items?.[0] || null;
-      const savedCastingPlan = castingRecord?.value;
-      const eligibleModesByName = new Map();
-      const addEligible = (name, modes) => {
-        const key = String(name || '').trim().toLocaleLowerCase('el-GR');
-        if (!key) return;
-        const current = eligibleModesByName.get(key) || new Set();
-        modes.filter(Boolean).forEach((modeId) => current.add(modeId));
-        eligibleModesByName.set(key, current);
-      };
-      allClassic.forEach((item) => addEligible(item.name, item.preferredModes?.length ? item.preferredModes : [item.vipGameMode || item.gameMode || 'classic']));
-      approved.forEach((item) => addEligible(item.name, item.preferredModes?.length ? item.preferredModes : (item.formType === 'modes' ? [] : ['pajama'])));
-      const planMatchesEvent = selectedDotEventId
-        ? savedCastingPlan?.dotEventId === selectedDotEventId ||
-          (!!savedCastingPlan?.roomCode && savedCastingPlan.roomCode === selectedEvent?.room_code) ||
-          (!!savedCastingPlan?.sessionCode && savedCastingPlan.sessionCode === selectedEvent?.room_code)
-        : eventCode
-          ? savedCastingPlan?.sessionCode === eventCode || savedCastingPlan?.roomCode === eventCode
-          : !savedCastingPlan?.dotEventId && !savedCastingPlan?.sessionCode && !savedCastingPlan?.roomCode;
-      const planHasOnlyApprovedPlayers = Array.isArray(savedCastingPlan?.players) && savedCastingPlan.players.length > 0 &&
-        savedCastingPlan.players.every((player) => eligibleModesByName.get(String(player.name || '').trim().toLocaleLowerCase('el-GR'))?.has(savedCastingPlan.mode));
-      if (savedCastingPlan?.mode && !savedCastingPlan.usedAt && planMatchesEvent && planHasOnlyApprovedPlayers) {
-        const activePlan = { ...savedCastingPlan, settingId: castingRecord.id };
-        setCastingPlan(activePlan);
-        setMode(activePlan.mode);
-        setPlayers(activePlan.players.map((player, index) => ({
-          ...player,
-          footwearLevel: player.footwearLevel ?? 2,
-          toenailPerk: player.toenailPerk || TOENAIL_PERKS[index % TOENAIL_PERKS.length].id,
-        })));
-      } else {
-        setCastingPlan(null);
-        if (savedCastingPlan?.players?.length && (!planMatchesEvent || !planHasOnlyApprovedPlayers)) {
-          setApprovalMessage('Η αποθηκευμένη επιλογή δεν αντιστοιχεί στο Event ή περιλαμβάνει συμμετοχή χωρίς ενεργή έγκριση. Φορτώθηκαν μόνο οι εγκεκριμένες συμμετοχές.');
-        }
-        seedPlayers(modeRef.current, builtRoster, { keepTyped: true });
-      }
+      seedPlayers(modeRef.current, builtRoster, { keepTyped: true });
     } catch (e) {
       console.error('Intake load error', e);
     }
@@ -202,17 +162,7 @@ export default function SetupScreen({ onStart }) {
     const durationMinutes = newMode?.minutes || 300;
     const valid = named.map(({ formInfo: _formInfo, ...player }) => player);
     const state = { ...createInitialState(mode, 'standard', valid), gameDurationMinutes: durationMinutes, gameStartedAt: Date.now(), gamePausedMs: 0, gamePausedAt: null, safetyProfile: { safeWord: safeWord.trim(), confirmedAt: Date.now() } };
-    if (mode === 'beach_bar') {
-      state.mg = { ...state.mg, alcoholFree: true, bb: { ...(state.mg.bb || {}), flops: Object.fromEntries(state.players.map((player) => [player.id, player.hasFlipFlops !== false])) } };
-    }
     await onStart({ sessionCode: generateSessionCode(), dotEventId: selectedDotEventId, mode, duration: String(durationMinutes), intensity: 'standard', stage: state.stage, state });
-    if (castingPlan?.settingId && castingPlan.mode === mode) {
-      try {
-        await appApi.entities.AppSetting.update(castingPlan.settingId, { value: { ...castingPlan, usedAt: new Date().toISOString() } });
-      } catch (error) {
-        console.warn('Episode cast usage timestamp could not be saved', error);
-      }
-    }
   }
 
   const media = MODE_MEDIA[mode] || {};
@@ -228,8 +178,8 @@ export default function SetupScreen({ onStart }) {
     const on = mode === m.id;
     const cover = MODE_MEDIA[m.id]?.cover || MODE_COVERS[`modeCover_${m.id}`];
     return (
-      <button type="button" onClick={() => handleModeChange(m)} disabled={!!castingPlan} aria-pressed={on}
-        className={`dot-lobby-card group relative overflow-hidden text-left ${on ? 'is-on' : ''} ${castingPlan && !on ? 'opacity-40' : ''}`}>
+      <button type="button" onClick={() => handleModeChange(m)} aria-pressed={on}
+        className={`dot-lobby-card group relative overflow-hidden text-left ${on ? 'is-on' : ''}`}>
         <div className="absolute inset-0 bg-gradient-to-br from-[#2a2112] to-black" />
         {cover && <img src={cover} alt="" onError={(e) => { e.currentTarget.style.display = 'none'; }} className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />}
         <div className="absolute inset-0 bg-gradient-to-t from-black via-black/55 to-transparent" />
@@ -298,7 +248,6 @@ export default function SetupScreen({ onStart }) {
 
         <section>
           <StepTitle n={1} title="Διάλεξε παιχνίδι" done />
-          {castingPlan?.mode && <p className="mb-3 rounded-2xl bg-[#E8C26B]/10 p-3 text-sm text-[#F7E3A8]">🎬 Το mode το έχει ορίσει το Admin (Επιλογή επεισοδίου).</p>}
           <div className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-white/50">🎲 Μηχανές παιχνιδιού</div>
           <div className="grid grid-cols-2 gap-3">{GAME_MODES.filter((m) => m.kind === 'engine').map((m) => <ModeCard key={m.id} m={m} />)}</div>
           <div className="mb-2 mt-4 text-xs font-semibold uppercase tracking-[0.2em] text-white/50">📱 Ψηφιακά modes</div>

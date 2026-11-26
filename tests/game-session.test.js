@@ -13,8 +13,8 @@ const players = [
 ];
 
 test('the active digital modes keep their specified durations', () => {
-  assert.deepEqual(NEW_MODES.map((mode) => mode.id), ['lockdown', 'beach_bar', 'marathon_4h', 'villa_takeover']);
-  assert.deepEqual(NEW_MODES.map((mode) => mode.minutes), [60, 150, 105, 2880]);
+  assert.deepEqual(NEW_MODES.map((mode) => mode.id), ['lockdown', 'marathon_4h', 'villa_takeover']);
+  assert.deepEqual(NEW_MODES.map((mode) => mode.minutes), [60, 105, 2880]);
 });
 
 test('player session response never exposes VIP profiles, and hidden roles only to their owner', () => {
@@ -45,7 +45,7 @@ test('mode mobile actions accept only the signed-in player and supported action 
   assert.equal(validatePlayerPatch(current, { mg: { playerAction: { playerId: 'p0', type: 'board_roll', at: 1000 } } }, 'p1'), false);
   assert.equal(validatePlayerPatch(current, { mg: { playerAction: { playerId: 'p1', type: 'board_route', route: 'unknown', at: 1000 } } }, 'p1'), false);
   assert.equal(validatePlayerPatch(current, { mg: { playerAction: { playerId: 'p1', type: 'morning_code', code: '12A4', at: 1000 } } }, 'p1'), false);
-  assert.equal(validatePlayerPatch(current, { mg: { playerAction: { playerId: 'p1', type: 'beach_finale_response', value: 'done', at: 1000 } } }, 'p1'), true);
+  assert.equal(validatePlayerPatch(current, { mg: { playerAction: { playerId: 'p1', type: 'beach_finale_response', value: 'done', at: 1000 } } }, 'p1'), false); // Beach Bar αφαιρέθηκε (7.5.0)
 });
 
 test('Absolute Interrogation accepts only the current player own boolean vote', () => {

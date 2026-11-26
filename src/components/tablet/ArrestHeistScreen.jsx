@@ -600,13 +600,13 @@ function HeistBoardPanel({ state, updateState }) {
     if (square.type === 'street') {
       const kind = Math.random() < 0.5 ? 'street_truth' : 'street_dare';
       const drawn = drawHeistCard(kind);
-      card = drawn ? { kind, name: drawn.name, text: drawn.text } : null;
+      card = drawn ? { kind, name: drawn.name, text: drawn.text, image: drawn.image || '' } : null;
     } else if (square.type === 'warrant') {
       const drawn = drawHeistCard('warrant');
-      card = drawn ? { kind: 'warrant', name: drawn.name, text: drawn.desc } : null;
+      card = drawn ? { kind: 'warrant', name: drawn.name, text: drawn.desc, image: drawn.image || '' } : null;
     } else if (square.type === 'glitch') {
       const drawn = drawHeistCard('glitch');
-      card = drawn ? { kind: 'glitch', name: drawn.name, text: drawn.desc } : null;
+      card = drawn ? { kind: 'glitch', name: drawn.name, text: drawn.desc, image: drawn.image || '' } : null;
     } else {
       const details = {
         police: ['POLICE HQ', 'Ενεργοποιείται η διαδικασία Absolute Interrogation.'],
@@ -634,6 +634,7 @@ function HeistBoardPanel({ state, updateState }) {
       {state.heistLastRoll && <div className="text-xs text-foreground/70">{players.find((p) => p.id === state.heistLastRoll.playerId)?.name} · 🎲 {state.heistLastRoll.dice} · Base {String(state.heistLastRoll.position + 1).padStart(2,'0')}</div>}
       {activeCard && (
         <div className="rounded-lg border border-primary/50 bg-background/70 p-3 space-y-2">
+          {activeCard.image && <img src={activeCard.image} alt="" onError={(e) => { e.currentTarget.style.display = 'none'; }} className="aspect-video w-full rounded-lg object-cover" />}
           <div className="font-heading text-xl">{activeCard.name}</div>
           <p className="text-sm">{activeCard.text}</p>
           <ComicButton variant="green" size="sm" onClick={() => updateState({ heistBoardCard: null })} disabled={!!state.stopActive}>ΟΛΟΚΛΗΡΩΘΗΚΕ</ComicButton>

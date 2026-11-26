@@ -3,8 +3,8 @@ import { appApi } from '@/api/apiClient';
 import { GAME_MODES, modeDisplayName } from '@/data/gameConfig';
 import { request } from '@/api/apiClient';
 import { fetchOverrides } from '@/lib/media';
-import { PHOTO_SPOT_IDS, VIDEO_SLOTS } from '@/data/mediaSlots';
-import { NEW_MODES } from '@/data/modes/modeRegistry';
+import { listMedia } from '@/lib/media';
+import { buildMediaManifest, manifestSummary } from '@/lib/mediaManifest';
 
 const QUICK_LINKS = [
   { id: 'modes', icon: '🎮', title: 'Λειτουργίες παιχνιδιού', detail: 'Διαχείριση λειτουργιών' },
@@ -20,28 +20,26 @@ function MetricCard({ icon, label, value, note, accent }) {
 }
 
 export default function AdminOverview({ sessions = [], loading = false, onNavigate = () => {} }) {
-  const [extra, setExtra] = useState({ achievements: null, connection: 'loading', newRequests: null, vipInvitations: null, backup: null, emptyPhotos: null, missingVideos: null, missingTrailers: null, pushDevices: null });
+  const [extra, setExtra] = useState({ achievements: null, connection: 'loading', newRequests: null, vipInvitations: null, backup: null, media: null, pushDevices: null });
   useEffect(() => {
     let mounted = true;
     Promise.allSettled([
       appApi.entities.Achievement.filter({}, { limit: 500 }),
-      Promise.all([appApi.entities.PublicFormSubmission.filter({ status: 'new' }, { limit: 500 }), appApi.entities.PlayerIntake.filter({}, { limit: 500 }), appApi.entities.PajamaIntake.filter({}, { limit: 500 })]),
+      Promise.all([appApi.entities.PublicFormSubmission.filter({ status: 'new' }, { limit: 500 }), appApi.entities.PlayerIntake.filter({}, { limit: 1000 }), appApi.entities.PajamaIntake.filter({}, { limit: 1000 }), appApi.entities.VIPInvitationSubmission.filter({}, { limit: 1000 })]),
       appApi.entities.VIPInvitation.filter({ active: true }, { limit: 100 }),
       request('GET', '/api/backup/list'),
       request('GET', '/api/push/status'),
-      fetchOverrides(),
+      Promise.all([fetchOverrides(), listMedia().catch(() => null)]),
     ]).then(([achievements, requests, vip, backup, push, media]) => {
       if (!mounted) return;
       setExtra({
         achievements: achievements.status === 'fulfilled' ? (achievements.value.items || []).length : null,
         connection: achievements.status === 'fulfilled' ? 'connected' : 'error',
-        newRequests: requests.status === 'fulfilled' ? requests.value.reduce((sum, result) => sum + (result.items || []).filter((item) => !item.status || ['new','Νέο'].includes(item.status)).length, 0) : null,
+        newRequests: requests.status === 'fulfilled' ? requests.value.reduce((sum, result, index) => sum + (result.items || []).filter((item) => index === 0 ? true : (item.approved !== true && item.approvalStatus !== 'rejected' && item.rejected !== true)).length, 0) : null,
         vipInvitations: vip.status === 'fulfilled' ? (vip.value.items || []).length : null,
         backup: backup.status === 'fulfilled' ? (backup.value.items || []).sort((a, b) => Number(b.modified) - Number(a.modified))[0] || null : null,
         pushDevices: push.status === 'fulfilled' ? (push.value.devices || []).length : null,
-        emptyPhotos: media.status === 'fulfilled' ? (media.value?.value?.emptySlots || []).filter((id) => PHOTO_SPOT_IDS.includes(id)).length : null,
-        missingVideos: media.status === 'fulfilled' ? VIDEO_SLOTS.filter((slot) => !media.value?.value?.[slot.id]).length : null,
-        missingTrailers: media.status === 'fulfilled' ? NEW_MODES.filter((mode) => !media.value?.value?.modeMedia?.[mode.id]?.trailer).length : null,
+        media: media.status === 'fulfilled' ? manifestSummary(buildMediaManifest(media.value[0]?.value || {}, media.value[1])) : null,
       });
     });
     return () => { mounted = false; };
@@ -81,13 +79,13 @@ export default function AdminOverview({ sessions = [], loading = false, onNaviga
         <div className="adm-tile"><div className="adm-label">ΝΕΕΣ ΑΙΤΗΣΕΙΣ</div><div className="mt-1 text-2xl font-bold">{extra.newRequests ?? '—'}</div><button onClick={() => onNavigate('inbox')} className="adm-link">Άνοιγμα εισερχομένων →</button></div>
         <div className="adm-tile"><div className="adm-label">ΕΠΟΜΕΝΟ EVENT</div><div className="mt-1 text-sm font-bold">{upcomingEvent?.event?.title || (upcomingEvent?.mode ? modeDisplayName(upcomingEvent.mode) : 'Δεν υπάρχει Event')}</div><div className="mt-1 text-[10px] text-[#e5c76b]/70">{upcomingEvent?.event?.scheduledAt ? new Date(upcomingEvent.event.scheduledAt).toLocaleString('el-GR') : upcomingEvent?.sessionCode || 'Ξεκίνα από Game & Mode'}</div><button onClick={() => onNavigate('events')} className="adm-link">Άνοιγμα Events →</button></div>
         <div className="adm-tile"><div className="adm-label">ΕΝΕΡΓΕΣ VIP ΠΡΟΣΚΛΗΣΕΙΣ</div><div className="mt-1 text-2xl font-bold">{extra.vipInvitations ?? '—'}</div><button onClick={() => onNavigate('invitations')} className="adm-link">Άνοιγμα προσκλήσεων →</button></div>
-        <div className="adm-tile"><div className="adm-label">ΤΕΛΕΥΤΑΙΟ BACKUP</div><div className="mt-1 text-sm font-bold">{extra.backup ? new Date(extra.backup.modified).toLocaleString('el-GR') : 'Μη διαθέσιμο'}</div><button onClick={() => onNavigate('settings')} className="adm-link">Άνοιγμα αντιγράφων →</button></div>
-        <div className="adm-tile"><div className="adm-label">ΕΛΛΕΙΨΕΙΣ MEDIA</div><div className="mt-1 text-sm font-bold">{extra.emptyPhotos === null ? '—' : extra.emptyPhotos + (extra.missingVideos || 0) + (extra.missingTrailers || 0)}</div><div className="mt-1 text-[10px] text-[#e5c76b]/70">Κενές φωτογραφίες / βίντεο / trailers</div><button onClick={() => onNavigate('media')} className="adm-link">Άνοιγμα βιβλιοθήκης →</button></div>
+        <div className="adm-tile"><div className="adm-label">ΤΕΛΕΥΤΑΙΟ BACKUP</div><div className="mt-1 text-sm font-bold">{extra.backup ? new Date(extra.backup.modified).toLocaleString('el-GR') : 'Μη διαθέσιμο'}</div><button onClick={() => onNavigate('backup')} className="adm-link">Άνοιγμα αντιγράφων →</button></div>
+        <div className="adm-tile"><div className="adm-label">ΕΛΛΕΙΨΕΙΣ MEDIA</div><div className="mt-1 text-2xl font-bold">{extra.media ? extra.media.attention : '—'}</div><div className="mt-1 text-[10px] text-[#e5c76b]/70">{extra.media ? `${extra.media.missingRequired} υποχρεωτικά · ${extra.media.missingRecommended} προτεινόμενα · ${extra.media.broken} σβησμένα` : 'Υποχρεωτικά & προτεινόμενα που λείπουν'}</div><button onClick={() => onNavigate('media')} className="adm-link">Άνοιγμα χάρτη media →</button></div>
         <div className="adm-tile"><div className="adm-label">ΣΥΣΚΕΥΕΣ PUSH</div><div className="mt-1 text-2xl font-bold">{extra.pushDevices ?? '—'}</div><button onClick={() => onNavigate('notifications')} className="adm-link">Άνοιγμα ειδοποιήσεων →</button></div>
       </div>
     </section>
     <section className="grid grid-cols-2 xl:grid-cols-4 gap-3">
-      <MetricCard icon="🎮" label="Modes παιχνιδιού" value={GAME_MODES.length} note="2 μηχανές · 4 ψηφιακά" accent="bg-[#d4af37]" />
+      <MetricCard icon="🎮" label="Modes παιχνιδιού" value={GAME_MODES.filter((m) => !m.retired).length} note={`${GAME_MODES.filter((m) => !m.retired && m.kind === 'engine').length} μηχανές · ${GAME_MODES.filter((m) => !m.retired && m.kind !== 'engine').length} ψηφιακά`} accent="bg-[#d4af37]" />
       <MetricCard icon="👥" label="Παίκτριες" value={playerCount} note="Μοναδικοί παίκτες στις αποθηκευμένες παρτίδες" accent="bg-[#d4af37]" />
       <MetricCard icon="🎲" label="Συνεδρίες παιχνιδιού" value={loading ? '…' : sessions.length} note={`${activity.active.length} ενεργές · ${activity.finished.length} ολοκληρωμένες`} accent="bg-[#d4af37]" />
       <MetricCard icon="📨" label="Νέες αιτήσεις" value={extra.newRequests ?? '—'} note="Περιμένουν έγκριση στις Αιτήσεις" accent="bg-[#d4af37]" />

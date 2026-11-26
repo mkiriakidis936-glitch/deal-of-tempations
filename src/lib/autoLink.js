@@ -13,10 +13,11 @@ export function expectedNames(modes, sectionsByMode, coverSlots = [], scenes = [
   for (const m of modes) {
     const id = m.id;
     const cover = coverSlots.find((c) => c.modeId === id)?.filename;
-    out.push({ modeId: id, field: 'cover', key: key(!cover || cover === 'cover.jpg' ? `${id}_cover` : cover) });
+    out.push({ modeId: id, field: 'cover', key: key(`${id}_cover`) });
+    if (cover && cover !== 'cover.jpg' && key(cover) !== key(`${id}_cover`)) out.push({ modeId: id, field: 'cover', key: key(cover) }); // παλιό όνομα
     out.push({ modeId: id, field: 'hero', key: key(`${id}_hero`) });
     for (const s of sectionsByMode[id] || []) out.push({ modeId: id, field: `section:${s.id}`, key: key(s.filename) });
-    const gp = id === 'lockdown' ? 'lockdown' : id === 'beach_bar' ? 'beach' : id;
+    const gp = id;
     for (let i = 0; i < 6; i += 1) out.push({ modeId: id, field: `gallery:${i}`, key: key(`${gp}_gallery_${String(i + 1).padStart(2, '0')}`) });
   }
   for (const sc of scenes) out.push({ modeId: '', field: `scene:${sc.id}`, key: key(sc.filename) });

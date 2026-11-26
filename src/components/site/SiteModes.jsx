@@ -6,7 +6,6 @@ const MODE_IDS = {
   pedi_glam: 'pedi_glam',
   pedi_extended: 'pedi_extended',
   lockdown: 'lockdown',
-  beachbar: 'beach_bar',
   marathon4h: 'marathon_4h',
 };
 

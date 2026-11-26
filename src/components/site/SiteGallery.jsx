@@ -4,7 +4,7 @@ import { HEIST_PHOTOS, MODE_MEDIA } from '@/data/brandArt';
 
 import { MEDIA_MODES } from '@/data/modes/modeRegistry';
 
-const MODE_IDS = { lockdown: 'lockdown', beachbar: 'beach_bar', marathon4h: 'marathon_4h', heist: 'arrest_heist', villa: 'villa_takeover', classic: 'classic' };
+const MODE_IDS = { lockdown: 'lockdown', marathon4h: 'marathon_4h', heist: 'arrest_heist', villa: 'villa_takeover', classic: 'classic' };
 const galleryOf = (modeId) => (MODE_MEDIA[modeId]?.gallery || []).filter(Boolean);
 
 // Καρτέλες: «Όλες» + μία ανά mode που έχει φωτογραφίες (υπολογίζεται κάθε φορά, ώστε να φαίνονται αμέσως οι αλλαγές του Admin).

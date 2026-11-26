@@ -5,7 +5,6 @@ import ActBoard from '@/components/modes/ActBoard';
 import ActMidnight from '@/components/modes/ActMidnight';
 import ActLockdown from '@/components/modes/ActLockdown';
 import ActMorning from '@/components/modes/ActMorning';
-import BeachBarGame from '@/components/modes/BeachBarGame';
 import ActLounge from '@/components/modes/ActLounge';
 import ActVilla from '@/components/modes/ActVilla';
 import VIPUnratedMode from '@/components/modes/VIPUnratedMode';
@@ -63,7 +62,7 @@ export default function ModeGame({ state, updateState, onEnd, onQR, playerProfil
   const actIndex = Math.min(mg.actIndex || 0, acts.length - 1);
   const act = acts[actIndex];
   const actTitleFor = (item) => ACT_META[item].title;
-  const theme = MODE_THEMES[state.mode];
+  const theme = MODE_THEMES[state.mode] || MODE_THEMES.lockdown;
   const multi = acts.length > 1;
   useTick(true, 15000);
 
@@ -140,7 +139,7 @@ export default function ModeGame({ state, updateState, onEnd, onQR, playerProfil
       {act === 'midnight' && <ActMidnight ctx={ctx} onDone={nextAct} />}
       {act === 'lockdown' && <ActLockdown ctx={ctx} standalone={!multi} onDone={(res) => { setMg({ lockdownResult: res }); if (multi) nextAct(); else finishAll(); }} />}
       {act === 'morning' && <ActMorning ctx={ctx} onFinish={finishAll} />}
-      {act === 'beach' && <BeachBarGame ctx={ctx} onEnd={finishAll} />}
+      {act === 'beach' && <Panel title="Το mode αφαιρέθηκε" accent={theme.accent2}><p className="text-sm">Το Beach Bar Home Lockdown αφαιρέθηκε στην 7.5.0. Πάτα «Τέλος» για να κλείσει αυτή η παλιά παρτίδα.</p><button type="button" className="ui-btn ui-btn--primary" onClick={finishAll}>Τέλος</button></Panel>}
       {act === 'lounge' && <ActLounge ctx={ctx} state={state} onFinish={finishAll} />}
       {act === 'villa' && <ActVilla ctx={ctx} state={state} updateState={updateState} onFinish={finishAll} />}
     </ModeShell>
@@ -151,11 +150,9 @@ function Results({ ctx, theme, onEnd, state }) {
   const { players, mg } = ctx;
   const tokens = (p) => (mg.tokens || {})[p.id] || 0;
   const ranking = finalStandings(players, mg);
-  const queen = mg.bb?.queen && players.find((p) => p.id === mg.bb.queen);
   const loungeQueen = mg.loungeQueen && players.find((p) => p.id === mg.loungeQueen);
   return (
     <Panel title="🏆 Τίτλοι & Απονομή" accent={theme.accent2}>
-      {queen && <div className="font-display text-2xl text-center" style={{ color: '#E8C26B' }}>👑 Beach Queen: {queen.name}</div>}
       {loungeQueen && <div className="font-display text-2xl text-center" style={{ color: '#E8C26B' }}>👑 Ultimate Pajama Police Queen: {loungeQueen.name}</div>}
       {mg.lockdownResult && <div className="text-center text-sm opacity-80">Lockdown: {mg.lockdownResult === 'won' ? '✅ απόδραση!' : '💀 αποτυχία'}</div>}
       <div className="space-y-1">

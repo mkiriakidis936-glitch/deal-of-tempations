@@ -13,7 +13,6 @@ const SITE_PAGES = [
   { path: '/site', label: 'Αρχική' },
   { path: '/site?event=heist', label: 'Heist' },
   { path: '/site?event=lockdown', label: 'Pajama Lockdown 18+' },
-  { path: '/site?event=beachbar', label: 'Beach Bar Home Lockdown' },
   { path: '/site?event=marathon4h', label: 'Pajama Heist & Arrest' },
   { path: '/promo', label: 'Promo' },
 ];

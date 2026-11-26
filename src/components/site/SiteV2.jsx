@@ -10,7 +10,7 @@ import { MODE_GUIDE, SAFETY_RULES } from '@/data/modes/modeGuide';
 // Admin → Site & Σενάριο και όλα τα media από το MODE MEDIA CENTER.
 // ------------------------------------------------------------------
 
-export const SITE_MODE_IDS = { classic: 'classic', heist: 'arrest_heist', lockdown: 'lockdown', beachbar: 'beach_bar', marathon4h: 'marathon_4h', villa: 'villa_takeover' };
+export const SITE_MODE_IDS = { classic: 'classic', heist: 'arrest_heist', lockdown: 'lockdown', marathon4h: 'marathon_4h', villa: 'villa_takeover' };
 
 const imageFor = (ev) => {
   const modeId = SITE_MODE_IDS[ev];
@@ -193,7 +193,7 @@ export function HowItWorks() {
 // ------------------------------------------------------------------ Οι 3 οθόνες
 export function ThreeScreens() {
   const tv = imageFor('lockdown');
-  const phone = imageFor('beachbar');
+  const phone = imageFor('villa');
   const tablet = imageFor('marathon4h');
   const items = [
     { icon: '📺', title: 'Τηλεόραση', text: 'Η σκηνή της βραδιάς: φάσεις, χρονόμετρα, βαθμολογία και η τελετή της νικήτριας.' },

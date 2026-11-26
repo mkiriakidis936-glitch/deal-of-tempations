@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { appApi } from '@/api/apiClient';
 import { modeDisplayName } from '@/data/gameConfig';
-import { uploadMedia } from '@/lib/media';
+import { uploadMedia, deleteMedia } from '@/lib/media';
 
 // Admin: σελίδα αναμνήσεων για κάθε αρχειοθετημένη βραδιά (link, μήνυμα, φωτογραφίες με συγκατάθεση όλων).
 const newToken = () => Array.from(crypto.getRandomValues(new Uint8Array(16)), (b) => b.toString(16).padStart(2, '0')).join('');
@@ -31,10 +31,38 @@ export default function AdminMemories() {
     setMsg(`Προστέθηκαν ${urls.length} φωτογραφίες.`);
   }
 
+  const hasPage = (item) => !!(item.shareToken || item.memoryMessage || (item.memoryPhotos || []).length);
+
+  // Σβήνει ΤΗ ΣΕΛΙΔΑ (link, μήνυμα, φωτογραφίες). Η βραδιά μένει στα στατιστικά και στο ιστορικό.
+  async function clearPage(item, others = items) {
+    const stillUsed = new Set(others.filter((x) => x.id !== item.id).flatMap((x) => x.memoryPhotos || []));
+    for (const src of item.memoryPhotos || []) {
+      const name = String(src).split('/media/')[1];
+      if (name && !stillUsed.has(src)) { try { await deleteMedia(decodeURIComponent(name)); } catch { /* ήδη διαγραμμένο */ } }
+    }
+    const updated = await appApi.entities.SessionArchive.update(item.id, { shareToken: '', memoryMessage: '', memoryPhotos: [], photosConsent: false });
+    setItems((list) => list.map((x) => (x.id === item.id ? updated : x)));
+  }
+  async function removeOne(item) {
+    if (!window.confirm(`Διαγραφή της σελίδας αναμνήσεων «${item.sessionCode}»;\n\nΟ σύνδεσμος σταματά να ανοίγει, σβήνονται το μήνυμα και ${(item.memoryPhotos || []).length} φωτογραφίες. Η βραδιά μένει στα στατιστικά. Δεν αναιρείται.`)) return;
+    try { await clearPage(item); setMsg('Η σελίδα διαγράφηκε ✓'); setOpen(''); } catch (e) { setMsg(e.message || 'Η διαγραφή απέτυχε.'); }
+  }
+  async function removeAll() {
+    const pages = items.filter(hasPage);
+    if (!pages.length) return;
+    if (!window.confirm(`Διαγραφή ΟΛΩΝ των σελίδων αναμνήσεων (${pages.length});\n\nΟι σύνδεσμοι σταματούν να ανοίγουν και σβήνονται μηνύματα και φωτογραφίες. Οι βραδιές μένουν στα στατιστικά. Δεν αναιρείται.`)) return;
+    setMsg('Διαγραφή…');
+    try { for (const item of pages) await clearPage(item, items); setMsg(`Διαγράφηκαν ${pages.length} σελίδες ✓`); setOpen(''); }
+    catch (e) { setMsg(`Η διαγραφή σταμάτησε: ${e.message || 'σφάλμα'}`); }
+  }
+
   if (!items) return <div className="text-white/60">Φόρτωση…</div>;
   return (
     <div className="space-y-3 text-white">
-      <div className="text-[17px] font-semibold">💌 Σελίδες αναμνήσεων</div>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div className="text-[17px] font-semibold">💌 Σελίδες αναμνήσεων</div>
+        {items.some(hasPage) && <button type="button" onClick={removeAll} className="h-9 rounded-full bg-[#FF453A]/15 px-4 text-sm font-semibold text-[#FF8A80]">🗑 Διαγραφή όλων των σελίδων</button>}
+      </div>
       <p className="text-sm text-white/60">Μετά από κάθε βραδιά: στείλε στις παίκτριες το ιδιωτικό link με νικήτρια, παίκτριες και στιγμές. Οι φωτογραφίες εμφανίζονται μόνο αν τσεκάρεις ότι συμφώνησαν όλες.</p>
       {msg && <div className="rounded-xl bg-[#2C2C2E] px-3 py-2 text-sm">{msg}</div>}
       <div className="overflow-hidden rounded-2xl bg-[#1C1C1E]">
@@ -61,6 +89,7 @@ export default function AdminMemories() {
                 <div className="flex flex-wrap gap-2">
                   <button type="button" onClick={() => copy(item)} className="h-11 rounded-full bg-[#E8C26B] px-5 font-bold text-black">🔗 Αντιγραφή link</button>
                   {item.shareToken && <a href={linkOf(item)} target="_blank" rel="noreferrer" className="flex h-11 items-center rounded-full bg-[#2C2C2E] px-5 font-semibold text-[#0A84FF]">Προβολή</a>}
+                  {hasPage(item) && <button type="button" onClick={() => removeOne(item)} className="h-11 rounded-full bg-[#FF453A]/15 px-5 font-semibold text-[#FF8A80]">🗑 Διαγραφή σελίδας</button>}
                 </div>
               </div>
             )}

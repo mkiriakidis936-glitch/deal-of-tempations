@@ -8,7 +8,7 @@ import { IMAGE_SLOTS, PHOTO_SPOT_IDS } from '@/data/mediaSlots';
 import { uploadMedia, patchOverrides } from '@/lib/media';
 import { VIDEO_ACCEPT } from '@/lib/mediaKind';
 
-const PAGES = ['/site', '/promo', '/invitation', '/pajama-invite', '/pajama-form', '/tv', '/play', '/gift-unlock', '/intake'];
+const PAGES = ['/site', '/promo', '/forms', '/tv', '/play', '/gift-unlock'];
 const IMG_ACCEPT = 'image/*,.jpg,.jpeg,.png,.webp,.gif,.avif,.heic';
 const VID_ACCEPT = VIDEO_ACCEPT;
 

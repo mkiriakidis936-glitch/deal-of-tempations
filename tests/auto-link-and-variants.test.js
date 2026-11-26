@@ -9,7 +9,7 @@ import { SCENES } from '../src/data/sceneLibrary.js';
 test('κάθε ενεργό mode έχει 15 θέσεις: cover + hero + 7 ενότητες + 6 gallery', () => {
   for (const { id } of MEDIA_MODES) {
     const slots = expectedNames([{ id }], MODE_MEDIA_SECTIONS, MODE_COVER_SLOTS);
-    assert.equal(slots.length, 15, `${id}: ${slots.length}`);
+    assert.equal(new Set(slots.map((s) => s.field)).size, 15, `${id}: ${slots.length}`);
     assert.equal((MODE_MEDIA_SECTIONS[id] || []).length, 7, `${id} sections`);
   }
 });

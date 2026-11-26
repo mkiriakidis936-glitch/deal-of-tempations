@@ -14,8 +14,6 @@ export function computeAwards({ players = [], mg = {} }) {
   if (tk && tokens(tk) > 0 && tk.id !== top?.id) awards.push({ icon: '🪙', title: 'Tokens Queen', who: tk.name, note: `${tokens(tk)} tokens` });
   const sc = by(score)[0];
   if (sc && score(sc) > 0 && sc.id !== top?.id) awards.push({ icon: '⭐', title: 'Score Star', who: sc.name, note: `${score(sc)} σκορ` });
-  const queen = mg.bb?.queen && players.find((p) => p.id === mg.bb.queen);
-  if (queen) awards.push({ icon: '👑', title: 'Last Queen', who: queen.name, note: 'Beach Bar finale' });
   if (mg.lockdownResult) awards.push({ icon: mg.lockdownResult === 'won' ? '🔓' : '🔒', title: 'Lockdown', who: mg.lockdownResult === 'won' ? 'Απόδραση!' : 'Δεν ξεκλειδώθηκε', note: '' });
   return awards;
 }

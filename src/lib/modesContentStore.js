@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { appApi } from '@/api/apiClient';
 import * as EXT from '@/data/modes/extendedContent';
 import * as LD from '@/data/modes/lockdownContent';
-import * as BB from '@/data/modes/beachBarContent';
 import * as LG from '@/data/modes/loungeContent';
 import * as VL from '@/data/modes/villaContent';
 
@@ -36,12 +35,6 @@ export const COLLECTIONS = [
   { id: 'confession_lock', group: '🚨 Pajama Lockdown', label: 'Secret Confession Lock', arr: LD.CONFESSION_LOCK, strings: true },
   { id: 'spicy_wheel', group: '🚨 Pajama Lockdown', label: 'Spicy Truth Wheel', arr: LD.SPICY_WHEEL, strings: true },
   { id: 'foot_id', group: '🚨 Pajama Lockdown', label: 'Blind Foot ID (υφή → ψηφίο)', arr: LD.FOOT_ID, blank: { digit: '0', name: '', text: '' }, fields: [T('digit', 'Ψηφίο'), T('name', 'Όνομα'), A('text', 'Περιγραφή')] },
-  { id: 'beach_wheel', group: '🍹 Beach Bar Lockdown', label: 'Τροχός Ποινών', arr: BB.BEACH_WHEEL, blank: { cat: 'dance', title: '', text: '' }, fields: [{ key: 'cat', label: 'Κατηγορία', type: 'select', options: () => BB.WHEEL_CATEGORIES.map((c) => [c.id, `${c.icon} ${c.name}`]) }, T('title', 'Τίτλος'), A('text', 'Κείμενο'), N('secs', 'Χρονόμετρο (δευτ.)'), C('restraint', 'Έχει δέσιμο'), C('loseFlop', 'Χάνει σαγιονάρα'), I()] },
-  { id: 'beach_categories', group: '🍹 Beach Bar Lockdown', label: 'Κατηγορίες τροχού', arr: BB.WHEEL_CATEGORIES, fixedItems: true, blank: {}, fields: [T('icon', 'Εικονίδιο'), T('name', 'Όνομα'), T('color', 'Χρώμα')] },
-  { id: 'beach_phases', group: '🍹 Beach Bar Lockdown', label: 'Ονομασίες φάσεων', arr: BB.BEACH_PHASES, fixedItems: true, blank: {}, fields: [T('label', 'Ονομασία φάσης')] },
-  { id: 'beach_missions', group: '🍹 Beach Bar Lockdown', label: 'Flip-Flop Heist αποστολές', arr: BB.FLIPFLOP_MISSIONS, blank: { id: '', title: '', text: '', mins: 5, reward: 'point' }, fields: [T('title', 'Τίτλος'), A('text', 'Κείμενο'), N('mins', 'Λεπτά διορίας'), { key: 'reward', label: 'Ανταμοιβή', type: 'select', options: [['point', '1 πόντος'], ['immunity', 'Ασυλία']] }, I()] },
-  { id: 'shot_truth', group: '🍹 Beach Bar Lockdown', label: 'Shot & Truth ερωτήσεις', arr: BB.SHOT_TRUTH, strings: true },
-  { id: 'freeze_commands', group: '🍹 Beach Bar Lockdown', label: 'Freeze εντολές', arr: BB.FREEZE_COMMANDS, strings: true },
   { id: 'lounge_cards', group: '🚔 Pajama Heist & Arrest', label: 'Deck 36 καρτών', arr: LG.LOUNGE_CARDS, blank: { id: '', title: '', text: '' }, fields: [T('title', 'Τίτλος'), A('text', 'Κείμενο'), N('secs', 'Χρονόμετρο (δευτ.)'), I()] },
   { id: 'lounge_questions', group: '🚔 Pajama Heist & Arrest', label: 'Ερωτήσεις ανάκρισης 18+', arr: LG.INTERROGATION_QUESTIONS, strings: true },
   { id: 'lounge_mechanics', group: '🚔 Pajama Heist & Arrest', label: 'Μηχανισμοί (σαγιονάρες, χειροπέδες)', arr: LG.LOUNGE_MECHANICS, fixedItems: true, blank: {}, fields: [T('title', 'Τίτλος'), A('text', 'Κείμενο')] },
@@ -59,7 +52,7 @@ export const COLLECTIONS = [
 
 // Σε ποιο mode ανήκει κάθε λίστα (για την καρτέλα «Κάρτες & περιεχόμενο» ανά mode).
 const GROUP_MODE = [
-  [/Pajama Lockdown/, 'lockdown'], [/Beach Bar/, 'beach_bar'], [/Pajama Heist & Arrest/, 'marathon_4h'], [/Villa Takeover/, 'villa_takeover'],
+  [/Pajama Lockdown/, 'lockdown'], [/Pajama Heist & Arrest/, 'marathon_4h'], [/Villa Takeover/, 'villa_takeover'],
 ];
 export const modeOfCollection = (collection) => GROUP_MODE.find(([re]) => re.test(collection.group))?.[1] || 'retired';
 
@@ -124,7 +117,6 @@ export function applyScenarioCollections(modeId, selectedIds = []) {
   const relevant = COLLECTIONS.filter((collection) => {
     if (modeId === 'pedi_extended') return /Pedi-Glam|Act 1|Act 2|Act 4|Marathon/i.test(collection.group);
     if (modeId === 'lockdown') return /Pajama Lockdown/i.test(collection.group);
-    if (modeId === 'beach_bar') return /Beach Bar/i.test(collection.group);
     if (modeId === 'marathon_4h') return /Pajama Heist & Arrest/i.test(collection.group);
     if (modeId === 'villa_takeover') return /Villa Takeover/i.test(collection.group);
     return false;

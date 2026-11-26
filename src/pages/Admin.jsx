@@ -5,7 +5,7 @@ import { useSearchParams } from 'react-router-dom';
 import { appApi, request } from '@/api/apiClient';
 import { getActiveSessionCode, setActiveSessionCode, subscribeActiveSession } from '@/lib/activeSession';
 import {
-  LayoutDashboard, Inbox, Ticket, BarChart3, Gamepad2, Radio, AudioLines, Clapperboard, Video, Users, Layers,
+  LayoutDashboard, Inbox, Ticket, BarChart3, Radio, AudioLines, Video, Users, Layers,
   Images, Globe, Mail, FileText, Link2, History, HardDrive, Settings, Bell, Search, RefreshCw, BookOpen, FlaskConical, Instagram } from 'lucide-react';
 import AdminNav, { AdminTabBar } from '@/components/admin/AdminNav';
 import AdminSessionBar from '@/components/admin/AdminSessionBar';
@@ -24,8 +24,6 @@ const AdminGuide = lazy(() => import('@/components/admin/AdminGuide'));
 const AdminBackup = lazy(() => import('@/components/admin/AdminBackup'));
 const AdminSessions = lazy(() => import('@/components/admin/AdminSessions'));
 const AdminPlayers = lazy(() => import('@/components/admin/AdminPlayers'));
-const AdminLiveControl = lazy(() => import('@/components/admin/AdminLiveControl'));
-const AdminShowCasting = lazy(() => import('@/components/admin/AdminShowCasting'));
 const AdminLinks = lazy(() => import('@/components/admin/AdminLinks'));
 const AdminMedia = lazy(() => import('@/components/admin/AdminMedia'));
 const AdminSite = lazy(() => import('@/components/admin/AdminSite'));
@@ -52,11 +50,9 @@ const NAV_GROUPS = [
     label: 'Live Show',
     tabs: [
       { id: 'show', label: 'Live Show', icon: Radio },
-      { id: 'live', label: 'Έλεγχος παρτίδας', icon: Gamepad2 },
       { id: 'players', label: 'Παίκτριες & ρόλοι', icon: Users },
       { id: 'production', label: 'Παραγωγή & ροή', icon: Video },
       { id: 'av', label: 'Ήχος & εικόνα TV', icon: AudioLines },
-      { id: 'casting', label: 'Επιλογή επεισοδίου', icon: Clapperboard },
     ],
   },
   {
@@ -123,6 +119,9 @@ const LEGACY_TABS = {
   visits: 'statistics',
   blitz: 'players',
   leaderboard: 'modes',
+  live: 'show',
+  casting: 'show',
+  promo: 'links',
 };
 
 export default function Admin() {
@@ -361,8 +360,6 @@ export default function Admin() {
             />
           </div>
         );
-      case 'casting':
-        return <AdminShowCasting />;
       case 'players':
         return (
           <AdminPlayers
@@ -375,15 +372,6 @@ export default function Admin() {
       case 'show':
         return (
           <AdminLiveShow
-            sessions={sessions}
-            selectedSession={activeSession}
-            onSelect={selectSession}
-            onUpdate={handleUpdateSession}
-          />
-        );
-      case 'live':
-        return (
-          <AdminLiveControl
             sessions={sessions}
             selectedSession={activeSession}
             onSelect={selectSession}

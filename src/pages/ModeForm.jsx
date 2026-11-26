@@ -31,8 +31,6 @@ export default function ModeForm() {
     nailColor: 'Pink',
     bringsOwnSlippers: true,
     slipperType: '',
-    hasFlipFlops: true,
-    alcohol: 'drinks',
     footSensitivity: 3,
     ticklish: 3,
     restraintLevel: 'light',
@@ -51,7 +49,6 @@ export default function ModeForm() {
   const selectMode = (id) => set('mode', id);
   const has = (...ids) => ids.includes(form.mode);
   const pajamaish = has('pedi_glam', 'pedi_extended', 'lockdown', 'marathon_4h', 'villa_takeover');
-  const beachish = has('beach_bar');
   const canSend = form.name.trim() && NEW_MODES.some((m) => m.id === form.mode) && form.adult && form.safeWordConfirmed && customQuestionsValid && !saving;
 
   async function submit() {
@@ -71,8 +68,6 @@ export default function ModeForm() {
         nailColor: form.nailColor,
         bringsOwnSlippers: form.bringsOwnSlippers,
         slipperType: form.slipperType,
-        hasFlipFlops: form.hasFlipFlops,
-        alcohol: beachish ? form.alcohol : '',
         footSensitivity: Number(form.footSensitivity),
         ticklish: Number(form.ticklish),
         restraintLevel: form.restraintLevel,
@@ -159,14 +154,6 @@ export default function ModeForm() {
               <Toggle label="Φέρνω τις δικές μου παντόφλες" checked={form.bringsOwnSlippers} onChange={(v) => set('bringsOwnSlippers', v)} />
               <Field label={form.bringsOwnSlippers ? 'Τι παντόφλες;' : 'Νούμερο παντόφλας'} input>
                 <TextInput value={form.slipperType} onChange={(e) => set('slipperType', e.target.value)} placeholder={form.bringsOwnSlippers ? 'π.χ. fluffy ροζ' : 'π.χ. 38'} />
-              </Field>
-            </Section>
-          )}
-          {beachish && (
-            <Section icon="🍹" title="Beach Bar">
-              <Toggle label="Έχω σαγιονάρες" hint="Είναι απαραίτητες στο Beach Bar" checked={form.hasFlipFlops} onChange={(v) => set('hasFlipFlops', v)} />
-              <Field label="Ποτό">
-                <ChoiceGroup options={[{ id: 'drinks', label: 'Πίνω', icon: '🥃' }, { id: 'free', label: 'Χωρίς αλκοόλ', icon: '🧃' }]} value={form.alcohol} onChange={(v) => set('alcohol', v)} />
               </Field>
             </Section>
           )}

@@ -7,8 +7,8 @@ import { saveAdminSettingVersion } from '@/lib/adminVersionHistory';
 import { listMedia } from '@/lib/media';
 
 const KEY = 'admin_form_questions';
-// Οι φόρμες που υπάρχουν: ψηφιακά modes (Lockdown, Beach Bar, Pajama Heist & Arrest, Villa) και Classic / Arrest Heist + VIP πρόσκληση.
-const FORM_TYPES = [{ id: 'modes', label: 'Φόρμα ψηφιακών modes (Lockdown, Beach Bar, Pajama Heist, Villa)' }, { id: 'invitation', label: 'Φόρμα Classic / Arrest Heist και VIP πρόσκληση' }];
+// Οι φόρμες που υπάρχουν: ψηφιακά modes (Lockdown, Pajama Heist & Arrest, Villa) και Classic / Arrest Heist + VIP πρόσκληση.
+const FORM_TYPES = [{ id: 'modes', label: 'Φόρμα ψηφιακών modes (Lockdown, Pajama Heist, Villa)' }, { id: 'invitation', label: 'Φόρμα Classic / Arrest Heist και VIP πρόσκληση' }];
 const blank = () => ({ id: `q-${Date.now()}-${Math.random().toString(36).slice(2,6)}`, label: '', type: 'text', options: [], required: false, image: '' });
 
 export default function AdminFormsBuilder() {

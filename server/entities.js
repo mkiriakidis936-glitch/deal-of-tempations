@@ -35,7 +35,8 @@ const rules = {
   Memorial: { read: ADMIN, create: ADMIN, update: ADMIN, delete: ADMIN },
   // Reality-show production plans are private and editable only by administrators.
   ShowProduction: { read: ADMIN, create: ADMIN, update: ADMIN, delete: ADMIN },
-  ProductionConsent: { read: ADMIN, update: ADMIN, delete: ADMIN },
+  // Η συγκατάθεση καταχωρείται ΜΟΝΟ από τη διοργανώτρια (Admin → Παραγωγή & ροή).
+  ProductionConsent: { read: ADMIN, create: ADMIN, update: ADMIN, delete: ADMIN },
   ProductionCue: { create: ADMIN, update: ADMIN, delete: ADMIN },
   Achievement:        { create: ADMIN, update: ADMIN, delete: ADMIN },
   // configuration / content: everybody reads, only admins change
@@ -58,7 +59,7 @@ const isAdmin = (req) => req.user?.role === 'admin';
 
 // Ρυθμίσεις μόνο για το Admin: ονόματα παικτριών, προσκλήσεις, ιστορικό εκδόσεων, κονσόλα AV, σενάρια, ρεκόρ.
 // Οι υπόλοιπες (φωτογραφίες, κείμενα Site, περιεχόμενο modes, σχεδίαση) μένουν δημόσιες για TV, κινητά και Site.
-const ADMIN_ONLY_SETTINGS = new Set(['show_casting_plan', 'digital_invitations', 'admin_site_versions', 'av_control_room_v1', 'admin_custom_scenarios', 'all_time_records']);
+const ADMIN_ONLY_SETTINGS = new Set(['admin_gift_vault', 'show_casting_plan', 'digital_invitations', 'admin_site_versions', 'av_control_room_v1', 'admin_custom_scenarios', 'all_time_records']);
 // Πεδία που ορίζει ΜΟΝΟ η διοργανώτρια: μια δημόσια φόρμα δεν μπορεί να «αυτο-εγκριθεί».
 const ADMIN_ONLY_FIELDS = ['approved', 'approvalStatus', 'approvedAt', 'approvedDate', 'approvedBy', 'approvals', 'rejected', 'rejectedAt', 'role', 'adminNotes', 'reviewedAt', 'reviewedBy'];
 export const stripAdminOnlyFields = (data) => {
@@ -329,15 +330,12 @@ export function validatePlayerPatch(current, patch, playerId) {
     const actionTypes = new Set([
       'board_roll', 'board_route', 'board_complete', 'board_pass',
       'midnight_pass', 'lockdown_exit_code', 'morning_clue', 'morning_code',
-      'beach_checkin', 'beach_finale_response', 'beach_freeze_loser', 'beach_wheel_spin', 'beach_wheel_done', 'beach_wheel_again', 'beach_truth_response',
       'lounge_code', 'lounge_mission_done', 'lounge_roll',
       'villa_code', 'villa_vote', 'villa_quiet', 'villa_response',
     ]);
     let validAction = Object.keys(next).length === 1 && isObject(action) &&
       action.playerId === playerId && actionTypes.has(action.type) && Number.isFinite(action.at);
     if (validAction && action.type === 'board_route') validAction = ['glam', 'chaos'].includes(action.route);
-    if (validAction && action.type === 'beach_finale_response') validAction = ['done', 'pass'].includes(action.value);
-    if (validAction && action.type === 'beach_truth_response') validAction = ['truth', 'mocktail'].includes(action.value);
     if (validAction && action.type === 'lockdown_exit_code') validAction = /^\d{4}$/.test(String(action.code || ''));
     if (validAction && action.type === 'morning_clue') validAction = Number.isInteger(action.index) && action.index >= 0 && action.index < 4;
     if (validAction && action.type === 'morning_code') validAction = /^\d{4}$/.test(String(action.code || ''));
@@ -747,7 +745,7 @@ export function entityRoutes() {
     next();
   });
   // Public forms are open to everyone; cap how many submissions one IP can send so bots can't flood the DB.
-  const FORM_ENTITIES = new Set(['PlayerIntake', 'PajamaIntake', 'InvitationRSVP', 'VIPInvitationSubmission', 'ProductionConsent']);
+  const FORM_ENTITIES = new Set(['PlayerIntake', 'PajamaIntake', 'InvitationRSVP', 'VIPInvitationSubmission']);
   const formBuckets = new Map();
   const formLimit = (req, res, next) => {
     if (isAdmin(req) || !FORM_ENTITIES.has(req.entity)) return next();
@@ -928,6 +926,42 @@ export function entityRoutes() {
       return res.json({ success: true });
     } catch (error) { return next(error); }
   });
+  // Gift Unlock (/gift-unlock): ο κωδικός και το δώρο ορίζονται στο Admin → Σύνδεσμοι & QR.
+  // Αποθηκεύονται στη ρύθμιση admin_gift_vault (μόνο για Admin) και ελέγχονται ΜΟΝΟ εδώ, στον server.
+  const GIFT_DEFAULTS = {
+    code: 'PAJAMAQUEENS',
+    title: 'Η δοκιμασία πέρασε!',
+    vow: 'Αφού αντέξατε όλη τη βραδιά, το δώρο αυτό είναι επίσημα δικό σας.',
+    passTitle: 'Πιστοποιημένη Survivor της βραδιάς',
+    giftName: 'Σπα σε ξενοδοχείο',
+    giftText: 'Μία συνεδρία σπα σε ξενοδοχείο για όλη την παρέα — κερασμένη από τη διοργανώτρια.',
+  };
+  const giftSettings = async () => {
+    const { rows } = await query("SELECT data FROM records WHERE entity = 'AppSetting' AND data->>'key' = 'admin_gift_vault' ORDER BY updated_date DESC LIMIT 1");
+    const value = rows[0]?.data?.value;
+    return { ...GIFT_DEFAULTS, ...(value && typeof value === 'object' ? value : {}) };
+  };
+  const giftFails = new Map();
+  r.post('/gift-unlock', async (req, res, next) => {
+    try {
+      const ip = req.ip || req.socket.remoteAddress || 'unknown';
+      const b = giftFails.get(ip);
+      if (b && Date.now() - b.startedAt < 15 * 60_000 && b.count >= 10) return res.status(429).json({ error: 'Πολλές λάθος προσπάθειες. Δοκίμασε ξανά σε 15 λεπτά.' });
+      const gift = await giftSettings();
+      const given = String(req.body?.code || '').trim().toLocaleUpperCase('el-GR');
+      const expected = String(gift.code || '').trim().toLocaleUpperCase('el-GR');
+      const a = crypto.createHash('sha256').update(given).digest();
+      const e = crypto.createHash('sha256').update(expected).digest();
+      if (!expected || !crypto.timingSafeEqual(a, e)) {
+        const now = Date.now(); let f = giftFails.get(ip);
+        if (!f || now - f.startedAt >= 15 * 60_000) { f = { startedAt: now, count: 0 }; giftFails.set(ip, f); }
+        f.count += 1;
+        return res.status(401).json({ error: 'Λάθος κωδικός. Τον κωδικό τον δίνει η διοργανώτρια όταν περάσει η δοκιμασία.' });
+      }
+      const { code: _code, ...publicGift } = gift;
+      return res.json(publicGift);
+    } catch (error) { return next(error); }
+  });
   const requireVipSession = async (req, res, next) => {
     try {
       const token = String(req.headers.authorization || '').replace(/^Bearer\s+/i, '');
@@ -1059,7 +1093,7 @@ export function entityRoutes() {
           !allowedPreferences.every((key) => ['yes', 'no'].includes(answers.activityPreferences[key] || 'no'))) {
         return res.status(400).json({ error: 'Έλεγξε τις απαντήσεις της VIP φόρμας και δοκίμασε ξανά.' });
       }
-      const allowedGameModes = ['classic', 'marathon', 'arrest_heist', 'pajama', 'pedi_glam', 'pedi_extended', 'lockdown', 'beach_bar', 'marathon_4h', 'villa_takeover'];
+      const allowedGameModes = ['classic', 'marathon', 'arrest_heist', 'pajama', 'pedi_glam', 'pedi_extended', 'lockdown', 'marathon_4h', 'villa_takeover'];
       const gameMode = String(body.gameMode || invitations[0].data.gameMode || '');
       if (!allowedGameModes.includes(gameMode)) return res.status(400).json({ error: 'Επίλεξε ένα έγκυρο Mode παιχνιδιού.' });
       const answerLabels = {
@@ -1637,17 +1671,6 @@ export function entityRoutes() {
       broadcast('Participation', { type: action, id: record.id, data: record });
       return res.json(record);
     }
-    if (req.entity === 'ProductionConsent' && !isAdmin(req)) {
-      const body = req.body || {};
-      const code = String(body.sessionCode || '').trim().toUpperCase();
-      const participant = typeof body.participantName === 'string' ? body.participantName.trim() : '';
-      if (!/^[A-Z0-9]{4}$/.test(code) || !participant || participant.length > 100 || body.adultConfirmed !== true ||
-          typeof body.recordingConsent !== 'boolean' || typeof body.privateUseConsent !== 'boolean' || typeof body.publicUseConsent !== 'boolean' ||
-          typeof body.withdrawn !== 'boolean') return res.status(400).json({ error: 'Συμπλήρωσε σωστά τη δήλωση συγκατάθεσης.' });
-      const { rows: eventRows } = await query("SELECT id FROM records WHERE entity = 'GameSession' AND data->>'sessionCode' = $1 LIMIT 1", [code]);
-      if (!eventRows[0]) return res.status(404).json({ error: 'Η διοργάνωση δεν βρέθηκε.' });
-      req.body = { sessionCode: code, participantName: participant, contact: typeof body.contact === 'string' ? body.contact.trim().slice(0,160) : '', recordingConsent: body.recordingConsent, privateUseConsent: body.privateUseConsent, publicUseConsent: body.publicUseConsent, withdrawn: body.withdrawn, adultConfirmed: true, consentVersion: '2026-11-17', submittedAt: new Date().toISOString() };
-    }
     if (req.entity === 'ProductionCue' && !isAdmin(req)) return res.status(403).json({ error: 'Forbidden' });
     if (!isAdmin(req) && req.entity === 'PajamaIntake') {
       const body = req.body || {};
@@ -1659,7 +1682,7 @@ export function entityRoutes() {
       }
       if (req.entity === 'PajamaIntake' && body.formType === 'modes') {
         const modes = body.preferredModes;
-        if (!Array.isArray(modes) || !modes.length || modes.some((mode) => !['pedi_glam', 'pedi_extended', 'lockdown', 'beach_bar', 'marathon_4h', 'villa_takeover'].includes(mode))) {
+        if (!Array.isArray(modes) || !modes.length || modes.some((mode) => !['pedi_glam', 'pedi_extended', 'lockdown', 'marathon_4h', 'villa_takeover'].includes(mode))) {
           return res.status(400).json({ error: 'Επίλεξε τουλάχιστον ένα διαθέσιμο Mode.' });
         }
       }

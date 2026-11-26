@@ -2,7 +2,7 @@ import React from 'react';
 import { PHOTO, FILM, MODE_MEDIA, videosFor } from '@/data/brandArt';
 import MediaSpot from '@/components/shared/MediaSpot';
 
-const MODE_IDS = { lockdown: 'lockdown', beachbar: 'beach_bar', marathon4h: 'marathon_4h', heist: 'arrest_heist', villa: 'villa_takeover', classic: 'classic' };
+const MODE_IDS = { lockdown: 'lockdown', marathon4h: 'marathon_4h', heist: 'arrest_heist', villa: 'villa_takeover', classic: 'classic' };
 
 export default function SiteVideo({ c, eventId }) {
   const modeId = MODE_IDS[eventId];

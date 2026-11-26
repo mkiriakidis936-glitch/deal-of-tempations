@@ -20,7 +20,6 @@ const GiftUnlock = lazy(() => import('@/pages/GiftUnlock'));
 const Site = lazy(() => import('@/pages/Site'));
 import AvSetup from '@/pages/AvSetup';
 import Memories from '@/pages/Memories';
-const ProductionConsent = lazy(() => import('@/pages/ProductionConsent'));
 const Login = lazy(() => import('@/pages/Login'));
 const Register = lazy(() => import('@/pages/Register'));
 const ForgotPassword = lazy(() => import('@/pages/ForgotPassword'));
@@ -90,7 +89,10 @@ const AuthenticatedApp = () => {
       <Route path="/site" element={<Site />} />
       <Route path="/av-setup" element={<AvSetup />} />
       <Route path="/memories/:token" element={<Memories />} />
-      <Route path="/production-consent" element={<ProductionConsent />} />
+      {/* Παλιοί σύνδεσμοι που δεν υπάρχουν πια: πάνε στο Site αντί για «404». */}
+      {['/production-consent', '/pajama-form', '/vip', '/vip-access', '/pajama-invite', '/invitation', '/welcome', '/modes-form', '/intake'].map((path) => (
+        <Route key={path} path={path} element={<Navigate to="/site" replace />} />
+      ))}
       <Route path="*" element={<PageNotFound />} />
     </Routes>
     </Suspense>

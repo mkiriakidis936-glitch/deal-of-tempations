@@ -10,13 +10,13 @@ const publicForms = read('../src/pages/PublicForms.jsx');
 test('the unified public form route is registered and retired form routes stay removed', () => {
   assert.ok(app.includes('path="/forms"') || app.includes("path='/forms'"));
   assert.ok(app.includes('path="/portal"') || app.includes("path='/portal'"));
-  for (const path of ['/invitation', '/welcome', '/pajama-form', '/pajama-invite', '/modes-form', '/intake']) {
+  for (const path of ['/invitation', '/welcome', '/pajama-form', '/pajama-invite', '/modes-form', '/intake', '/production-consent']) {
     assert.ok(!app.includes(`path="${path}"`) && !app.includes(`path='${path}'`), `Retired route is still registered: ${path}`);
   }
 });
 
 test('all five digital modes have canonical site form links', () => {
-  for (const mode of ['pedi_glam', 'pedi_extended', 'lockdown', 'beach_bar', 'marathon_4h']) {
+  for (const mode of ['pedi_glam', 'pedi_extended', 'lockdown', 'marathon_4h']) {
     assert.ok(site.includes(`/forms?mode=${mode}`), `Missing public form link for ${mode}`);
   }
   assert.match(publicForms, /const validMode = GAME_MODES\.some/);
@@ -45,11 +45,6 @@ test('Admin approves every kind of application (incl. Arrest & Heist) from the I
 });
 
 
-test('approved invitation intakes are assigned to their submitted mode in Admin casting', () => {
-  const casting = read('../src/components/admin/AdminShowCasting.jsx');
-  assert.match(casting, /item\.vipGameMode \|\| item\.gameMode \|\| 'classic'/);
-  assert.match(casting, /scopeToEvent\(playerIntakes\)\.filter\(\(item\) => item\.approved === true \|\| item\.approvalStatus === 'approved'\)/);
-});
 
 
 test('mobile player heartbeat is validated and visible in live Admin presence', () => {
@@ -65,15 +60,6 @@ test('mobile player heartbeat is validated and visible in live Admin presence', 
 });
 
 
-test('casting plans are Event-scoped and revoked approvals cannot enter Tablet setup', () => {
-  const casting = read('../src/components/admin/AdminShowCasting.jsx');
-  const setup = read('../src/components/tablet/SetupScreen.jsx');
-  assert.match(casting, /selectedEventId/);
-  assert.match(casting, /dotEventId: selectedEvent\.id/);
-  assert.match(setup, /const planMatchesEvent =/);
-  assert.match(setup, /const planHasOnlyApprovedPlayers =/);
-  assert.match(setup, /eligibleModesByName\.get/);
-});
 
 
 
@@ -87,14 +73,6 @@ test('session switching ignores stale async responses and binds updates to their
 });
 
 
-test('Admin live actions prevent duplicate submissions and surface save status', () => {
-  const live = read('../src/components/admin/AdminLiveControl.jsx');
-  assert.match(live, /const \[busyAction, setBusyAction\] = useState\(''\)/);
-  assert.match(live, /if \(busyAction\) return/);
-  assert.match(live, /disabled=\{!!busyAction\}/);
-  assert.match(live, /aria-live="polite"/);
-  assert.match(live, /Η ενέργεια αποθηκεύτηκε/);
-});
 
 
 test('active session writes are serialized and session deletion clears subscribed screens', () => {
@@ -118,7 +96,7 @@ test('Tablet: μετράει σωστά ποιες συμπλήρωσαν φόρ
       { id: 'z', name: 'Ζωή', approved: true, gameMode: 'arrest_heist' },
     ],
     pajama: [
-      { id: 'd', name: 'Δήμητρα', approved: true, preferredModes: ['beach_bar'] },
+      { id: 'd', name: 'Δήμητρα', approved: true, preferredModes: ['villa_takeover'] },
       { id: 'e', name: 'άννα ', approved: true, preferredModes: ['lockdown'] },
     ],
     vip: [{ id: 'g', name: 'Ήρα', gameMode: 'marathon_4h', approvalStatus: 'rejected' }],
@@ -127,8 +105,16 @@ test('Tablet: μετράει σωστά ποιες συμπλήρωσαν φόρ
   assert.deepEqual(by.classic.approved, ['Άννα']);
   assert.deepEqual(by.classic.pending, ['Βίκυ']);
   assert.equal(by.lockdown.approved.length, 1, 'ίδιο όνομα από δύο φόρμες μετράει μία φορά');
-  assert.deepEqual(by.beach_bar.approved, ['Δήμητρα']);
+  assert.deepEqual(by.villa_takeover.approved, ['Δήμητρα']);
   assert.deepEqual(by.arrest_heist.approved.sort(), ['Ελένη', 'Ζωή']);
   assert.equal(by.marathon_4h.approved.length + by.marathon_4h.pending.length, 0, 'απορριφθείσα δεν μετράει');
   assert.equal(by.marathon, undefined, 'αποσυρμένο mode δεν εμφανίζεται');
+});
+
+
+test('7.5.0: παλιοί σύνδεσμοι δεν δείχνουν κενή σελίδα και το Promo περιέχει όλα τα ενεργά modes', async () => {
+  for (const path of ['/production-consent', '/pajama-form', '/vip', '/vip-access']) assert.ok(app.includes(`'${path}'`), `λείπει ανακατεύθυνση: ${path}`);
+  assert.match(app, /<Navigate to="\/site" replace \/>/);
+  const promo = read('../src/pages/Promo.jsx');
+  for (const id of ['classic', 'arrest_heist', 'lockdown', 'marathon_4h', 'villa_takeover']) assert.match(promo, new RegExp(`${id}:`));
 });

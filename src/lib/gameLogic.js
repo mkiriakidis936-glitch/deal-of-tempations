@@ -2,7 +2,6 @@
 import { BOARD, CLASSIC_BOARD, getPenaltyLadder, FULL_PENALTY_LADDER, HIDDEN_ROLES } from '@/data/gameConfig';
 import {
   STREET_TRUTHS, STREET_DARES, WARRANT_CARDS, GLITCH_CARDS,
-  PDF_STREET_TRUTHS, PDF_STREET_DARES, PDF_WARRANT_CARDS, PDF_GLITCH_CARDS,
   HARDCORE_TRUTHS, ULTIMATE_TRUTHS,
 } from '@/data/gameContent';
 import { isNewMode } from '@/data/modes/modeRegistry';
@@ -35,7 +34,9 @@ export function getHeistBoardSquare(position) {
 }
 
 export function drawHeistCard(type) {
-  const decks = { street_truth: PDF_STREET_TRUTHS, street_dare: PDF_STREET_DARES, warrant: PDF_WARRANT_CARDS, glitch: PDF_GLITCH_CARDS, hardcore: HARDCORE_TRUTHS, ultimate: ULTIMATE_TRUTHS };
+  // Πάντα από τις ΤΡΕΧΟΥΣΕΣ λίστες (μετά τις αλλαγές του Admin) — όχι από αντίγραφο της εκκίνησης.
+  // Το Arrest & Heist χρησιμοποιεί τις πρώτες κάρτες κάθε λίστας (όπως στο PDF).
+  const decks = { street_truth: STREET_TRUTHS.slice(0, 10), street_dare: STREET_DARES.slice(0, 8), warrant: WARRANT_CARDS.slice(0, 5), glitch: GLITCH_CARDS.slice(0, 5), hardcore: HARDCORE_TRUTHS, ultimate: ULTIMATE_TRUTHS };
   const deck = decks[type] || [];
   return deck.length ? deck[Math.floor(Math.random() * deck.length)] : null;
 }

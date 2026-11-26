@@ -120,6 +120,18 @@ export default function AdminInterestParticipation() {
     } finally { setBusy(false); }
   }
 
+  async function deleteInterest(item) {
+    if (!window.confirm(`Να διαγραφεί η δήλωση ενδιαφέροντος της/του ${item.name};`)) return;
+    setBusy(true);
+    try {
+      await appApi.entities.Interest.delete(item.id);
+      setInterests((current) => current.filter((row) => row.id !== item.id));
+      setSelectedIds((current) => current.filter((id) => id !== item.id));
+    } catch (error) {
+      setMessage(error.message || 'Δεν διαγράφηκε η δήλωση.');
+    } finally { setBusy(false); }
+  }
+
   async function deleteParticipation(item) {
     if (!window.confirm(`Να διαγραφεί η δήλωση της/του ${item.name};`)) return;
     setBusy(true);
@@ -135,6 +147,13 @@ export default function AdminInterestParticipation() {
     <div className="space-y-4">
       <ComicPanel className="bg-card space-y-3">
         <h2 className="font-heading text-2xl text-primary">ΕΝΔΙΑΦΕΡΟΝ & ΣΥΜΜΕΤΟΧΗ</h2>
+        <div className="space-y-1.5 rounded-xl border border-primary/30 bg-primary/5 p-3 text-sm text-foreground/80">
+          <div className="font-bold text-foreground">Σε τι χρησιμεύει (3 βήματα)</div>
+          <div><b>1.</b> Στέλνεις τον σύνδεσμο <b>{window.location.origin}/deal</b>. Η καλεσμένη γράφει όνομα, διαλέγει <b>ONE NIGHT</b> ή <b>48H VILLA</b> και πατά «Θέλω να συμμετέχω» ή «Δεν μπορώ». Οι δηλώσεις εμφανίζονται εδώ.</div>
+          <div><b>2.</b> Τσεκάρεις όσες είπαν «θέλω» (ίδιου τύπου) και πατάς <b>«Δημιουργία Event»</b>. Δημιουργείται μια Διοργάνωση με δικό της κωδικό (τη βλέπεις και στο «Διοργανώσεις»).</div>
+          <div><b>3.</b> Στέλνεις τον σύνδεσμο <b>/deal/&lt;κωδικός&gt;</b>. Εκεί επιβεβαιώνουν «Θα έρθω / Δεν θα έρθω» και εδώ βλέπεις πόσες έρχονται.</div>
+          <div className="text-xs text-foreground/60">Χρησιμεύει μόνο για να μετρήσεις ενδιαφέρον ΠΡΙΝ κλείσεις ημερομηνία. Οι κανονικές αιτήσεις (στοιχεία, όρια, mode) έρχονται από τις φόρμες στις «Αιτήσεις». Αν δεν το χρειάζεσαι, απλώς μην στέλνεις το /deal.</div>
+        </div>
         <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Αναζήτηση ονόματος ή τύπου…" className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground" />
         <div className="space-y-2">
           {filteredInterests.map((item) => (
@@ -146,6 +165,7 @@ export default function AdminInterestParticipation() {
                   <div className="text-xs text-foreground/55">{EVENT_TYPES.find((type) => type.id === item.eventType)?.label || item.eventType} · {choiceLabel(item.declaration)}</div>
                   <div className="text-[10px] text-foreground/40">{item.submittedAt ? new Date(item.submittedAt).toLocaleString('el-GR') : item.created_date ? new Date(item.created_date).toLocaleString('el-GR') : ''}{item.dotEventId ? ' · Συνδεδεμένο με Event' : ''}</div>
                 </div>
+                <ComicButton size="sm" variant="red" disabled={busy} onClick={() => deleteInterest(item)}>ΔΙΑΓΡΑΦΗ</ComicButton>
               </div>
             </div>
           ))}

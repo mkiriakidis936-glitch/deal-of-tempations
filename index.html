@@ -45,7 +45,7 @@
           if (l) l.href = '/manifest-play.webmanifest';
           document.documentElement.classList.add('app-game');
           var t = document.querySelector('meta[name="apple-mobile-web-app-title"]'); if (t) t.content = 'DT Play';
-        } else if (/^\/(?:site|promo|invitation|welcome|pajama-invite|pajama-form|modes-form|gift-unlock|intake|tv|forms|vip|portal|deal)(?:\/|$)/.test(location.pathname)) {
+        } else if (/^\/(?:site|promo|gift-unlock|tv|forms|vip|portal|deal|memories)(?:\/|$)/.test(location.pathname)) {
           if (l) l.href = '/manifest-public.webmanifest';
         }
         if (/^\/(?:play|tv)(?:\/|$)|^\/$/.test(location.pathname)) document.documentElement.classList.add('app-game');

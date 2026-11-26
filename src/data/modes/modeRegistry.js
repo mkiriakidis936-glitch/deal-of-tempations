@@ -11,17 +11,7 @@ export const NEW_MODES = [
     actDurations: { lockdown: 60 },
     minutes: 60,
   },
-  {
-    id: 'beach_bar',
-    name: 'BEACH BAR HOME LOCKDOWN',
-    icon: '🍹',
-    desc: 'Home beach-bar party 2–3 ωρών με DJ, flip-flop dress code, Freeze Dance, Shot & Truth Sync, Penalty Wheel και Flip-Flop Heist. Τα ποτά είναι προαιρετικά.',
-    min: 3,
-    max: 8,
-    acts: ['beach'],
-    actDurations: { beach: 150 },
-    minutes: 150,
-  },
+
   {
     id: 'marathon_4h',
     name: 'PAJAMA HEIST & ARREST',
@@ -49,6 +39,20 @@ export const NEW_MODES = [
 
 // Αποσυρμένα modes: δεν εμφανίζονται πουθενά, μένουν μόνο για να ανοίγουν παλιές αποθηκευμένες συνεδρίες.
 export const RETIRED_MODES = [
+  // Αφαιρέθηκε εντελώς στην 7.5.0 — μένει μόνο ως «ταμπέλα» για να κλείνουν παλιές αποθηκευμένες παρτίδες.
+  {
+    id: 'beach_bar',
+    name: 'BEACH BAR (ΑΦΑΙΡΕΘΗΚΕ)',
+    icon: '🍹',
+    desc: 'Αφαιρέθηκε στην 7.5.0.',
+    min: 3,
+    max: 8,
+    acts: ['beach'],
+    actDurations: { beach: 1 },
+    retired: true,
+    removed: true,
+    minutes: 1,
+  },
   {
     id: 'pedi_glam',
     name: 'PAJAMA PEDI-GLAM · 90′',
@@ -122,15 +126,6 @@ export const MODE_MEDIA_SECTIONS = {
     { id: 'briefing', label: 'Briefing — Έναρξη Lockdown', filename: 'lockdown_briefing.jpg', alt: 'level1' },
     { id: 'escape', label: 'Escape — Έξοδος', filename: 'lockdown_escape.jpg', alt: 'level5' },
   ],
-  beach_bar: [
-    { id: 'checkin', label: 'Check-in', filename: 'beach_sec1.jpg' },
-    { id: 'dance_arena', label: 'Dance Arena', filename: 'beach_sec2.jpg' },
-    { id: 'penalty_wheel', label: 'Τροχός Ποινών', filename: 'beach_sec3.jpg' },
-    { id: 'shot_truth', label: 'Shot & Truth', filename: 'beach_sec4.jpg' },
-    { id: 'last_queen', label: 'Last Queen', filename: 'beach_sec5.jpg' },
-    { id: 'flipflop_heist', label: 'Flip-Flop Heist', filename: 'beach_sec6.jpg', alt: 'penalty_wheel' },
-    { id: 'sunset_toast', label: 'Sunset Toast Finale', filename: 'beach_sec7.jpg', alt: 'last_queen' },
-  ],
 };
 
 export const isNewMode = (id) => NEW_MODES.some((m) => m.id === id) || RETIRED_MODES.some((m) => m.id === id);
@@ -139,7 +134,6 @@ export const modeMeta = (id) => NEW_MODES.find((m) => m.id === id) || RETIRED_MO
 // iOS 27 · μαύρο & χρυσό. Κάθε mode έχει δική του απόχρωση χρυσού (όχι άλλο χρώμα).
 export const MODE_THEMES = {
   lockdown: { bg: '#000000', accent: '#E8C26B', accent2: '#F7E3A8', danger: '#FF453A' },
-  beach_bar: { bg: '#000000', accent: '#F0B85A', accent2: '#FBE3B0', danger: '#FF453A' },
   pedi_glam: { bg: '#000000', accent: '#E8C26B', accent2: '#F7E3A8', danger: '#FF453A' },
   pedi_extended: { bg: '#000000', accent: '#E8C26B', accent2: '#F7E3A8', danger: '#FF453A' },
   marathon_4h: { bg: '#000000', accent: '#D9B45B', accent2: '#F7E3A8', danger: '#FF453A' },
@@ -151,7 +145,7 @@ export const ACT_META = {
   midnight: { title: 'Act 2 · Midnight ASMR & Secret Vault', minutes: 45 },
   lockdown: { title: 'Pajama Lockdown (18+)', minutes: 60 },
   morning: { title: 'Act 4 · Extended Morning Escape & VIP Vault', minutes: 45 },
-  beach: { title: 'Beach Bar Home Lockdown', minutes: 150 },
+  beach: { title: 'Beach Bar (αφαιρέθηκε)', minutes: 1 },
   lounge: { title: 'The Ultimate Lounge Lockdown', minutes: 105 },
   villa: { title: 'Villa Takeover · 48/72', minutes: 2880 },
 };

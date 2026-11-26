@@ -2,7 +2,7 @@
 // Συνδέονται στο Admin → Media → Βιβλιοθήκη σκηνών και αποθηκεύονται στο override `sceneLibrary` ως { [id]: url }.
 // Παράγεται από τα αρχεία του PFF· για νέα σκηνή πρόσθεσε μια γραμμή εδώ (το id = όνομα αρχείου χωρίς κατάληξη).
 export const SCENE_GROUPS = {
-  arrest_heist: 'Arrest & Heist', classic: 'Classic', lockdown: 'Lockdown', beach_bar: 'Beach Bar',
+  arrest_heist: 'Arrest & Heist', classic: 'Classic', lockdown: 'Lockdown',
   villa_takeover: 'Villa Takeover', marathon: 'Marathon (αποσυρμένο)', pedi: 'Pedi-Glam (αποσυρμένο)', general: 'Γενικές σκηνές',
 };
 export const SCENES = [
@@ -830,20 +830,6 @@ export const SCENES = [
   "group": "arrest_heist",
   "label": "arrest heist scene 14",
   "filename": "arrest_heist_scene_14.jpg",
-  "ratio": "4:5"
- },
- {
-  "id": "beach_bar_scene03_feet_tied",
-  "group": "beach_bar",
-  "label": "beach bar scene03 feet tied",
-  "filename": "beach_bar_scene03_feet_tied.jpg",
-  "ratio": "4:5"
- },
- {
-  "id": "beach_bar_scene05_foot_tickle",
-  "group": "beach_bar",
-  "label": "beach bar scene05 foot tickle",
-  "filename": "beach_bar_scene05_foot_tickle.jpg",
   "ratio": "4:5"
  },
  {

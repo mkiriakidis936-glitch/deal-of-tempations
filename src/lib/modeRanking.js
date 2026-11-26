@@ -5,10 +5,9 @@ export const pointsOf = (mg = {}, pid) => ((mg.scores || {})[pid] || 0)
 
 export const rankPlayers = (players = [], mg = {}) => [...players].sort((a, b) => pointsOf(mg, b.id) - pointsOf(mg, a.id));
 
-// Ο τίτλος της νικήτριας: Beach Queen / Lounge Queen αν έχει οριστεί, αλλιώς η πρώτη της κατάταξης.
+// Ο τίτλος της νικήτριας: Lounge Queen αν έχει οριστεί, αλλιώς η πρώτη της κατάταξης.
 export function championOf(players = [], mg = {}) {
   const find = (id) => players.find((p) => p.id === id);
-  if (mg.bb?.queen && find(mg.bb.queen)) return { player: find(mg.bb.queen), title: 'Beach Queen' };
   if (mg.villaQueen && find(mg.villaQueen)) return { player: find(mg.villaQueen), title: 'Queen of the Villa' };
   if (mg.loungeQueen && find(mg.loungeQueen)) return { player: find(mg.loungeQueen), title: 'Ultimate Pajama Police Queen' };
   const top = rankPlayers(players, mg)[0];
