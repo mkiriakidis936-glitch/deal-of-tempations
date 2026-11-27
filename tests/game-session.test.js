@@ -409,3 +409,13 @@ test('Η Ταινία: τα όρια της φόρμας κόβουν ποινέ
   const pub = sanitizePublicSession({ state: { players: [{ id: 'a', name: 'A', movieProfile: profile }] } }, 'a');
   assert.equal('movieProfile' in pub.state.players[0], false);
 });
+
+test('Η Ταινία: μετά την ΤΕΛΕΥΤΑΙΑ ήπειρο δεν ανοίγει υποχρεωτική κλήρωση (πάει κατευθείαν στο φινάλε)', async () => {
+  const E = await import('../src/lib/campaignEngine.js');
+  const ps = [{ id: 'a', name: 'A' }, { id: 'b', name: 'B' }];
+  let cg = E.initCampaign(ps, { format: 'quick', now: 1 });
+  cg = { ...cg, act: E.actsOf(cg).length - 1 };
+  cg = E.closeAct(E.startAct(cg, ps), ps);
+  assert.equal(cg.status, 'finale');
+  assert.equal(cg.mandatory.pending, false);
+});

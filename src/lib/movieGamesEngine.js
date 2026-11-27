@@ -71,9 +71,9 @@ export function bpHit(cg, team, now = Date.now()) {
 // ---------- 3ο Παιχνίδι: Μάντεψε τι είναι ----------
 export function guessStart(cg, pid, item, now = Date.now()) {
   if (!pid) return cg;
-  return { ...setState(cg, pid, { mask: true }), game: 'guess', guess: { pid, item: String(item || '').slice(0, 60), at: now, until: now + 30000, result: null } };
+  return { ...setState(cg, pid, { mask: true }), game: 'guess', guess: { pid, item: String(item || '').slice(0, 60), at: now, until: now + 30000, result: null, resultAt: null } };
 }
-export const guessResult = (cg, ok) => (cg.guess ? { ...setState(cg, cg.guess.pid, { mask: false }), guess: { ...cg.guess, result: ok ? 'ok' : 'fail' } } : cg);
+export const guessResult = (cg, ok, now = Date.now()) => (cg.guess ? { ...setState(cg, cg.guess.pid, { mask: false }), guess: { ...cg.guess, result: ok ? 'ok' : 'fail', resultAt: now } } : cg);
 
 // ---------- 4ο Παιχνίδι: Deal or No Deal ----------
 export function dondStart(cg, pid, prizePid, { rng = Math.random, now = Date.now() } = {}) {

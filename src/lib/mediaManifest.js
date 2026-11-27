@@ -2,7 +2,7 @@
 // Από εδώ βγαίνουν: ο «Χάρτης media» του Admin, ο έλεγχος ελλείψεων, το αρχείο TXT με τα ονόματα,
 // το νούμερο «Ελλείψεις media» στην Επισκόπηση και τα ονόματα της Αυτόματης σύνδεσης.
 // Κάθε «surfaces» έχει ελεγχθεί στον κώδικα: δείχνει πού εμφανίζεται ΠΡΑΓΜΑΤΙΚΑ το αρχείο.
-import { IMAGE_SLOTS, PHOTO_SPOTS, VIDEO_SLOTS, MODE_COVER_SLOTS } from '@/data/mediaSlots';
+import { IMAGE_SLOTS, PHOTO_SPOTS, VIDEO_SLOTS, VIDEO_ALIASES, MODE_COVER_SLOTS } from '@/data/mediaSlots';
 import { MEDIA_MODES, MODE_MEDIA_SECTIONS } from '@/data/modes/modeRegistry';
 import { SCENES, SCENE_GROUPS, SCENE_BY_PENALTY_STEP, SCENE_BY_SQUARE } from '@/data/sceneLibrary';
 import { GAME_SOUND_SLOTS } from '@/lib/gameSounds';
@@ -60,6 +60,12 @@ const FIXED = {
   countdownVideo: { file: 'tv_countdown.mp4', need: 'optional', surfaces: ['tv'], where: 'TV: αμέσως μετά την «Έναρξη παιχνιδιού».' },
 };
 
+// Εναλλακτικά ονόματα αρχείων (όπως βγήκαν από το MEGA prompt) που δέχεται επίσης η «Αυτόματη σύνδεση».
+const FILE_ALIASES = {
+  villa_takeover_trailer: ['villa_trailer.mp4'], villa_takeover_intro: ['mode_intro_villa.mp4'], villa_takeover_hero: ['villa_hero.jpg'], villa_takeover_cover: ['villa_cover.jpg'],
+  ...Object.fromEntries([1, 2, 3, 4, 5, 6].map((n) => [`villa_takeover_gallery_0${n}`, [`villa_gallery_0${n}.jpg`]])),
+};
+
 // Τα κανονικά ονόματα αρχείων ανά mode — ίδια με αυτά που ψάχνει η «Αυτόματη σύνδεση».
 export const modeFileName = (modeId, field, sectionFilename = '') => {
   if (field === 'hero') return `${modeId}_hero.jpg`;
@@ -109,7 +115,7 @@ export function buildMediaManifest(ov = {}, library = null) {
   // 2 · Βίντεο TV
   for (const slot of VIDEO_SLOTS) {
     const fixed = FIXED[slot.id];
-    push({ id: slot.id, group: 'tv', groupLabel: 'Βίντεο TV', label: slot.label, filename: fixed?.file || `${slot.id}.mp4`, need: fixed?.need || 'optional', surfaces: ['tv'], where: fixed?.where || slot.where, url: ov[slot.id] || '', kind: 'video', fix: 'site' });
+    push({ id: slot.id, group: slot.group ? `tv_${slot.group}` : 'tv', groupLabel: slot.group === 'stinger' ? 'Βίντεο TV · Stingers' : slot.group === 'show' ? 'Βίντεο TV · Εκπομπή' : 'Βίντεο TV', label: slot.label, filename: fixed?.file || slot.file || `${slot.id}.mp4`, need: fixed?.need || 'optional', surfaces: ['tv'], where: fixed?.where || slot.where, url: ov[slot.id] || '', kind: 'video', fix: 'site', aliases: VIDEO_ALIASES[slot.id] || [] });
   }
 
   // 3 · Ανά mode
@@ -120,17 +126,17 @@ export function buildMediaManifest(ov = {}, library = null) {
     const coverSlot = MODE_COVER_SLOTS.find((slot) => slot.modeId === mode.id);
     const defaultCover = DEFAULTS[`modeCover_${mode.id}`] || '';
     const cover = saved.coverCleared ? '' : (saved.cover || ov[`modeCover_${mode.id}`] || (clearedImages ? '' : defaultCover));
-    push({ id: `${mode.id}:cover`, group, groupLabel, modeId: mode.id, field: 'cover', label: 'Εξώφυλλο', filename: modeFileName(mode.id, 'cover'), need: 'required', surfaces: ['tablet', 'site', 'forms', 'promo'], where: 'Κάρτα επιλογής mode στο Tablet· εφεδρική εικόνα σε Site, φόρμα και Promo.', url: cover, hasDefault: !!coverSlot && !saved.cover && !ov[`modeCover_${mode.id}`], fix: 'modes' });
-    push({ id: `${mode.id}:hero`, group, groupLabel, modeId: mode.id, field: 'hero', label: 'Κεντρική εικόνα', filename: modeFileName(mode.id, 'hero'), need: 'required', surfaces: ['site', 'promo', 'forms', 'tablet', 'tv', 'mobile'], where: 'Κορυφή της σελίδας του mode στο Site, κάρτα στο Promo, κεφαλίδα φόρμας, Tablet (Νέα βραδιά) και φόντο TV/κινητού όταν η φάση δεν έχει δική της εικόνα.', url: saved.hero || '', fix: 'modes' });
+    push({ id: `${mode.id}:cover`, group, groupLabel, modeId: mode.id, field: 'cover', label: 'Εξώφυλλο', filename: modeFileName(mode.id, 'cover'), need: 'required', surfaces: ['tablet', 'site', 'forms', 'promo'], where: 'Κάρτα επιλογής mode στο Tablet· εφεδρική εικόνα σε Site, φόρμα και Promo.', url: cover, hasDefault: !!coverSlot && !saved.cover && !ov[`modeCover_${mode.id}`], fix: 'modes', aliases: FILE_ALIASES[`${mode.id}_cover`] || [] });
+    push({ id: `${mode.id}:hero`, group, groupLabel, modeId: mode.id, field: 'hero', label: 'Κεντρική εικόνα', filename: modeFileName(mode.id, 'hero'), need: 'required', surfaces: ['site', 'promo', 'forms', 'tablet', 'tv', 'mobile'], where: 'Κορυφή της σελίδας του mode στο Site, κάρτα στο Promo, κεφαλίδα φόρμας, Tablet (Νέα βραδιά) και φόντο TV/κινητού όταν η φάση δεν έχει δική της εικόνα.', url: saved.hero || '', fix: 'modes', aliases: FILE_ALIASES[`${mode.id}_hero`] || [] });
     for (const section of MODE_MEDIA_SECTIONS[mode.id] || []) {
       const url = (Array.isArray(saved.sections) ? saved.sections : []).find((item) => item?.id === section.id)?.image || '';
-      push({ id: `${mode.id}:section:${section.id}`, group, groupLabel, modeId: mode.id, field: `section:${section.id}`, label: `Φάση · ${section.label}`, filename: modeFileName(mode.id, `section:${section.id}`, section.filename), need: section.alt ? 'optional' : 'recommended', surfaces: ['tv', 'mobile', 'tablet'], where: section.alt ? `Εναλλάσσεται ζωντανά με την εικόνα της φάσης «${(MODE_MEDIA_SECTIONS[mode.id] || []).find((s) => s.id === section.alt)?.label || section.alt}» (TV, κινητό).` : 'Εμφανίζεται σε TV και κινητά όταν το παιχνίδι φτάνει σε αυτή τη φάση· και στο Tablet (Νέα βραδιά).', url, fix: 'modes' });
+      push({ id: `${mode.id}:section:${section.id}`, group, groupLabel, modeId: mode.id, field: `section:${section.id}`, label: section.group ? section.label : `Φάση · ${section.label}`, filename: modeFileName(mode.id, `section:${section.id}`, section.filename), need: section.need || (section.alt ? 'optional' : 'recommended'), surfaces: section.surfaces || ['tv', 'mobile', 'tablet'], ...(section.kind ? { kind: section.kind } : {}), where: section.where ? section.where : section.alt ? `Εναλλάσσεται ζωντανά με την εικόνα της φάσης «${(MODE_MEDIA_SECTIONS[mode.id] || []).find((s) => s.id === section.alt)?.label || section.alt}» (TV, κινητό).` : 'Εμφανίζεται σε TV και κινητά όταν το παιχνίδι φτάνει σε αυτή τη φάση· και στο Tablet (Νέα βραδιά).', url, fix: 'modes' });
     }
     for (let i = 0; i < 6; i += 1) {
-      push({ id: `${mode.id}:gallery:${i}`, group, groupLabel, modeId: mode.id, field: `gallery:${i}`, label: `Gallery ${i + 1}/6`, filename: modeFileName(mode.id, `gallery:${i}`), need: 'recommended', surfaces: ['site'], where: 'Γκαλερί στη σελίδα του mode στο Site.', url: saved.gallery?.[i] || '', fix: 'modes' });
+      push({ id: `${mode.id}:gallery:${i}`, group, groupLabel, modeId: mode.id, field: `gallery:${i}`, label: `Gallery ${i + 1}/6`, filename: modeFileName(mode.id, `gallery:${i}`), need: 'recommended', surfaces: ['site'], where: 'Γκαλερί στη σελίδα του mode στο Site.', url: saved.gallery?.[i] || '', fix: 'modes', aliases: FILE_ALIASES[`${mode.id}_gallery_${String(i + 1).padStart(2, '0')}`] || [] });
     }
-    push({ id: `${mode.id}:trailer`, group, groupLabel, modeId: mode.id, field: 'trailer', label: 'Βίντεο trailer', filename: modeFileName(mode.id, 'trailer'), need: 'optional', surfaces: ['site', 'tablet'], where: 'Σελίδα του mode στο Site και Tablet (Νέα βραδιά).', url: saved.trailer || '', kind: 'video', fix: 'modes' });
-    push({ id: `${mode.id}:intro`, group, groupLabel, modeId: mode.id, field: 'intro', label: 'Intro βίντεο TV', filename: modeFileName(mode.id, 'intro'), need: 'optional', surfaces: ['tv'], where: 'Παίζει στην TV στην αρχή κάθε παρτίδας αυτού του mode (αλλιώς το γενικό intro).', url: saved.intro || '', kind: 'video', fix: 'modes' });
+    push({ id: `${mode.id}:trailer`, group, groupLabel, modeId: mode.id, field: 'trailer', label: 'Βίντεο trailer', filename: modeFileName(mode.id, 'trailer'), need: 'optional', surfaces: ['site', 'tablet'], where: 'Σελίδα του mode στο Site και Tablet (Νέα βραδιά).', url: saved.trailer || '', kind: 'video', fix: 'modes', aliases: FILE_ALIASES[`${mode.id}_trailer`] || [] });
+    push({ id: `${mode.id}:intro`, group, groupLabel, modeId: mode.id, field: 'intro', label: 'Intro βίντεο TV', filename: modeFileName(mode.id, 'intro'), need: 'optional', surfaces: ['tv'], where: 'Παίζει στην TV στην αρχή κάθε παρτίδας αυτού του mode (αλλιώς το γενικό intro).', url: saved.intro || '', kind: 'video', fix: 'modes', aliases: FILE_ALIASES[`${mode.id}_intro`] || [] });
   }
 
   // 4 · Βιβλιοθήκη σκηνών

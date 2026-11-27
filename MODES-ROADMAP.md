@@ -1,33 +1,22 @@
-# Modes — τι χρειάζεται για να γίνουν πιο ολοκληρωμένα
+# Modes — κατάσταση και επόμενα βήματα (10.0.0)
 
-Βασισμένο στον κώδικα: `data/modes/modeRegistry.js`, `components/modes/*`, `lib/modeKit.js`.
-Σήμερα ενεργά ψηφιακά modes: **Pajama Lockdown 18+** και **Beach Bar Home Lockdown**.
+Ενεργά ψηφιακά modes (`src/data/modes/modeRegistry.js` → `NEW_MODES`):
 
-## Τι ΛΕΙΠΕΙ από τα modes (επαληθευμένο στον κώδικα)
-Τα `RecapExport`, `TutorialTV` και τα achievements υπάρχουν μόνο στο classic (Tablet/TV pages). Δεν είναι συνδεδεμένα σε κανένα από τα `components/modes/*`.
+- **Deal of Temptation — Η Ταινία** (`deal_movie`): χάρτης 5 ηπείρων, Γρήγορο σετ / 48 / 72 ώρες, 3 Τροχοί Ποινών, Καρέκλα Ανάκρισης, 4 παιχνίδια, υποχρεωτική κλήρωση μετά από κάθε ήπειρο, εντάλματα/Wanted/Καταζητούμενη.
+- **Pajama Lockdown 18+** (`lockdown`)
+- **Pajama Heist & Arrest** (`marathon_4h`)
+- **Villa Takeover 48/72** (`villa_takeover`)
 
-## Προτεραιότητα 1 — Αρχή & τέλος κάθε παιχνιδιού
-1. **Intro / κανόνες στην TV** (επαναχρήση του `TutorialTV`): 4–5 κάρτες «πώς παίζεται», ασφάλεια, ΣΤΟΠ. Ξεκινά αυτόματα πριν το πρώτο act.
-2. **Consent check-in στα κινητά πριν ξεκινήσει**: κάθε παίκτρια επιλέγει όρια/opt-outs (π.χ. «χωρίς γαργάλημα», «χωρίς δέσιμο», «μόνο non-alcohol»). Η εφαρμογή φιλτράρει αυτόματα κάρτες/ποινές που τα παραβιάζουν. Σήμερα υπάρχει μόνο το `RestraintNote` και το ΣΤΟΠ — το opt-out ανά παίκτρια λείπει.
-3. **Φινάλε με Recap** (επαναχρήση `RecapExport`): σκορ, best moments, ποινές, χρόνος εξόδου, κοινοποιήσιμη κάρτα (μαύρο/χρυσό).
-4. **Awards στο τέλος** (π.χ. «Cipher Master», «Last Queen», «Πιο γρήγορη διαφυγή») — ήδη υπάρχει `achievements.js` για classic.
+Κλασικές μηχανές: **Classic** και **Arrest Heist** (Tablet/TV pages).
 
-## Προτεραιότητα 2 — Pajama Lockdown
-- **Τυχαίος Exit Code ανά συνεδρία.** Το default είναι σταθερό `6969` (`lockdownContent.js`) — μάντεψε-το-εύκολα.
-- **Προοδευτική ένταση (heat levels)**: επιλογή Mild / Spicy / Extreme στο setup· κάθε κάρτα/ποινή έχει `level` και φιλτράρεται.
-- **Hint system με κόστος**: υποδείξεις που προσθέτουν +χρόνο (αντί για μόνιμα διαθέσιμες).
-- **Live «Escape progress» στην TV**: 5 levels ως χρυσά dots/ring, όχι μόνο κείμενο.
-- **Αντίστροφο panic**: ήδη υπάρχει `panic()` στο κινητό — πρόσθεσε οπτική επιβεβαίωση «Όλες ΟΚ;» με ψηφοφορία συνέχισης ανά παίκτρια.
+Αποσυρμένα (δεν επανέρχονται): Beach Bar, Pedi-Glam, Mega Marathon.
 
-## Προτεραιότητα 3 — Beach Bar
-- **DJ queue / ήχος**: συνδεδεμένα cues (`sfx`) με Dance & Freeze ώστε το Freeze να ακούγεται και στο κινητό.
-- **Mocktail menu πρώτα**: μη αλκοολούχες επιλογές ως default, αλκοόλ ως opt-in στο consent check-in.
-- **Leaderboard πλωτή κάψουλα** στο κινητό (σκορ + tokens) — το `ranking` υπάρχει ήδη στο `ModeMobile`.
-- **Last Queen finale** με κοινή οθόνη TV (στεφάνι, countdown 180″ ήδη σε `BEACH_FINALE_SECONDS`).
+## Media (10.0.0)
+- Όλα τα αρχεία του φακέλου MEGA (`11_MEGA_UPDATE`) έχουν θέση με το ίδιο όνομα: βίντεο χάρτη, σκηνικά ηπείρων, εικονίδια, φόντα, νύχια, δοκιμασίες, πράξεις, κάρτες, Villa.
+- Βίντεο εκπομπής TV: Welcome → Show Open → Meet the Cast → Countdown, διάλειμμα (έξοδος / loop / επιστροφή), φινάλε (Recap → Winner Reveal), 10 stingers.
+- Η «🔗 Αυτόματη σύνδεση» (Admin → Χάρτης media) πιάνει εικόνες, βίντεο και ήχο, και δέχεται και τα παλιά ονόματα (π.χ. `villa_hero.jpg`, `01_welcome_video.mp4`).
 
-## Προτεραιότητα 4 — Κοινό για όλα τα modes
-- **Undo τελευταίας ενέργειας** για τη διοργανώτρια (υπάρχει στο classic Toolbar, όχι στα modes).
-- **Τελευταίες 3 ενέργειες στην TV** (ticker) για να μην χάνεται κανείς.
-- **Haptics/ήχος ανά event** (ήδη `navigator.vibrate` σε Play).
-- **Αποθήκευση/συνέχιση συνεδρίας** μετά από crash (`AdminSessionRecovery` υπάρχει — σύνδεσέ το και με `mg` state).
-- **Τεστ**: `tests/` έχει node tests· πρόσθεσε για `timerLeft/timerAdd/timerPause` και για το φιλτράρισμα consent.
+## Επόμενα
+1. Να δημιουργηθούν οι εικόνες που λείπουν από τα prompts: `act01–09` (16:9 & 9:16), `card_*` (4:5 & 16:9), `movie_beerpong.jpg`, `movie_deal_or_no_deal.jpg`, ζώνες/ρόλοι/βραβεία/κωδικός Villa.
+2. Οι σκηνές της βιβλιοθήκης που είναι «ανενεργές» (δεν εμφανίζονται πουθενά) να συνδεθούν σε ποινές/τετράγωνα ή να αφαιρεθούν.
+3. Δοκιμή σε πραγματικές συσκευές (Smart TV, iPhone, Android, Tablet) με πλήρη βραδιά.

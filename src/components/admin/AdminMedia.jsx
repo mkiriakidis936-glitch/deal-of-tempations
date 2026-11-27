@@ -298,16 +298,14 @@ export default function AdminMedia() {
           gallery: [],
           cards: (media.cards || []).map((item) => ({ ...item, image: '' })),
         } : {}),
-        ...(kind === 'video' || kind === 'all' ? { trailer: '', intro: '' } : {}),
+        ...(kind === 'video' || kind === 'all' ? { trailer: '', intro: '', sections: (media.sections || []).map((item) => (deletedUrls.has(item?.image) || kind === 'all' ? { ...item, image: '' } : item)) } : {}),
       }]));
       const next = {
         ...ov,
         modeMedia: nextModeMedia,
         ...(kind === 'video' || kind === 'all' ? {
           agent: undefined,
-          welcomeVideo: undefined,
-          countdownVideo: undefined,
-          gameIntroVideo: undefined,
+          ...Object.fromEntries(VIDEO_SLOTS.map(({ id }) => [id, undefined])),
           siteVideos: [],
           ...Object.fromEntries(PHOTO_SPOT_IDS.map((id) => [id, typeof ov[id] === 'string' && !isVideoFile(ov[id]) && kind === 'video' ? ov[id] : undefined])),
         } : {}),

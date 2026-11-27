@@ -66,4 +66,19 @@ export const VIDEO_SLOTS = [
   { id: 'gameIntroVideo', label: 'INTRO ΠΑΙΧΝΙΔΙΟΥ (όλα τα modes)', where: 'TV — στην αρχή κάθε νέας παρτίδας, πριν από τους κανόνες, όταν το mode δεν έχει δικό του intro (MODE MEDIA CENTER)', surfaces: ['tv'] },
   { id: 'welcomeVideo', label: 'WELCOME VIDEO', where: 'TV — όταν συνδέεται σε ενεργή συνεδρία', surfaces: ['tv'] },
   { id: 'countdownVideo', label: 'COUNTDOWN VIDEO', where: 'TV — αμέσως μετά την εντολή Έναρξη Παιχνιδιού', surfaces: ['tv'] },
+  // Εκπομπή: άνοιγμα, διάλειμμα, φινάλε και τα 10 stingers (ονόματα όπως στον φάκελο 12_TV_ΒΙΝΤΕΟ_ΠΑΡΑΓΩΓΗΣ).
+  { id: 'showOpenVideo', file: '02_show_open.mp4', label: 'SHOW OPEN', where: 'TV — μετά το Welcome, στο άνοιγμα της βραδιάς', surfaces: ['tv'], group: 'show' },
+  { id: 'meetCastVideo', file: '03_meet_the_cast.mp4', label: 'MEET THE CAST', where: 'TV — μετά το Show Open, πριν την αντίστροφη μέτρηση', surfaces: ['tv'], group: 'show' },
+  { id: 'breakOutVideo', file: 'break_1_out.mp4', label: 'ΔΙΑΛΕΙΜΜΑ — ΕΞΟΔΟΣ', where: 'TV — όταν το παιχνίδι μπαίνει σε διάλειμμα / Standby', surfaces: ['tv'], group: 'show' },
+  { id: 'breakBackVideo', file: 'break_2_back.mp4', label: 'ΔΙΑΛΕΙΜΜΑ — ΕΠΙΣΤΡΟΦΗ', where: 'TV — όταν το παιχνίδι επιστρέφει από διάλειμμα / Standby', surfaces: ['tv'], group: 'show' },
+  { id: 'breakLoopVideo', file: 'tv_break_standby_loop.mp4', label: 'ΔΙΑΛΕΙΜΜΑ — LOOP', where: 'TV — φόντο όσο διαρκεί το διάλειμμα / Standby', surfaces: ['tv'], group: 'show' },
+  { id: 'recapVideo', file: 'recap_highlights.mp4', label: 'ΦΙΝΑΛΕ — RECAP', where: 'TV — στην αρχή του φινάλε', surfaces: ['tv'], group: 'show' },
+  { id: 'winnerRevealVideo', file: 'winner_reveal.mp4', label: 'ΦΙΝΑΛΕ — WINNER REVEAL', where: 'TV — αμέσως πριν φανεί η νικήτρια', surfaces: ['tv'], group: 'show' },
+  ...[
+    ['arrest', '01_arrest', 'ΣΥΛΛΗΨΗ'], ['wanted', '02_wanted', 'WANTED / ΕΝΤΑΛΜΑ'], ['loot', '03_loot', 'ΛΕΙΑ'], ['raid', '04_police_raid', 'ΕΦΟΔΟΣ ΑΣΤΥΝΟΜΙΑΣ'],
+    ['decibel', '05_decibel_alert', 'DECIBEL ALERT'], ['verdict', '06_verdict', 'ΕΤΥΜΗΓΟΡΙΑ'], ['immunity', '07_immunity', 'ΑΣΥΛΙΑ / ΕΛΕΥΘΕΡΙΑ'], ['wheel', '08_wheel', 'ΤΡΟΧΟΣ'],
+    ['freeze', '09_freeze', 'FREEZE'], ['lockdownDone', '10_lockdown_complete', 'LOCKDOWN COMPLETE'],
+  ].map(([k, f, l]) => ({ id: `stinger_${k}`, file: `stinger_${f}.mp4`, label: `STINGER · ${l}`, where: 'TV — σύντομο βίντεο 2–5″ τη στιγμή του γεγονότος (μετά παίζει κανονικά το παιχνίδι)', surfaces: ['tv'], group: 'stinger' })),
 ];
+// Εναλλακτικά ονόματα που δέχεται η «Αυτόματη σύνδεση» για τα βίντεο TV.
+export const VIDEO_ALIASES = { welcomeVideo: ['01_welcome_video.mp4'], countdownVideo: ['04_countdown_video.mp4'] };

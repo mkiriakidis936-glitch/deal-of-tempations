@@ -4,6 +4,7 @@ import * as E from '@/lib/campaignEngine';
 import { NAIL_COLORS, TOKEN_USES, WANTED_LEVELS, STATE_LABELS, VALUE_LABELS, STATUS_LABEL, BUYOUT_TOKENS, trialOf, cardOf } from '@/data/modes/campaignContent';
 import { useTick } from '@/lib/modeKit';
 import MovieShowMobile from '@/components/modes/MovieShowMobile';
+import { firstArt, actPhoneArt, contArt, trialArt, cardArt, nailArt } from '@/lib/movieArt';
 
 const Card = ({ title, children, tone }) => (
   <section className="mvg-glass mvg-3d p-4" style={tone ? { background: `linear-gradient(160deg, ${tone}ee, #0b0b10cc)` } : undefined}>
@@ -38,6 +39,10 @@ export default function CampaignMobile({ state, me, sendAction }) {
 
   return (
     <div className="mvg space-y-3 text-white">
+      {(() => {
+        const bg = E.isNight(cg) && status === 'active' ? firstArt('bg_phone_night') : status === 'active' ? (actPhoneArt(act) || contArt('phone', act.continent)) : firstArt('bg_phone_waiting') || contArt('phone', act.continent);
+        return bg ? <div aria-hidden="true" className="pointer-events-none fixed inset-0 -z-[1] bg-cover bg-center" style={{ backgroundImage: `linear-gradient(180deg, rgba(5,5,8,.55), rgba(5,5,8,.92) 55%), url("${bg}")` }} /> : null;
+      })()}
       <div className="mvg-marquee"><span>Deal of Temptation</span><b>Η ΤΑΙΝΙΑ</b><span>{act.info.name}</span></div>
       <MovieShowMobile cg={cg} me={me} nameOf={nameOf} sendAction={sendAction} />
       {changed && status !== 'finale' && <Card tone="#3A0A12"><div className="font-bold">🗺️ Νέα ήπειρος: {act.info.name}</div><div className="text-sm text-white/75">Πράξη {act.index + 1}: {act.title}</div></Card>}
@@ -60,13 +65,14 @@ export default function CampaignMobile({ state, me, sendAction }) {
 
       {myTrial && (
         <Card title={`${trial.icon} ${trial.title}`} tone="#3A0A12">
+          {trialArt(cg.trial.id) && <img src={trialArt(cg.trial.id)} alt="" className="mb-2 max-h-72 w-full rounded-2xl object-cover" />}
           <p className="text-white/85">{trial.text}</p>
           {cg.trial.until && <div className="mt-2 text-5xl font-black tabular-nums text-[#E8C26B]">{left}″</div>}
           <p className="mt-1 text-xs text-white/50">PASS και ΣΤΟΠ ισχύουν πάντα.</p>
         </Card>
       )}
       {trial && !myTrial && (cg.trial.executors || []).includes(me.id) && <Card title="Αποστολή" tone="#2A2112"><div className="font-semibold">{trial.icon} Είσαι εκτελέστρια: {trial.title} · {nameOf(cg.trial.pid)}</div>{cg.trial.until && <div className="text-3xl font-black tabular-nums text-[#E8C26B]">{left}″</div>}</Card>}
-      {card && cg.card.pid === me.id && <Card title="Κάρτα για σένα" tone="#2A2112"><div className="text-lg font-bold">{card.title}</div><p className="text-white/85">{cg.card.prompt || card.text}</p></Card>}
+      {card && cg.card.pid === me.id && <Card title="Κάρτα για σένα" tone="#2A2112">{cardArt(cg.card.id) && <img src={cardArt(cg.card.id)} alt="" className="mb-2 w-full rounded-2xl object-cover" style={{ aspectRatio: '4/5', maxHeight: 360 }} />}<div className="text-lg font-bold">{card.title}</div><p className="text-white/85">{cg.card.prompt || card.text}</p></Card>}
 
       {votes?.open && (votes.kind !== 'risk' || top3.includes(me.id)) && (
         <Card title={`🗳️ ${votes.q}`}>
@@ -86,7 +92,12 @@ export default function CampaignMobile({ state, me, sendAction }) {
 
       {cg.nailsOpen && !s.nailLocked && (
         <Card title="💅 Δήλωση χρώματος νυχιών" tone="#2A1220">
-          <div className="grid grid-cols-2 gap-2">{NAIL_COLORS.map((c) => <button key={c} type="button" onClick={() => sendAction('cg_nail', { nail: c })} className="h-11 rounded-2xl bg-[#2C2C2E] font-semibold">{c}</button>)}</div>
+          <div className="grid grid-cols-2 gap-2">{NAIL_COLORS.map((c) => (
+            <button key={c} type="button" onClick={() => sendAction('cg_nail', { nail: c })} className="mvg-btn relative h-20 overflow-hidden rounded-2xl bg-[#2C2C2E] font-bold">
+              {nailArt(c) && <img src={nailArt(c)} alt="" className="absolute inset-0 h-full w-full object-cover opacity-70" />}
+              <span className="relative drop-shadow-[0_2px_4px_rgba(0,0,0,.9)]">{c}</span>
+            </button>
+          ))}</div>
           <p className="mt-1 text-xs text-white/50">Στην ώρα της: +2 πόντοι & +1 token. Μένει σε όλη την ταινία.</p>
         </Card>
       )}

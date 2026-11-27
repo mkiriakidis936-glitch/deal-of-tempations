@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Panel, Btn } from '@/components/modes/ModeShell';
-import { sfx } from '@/lib/modeKit';
+import { sfx, useTick } from '@/lib/modeKit';
 import * as G from '@/lib/movieGamesEngine';
 import { statsOf, currentAct } from '@/lib/campaignEngine';
 import { continentOf, WANTED_LEVELS } from '@/data/modes/campaignContent';
@@ -95,6 +95,7 @@ export function MandatoryPanel({ ctx, cg, up, players, allowed }) {
 
 // Οθόνη 7 — Παιχνίδια & Τροχοί.
 export default function MovieGamesTablet({ ctx, cg, up, players, allowed }) {
+  useTick(cg.game === 'guess' && !cg.guess?.result, 1000);
   const { nameOf, log } = ctx;
   const { spin } = useWheelTools({ ctx, cg, up, allowed });
   const [pid, setPid] = useState('');
@@ -254,6 +255,7 @@ export default function MovieGamesTablet({ ctx, cg, up, players, allowed }) {
           ) : (
             <>
               <div className="font-bold">🙈 {nm(cg.guess.pid)} · αντικείμενο: {cg.guess.item}</div>
+              {(() => { const left = Math.max(0, Math.ceil(((cg.guess.until || 0) - Date.now()) / 1000)); return <div className={`text-2xl font-black tabular-nums ${left ? 'text-[#E8C26B]' : 'text-[#FF453A]'}`}>{left ? `⏱ ${left}″` : '⏰ Τέλος χρόνου — πάτα αποτέλεσμα'}</div>; })()}
               {WheelPicker}
               <div className="grid grid-cols-2 gap-2">
                 <Btn color="bg-emerald-600" onClick={() => { up((c) => G.guessResult(c, true)); log(`✅ ${nameOf(cg.guess.pid)} το μάντεψε`); }}>✅ ΤΟ ΒΡΗΚΕ</Btn>

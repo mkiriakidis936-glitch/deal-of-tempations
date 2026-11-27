@@ -6,9 +6,9 @@ import { MEDIA_MODES, MODE_MEDIA_SECTIONS } from '../src/data/modes/modeRegistry
 import { MODE_COVER_SLOTS } from '../src/data/mediaSlots.js';
 import { SCENES } from '../src/data/sceneLibrary.js';
 
-test('κάθε ενεργό mode έχει cover + hero + ενότητες + 6 gallery (Villa 12, Ταινία 9, τα άλλα 7)', () => {
+test('κάθε ενεργό mode έχει cover + hero + ενότητες + 6 gallery (Villa 45 με το MEGA, Ταινία 152 με το MEGA, τα άλλα 7)', () => {
   for (const { id } of MEDIA_MODES) {
-    const sections = { villa_takeover: 12, deal_movie: 17 }[id] || 7;
+    const sections = { villa_takeover: 45, deal_movie: 152 }[id] || 7;
     const slots = expectedNames([{ id }], MODE_MEDIA_SECTIONS, MODE_COVER_SLOTS);
     assert.equal(new Set(slots.map((s) => s.field)).size, 8 + sections, `${id}: ${slots.length}`);
     assert.equal((MODE_MEDIA_SECTIONS[id] || []).length, sections, `${id} sections`);
@@ -46,4 +46,12 @@ test('εναλλακτικές ενότητες εναλλάσσονται ζω�
   assert.equal(pickSectionVariant('level1', sections, 2), 'level1');
   assert.equal(pickSectionVariant('level2', sections, 5), 'level2');
   assert.equal(pickSectionVariant('level1', [{ id: 'level1', image: '' }, { id: 'briefing', image: '/b', alt: 'level1' }], 0), 'briefing');
+});
+
+test('MEGA: κάθε αρχείο του φακέλου MEGA βρίσκει θέση με το ίδιο όνομα', async () => {
+  const { MODE_MEDIA_SECTIONS } = await import('../src/data/modes/modeRegistry.js');
+  const { slug } = await import('../src/lib/autoLink.js');
+  const keys = new Set(Object.values(MODE_MEDIA_SECTIONS).flat().map((s) => slug(s.filename.replace(/\.[a-z0-9]+$/, ''))));
+  const files = ['map_jump_to_cont3.mp4', 'standby_loop.mp4', 'cont4_pajama_heist_arrest_phone_9x16.jpg', 'icon_cont5_villa_takeover.png', 'nails_burgundy.jpg', 'mech_sleep_sock_heist_stealth_16x9.jpg', 'bg_tv_previously_on.jpg', 'act09_grand_finale_9x16.jpg', 'card_crew_vote_16x9.jpg'];
+  for (const f of files) assert.ok(keys.has(slug(f.replace(/\.[a-z0-9]+$/, ''))), f);
 });

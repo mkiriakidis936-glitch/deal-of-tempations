@@ -231,10 +231,10 @@ export function closeAct(cg, players = [], now = Date.now()) {
   const winner = gains[0] && gains[0].gain > 0 ? gains[0].id : null;
   const act = currentAct(out);
   // Δ. Υποχρεωτικό γεγονός μετά από κάθε ήπειρο: κλήρωση παίκτριας + Τροχός Ποινής πριν ανοίξει η επόμενη.
-  out = { ...out, conquered: { ...(out.conquered || {}), [out.act || 0]: { continent: act.continent, title: act.title, winner, at: now } }, trial: null, card: null, votes: null,
-    mandatory: { pending: true, pid: null, wheelId: null, itemId: null, at: now, drawnAt: null } };
-  out = checkpoint(out, players, 'Κλείσιμο πράξης', now);
   const last = (out.act || 0) >= act.total - 1;
+  out = { ...out, conquered: { ...(out.conquered || {}), [out.act || 0]: { continent: act.continent, title: act.title, winner, at: now } }, trial: null, card: null, votes: null,
+    mandatory: { pending: !last, pid: null, wheelId: null, itemId: null, at: now, drawnAt: null } };
+  out = checkpoint(out, players, 'Κλείσιμο πράξης', now);
   out = { ...out, status: last ? 'finale' : (act.standbyAfter ? 'standby' : 'transition'), lastClosed: now };
   return logLine(out, `■ Κλείσιμο πράξης ${(out.act || 0) + 1}${winner ? ` · κυριάρχησε: ${players.find((p) => p.id === winner)?.name || ''}` : ''}`, now);
 }

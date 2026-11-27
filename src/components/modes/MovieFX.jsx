@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { MODE_MEDIA } from '@/data/brandArt';
 import { CONTINENTS, continentOf } from '@/data/modes/campaignContent';
 import { tvSfx } from '@/lib/modeKit';
+import { playShowVideo } from '@/components/tv/TVShowVideos';
 import { isVideoUrl } from '@/lib/mediaKind';
 
 // Κινηματογραφικό στρώμα της TV για «Η Ταινία»: τίτλοι αρχής, κάρτα πράξης, ήχοι, καστ, τίτλοι τέλους.
@@ -37,10 +38,14 @@ export const Letterbox = () => (
 );
 
 // Κάρτα τίτλου πράξης (7″). Στην 1η πράξη προηγούνται οι τίτλοι αρχής της ταινίας.
-export function ActTitleCard({ act, opening = false }) {
+export function ActTitleCard({ act, opening = false, bg = '' }) {
   const u = (n) => `min(${n}vw, ${n * 1.75}vh)`;
+  const video = /\.(mp4|m4v|webm|mov)(\?|$)/i.test(bg);
   return (
     <div className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center bg-black/80" role="status">
+      {bg && (video
+        ? <video src={bg} className="absolute inset-0 h-full w-full object-cover opacity-60" autoPlay muted playsInline />
+        : <img src={bg} alt="" className="mv-kb absolute inset-0 h-full w-full object-cover opacity-45" onError={(e) => { e.currentTarget.style.display = 'none'; }} />)}
       <Letterbox />
       <div className="mv-card text-center text-white">
         {opening && <div className="mv-rise font-semibold uppercase tracking-[0.5em] text-white/70" style={{ fontSize: u(1.2) }}>Deal of Temptation παρουσιάζει</div>}
@@ -64,6 +69,15 @@ export function useMovieSounds(cg) {
     if (cg.actStartedAt && cg.actStartedAt !== p.actStartedAt && p.actStartedAt !== undefined) play('drama');
     if (cg.drawn?.at && cg.drawn.at !== p.drawnAt && p.drawnAt !== undefined) play('dice');
     if (cg.trial?.at && cg.trial.at !== p.trialAt && !cg.trial.done && p.trialAt !== undefined) play(cg.trial.id === 'hogtie' ? 'arrest' : cg.trial.id === 'tickle' ? 'tickle' : 'alert');
+    // Βίντεο εκπομπής: διάλειμμα, φινάλε, ένταλμα/Wanted, ελευθερία, σύλληψη (μόνο αν έχουν ανέβει).
+    if (p.status && cg.status !== p.status) {
+      if (cg.status === 'standby') playShowVideo('breakOutVideo');
+      else if (p.status === 'standby') playShowVideo('breakBackVideo');
+      if (cg.status === 'finale') playShowVideo('recapVideo', 'winnerRevealVideo');
+    }
+    if (cg.announce?.at && cg.announce.at !== p.announceAt && p.announceAt !== undefined && cg.announce.kind !== 'arrestwheel') playShowVideo('stinger_wanted');
+    if (cg.dond?.awardedAt && cg.dond.awardedAt !== p.awardAt && p.awardAt !== undefined && cg.dond.status === 'won') playShowVideo('stinger_immunity');
+    if (cg.trial?.at && cg.trial.at !== p.trialAt && !cg.trial.done && p.trialAt !== undefined && cg.trial.id === 'hogtie') playShowVideo('stinger_arrest');
     if (cg.wheel?.at && cg.wheel.at !== p.wheelAt && p.wheelAt !== undefined) { play('dice'); setTimeout(() => play('alert'), 4600); }
     if (cg.announce?.at && cg.announce.at !== p.announceAt && p.announceAt !== undefined) play(cg.announce.kind === 'mostwanted' ? 'crown' : 'arrest');
     if (cg.mandatory?.at && cg.mandatory.at !== p.mandatoryAt && p.mandatoryAt !== undefined) play('news');

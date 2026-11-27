@@ -2,10 +2,11 @@ import React from 'react';
 import WorldMap from '@/components/modes/WorldMap';
 import * as E from '@/lib/campaignEngine';
 import { MOVIE_MODE_ID, STATUS_LABEL, continentOf, trialOf, cardOf, WANTED_LEVELS, MOVIE_TV } from '@/data/modes/campaignContent';
-import { MODE_MEDIA } from '@/data/brandArt';
+import { MODE_MEDIA, FILM } from '@/data/brandArt';
 import { useTick } from '@/lib/modeKit';
 import { isVideoUrl } from '@/lib/mediaKind';
 import { showScreen, warrantLines } from '@/components/modes/MovieShowTV';
+import { firstArt, actTvArt, contArt, trialArt, cardArt, nailArt } from '@/lib/movieArt';
 import { MOVIE_CSS, ActTitleCard, useMovieSounds, CastScreen, EndCredits, montagePhotos } from '@/components/modes/MovieFX';
 
 // DEAL OF TEMPTATION — Η ΤΑΙΝΙΑ · TV (δημόσια σκηνή): χάρτης 5 ηπείρων και 4 καταστάσεις (Ενεργή, Μετάβαση, Standby, Φινάλε).
@@ -70,7 +71,7 @@ export default function CampaignTV({ state }) {
     const top = rank[0];
     return (
       <div className="relative min-h-screen w-full overflow-hidden bg-black text-white">
-        <Backdrop src={artFor('finale', 'villa_takeover')} dim={0.18} />
+        <Backdrop src={(cg.finaleAt && now - cg.finaleAt < 7000 && firstArt('vid_finale_map')) || firstArt('vid_big_gift', 'bg_tv_big_gift', 'bg_tv_final_recap') || artFor('finale', 'villa_takeover')} dim={0.32} />
         <div className="relative grid h-screen grid-cols-[1.25fr_1fr]" style={{ gap: u(2), padding: u(2.6) }}>
           <div className="flex min-h-0 flex-col" style={{ gap: u(1.2) }}>
             <div className="font-semibold uppercase tracking-[0.3em] text-[#E8C26B]" style={{ fontSize: u(1.1) }}>{MOVIE_TV.finale.title} · {E.formatOf(cg).label}</div>
@@ -114,7 +115,7 @@ export default function CampaignTV({ state }) {
     const leader = rank[0];
     return (
       <div className="relative min-h-screen w-full overflow-hidden bg-black text-white">
-        <Backdrop src={artFor('transition', act.continent)} dim={0.25} />
+        <Backdrop src={firstArt(prev?.from ? `vid_jump_${act.continent}` : '', 'vid_previously', 'bg_tv_previously_on') || artFor('transition', act.continent)} dim={0.32} />
         <div className="relative grid h-screen grid-cols-[1.3fr_1fr] items-center" style={{ gap: u(2.4), padding: u(2.8) }}>
           <WorldMap active={act.continent} conquered={cg.conquered} names={names} focus zoom={act.continent} route={prev?.from && prev.from !== act.continent ? [prev.from, act.continent] : null} className="aspect-[2/1] w-full rounded-3xl" />
           <div style={{ display: 'grid', gap: u(1.1) }}>
@@ -139,7 +140,7 @@ export default function CampaignTV({ state }) {
     const next = E.actsOf(cg)[Math.min(act.index + (cg.lastClosed ? 1 : 0), act.total - 1)];
     return (
       <div className="relative min-h-screen w-full overflow-hidden bg-black text-white">
-        <Backdrop src={artFor('standby', act.continent)} dim={0.14} />
+        <Backdrop src={firstArt('vid_standby') || FILM.breakLoopVideo || firstArt('bg_tv_standby') || artFor('standby', act.continent)} dim={0.28} />
         <div className="relative grid h-screen grid-cols-[1.4fr_1fr] items-center" style={{ gap: u(2.4), padding: u(2.8) }}>
           <WorldMap active={null} conquered={cg.conquered} names={names} night className="aspect-[2/1] w-full rounded-3xl" />
           <div style={{ display: 'grid', gap: u(1.2) }}>
@@ -165,7 +166,7 @@ export default function CampaignTV({ state }) {
   const tally = votes && !votes.open ? E.tallyVotes(cg) : [];
   return (
     <div className="mvg mvg-tv relative min-h-screen w-full overflow-hidden text-white" style={{ background: night ? '#05060c' : '#000' }}>
-      <Backdrop src={artFor(night ? 'night' : act.continent, act.continent)} dim={night ? 0.06 : 0.16} />
+      <Backdrop src={night ? (firstArt('vid_night', 'bg_tv_night_mode') || artFor('night', act.continent)) : (actTvArt(act) || contArt('hero', act.continent) || artFor(act.continent, act.continent))} dim={night ? 0.14 : 0.22} />
       {!night && <div className="mvg-spot" />}
       <div className="relative grid h-screen grid-cols-[1fr_min(30vw,560px)]" style={{ gap: u(1.6), padding: `${u(2.2)} ${u(2.4)}` }}>
         <div className="flex min-h-0 flex-col" style={{ gap: u(1) }}>
@@ -183,11 +184,12 @@ export default function CampaignTV({ state }) {
               <div className="text-center">
                 <div className="font-semibold uppercase tracking-[0.3em] text-[#E8C26B]" style={{ fontSize: u(1.1) }}>{MOVIE_TV.draw}</div>
                 <div className="font-black" style={{ fontSize: u(4) }}>{nameOf(drawn)}</div>
-                {nailOf(drawn) && <div className="text-white/70" style={{ fontSize: u(1.3) }}>💅 {nailOf(drawn)}</div>}
+                {nailOf(drawn) && <div className="flex items-center justify-center text-white/70" style={{ fontSize: u(1.3), gap: u(0.8) }}>{nailArt(nailOf(drawn)) && <img src={nailArt(nailOf(drawn))} alt="" className="rounded-xl object-cover" style={{ width: u(5), height: u(5) }} />}💅 {nailOf(drawn)}</div>}
               </div>
             )}
             {trial && (
-              <div className="grid grid-cols-[1fr_auto] items-center" style={{ gap: u(1.5) }}>
+              <div className="grid grid-cols-[auto_1fr_auto] items-center" style={{ gap: u(1.5) }}>
+                {trialArt(cg.trial.id, true) ? <img src={trialArt(cg.trial.id, true)} alt="" className="rounded-2xl object-cover shadow-2xl" style={{ width: u(16), aspectRatio: '16/9' }} /> : <span />}
                 <div>
                   <div className="font-semibold uppercase tracking-[0.25em] text-[#FF6B85]" style={{ fontSize: u(1) }}>{trial.icon} {trial.title}</div>
                   <div className="font-black" style={{ fontSize: u(2.6) }}>{nameOf(cg.trial.pid)}{nailOf(cg.trial.pid) ? <span className="text-white/60" style={{ fontSize: u(1.3) }}> · 💅 {nailOf(cg.trial.pid)}</span> : null}</div>
@@ -198,10 +200,13 @@ export default function CampaignTV({ state }) {
               </div>
             )}
             {!trial && card && (
-              <div>
+              <div className="flex items-center" style={{ gap: u(1.5) }}>
+                {cardArt(cg.card.id, true) && <img src={cardArt(cg.card.id, true)} alt="" className="rounded-2xl object-cover shadow-2xl" style={{ width: u(16), aspectRatio: '16/9' }} />}
+                <div>
                 <div className="font-semibold uppercase tracking-[0.25em] text-[#E8C26B]" style={{ fontSize: u(1) }}>🎴 Κάρτα{cg.card.pid ? ` · ${nameOf(cg.card.pid)}` : ''}{cg.card.pid2 ? ` & ${nameOf(cg.card.pid2)}` : ''}</div>
                 <div className="font-black" style={{ fontSize: u(2.4) }}>{card.title}</div>
                 <div className="text-white/80" style={{ fontSize: u(1.35) }}>{cg.card.prompt || card.text}</div>
+                </div>
               </div>
             )}
             {votes && (
@@ -233,7 +238,7 @@ export default function CampaignTV({ state }) {
         </aside>
       </div>
       <style>{MOVIE_CSS}</style>
-      {cg.actStartedAt && now - cg.actStartedAt < 7000 && <ActTitleCard act={act} opening={act.index === 0} />}
+      {cg.actStartedAt && now - cg.actStartedAt < 7000 && <ActTitleCard act={act} opening={act.index === 0} bg={firstArt('vid_act_title', 'bg_tv_act_title') || actTvArt(act)} />}
     </div>
   );
 }

@@ -1,5 +1,6 @@
 import React from 'react';
 import { CONTINENTS } from '@/data/modes/campaignContent';
+import { contArt, movieArt } from '@/lib/movieArt';
 
 // Ο χάρτης των 5 ηπείρων — στο ύφος της εικόνας του PDF: σκούρο φόντο, γκρι στεριά, ενεργή ήπειρος ροζ-κόκκινη,
 // κατακτημένες πράσινες, πολύχρωμο πλαίσιο. Σχηματικά περιγράμματα (equirectangular 1000×500).
@@ -26,9 +27,11 @@ export default function WorldMap({ active, conquered = {}, names = {}, focus = f
   Object.values(conquered).forEach((c) => { if (c?.continent) done[c.continent] = c; });
   const fillOf = (c) => (c.id === active ? '#FF3B5C' : done[c.id] ? '#45D98A' : night ? '#4A4A55' : '#9A9A9A');
   const pad = compact ? 6 : 14;
+  const frameImg = movieArt('map_frame');
   return (
     <div className={`relative overflow-hidden ${className}`} style={{ background: '#1E1B24' }}>
-      {FRAME.map((color, i) => (
+      {frameImg && <img src={frameImg} alt="" aria-hidden="true" className="pointer-events-none absolute inset-0 z-10 h-full w-full object-fill" onError={(e) => { e.currentTarget.style.display = 'none'; }} />}
+      {!frameImg && FRAME.map((color, i) => (
         <div key={color} aria-hidden="true" className="pointer-events-none absolute" style={{ inset: `${(i + 1) * (compact ? 2 : 4)}px`, border: `${compact ? 2 : 4}px solid ${color}` }} />
       ))}
       <svg viewBox="0 0 1000 480" role="img" aria-label="Ο χάρτης των 5 ηπείρων" className="relative block h-full w-full" style={{ padding: pad * 2.2 }}>
@@ -45,8 +48,11 @@ export default function WorldMap({ active, conquered = {}, names = {}, focus = f
               {labels && (() => {
                 const [x, y] = REGION_CENTER[c.region];
                 const winner = done[c.id]?.winner ? names[done[c.id].winner] : '';
+                const icon = contArt('icon', c.id);
+                const sz = compact ? 54 : 64;
                 return (
                   <g pointerEvents="none">
+                    {icon && <image href={icon} x={x - sz / 2} y={y - sz - (compact ? 14 : 22)} width={sz} height={sz} preserveAspectRatio="xMidYMid meet" style={{ filter: 'drop-shadow(0 4px 8px rgba(0,0,0,.6))' }} />}
                     <text x={x} y={y} textAnchor="middle" fontSize={compact ? 26 : 19} fontWeight="800" fill={isActive || done[c.id] ? '#0B0B0F' : '#1E1B24'} style={{ letterSpacing: '0.04em' }}>{c.no}</text>
                     {!compact && <text x={x} y={y + 22} textAnchor="middle" fontSize={c.region === 'sa' || c.region === 'eu' ? 11 : 13} fontWeight="700" fill={isActive || done[c.id] ? '#0B0B0F' : '#26232D'}>{c.short}</text>}
                     {!compact && winner && <text x={x} y={y + 40} textAnchor="middle" fontSize="13" fontWeight="800" fill="#0B3D22">👑 {winner}</text>}

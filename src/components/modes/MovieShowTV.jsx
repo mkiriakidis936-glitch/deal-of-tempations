@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { isVideoUrl } from '@/lib/mediaKind';
 import { continentOf, WANTED_LEVELS } from '@/data/modes/campaignContent';
+import { firstArt } from '@/lib/movieArt';
 import {
   wheelOf, wheelItem, WHEEL_TV, WHEEL_LABEL, fillAll, CHAIR_TEXT, TOD_TEXT, DOND_TEXT, DOND_BOXES, GUESS_TEXT, BEERPONG,
   MANDATORY_STAGES, WARRANT_TEXT, WANTED_TEXT, MOST_WANTED_TEXT, ARREST_WHEEL_TEXT,
@@ -131,7 +132,7 @@ export function showScreen({ cg, act, nameOf, artFor, statsOf, now = Date.now() 
       : an.kind === 'wanted' ? (level >= 3 ? WANTED_TEXT.tvEscalate : WANTED_TEXT.tv)
         : (alt ? MOST_WANTED_TEXT.tvOrder : MOST_WANTED_TEXT.tv);
     return (
-      <Stage art={art('warrant')} kicker={an.kind === 'mostwanted' ? '🎯 ΚΑΤΑΖΗΤΟΥΜΕΝΗ' : an.kind === 'wanted' ? '⭐ WANTED LEVEL' : '🚨 ΕΝΤΑΛΜΑ'} title={fillAll(t.title, { name, continent, level })} text={fillAll(t.text, { name, continent, level })}>
+      <Stage art={firstArt('wanted_poster_bg') || art('warrant')} kicker={an.kind === 'mostwanted' ? '🎯 ΚΑΤΑΖΗΤΟΥΜΕΝΗ' : an.kind === 'wanted' ? '⭐ WANTED LEVEL' : '🚨 ΕΝΤΑΛΜΑ'} title={fillAll(t.title, { name, continent, level })} text={fillAll(t.text, { name, continent, level })}>
         <div className="font-black text-[#FF6B85]" style={{ fontSize: u(3) }}>{'★'.repeat(level)}<span className="text-white/20">{'★'.repeat(Math.max(0, 5 - level))}</span></div>
         <div className="text-white/70" style={{ fontSize: u(1.2) }}>{WANTED_LEVELS[level]?.label}</div>
       </Stage>
@@ -150,8 +151,13 @@ export function showScreen({ cg, act, nameOf, artFor, statsOf, now = Date.now() 
     );
   }
 
-  // 4. Τα 4 παιχνίδια
-  if (cg.game === 'tod' && cg.tod) {
+  // 4. Τα 4 παιχνίδια — όταν τελειώσει ένα παιχνίδι, η TV γυρίζει μόνη της στη σκηνή μετά από 20″.
+  const OVER = 20000;
+  const gameOver = (cg.game === 'tod' && cg.tod?.result && now - (cg.tod.resultAt || 0) > OVER)
+    || (cg.game === 'beerpong' && cg.bp?.winner && now - (cg.bp.lastAt || 0) > OVER)
+    || (cg.game === 'guess' && cg.guess?.result && now - (cg.guess.resultAt || 0) > OVER)
+    || (cg.game === 'dond' && ['won', 'lost'].includes(cg.dond?.status) && now - (cg.dond.awardedAt || 0) > OVER);
+  if (gameOver) { /* συνεχίζει στην Καρέκλα ή στην κανονική σκηνή */ } else if (cg.game === 'tod' && cg.tod) {
     const td = cg.tod; const name = nameOf(td.pid);
     const t = td.result === 'wrong' ? TOD_TEXT.tvWrong : td.result === 'refuse' ? TOD_TEXT.tvRefuse : td.choice === 'truth' ? TOD_TEXT.tvTruth : td.choice === 'dare' ? TOD_TEXT.tvDare : TOD_TEXT.tvChoose;
     const chair = cg.chair?.active && cg.chair.pid === td.pid;
@@ -168,7 +174,7 @@ export function showScreen({ cg, act, nameOf, artFor, statsOf, now = Date.now() 
       </Stage>
     );
   }
-  if (cg.game === 'beerpong' && cg.bp) {
+  if (!gameOver && cg.game === 'beerpong' && cg.bp) {
     const bp = cg.bp;
     const Rack = ({ left, team, names }) => (
       <div className="flex flex-col items-center" style={{ gap: u(0.8) }}>
@@ -196,17 +202,18 @@ export function showScreen({ cg, act, nameOf, artFor, statsOf, now = Date.now() 
       </Stage>
     );
   }
-  if (cg.game === 'guess' && cg.guess) {
+  if (!gameOver && cg.game === 'guess' && cg.guess) {
     const g = cg.guess; const name = nameOf(g.pid);
     const left = g.until ? Math.max(0, Math.ceil((g.until - now) / 1000)) : 0;
     return (
       <Stage art={art('guess')} kicker="🙈 3ο ΠΑΙΧΝΙΔΙ" title={fillAll(GUESS_TEXT.tv.title, { name })} text={fillAll(GUESS_TEXT.tv.text, { name })}>
-        {!g.result && <div className="font-black tabular-nums text-[#E8C26B]" style={{ fontSize: u(7) }}>{left}</div>}
+        {!g.result && left > 0 && <div className="font-black tabular-nums text-[#E8C26B]" style={{ fontSize: u(7) }}>{left}</div>}
+        {!g.result && left === 0 && <div className="mv-pulse font-black text-[#FF453A]" style={{ fontSize: u(4) }}>⏰ ΤΕΛΟΣ ΧΡΟΝΟΥ — ΑΠΑΝΤΗΣΕ ΤΩΡΑ</div>}
         {g.result && <div className="font-black" style={{ fontSize: u(3), color: g.result === 'ok' ? '#45D98A' : '#FF453A' }}>{g.result === 'ok' ? '✅ ΤΟ ΒΡΗΚΕ' : '❌ ΑΠΟΤΥΧΙΑ — ΤΡΟΧΟΣ ΠΟΙΝΗΣ'}</div>}
       </Stage>
     );
   }
-  if (cg.game === 'dond' && cg.dond) return <DondTV d={cg.dond} nameOf={nameOf} art={art('dond')} now={now} />;
+  if (!gameOver && cg.game === 'dond' && cg.dond) return <DondTV d={cg.dond} nameOf={nameOf} art={art('dond')} now={now} />;
 
   // 5. Καρέκλα Ανάκρισης
   const ch = cg.chair;

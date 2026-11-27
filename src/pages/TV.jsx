@@ -32,6 +32,7 @@ import InterrogationTV from '@/components/tv/InterrogationTV';
 import SessionQRCode from '@/components/shared/SessionQRCode';
 import IntroSequenceTV from '@/components/tv/IntroSequenceTV';
 import TVLaunchVideos from '@/components/tv/TVLaunchVideos';
+import TVShowVideos from '@/components/tv/TVShowVideos';
 import TVProductionOutput from '@/components/tv/TVProductionOutput';
 import TutorialTV from '@/components/tv/TutorialTV';
 import GameDurationClock from '@/components/shared/GameDurationClock';
@@ -269,9 +270,11 @@ export default function TVScreen() {
       <TVLaunchVideos
         sessionCode={session.sessionCode}
         welcomeSrc={FILM.welcomeVideo}
+        openingSrcs={[FILM.showOpenVideo, FILM.meetCastVideo]}
         countdownSrc={FILM.countdownVideo}
         countdownStartedAt={state.countdownStartedAt}
       />
+      <TVShowVideos disabled={IS_PREVIEW} />
       <GameIntroTV state={state} sessionCode={session.sessionCode} disabled={IS_PREVIEW} />
       <IntroSequenceTV state={state} />
       <NightTV state={state} />

@@ -82,6 +82,9 @@ export const PHOTO = {
 
 // Τα βίντεο είναι προαιρετικά. Δεν υπάρχει πλέον υποχρεωτικό/προεπιλεγμένο βίντεο.
 export const FILM = { agent: '', welcomeVideo: '', countdownVideo: '', gameIntroVideo: '' };
+const SHOW_VIDEO_IDS = ['showOpenVideo', 'meetCastVideo', 'breakOutVideo', 'breakBackVideo', 'breakLoopVideo', 'recapVideo', 'winnerRevealVideo',
+  'stinger_arrest', 'stinger_wanted', 'stinger_loot', 'stinger_raid', 'stinger_decibel', 'stinger_verdict', 'stinger_immunity', 'stinger_wheel', 'stinger_freeze', 'stinger_lockdownDone'];
+for (const id of SHOW_VIDEO_IDS) FILM[id] = '';
 for (const id of PHOTO_SPOT_IDS) FILM[id] = '';
 
 export const SITE_VIDEOS = [];
@@ -138,6 +141,7 @@ export function applyMediaOverrides(o = {}) {
   FILM.welcomeVideo = str(o.welcomeVideo) || '';
   FILM.countdownVideo = str(o.countdownVideo) || '';
   FILM.gameIntroVideo = str(o.gameIntroVideo) || '';
+  for (const id of SHOW_VIDEO_IDS) FILM[id] = str(o[id]) || '';
   for (const id of PHOTO_SPOT_IDS) {
     const value = str(o[id]);
     if (emptySlots.includes(id)) {

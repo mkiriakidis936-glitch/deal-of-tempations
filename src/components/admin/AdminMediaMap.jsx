@@ -5,6 +5,7 @@ import { playSoundFile } from '@/lib/gameSounds';
 import { sfx, tvSfx } from '@/lib/modeKit';
 import { IMAGE_ACCEPT, VIDEO_ACCEPT, MEDIA_ACCEPT, mediaKindOf } from '@/lib/mediaKind';
 import { slug, stripPrefix } from '@/lib/autoLink';
+import { filesFromZip, skipPath, baseName } from '@/lib/bundleImport';
 import { PHOTO_SPOT_IDS } from '@/data/mediaSlots';
 import { CONTENT_CATEGORIES } from '@/components/admin/content/contentSchemas';
 import { COLLECTIONS, fetchModesRecord, modeOfCollection } from '@/lib/modesContentStore';
@@ -95,6 +96,9 @@ export default function AdminMediaMap({ ov = {}, library = [], onSave, onRefresh
   const [cardStats, setCardStats] = useState([]);
   const input = useRef(null);
   const target = useRef(null);
+  const bundleInput = useRef(null);
+  const folderInput = useRef(null);
+  const [report, setReport] = useState('');
 
   const entries = useMemo(() => buildMediaManifest(ov, library), [ov, library]);
   const sum = useMemo(() => manifestSummary(entries), [entries]);
@@ -176,7 +180,7 @@ export default function AdminMediaMap({ ov = {}, library = [], onSave, onRefresh
     }
     let next = ov; let linked = 0; let skipped = 0;
     for (const e of entries) {
-      const hits = (byKey.get(keyOf(e.filename)) || []).filter((f) => kindMatches(e, f.kind));
+      const hits = [e.filename, ...(e.aliases || [])].flatMap((name) => byKey.get(keyOf(name)) || []).filter((f) => kindMatches(e, f.kind));
       if (!hits.length) continue;
       if (!overwrite && (e.status === 'ok')) { skipped += 1; continue; }
       const newest = [...hits].sort((a, b) => (b.modified || 0) - (a.modified || 0))[0];
@@ -186,6 +190,56 @@ export default function AdminMediaMap({ ov = {}, library = [], onSave, onRefresh
     if (!linked) throw new Error(skipped ? `Βρέθηκαν ${skipped} αρχεία, αλλά οι θέσεις τους είναι ήδη γεμάτες.` : 'Δεν βρέθηκε αρχείο με όνομα θέσης. Ονόμασε τα αρχεία όπως στο TXT και ανέβασέ τα στη Βιβλιοθήκη.');
     await onSave(next);
     setMsg({ ok: true, text: `Αυτόματη σύνδεση: ${linked} αρχεία μπήκαν στη θέση τους ✓${skipped ? ` (${skipped} θέσεις ήταν ήδη γεμάτες και δεν άλλαξαν)` : ''}` });
+  });
+
+  // 📦 Εισαγωγή πακέτου: ZIP ή φάκελος → ανεβαίνουν μόνο τα αρχεία με όνομα θέσης και μπαίνουν κατευθείαν στη θέση τους.
+  const importBundle = (fileList, overwrite = false) => run('bundle', async () => {
+    const want = new Map();
+    for (const e of entries) for (const n of [e.filename, ...(e.aliases || [])]) {
+      if (!n) continue;
+      const k = keyOf(n);
+      if (!want.has(k)) want.set(k, []);
+      want.get(k).push(e);
+    }
+    const isWanted = (path) => want.has(keyOf(baseName(path)));
+    const files = []; const unmatched = [];
+    for (const f of Array.from(fileList || [])) {
+      const path = f.webkitRelativePath || f.name;
+      if (skipPath(path)) continue;
+      if (/\.zip$/i.test(f.name)) {
+        setMsg({ ok: true, text: `Άνοιγμα ZIP «${f.name}»…` });
+        files.push(...await filesFromZip(f, isWanted));
+      } else if (isWanted(path)) files.push(f);
+      else if (mediaKindOf(f.name)) unmatched.push(f.name);
+    }
+    const seen = new Set(); const unique = files.filter((f) => { const k = keyOf(f.name); if (seen.has(k)) return false; seen.add(k); return true; });
+    if (!unique.length) throw new Error('Δεν βρέθηκε κανένα αρχείο με όνομα θέσης. Έλεγξε ότι τα αρχεία έχουν τα ονόματα του TXT.');
+    let next = ov; const linked = []; const full = []; const failed = [];
+    for (let i = 0; i < unique.length; i += 1) {
+      const f = unique[i];
+      setMsg({ ok: true, text: `Ανέβασμα ${i + 1}/${unique.length}: ${f.name}` });
+      const targets = (want.get(keyOf(f.name)) || []).filter((e) => kindMatches(e, mediaKindOf(f.name)) && (overwrite || !['ok', 'default'].includes(e.status)));
+      if (!targets.length) { full.push(f.name); continue; }
+      try {
+        const up = await uploadMedia(f);
+        if (!up?.url) throw new Error('χωρίς σύνδεσμο');
+        for (const e of targets) { next = setEntryValue(next, e, up.url); linked.push(`${f.name} → ${e.groupLabel} · ${e.label}`); }
+      } catch (err) { failed.push(`${f.name}: ${err.message || err}`); }
+      if ((i + 1) % 25 === 0) await onSave(next);
+    }
+    await onSave(next);
+    await onRefresh?.();
+    const still = buildMediaManifest(next, library).filter((e) => e.need !== 'inactive' && e.status === 'missing' && e.need !== 'optional');
+    const text = [
+      `ΕΙΣΑΓΩΓΗ ΠΑΚΕΤΟΥ — ${new Date().toLocaleString('el-GR')}`,
+      `\n✓ ΜΠΗΚΑΝ (${linked.length})`, ...linked,
+      `\n◐ ΗΔΗ ΓΕΜΑΤΕΣ — δεν άλλαξαν (${full.length})`, ...full,
+      `\n✕ ΑΠΕΤΥΧΑΝ (${failed.length})`, ...failed,
+      `\n? ΑΡΧΕΙΑ ΧΩΡΙΣ ΘΕΣΗ (${unmatched.length})`, ...unmatched,
+      `\n⚠ ΛΕΙΠΟΥΝ ΑΚΟΜΑ — υποχρεωτικά & προτεινόμενα (${still.length})`, ...still.map((e) => `${e.filename} — ${e.groupLabel} · ${e.label}`),
+    ].join('\n');
+    setReport(text);
+    setMsg({ ok: !failed.length, text: `📦 Εισαγωγή: ${linked.length} θέσεις γέμισαν · ${full.length} ήταν ήδη γεμάτες · ${failed.length} απέτυχαν · λείπουν ακόμα ${still.length}.` });
   });
 
   const stamp = new Date().toISOString().slice(0, 10);
@@ -218,6 +272,11 @@ export default function AdminMediaMap({ ov = {}, library = [], onSave, onRefresh
         <div className="flex flex-wrap gap-2">
           <button type="button" disabled={disabled} onClick={() => autoLink(false)} className="h-10 rounded-full bg-[#E8C26B] px-4 text-sm font-bold text-black disabled:opacity-50">{busy === 'autolink' ? 'Σύνδεση…' : '🔗 Αυτόματη σύνδεση (κενές θέσεις)'}</button>
           <button type="button" disabled={disabled} onClick={() => { if (window.confirm('Να αντικατασταθούν και οι ήδη γεμάτες θέσεις με τα αρχεία της βιβλιοθήκης που έχουν το σωστό όνομα;')) autoLink(true); }} className="h-10 rounded-full bg-[#2C2C2E] px-4 text-sm font-semibold disabled:opacity-50">🔁 Σύνδεση με αντικατάσταση</button>
+          <button type="button" disabled={disabled} onClick={() => bundleInput.current?.click()} className="h-10 rounded-full bg-[#E8C26B] px-4 text-sm font-bold text-black disabled:opacity-50">{busy === 'bundle' ? 'Εισαγωγή…' : '📦 Εισαγωγή ZIP / αρχείων'}</button>
+          <button type="button" disabled={disabled} onClick={() => folderInput.current?.click()} className="h-10 rounded-full bg-[#2C2C2E] px-4 text-sm font-semibold disabled:opacity-50">📁 Εισαγωγή φακέλου</button>
+          <input ref={bundleInput} type="file" multiple accept={`.zip,application/zip,${MEDIA_ACCEPT}`} className="hidden" onChange={(e) => { const list = Array.from(e.target.files || []); e.target.value = ''; if (list.length) importBundle(list); }} />
+          <input ref={folderInput} type="file" multiple webkitdirectory="" className="hidden" onChange={(e) => { const list = Array.from(e.target.files || []); e.target.value = ''; if (list.length) importBundle(list); }} />
+          {report && <button type="button" onClick={() => download(`deal-of-temptation-eisagogi-${new Date().toISOString().slice(0, 10)}.txt`, report)} className="h-10 rounded-full bg-[#2C2C2E] px-4 text-sm font-semibold">⬇ Αναφορά εισαγωγής</button>}
           <button type="button" onClick={exportAll} className="h-10 rounded-full bg-[#2C2C2E] px-4 text-sm font-semibold">⬇ TXT — όλα τα ονόματα</button>
           <button type="button" onClick={exportMissing} className="h-10 rounded-full bg-[#2C2C2E] px-4 text-sm font-semibold">⬇ TXT — μόνο όσα λείπουν</button>
         </div>

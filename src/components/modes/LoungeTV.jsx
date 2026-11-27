@@ -1,3 +1,4 @@
+import { playShowVideo } from '@/components/tv/TVShowVideos';
 import React, { useEffect, useRef } from 'react';
 import { tvStingers } from '@/lib/tvStingers';
 import { tallyVotes } from '@/lib/boardEngine';
@@ -23,6 +24,9 @@ export function useTvStingers(lounge, { muted = false } = {}) {
     if (!before || muted || IS_PREVIEW || TV_VIEW !== 'main') return;
     const events = tvStingers(before, lounge || {});
     events.forEach((name, i) => setTimeout(() => tvSfx[name]?.(), i * 120));
+    const STINGER = { arrest: 'stinger_arrest', loot: 'stinger_loot', alert: 'stinger_raid', truth: 'stinger_verdict', lie: 'stinger_verdict' };
+    const video = events.map((name) => STINGER[name]).find(Boolean);
+    if (video) playShowVideo(video);
   }, [lounge, muted]);
 }
 

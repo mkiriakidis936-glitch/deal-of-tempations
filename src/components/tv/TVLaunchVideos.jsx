@@ -1,6 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 
-export default function TVLaunchVideos({ sessionCode, welcomeSrc, countdownSrc, countdownStartedAt }) {
+export default function TVLaunchVideos({ sessionCode, welcomeSrc, countdownSrc, countdownStartedAt, openingSrcs = [] }) {
+  const opening = [welcomeSrc, ...openingSrcs].filter(Boolean);
+  const [step, setStep] = useState(0);
   const [active, setActive] = useState('idle');
   const [countdownPlayedFor, setCountdownPlayedFor] = useState(null);
   const [pendingCountdown, setPendingCountdown] = useState(false);
@@ -8,21 +10,23 @@ export default function TVLaunchVideos({ sessionCode, welcomeSrc, countdownSrc, 
 
   useEffect(() => {
     if (!sessionCode) return;
-    setActive(welcomeSrc ? 'welcome' : 'idle');
+    setActive(opening.length ? 'welcome' : 'idle');
+    setStep(0);
     setCountdownPlayedFor(null);
     setPendingCountdown(false);
     setWelcomeCompletedFor(null);
-  }, [sessionCode, welcomeSrc]);
+  }, [sessionCode, welcomeSrc, opening.length]);
 
   useEffect(() => {
     if (!countdownStartedAt || !countdownSrc || countdownPlayedFor === countdownStartedAt) return;
     setCountdownPlayedFor(countdownStartedAt);
-    if (welcomeSrc && welcomeCompletedFor !== sessionCode) setPendingCountdown(true);
+    if (opening.length && welcomeCompletedFor !== sessionCode) setPendingCountdown(true);
     else setActive('countdown');
   }, [countdownStartedAt, countdownSrc, welcomeSrc, countdownPlayedFor, welcomeCompletedFor, sessionCode]);
 
   const finish = () => {
     if (active === 'welcome') {
+      if (step + 1 < opening.length) { setStep(step + 1); return; }
       setWelcomeCompletedFor(sessionCode);
       if (pendingCountdown && countdownSrc) {
         setPendingCountdown(false);
@@ -35,7 +39,7 @@ export default function TVLaunchVideos({ sessionCode, welcomeSrc, countdownSrc, 
     if (active === 'countdown') setActive('idle');
   };
 
-  const src = active === 'welcome' ? welcomeSrc : active === 'countdown' ? countdownSrc : '';
+  const src = active === 'welcome' ? opening[step] : active === 'countdown' ? countdownSrc : '';
   const videoRef = useRef(null);
   const finishRef = useRef(finish);
   finishRef.current = finish;
@@ -50,14 +54,14 @@ export default function TVLaunchVideos({ sessionCode, welcomeSrc, countdownSrc, 
     video.play().catch(() => { video.muted = true; video.play().catch(() => {}); });
     const guard = setTimeout(() => { if (!started) finishRef.current(); }, 12000);
     return () => { clearTimeout(guard); video.removeEventListener('playing', onPlaying); };
-  }, [src, active]);
+  }, [src, active, step]);
 
   if (!src) return null;
 
   return (
     <div className="fixed inset-0 z-[95] flex items-center justify-center bg-black" onClick={finish}>
       <video
-        key={active + src}
+        key={active + step + src}
         ref={videoRef}
         src={src}
         playsInline

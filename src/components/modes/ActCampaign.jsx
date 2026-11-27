@@ -4,6 +4,7 @@ import MissionPanel from '@/components/modes/MissionPanel';
 import WorldMap from '@/components/modes/WorldMap';
 import MovieGamesTablet, { MandatoryPanel } from '@/components/modes/MovieGamesTablet';
 import * as G from '@/lib/movieGamesEngine';
+import { firstArt, contArt, trialArt } from '@/lib/movieArt';
 import { blockedBy, textOf, consentOf } from '@/lib/consent';
 import { sfx } from '@/lib/modeKit';
 import * as E from '@/lib/campaignEngine';
@@ -208,6 +209,7 @@ export default function ActCampaign({ ctx, updateState, onFinish }) {
   const trialLive = cg.trial && !cg.trial.done ? trialOf(cg.trial.id) : null;
   const TrialBox = trialLive && (
     <div className="space-y-2 rounded-2xl bg-[#3A0A12] p-3">
+      {trialArt(trialLive.id) && <img src={trialArt(trialLive.id)} alt="" className="h-32 w-full rounded-xl object-cover" />}
       <div className="font-bold">{trialLive.icon} {trialLive.title} · {nameOf(cg.trial.pid)}{cg.trial.until ? ` · ⏱ ${E.trialSecondsLeft(cg, now)}″` : ''}</div>
       <div className="text-xs opacity-75">Επιτυχία: {fmt(trialLive.win)} · Ποινή: {fmt(trialLive.lose)}{trialLive.lose.warrant ? ' + Κάρτα Εντάλματος' : ''}</div>
       <div className="grid grid-cols-3 gap-2">
@@ -220,6 +222,7 @@ export default function ActCampaign({ ctx, updateState, onFinish }) {
 
   return (
     <div className="mvg space-y-4">
+      {firstArt('bg_tablet_console') && <div aria-hidden="true" className="pointer-events-none fixed inset-0 -z-[1] bg-cover bg-center" style={{ backgroundImage: `linear-gradient(180deg, rgba(5,5,8,.7), rgba(5,5,8,.94)), url("${firstArt('bg_tablet_console')}")` }} />}
       <div className="mvg-marquee"><span>Deal of Temptation</span><b>Η ΤΑΙΝΙΑ</b><span>Κονσόλα σκηνοθεσίας</span></div>
       {Bar}
       <p className="rounded-xl bg-[#FF9F0A]/10 px-3 py-2 text-xs text-[#FFB340]">🛟 {MOVIE_SAFETY}</p>
@@ -227,10 +230,13 @@ export default function ActCampaign({ ctx, updateState, onFinish }) {
       {screen === 1 && (
         <Panel title="🗺️ Οθόνη 1 — Χάρτης των 5 ηπείρων & Πράξεις" accent="gold">
           <WorldMap active={status === 'active' || status === 'transition' ? act.continent : null} conquered={cg.conquered} names={names} className="aspect-[2/1] w-full rounded-2xl" />
-          <div className="rounded-2xl bg-[#2C2C2E] p-3 text-sm">
+          <div className="mvg-glass mvg-3d flex gap-3 p-3 text-sm">
+            {contArt('card', act.continent) && <img src={contArt('card', act.continent)} alt="" className="w-28 shrink-0 rounded-2xl object-cover shadow-xl" style={{ aspectRatio: '4/5' }} />}
+            <div>
             <div className="font-bold">ΠΡΑΞΗ {String(act.index + 1).padStart(2, '0')}: {act.title} · {act.info.name}{act.when ? ` · ${act.when}` : ''}</div>
             <p className="opacity-80">{act.text}</p>
             <p className="mt-1 text-xs opacity-60">Γύροι ηπείρου: {act.info.rounds}</p>
+            </div>
           </div>
           <MandatoryPanel ctx={ctx} cg={cg} up={up} players={players} allowed={allowed} />
           <div className="grid gap-2 sm:grid-cols-3">
