@@ -5,6 +5,7 @@ import { LOCKDOWN_SECONDS, MARATHON_LOCKDOWN_SECONDS } from '../src/data/modes/l
 
 test('all approved digital modes are registered with their exact durations', () => {
   const expected = {
+    deal_movie: 2880,
     lockdown: 60,
     marathon_4h: 105,
     villa_takeover: 2880,
@@ -65,7 +66,7 @@ test('οδηγός: κάθε ενεργό mode έχει οδηγό, και κά�
 
 test('νέες ψηφιακές παρτίδες ξεκινούν με εισαγωγή κανόνων· οι παλιές δεν μπλοκάρονται', async () => {
   const src = (await import('node:fs')).readFileSync(new URL('../src/lib/modeKit.js', import.meta.url), 'utf8');
-  assert.match(src, /\['lockdown', 'marathon_4h', 'villa_takeover'\]\.includes\(modeId\)\) base\.briefingRequired = true/);
+  assert.match(src, /\['lockdown', 'marathon_4h', 'villa_takeover', 'deal_movie'\]\.includes\(modeId\)\) base\.briefingRequired = true/);
   const { pointsOf, rankPlayers, championOf } = await import('../src/lib/modeRanking.js');
   const players = [{ id: 'a', name: 'Α' }, { id: 'b', name: 'Β' }];
   const mg = { scores: { a: 3, b: 5 }, tokens: { a: 4 }, lounge: { stats: { b: { loot: 2000 } } } };

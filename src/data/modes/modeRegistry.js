@@ -1,6 +1,17 @@
 // Τα ενεργά ψηφιακά modes (ξεχωριστά από τις μηχανές παιχνιδιού Classic / Arrest Heist).
 export const NEW_MODES = [
   {
+    id: 'deal_movie',
+    name: 'DEAL OF TEMPTATION — Η ΤΑΙΝΙΑ',
+    icon: '🎬',
+    desc: 'Το μεγάλο ψηφιακό παιχνίδι / Live TV Show / ταινία: ο χάρτης των 5 ηπείρων (Classic, Arrest Heist, Pajama Lockdown 18+, Pajama Heist & Arrest, Villa Takeover) σε πράξεις — Γρήγορο σετ, 48h ή 72h — με Previously On, Standby, κοινό σκορ, λεία, tokens, Wanted Level, κληρώσεις, νύχια, παπούτσια/κάλτσες ένα-ένα, χορούς, δεσίματα, νυχτερινή φάση και Μεγάλο Δώρο.',
+    min: 3,
+    max: 10,
+    acts: ['campaign'],
+    actDurations: { campaign: 2880 },
+    minutes: 2880,
+  },
+  {
     id: 'lockdown',
     name: 'PAJAMA LOCKDOWN 18+',
     icon: '🚨',
@@ -99,6 +110,17 @@ export const MODE_MEDIA_SECTIONS = {
     { id: 'planning', label: 'Σχεδιασμός ληστείας', filename: 'heist_planning.jpg', alt: 'teams' },
     { id: 'arrest', label: 'Σύλληψη & ανάκριση', filename: 'heist_arrest.jpg', alt: 'penalties' },
   ],
+  deal_movie: [
+    { id: 'classic', label: 'Ήπειρος 1 — Classic', filename: 'movie_continent_classic.jpg' },
+    { id: 'arrest_heist', label: 'Ήπειρος 2 — Arrest Heist', filename: 'movie_continent_arrest_heist.jpg' },
+    { id: 'lockdown', label: 'Ήπειρος 3 — Pajama Lockdown 18+', filename: 'movie_continent_lockdown.jpg' },
+    { id: 'marathon_4h', label: 'Ήπειρος 4 — Pajama Heist & Arrest', filename: 'movie_continent_pajama_heist.jpg' },
+    { id: 'villa_takeover', label: 'Ήπειρος 5 — Villa Takeover', filename: 'movie_continent_villa.jpg' },
+    { id: 'transition', label: 'Μετάβαση — Previously On', filename: 'movie_previously_on.jpg' },
+    { id: 'standby', label: 'Standby — αναμονή επόμενης πράξης', filename: 'movie_standby.jpg' },
+    { id: 'night', label: 'Βράδυ στον Ύπνο', filename: 'movie_night.jpg' },
+    { id: 'finale', label: 'Μεγάλο Φινάλε & Μεγάλο Δώρο', filename: 'movie_finale.jpg' },
+  ],
   villa_takeover: [
     { id: 'arrival', label: 'Ημέρα 1 — Άφιξη & Round Strip', filename: 'villa_day1.jpg' },
     { id: 'temptation', label: 'Ημέρα 2 — Ένταση & Μίνι-Παιχνίδια', filename: 'villa_day2.jpg' },
@@ -143,6 +165,7 @@ export const MODE_THEMES = {
   pedi_extended: { bg: '#000000', accent: '#E8C26B', accent2: '#F7E3A8', danger: '#FF453A' },
   marathon_4h: { bg: '#000000', accent: '#D9B45B', accent2: '#F7E3A8', danger: '#FF453A' },
   villa_takeover: { bg: '#000000', accent: '#E8C26B', accent2: '#F7E3A8', danger: '#FF453A' },
+  deal_movie: { bg: '#000000', accent: '#FF3B5C', accent2: '#F7E3A8', danger: '#FF453A' },
 };
 
 export const ACT_META = {
@@ -153,6 +176,7 @@ export const ACT_META = {
   beach: { title: 'Beach Bar (αφαιρέθηκε)', minutes: 1 },
   lounge: { title: 'The Ultimate Lounge Lockdown', minutes: 105 },
   villa: { title: 'Villa Takeover · 48/72', minutes: 2880 },
+  campaign: { title: 'Deal of Temptation — Η Ταινία', minutes: 2880 },
 };
 
 
@@ -172,6 +196,7 @@ export const MEDIA_MODES = [
 export function durationLabel(meta) {
   if (!meta?.minutes) return '';
   if (meta.id === 'villa_takeover') return '48 ή 72 ώρες';
+  if (meta.id === 'deal_movie') return 'Βραδιά, 48 ή 72 ώρες';
   if (meta.minutes < 120) return `${meta.minutes}′`;
   const h = meta.minutes / 60;
   return `${h.toLocaleString('el-GR', { maximumFractionDigits: 1 })} ώρες`;

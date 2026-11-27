@@ -4,6 +4,7 @@ import * as EXT from '@/data/modes/extendedContent';
 import * as LD from '@/data/modes/lockdownContent';
 import * as LG from '@/data/modes/loungeContent';
 import * as VL from '@/data/modes/villaContent';
+import * as MV from '@/data/modes/campaignContent';
 
 // Λίστες περιεχομένου των νέων modes που επεξεργάζονται από Admin → 🎮 Νέα Modes.
 // Οι αλλαγές αποθηκεύονται στο AppSetting (key modes_content) και εφαρμόζονται "επί τόπου" στις λίστες.
@@ -28,6 +29,9 @@ export const COLLECTIONS = [
   { id: 'vip_vault', group: '☀️ Morning Escape (Act 4)', label: 'VIP Vault κάρτες', arr: EXT.VIP_VAULT, strings: true },
   { id: 'lockdown_settings', group: '🚨 Pajama Lockdown', label: 'Βασικές ρυθμίσεις Lockdown', arr: [LD.getLockdownSettings()], fixedItems: true, blank: {}, validate: (items) => /^\d{4}$/.test(items[0]?.exitCode || '') ? null : 'Ο κωδικός εξόδου πρέπει να αποτελείται από ακριβώς 4 ψηφία.', fields: [T('exitCode', 'Κωδικός εξόδου (4 ψηφία)'), A('message', 'Μήνυμα έναρξης')], toRuntime: (items) => { LD.applyLockdownSettings(items[0] || {}); return [LD.getLockdownSettings()]; } },
   { id: 'binding_options', group: '🚨 Pajama Lockdown', label: 'Επιλογές δεσίματος', arr: LD.BINDING_OPTIONS, strings: true },
+  { id: 'movie_cards', group: '🎬 Deal of Temptation — Η Ταινία', label: 'Κάρτες διαλόγου, ρίσκου & ψηφοφοριών', arr: MV.MOVIE_CARDS, fixedItems: true, blank: {}, fields: [T('title', 'Τίτλος'), A('text', 'Κείμενο στην TV')] },
+  { id: 'movie_trials', group: '🎬 Deal of Temptation — Η Ταινία', label: 'Σωματικές δοκιμασίες (κείμενα)', arr: MV.TRIALS, fixedItems: true, blank: {}, fields: [T('title', 'Τίτλος'), A('text', 'Κείμενο στην TV'), N('secs', 'Χρονόμετρο (δευτ.)')] },
+  { id: 'movie_missions', group: '🎬 Deal of Temptation — Η Ταινία', label: 'Μυστικές αποστολές (κινητό)', arr: MV.MOVIE_MISSIONS, blank: { id: '', title: '', text: '', mins: 60 }, fields: [T('title', 'Τίτλος'), A('text', 'Κείμενο που βλέπει στο κινητό'), N('mins', 'Λεπτά διορίας')] },
   { id: 'villa2_questions', group: '🏝️ Villa Takeover 48/72', label: '20 σκληρές ερωτήσεις 18+ (Ανάκριση · Truth · Πειράγματα)', arr: VL.VILLA_QUESTIONS, fixedItems: true, blank: {}, fields: [T('title', 'Τίτλος'), A('text', 'Κείμενο'), N('secs', 'Χρονόμετρο (δευτ.)'), I()] },
   { id: 'villa2_dares', group: '🏝️ Villa Takeover 48/72', label: '20 τολμηρά Dares 18+ & πειράγματα', arr: VL.VILLA_DARES, fixedItems: true, blank: {}, fields: [T('title', 'Τίτλος'), A('text', 'Κείμενο'), N('secs', 'Χρονόμετρο (δευτ.)'), I()] },
   { id: 'villa2_nails', group: '🏝️ Villa Takeover 48/72', label: '15 κάρτες σαγιονάρες, χρώμα νυχιών, δεσίματα & μύτες', arr: VL.VILLA_NAIL_CARDS, fixedItems: true, blank: {}, fields: [T('title', 'Τίτλος'), A('text', 'Κείμενο'), N('secs', 'Χρονόμετρο (δευτ.)'), I()] },
@@ -60,7 +64,7 @@ export const COLLECTIONS = [
 
 // Σε ποιο mode ανήκει κάθε λίστα (για την καρτέλα «Κάρτες & περιεχόμενο» ανά mode).
 const GROUP_MODE = [
-  [/Pajama Lockdown/, 'lockdown'], [/Pajama Heist & Arrest/, 'marathon_4h'], [/Villa Takeover/, 'villa_takeover'],
+  [/Η Ταινία/, 'deal_movie'], [/Pajama Lockdown/, 'lockdown'], [/Pajama Heist & Arrest/, 'marathon_4h'], [/Villa Takeover/, 'villa_takeover'],
 ];
 export const modeOfCollection = (collection) => GROUP_MODE.find(([re]) => re.test(collection.group))?.[1] || 'retired';
 
@@ -127,6 +131,7 @@ export function applyScenarioCollections(modeId, selectedIds = []) {
     if (modeId === 'lockdown') return /Pajama Lockdown/i.test(collection.group);
     if (modeId === 'marathon_4h') return /Pajama Heist & Arrest/i.test(collection.group);
     if (modeId === 'villa_takeover') return /Villa Takeover/i.test(collection.group);
+    if (modeId === 'deal_movie') return /Η Ταινία/i.test(collection.group);
     return false;
   });
   const snapshots = [];

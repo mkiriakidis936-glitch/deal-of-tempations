@@ -332,10 +332,10 @@ export function initialMg(modeId, extra = {}) {
     startedAt: Date.now(),
   };
   // Ψηφιακά modes: consent check-in πριν ξεκινήσει το παιχνίδι + τυχαίος Exit Code ανά συνεδρία.
-  if (['pedi_glam', 'pedi_extended', 'lockdown', 'marathon_4h', 'villa_takeover'].includes(modeId) || String(modeId || '').startsWith('custom_')) base.consentRequired = true;
+  if (['pedi_glam', 'pedi_extended', 'lockdown', 'marathon_4h', 'villa_takeover', 'deal_movie'].includes(modeId) || String(modeId || '').startsWith('custom_')) base.consentRequired = true;
   if (modeId === 'lockdown') base.exitCode = extra.exitCode || randomExitCode();
   // Νέες παρτίδες: εισαγωγή με κανόνες σε Tablet/TV/κινητά πριν την πρώτη φάση.
-  if (['lockdown', 'marathon_4h', 'villa_takeover'].includes(modeId)) base.briefingRequired = true;
+  if (['lockdown', 'marathon_4h', 'villa_takeover', 'deal_movie'].includes(modeId)) base.briefingRequired = true;
   return base;
 }
 

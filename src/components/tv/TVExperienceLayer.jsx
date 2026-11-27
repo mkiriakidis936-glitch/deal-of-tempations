@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 
-const MODE_LABELS = {
+const MODE_LABELS = { deal_movie: 'Η ΤΑΙΝΙΑ · 5 ΗΠΕΙΡΟΙ',
   classic: 'CLASSIC DEAL',
   marathon: 'MARATHON',
   arrest_heist: 'ARREST HEIST',

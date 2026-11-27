@@ -7,6 +7,7 @@ import ActLockdown from '@/components/modes/ActLockdown';
 import ActMorning from '@/components/modes/ActMorning';
 import ActLounge from '@/components/modes/ActLounge';
 import ActVilla from '@/components/modes/ActVilla';
+import ActCampaign from '@/components/modes/ActCampaign';
 import VIPUnratedMode from '@/components/modes/VIPUnratedMode';
 import { modeMeta, ACT_META, MODE_THEMES } from '@/data/modes/modeRegistry';
 import { useModeCtx, useTick, timerStart } from '@/lib/modeKit';
@@ -142,6 +143,7 @@ export default function ModeGame({ state, updateState, onEnd, onQR, playerProfil
       {act === 'beach' && <Panel title="Το mode αφαιρέθηκε" accent={theme.accent2}><p className="text-sm">Το Beach Bar Home Lockdown αφαιρέθηκε στην 7.5.0. Πάτα «Τέλος» για να κλείσει αυτή η παλιά παρτίδα.</p><button type="button" className="ui-btn ui-btn--primary" onClick={finishAll}>Τέλος</button></Panel>}
       {act === 'lounge' && <ActLounge ctx={ctx} state={state} onFinish={finishAll} />}
       {act === 'villa' && <ActVilla ctx={ctx} state={state} updateState={updateState} onFinish={finishAll} />}
+      {act === 'campaign' && <ActCampaign ctx={ctx} state={state} updateState={updateState} onFinish={finishAll} />}
     </ModeShell>
   );
 }

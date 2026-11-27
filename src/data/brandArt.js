@@ -56,6 +56,7 @@ export const MODE_COVERS = {
   modeCover_pedi_glam: ART.extraPediGlam || ART.photoPediGlam,
   modeCover_marathon_4h: ART.heist3,
   modeCover_villa_takeover: ART.group,
+  modeCover_deal_movie: ART.poster,
 };
 
 // Ανεξάρτητη φωτογραφική ταυτότητα για καθένα από τα τέσσερα νέα Modes.

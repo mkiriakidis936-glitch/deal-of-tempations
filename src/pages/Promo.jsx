@@ -12,7 +12,7 @@ import { modeMeta, durationLabel } from '@/data/modes/modeRegistry';
 // /promo?mode=<id> ανοίγει κατευθείαν στο συγκεκριμένο mode (σύνδεσμος ανά mode στο Admin → Σύνδεσμοι & QR).
 
 // mode → κλειδί κειμένων του site
-export const PROMO_SITE_KEYS = { classic: 'classic', arrest_heist: 'heist', lockdown: 'lockdown', marathon_4h: 'marathon4h', villa_takeover: 'villa' };
+export const PROMO_SITE_KEYS = { deal_movie: 'movie', classic: 'classic', arrest_heist: 'heist', lockdown: 'lockdown', marathon_4h: 'marathon4h', villa_takeover: 'villa' };
 
 export const promoModes = () => GAME_MODES
   .filter((mode) => !mode.retired && PROMO_SITE_KEYS[mode.id])

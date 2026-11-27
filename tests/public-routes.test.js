@@ -125,6 +125,6 @@ test('8.0.0: το Site δείχνει κάθε εμπειρία μία φορά 
   const list = src.slice(src.indexOf('export const SITE_EVENTS = ['), src.indexOf('];', src.indexOf('export const SITE_EVENTS = [')));
   const ids = [...list.matchAll(/id: '([a-z0-9_]+)'/g)].map((m) => m[1]);
   assert.equal(new Set(ids).size, ids.length);
-  assert.deepEqual(ids, ['classic', 'heist', 'lockdown', 'marathon4h', 'villa']);
+  assert.deepEqual(ids, ['movie', 'classic', 'heist', 'lockdown', 'marathon4h', 'villa']);
   assert.match(src, /tab: 'Heist Night',\n.*\n    titleLines: \['HEIST', 'NIGHT'\]/, 'ο τίτλος του Heist δεν είναι το όνομα της εφαρμογής');
 });

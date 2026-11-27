@@ -26,6 +26,13 @@ function baseSectionFor(state) {
     // Βαριά ποινή (στάδιο 4+): η φωτογραφία «Σύλληψη & ανάκριση», αν υπάρχει.
     return Number(state.history[0].step) >= 4 && hasSection(mode, 'arrest') ? 'arrest' : 'penalties';
   }
+  if (mode === 'deal_movie' && mg.cg) {
+    const cg = mg.cg;
+    if (mg.finishedAll || cg.status === 'finale') return 'finale';
+    if (cg.status === 'transition' && hasSection(mode, 'transition')) return 'transition';
+    if (cg.status === 'standby' && hasSection(mode, 'standby')) return 'standby';
+    if (cg.night && hasSection(mode, 'night')) return 'night';
+  }
   if (mode === 'villa_takeover' && mg.villa) {
     const v = mg.villa;
     const sq = villaSquareAt(v.sq || 1, v);

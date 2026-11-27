@@ -8,6 +8,7 @@ import { consentPending } from '@/lib/consent';
 import { ConsentTV } from '@/components/modes/ConsentCheckIn';
 import LoungeTV from '@/components/modes/LoungeTV';
 import VillaTV from '@/components/modes/VillaTV';
+import CampaignTV from '@/components/modes/CampaignTV';
 import ModeArt from '@/components/modes/ModeArt';
 import { BriefingTV, PhaseTransitionTV, ChampionCeremonyTV, briefingPending } from '@/components/modes/ModeBriefing';
 import { fmt, timerLeft, useTick, setGameStopActive } from '@/lib/modeKit';
@@ -33,6 +34,7 @@ export default function ModeTV({ state }) {
   if (briefingPending(mg, state.mode)) return <BriefingTV state={state} />;
   if (mg.finishedAll) return <ChampionCeremonyTV state={state} />;
   if (act === 'villa') return <><PhaseTransitionTV state={state} /><VillaTV state={state} /></>;
+  if (act === 'campaign') return <CampaignTV state={state} />;
 
   return (
     <TvScreen className="mx-auto max-w-[min(96vw,2600px)] p-4">

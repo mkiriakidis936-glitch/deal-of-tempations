@@ -1,0 +1,405 @@
+import React, { useEffect, useMemo, useState } from 'react';
+import { Panel, Btn } from '@/components/modes/ModeShell';
+import MissionPanel from '@/components/modes/MissionPanel';
+import WorldMap from '@/components/modes/WorldMap';
+import { blockedBy, textOf, consentOf } from '@/lib/consent';
+import { sfx } from '@/lib/modeKit';
+import * as E from '@/lib/campaignEngine';
+import {
+  CONTINENTS, FORMATS, STATUS_LABEL, TRIALS, MOVIE_CARDS, PHASES, MOVIE_MISSIONS, NAIL_COLORS, WANTED_LEVELS, TOKEN_USES,
+  STATE_LABELS, VALUE_LABELS, MOVIE_TV, MOVIE_SAFETY, continentOf, trialOf, cardOf,
+} from '@/data/modes/campaignContent';
+
+const SCREENS = [
+  { id: 1, icon: '🗺️', label: 'Χάρτης & Πράξεις' },
+  { id: 2, icon: '🎲', label: 'Κλήρωση, Νύχια & Παπούτσια/Κάλτσες' },
+  { id: 3, icon: '⛓️', label: 'Δράση, Χοροί & Δεσίματα' },
+  { id: 4, icon: '🌙', label: 'Βράδυ στον Ύπνο' },
+  { id: 5, icon: '👑', label: 'Σκορ, Καταζητούμενη & Μεγάλο Δώρο' },
+  { id: 6, icon: '🗄️', label: 'Admin, Backup & Αρχείο' },
+];
+const STATE_OPTIONS = {
+  shoeL: ['on', 'off'], shoeR: ['on', 'off'], sockL: ['on', 'off', 'sleep'], sockR: ['on', 'off', 'sleep'], flipflops: ['no', 'on', 'tied'], outfit: ['normal', 'pajamas'],
+  hands: ['free', 'cuffs_front', 'cuffs_back', 'tied_front', 'tied_back', 'tied_up', 'hogtie'], feet: ['free', 'tied', 'toes', 'tiptoe', 'hogtie'],
+};
+const fmt = (d = {}) => [d.points ? `${d.points > 0 ? '+' : ''}${d.points} πόντοι` : '', d.loot ? `${d.loot > 0 ? '+' : ''}${d.loot} λεία` : '', d.tokens ? `${d.tokens > 0 ? '+' : ''}${d.tokens} token` : '', d.wanted ? `+${d.wanted} Wanted` : '', d.zones ? `+${d.zones} ζώνη` : ''].filter(Boolean).join(' · ');
+const download = (name, text, type) => { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([`﻿${text}`], { type })); a.download = name; document.body.appendChild(a); a.click(); a.remove(); };
+
+// DEAL OF TEMPTATION — Η ΤΑΙΝΙΑ · Tablet (κονσόλα σκηνοθεσίας): 6 οθόνες εργασίας + σταθερή μπάρα.
+export default function ActCampaign({ ctx, updateState, onFinish }) {
+  const { players, mg, setMg, log, nameOf, stopped } = ctx;
+  const cg = mg.cg;
+  const [screen, setScreen] = useState(1);
+  const [target, setTarget] = useState('');
+  const [executors, setExecutors] = useState([]);
+  const [previewCard, setPreviewCard] = useState('');
+  const [prompt, setPrompt] = useState('');
+  const [phase, setPhase] = useState('intro');
+  const [specialColor, setSpecialColor] = useState(NAIL_COLORS[0]);
+  const [nightTarget, setNightTarget] = useState('');
+  const [nightExec, setNightExec] = useState('');
+  const up = (fn) => setMg((cur) => ({ cg: fn(cur.cg) }));
+  const names = Object.fromEntries(players.map((p) => [p.id, p.name]));
+
+  function start(format) {
+    const fm = FORMATS[format];
+    setMg({ cg: E.logLine(E.initCampaign(players, { format }), `🎬 Η ταινία ξεκίνησε · ${fm.label}`), timer: fm.minutes ? { total: fm.minutes * 60, endsAt: Date.now() + fm.minutes * 60000, remaining: fm.minutes * 60 } : undefined });
+    updateState?.({ gameDurationMinutes: fm.minutes });
+    log(`🎬 Deal of Temptation — Η Ταινία · ${fm.label}`);
+  }
+
+  // Ενέργειες από τα κινητά: νύχια, ψήφοι, tokens, ρίσκο, εξαγορά.
+  useEffect(() => {
+    const a = mg.playerAction;
+    if (!a || !mg.cg) return;
+    const pid = a.playerId;
+    let c = mg.cg;
+    if (a.type === 'cg_nail' && c.nailsOpen && !E.statsOf(c, pid).nailLocked && NAIL_COLORS.includes(a.nail)) {
+      const s = E.statsOf(c, pid);
+      c = { ...c, players: { ...c.players, [pid]: { ...s, nail: a.nail, nailLocked: true } } };
+      c = E.applyDelta(c, pid, { points: 2, tokens: 1 }, { undoable: false });
+      log(`💅 ${nameOf(pid)} δήλωσε ${a.nail} (+2, +1 token)`);
+    } else if (a.type === 'cg_vote' && c.votes?.open && typeof a.value === 'string') {
+      c = { ...c, votes: { ...c.votes, ballots: { ...(c.votes.ballots || {}), [pid]: a.value.slice(0, 40) } } };
+    } else if (a.type === 'cg_final' && typeof a.target === 'string' && a.target !== pid) {
+      c = { ...c, finalVotes: { ...(c.finalVotes || {}), [pid]: a.target } };
+    } else if (a.type === 'cg_risk' && ['lock', 'risk'].includes(a.value)) {
+      c = { ...c, risk: { ...(c.risk || {}), [pid]: a.value } };
+      log(`🎲 ${nameOf(pid)}: ${a.value === 'risk' ? 'Ρισκάρει ±6' : 'Κλειδώνει το σκορ'}`);
+    } else if (a.type === 'cg_token') {
+      const res = E.spendToken(c, pid, a.use, { target: a.target, players });
+      if (res.ok) { c = res.cg; log(`🪙 ${nameOf(pid)}: ${TOKEN_USES.find((t) => t.id === a.use)?.label}${res.victim ? ` από ${nameOf(res.victim)}` : ''}`); }
+    } else if (a.type === 'cg_buyout') {
+      const res = E.buyout(c, pid);
+      if (res.ok) { c = res.cg; log(`🪙 ${nameOf(pid)} εξαγόρασε ένα επίπεδο Wanted`); }
+    }
+    setMg({ cg: c, playerAction: null });
+  }, [mg.playerAction?.at]);
+
+  const rank = useMemo(() => (cg ? E.ranking(cg, players, { final: cg.status === 'finale' }) : []), [cg, players]);
+
+  if (!cg) {
+    return (
+      <Panel title="🎬 Deal of Temptation — Η Ταινία · διάλεξε ροή" accent="gold">
+        <p className="text-sm opacity-80">Ο χάρτης των 5 ηπείρων γίνεται μία ενιαία ιστορία. Πόντοι, λεία, tokens, Wanted και συμμαχίες περνούν από πράξη σε πράξη χωρίς να μηδενίζουν.</p>
+        <WorldMap className="aspect-[2/1] w-full rounded-2xl" />
+        <div className="grid gap-3 sm:grid-cols-3">
+          {Object.values(FORMATS).map((f) => (
+            <div key={f.id} className="space-y-2 rounded-2xl bg-[#2C2C2E] p-4">
+              <div className="text-lg font-bold">{f.label}</div>
+              <p className="text-sm opacity-75">{f.text}</p>
+              <ol className="space-y-0.5 text-xs opacity-70">{f.acts.map((a, i) => <li key={i}>{i + 1}. {continentOf(a.continent).name} — {a.title}</li>)}</ol>
+              <Btn color="bg-amber-500" disabled={!players.length || stopped} onClick={() => start(f.id)}>▶ Ξεκίνα</Btn>
+            </div>
+          ))}
+        </div>
+      </Panel>
+    );
+  }
+
+  const act = E.currentAct(cg);
+  const status = cg.status || 'transition';
+  const now = Date.now();
+  const allowed = (pid, item) => blockedBy(mg, pid, textOf(item)).length === 0;
+  const pickTarget = target || cg.drawn?.pid || '';
+  const nightOk = players.filter((p) => !consentOf(mg, p.id).optOuts.includes('night'));
+  const PlayerSelect = ({ value, onChange, list = players, label = 'Παίκτρια' }) => (
+    <select className="ui-input" value={value} onChange={(e) => onChange(e.target.value)} aria-label={label}>
+      <option value="">— {label} —</option>{list.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
+    </select>
+  );
+
+  const draw = (list) => {
+    const { cg: next, pid } = E.drawPlayer(cg, players, { eligible: list });
+    if (!pid) { log('⏭ Καμία διαθέσιμη παίκτρια για κλήρωση'); return; }
+    setMg({ cg: E.logLine(next, `🎲 Κλήρωση: ${nameOf(pid)}`) });
+    setTarget(pid);
+    sfx.click?.();
+  };
+  const startTrial = (id, pid = pickTarget, execs = executors) => {
+    const t = trialOf(id);
+    if (!pid) return;
+    if (!allowed(pid, t)) { log(`⏭ «${t.title}» εκτός ορίων της ${nameOf(pid)} — PASS`); return; }
+    if (t.needsBare && !E.isBareFoot(E.statsOf(cg, pid).state)) { if (!window.confirm(`Η ${nameOf(pid)} δεν έχει ακόμα γυμνό πέλμα. Να ξεκινήσει το γαργάλημα;`)) return; }
+    up((c) => E.logLine(E.startTrial({ ...c, card: null }, id, pid, { executors: execs }), `${t.icon} ${t.title}: ${nameOf(pid)}`));
+  };
+  const resolve = (outcome) => {
+    const t = cg.trial && trialOf(cg.trial.id);
+    if (!t) return;
+    up((c) => E.logLine(E.resolveTrial(c, outcome), `${outcome === 'win' ? '✅' : outcome === 'lose' ? '❌' : '⏭'} ${t.title} · ${nameOf(cg.trial.pid)}${outcome === 'win' ? ` · ${fmt(t.win)}` : outcome === 'lose' ? ` · ${fmt(t.lose)}` : ' · PASS'}`));
+    if (outcome === 'lose' && t.lose.next) setTimeout(() => startTrial(t.lose.next, cg.trial.pid), 0);
+    sfx[outcome === 'lose' ? 'fail' : 'ok']?.();
+  };
+  const piece = (pid, p, outcome = 'win') => {
+    if (!pid) return;
+    if (outcome === 'lose') { up((c) => E.logLine(E.applyDelta(c, pid, trialOf('shoe').lose, { penalty: true }), `❌ ${nameOf(pid)} αρνήθηκε/καθυστέρησε (−2, +1 Wanted)`)); return; }
+    const res = E.removePiece(cg, pid, p);
+    if (!res.ok) { log('Αυτό το κομμάτι δεν μπορεί να βγει ακόμα (πρώτα το παπούτσι του ίδιου ποδιού).'); return; }
+    const t = trialOf(p.startsWith('shoe') ? 'shoe' : 'sock');
+    setMg({ cg: E.logLine({ ...E.applyDelta(res.cg, pid, t.win), trial: { id: t.id, pid, at: Date.now(), done: true, side: p, executors: [], until: null, secs: 0, outcome: 'win' }, card: null }, `${t.icon} ${nameOf(pid)}: ${STATE_LABELS[p]} βγήκε (${fmt(t.win)})`) });
+  };
+  const sendCard = (id) => {
+    const card = cardOf(id);
+    if (!card) return;
+    let pid = pickTarget;
+    if (card.target === 'wanted') pid = E.wantedOne(cg, players) || rank[0]?.id || pid;
+    let pid2 = '';
+    if (card.pair) { const others = players.filter((p) => p.id !== pid); pid2 = others[Math.floor(Math.random() * others.length)]?.id || ''; }
+    up((c) => {
+      let out = { ...c, trial: null, card: { id, pid, pid2, prompt: prompt.trim(), at: Date.now() } };
+      if (card.vote && card.vote !== 'final' && card.vote !== 'risk') out = E.openVote(out, { kind: card.vote, q: card.title, cardId: id, pid });
+      if (card.vote === 'final') out = E.openVote(out, { kind: 'final', q: card.title, cardId: id });
+      if (card.vote === 'risk') out = E.openVote(out, { kind: 'risk', q: card.title, cardId: id });
+      return E.logLine(out, `🎴 ${card.title}${pid ? ` → ${nameOf(pid)}` : ''}${pid2 ? ` & ${nameOf(pid2)}` : ''}`);
+    });
+    setPreviewCard(''); setPrompt('');
+  };
+  const cardResult = (outcome) => {
+    const card = cg.card && cardOf(cg.card.id);
+    if (!card || !cg.card.pid) return;
+    const d = outcome === 'win' ? card.win : card.lose;
+    up((c) => E.logLine(E.applyDelta(c, c.card.pid, d, { penalty: outcome === 'lose' }), `${outcome === 'win' ? '✅' : '❌'} ${card.title} · ${nameOf(cg.card.pid)} · ${fmt(d)}`));
+  };
+
+  const Bar = (
+    <div className="sticky top-0 z-10 -mx-1 space-y-2 rounded-2xl bg-black/85 p-2 backdrop-blur">
+      <div className="flex flex-wrap items-center gap-2 text-sm">
+        <span className="rounded-full bg-[#FF3B5C]/20 px-3 py-1 font-bold text-[#FF8A9C]">{STATUS_LABEL[status]}</span>
+        <span className="font-semibold">Πράξη {String(act.index + 1).padStart(2, '0')} / {String(act.total).padStart(2, '0')} · {act.info.name}</span>
+        {act.day && <span className="opacity-60">Ημέρα {act.day}</span>}
+        {cg.actStartedAt && status === 'active' && <span className="tabular-nums opacity-70">⏱ {Math.floor((now - cg.actStartedAt) / 60000)}′</span>}
+        <span className="ml-auto flex gap-2">
+          <Btn disabled={!(cg.undo || []).length} onClick={() => { up((c) => E.undo(c)); log('↶ Αναίρεση τελευταίας κίνησης'); }}>↶ Αναίρεση</Btn>
+        </span>
+      </div>
+      <div className="flex gap-1.5 overflow-x-auto pb-1">
+        {SCREENS.map((s) => <button key={s.id} type="button" onClick={() => setScreen(s.id)} className={`shrink-0 rounded-full px-3 py-1.5 text-[13px] font-semibold ${screen === s.id ? 'bg-[#E8C26B] text-black' : 'bg-white/10'}`}>{s.icon} {s.id}. {s.label}</button>)}
+      </div>
+    </div>
+  );
+
+  const trialLive = cg.trial && !cg.trial.done ? trialOf(cg.trial.id) : null;
+  const TrialBox = trialLive && (
+    <div className="space-y-2 rounded-2xl bg-[#3A0A12] p-3">
+      <div className="font-bold">{trialLive.icon} {trialLive.title} · {nameOf(cg.trial.pid)}{cg.trial.until ? ` · ⏱ ${E.trialSecondsLeft(cg, now)}″` : ''}</div>
+      <div className="text-xs opacity-75">Επιτυχία: {fmt(trialLive.win)} · Ποινή: {fmt(trialLive.lose)}{trialLive.lose.warrant ? ' + Κάρτα Εντάλματος' : ''}</div>
+      <div className="grid grid-cols-3 gap-2">
+        <Btn color="bg-emerald-600" onClick={() => resolve('win')}>✅ Επιτυχία</Btn>
+        <Btn color="bg-red-600" onClick={() => resolve('lose')}>❌ Ποινή</Btn>
+        <Btn onClick={() => resolve('pass')}>⏭ PASS</Btn>
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="space-y-4">
+      {Bar}
+      <p className="rounded-xl bg-[#FF9F0A]/10 px-3 py-2 text-xs text-[#FFB340]">🛟 {MOVIE_SAFETY}</p>
+
+      {screen === 1 && (
+        <Panel title="🗺️ Οθόνη 1 — Χάρτης των 5 ηπείρων & Πράξεις" accent="gold">
+          <WorldMap active={status === 'active' || status === 'transition' ? act.continent : null} conquered={cg.conquered} names={names} className="aspect-[2/1] w-full rounded-2xl" />
+          <div className="rounded-2xl bg-[#2C2C2E] p-3 text-sm">
+            <div className="font-bold">ΠΡΑΞΗ {String(act.index + 1).padStart(2, '0')}: {act.title} · {act.info.name}{act.when ? ` · ${act.when}` : ''}</div>
+            <p className="opacity-80">{act.text}</p>
+            <p className="mt-1 text-xs opacity-60">Γύροι ηπείρου: {act.info.rounds}</p>
+          </div>
+          <div className="grid gap-2 sm:grid-cols-3">
+            <Btn color="bg-emerald-600" disabled={status === 'active' || status === 'finale'} onClick={() => { up((c) => E.startAct(c, players)); log(`▶ ΕΝΑΡΞΗ ΠΡΑΞΗΣ ${act.index + 1}`); }}>▶ ΕΝΑΡΞΗ ΠΡΑΞΗΣ</Btn>
+            <Btn color="bg-red-600" disabled={status !== 'active'} onClick={() => { if (window.confirm('Κλείσιμο πράξης: κλειδώνουν τα αποτελέσματα. Συνέχεια;')) up((c) => E.closeAct(c, players)); }}>■ ΚΛΕΙΣΙΜΟ ΠΡΑΞΗΣ</Btn>
+            <Btn color="bg-amber-500" disabled={status === 'active' || !cg.lastClosed || act.index >= act.total - 1 || (cg.conquered || {})[act.index + 1]} onClick={() => up((c) => E.goNext(c))}>➡️ ΜΕΤΑΒΑΣΗ ΣΕ ΕΠΟΜΕΝΗ ΗΠΕΙΡΟ</Btn>
+            <Btn onClick={() => up((c) => ({ ...c, status: 'transition', previously: { at: Date.now(), from: (c.conquered || {})[Math.max(0, act.index - 1)]?.continent || act.continent, to: act.continent } }))}>⏪ PREVIOUSLY ON → TV</Btn>
+            <Btn onClick={() => up((c) => E.setStandby(c, c.status !== 'standby'))}>{status === 'standby' ? '▶ STANDBY OFF' : '⏸ STANDBY ON'}</Btn>
+            <Btn color="bg-amber-500" disabled={status === 'finale'} onClick={() => { if (window.confirm('Πέρασμα στο Μεγάλο Φινάλε;')) up((c) => E.toFinale(c)); }}>👑 ΦΙΝΑΛΕ</Btn>
+          </div>
+          <div className="space-y-1">
+            <div className="text-sm font-semibold">⚡ Έκτακτο άλμα ηπείρου</div>
+            <div className="flex flex-wrap gap-2">{CONTINENTS.map((c) => <Btn key={c.id} disabled={c.id === act.continent} onClick={() => { if (window.confirm(`Έκτακτο άλμα στο ${c.name};`)) up((x) => E.jumpTo(x, c.id)); }}>{c.no}. {c.name}</Btn>)}</div>
+          </div>
+          <div className="space-y-1 text-sm">
+            <div className="font-semibold">Carry-Over · τι περνάει στην επόμενη ήπειρο</div>
+            <p className="opacity-75">{act.info.legacy}</p>
+          </div>
+          <ol className="grid gap-1 text-sm sm:grid-cols-2">
+            {E.actsOf(cg).map((a, i) => {
+              const done = (cg.conquered || {})[i];
+              return <li key={i} className={`rounded-xl px-3 py-2 ${i === act.index ? 'bg-[#FF3B5C]/20' : done ? 'bg-[#45D98A]/10' : 'bg-white/5'}`}>{i + 1}. {continentOf(done?.continent || a.continent).name} — {a.title}{done?.winner ? ` · 👑 ${nameOf(done.winner)}` : ''}</li>;
+            })}
+          </ol>
+          <MissionPanel ctx={ctx} pool={MOVIE_MISSIONS} title="📲 Μυστικές αποστολές (και σε Standby)" onSuccess={(_m, pid) => up((c) => E.applyDelta(c, pid, { points: 3 }))} onFail={(_m, pid) => up((c) => E.applyDelta(c, pid, { points: -1 }, { penalty: true }))} />
+        </Panel>
+      )}
+
+      {screen === 2 && (
+        <Panel title="🎲 Οθόνη 2 — Κλήρωση, Νύχια & Παπούτσια / Κάλτσες (ένα-ένα)" accent="gold">
+          <div className="flex flex-wrap gap-2">
+            <Btn color="bg-amber-500" onClick={() => draw(players)}>🎲 ΚΛΗΡΩΣΗ ΠΑΙΚΤΡΙΑΣ</Btn>
+            <Btn onClick={() => { up((c) => ({ ...E.logLine(c, '💅 Άνοιξε η δήλωση νυχιών'), nailsOpen: !c.nailsOpen, card: c.nailsOpen ? c.card : null })); }}>{cg.nailsOpen ? '🔒 Κλείσιμο δήλωσης νυχιών' : '💅 ΑΝΟΙΓΜΑ ΔΗΛΩΣΗΣ ΝΥΧΙΩΝ'}</Btn>
+            <PlayerSelect value={pickTarget} onChange={setTarget} label="Κληρωμένη" />
+          </div>
+          {cg.nailsOpen && <p className="text-xs opacity-70">{MOVIE_TV.nails.text}</p>}
+          <div className="flex flex-wrap items-center gap-2 text-sm">
+            <span>Κάρτα Ειδικού Χρώματος:</span>
+            <select className="ui-input" value={specialColor} onChange={(e) => setSpecialColor(e.target.value)} aria-label="Χρώμα">{NAIL_COLORS.map((c) => <option key={c}>{c}</option>)}</select>
+            <Btn onClick={() => { const hit = players.filter((p) => E.statsOf(cg, p.id).nail === specialColor); if (!hit.length) { log(`Καμία με ${specialColor}`); return; } up((c) => hit.reduce((acc, p) => E.applyDelta(acc, p.id, { points: 3 }, { undoable: false }), E.withUndo(E.logLine(c, `🎨 Ειδικό Χρώμα ${specialColor}: ${hit.map((p) => p.name).join(', ')} (+3)`)))); }}>🎨 ΚΑΡΤΑ ΕΙΔΙΚΟΥ ΧΡΩΜΑΤΟΣ</Btn>
+          </div>
+          <div className="overflow-x-auto"><table className="w-full text-left text-sm"><thead><tr className="text-xs opacity-60"><th>Παίκτρια</th><th>Νύχια</th><th>Αρ. παπ.</th><th>Δεξ. παπ.</th><th>Αρ. κάλτσα</th><th>Δεξ. κάλτσα</th><th /></tr></thead>
+            <tbody>{players.map((p) => {
+              const s = E.statsOf(cg, p.id).state;
+              const btn = (k) => <td key={k}><button type="button" disabled={!E.canRemove(s, k)} onClick={() => piece(p.id, k)} className={`rounded-lg px-2 py-1 text-xs ${s[k] === 'on' ? 'bg-white/10' : 'bg-[#45D98A]/20 text-[#7BE495]'} disabled:opacity-60`}>{VALUE_LABELS[s[k]]}</button></td>;
+              return <tr key={p.id} className={`border-t border-white/10 ${pickTarget === p.id ? 'bg-[#E8C26B]/10' : ''}`}><td className="py-1.5 pr-2 font-semibold">{p.name}</td><td className="pr-2">{E.statsOf(cg, p.id).nail || '—'}</td>{['shoeL', 'shoeR', 'sockL', 'sockR'].map(btn)}<td><button type="button" onClick={() => piece(p.id, null, 'lose')} className="rounded-lg bg-red-600/30 px-2 py-1 text-xs">Άρνηση</button></td></tr>;
+            })}</tbody></table></div>
+          <p className="text-xs opacity-60">Κανόνας: 1 κομμάτι ανά γύρο· η κάλτσα βγαίνει μόνο από πόδι χωρίς παπούτσι. Βγάλσιμο: +2 πόντοι & +1 Λεία · άρνηση: −2 & +1 Wanted. Με γυμνό πέλμα ξεκλειδώνει το «Γαργάλημα στα πόδια».</p>
+        </Panel>
+      )}
+
+      {screen === 3 && (
+        <Panel title="⛓️ Οθόνη 3 — Δράση, Χοροί & Δεσίματα" accent="gold">
+          <div className="flex flex-wrap gap-2">
+            <Btn color="bg-amber-500" onClick={() => draw(players)}>🎲 Κλήρωση</Btn>
+            <PlayerSelect value={pickTarget} onChange={setTarget} label="Στόχος" />
+            <select multiple className="ui-input h-20" value={executors} onChange={(e) => setExecutors([...e.target.selectedOptions].map((o) => o.value))} aria-label="Εκτελέστριες">
+              {players.filter((p) => p.id !== pickTarget).map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
+            </select>
+          </div>
+          {TrialBox}
+          <div className="grid gap-2 sm:grid-cols-2">
+            {TRIALS.filter((t) => t.screen === 3).map((t) => {
+              const blocked = pickTarget && !allowed(pickTarget, t);
+              return (
+                <button key={t.id} type="button" disabled={!pickTarget || !!trialLive || blocked} onClick={() => startTrial(t.id)} className="rounded-2xl bg-[#2C2C2E] p-3 text-left disabled:opacity-40">
+                  <div className="font-bold">{t.icon} {t.title}{t.secs ? ` · ${t.secs}″` : ''}</div>
+                  <div className="text-xs opacity-70">Επιτυχία {fmt(t.win)} · Ποινή {fmt(t.lose)}{blocked ? ' · εκτός ορίων' : ''}</div>
+                </button>
+              );
+            })}
+          </div>
+          {pickTarget && E.statsOf(cg, pickTarget).state.hands !== 'free' && <Btn onClick={() => { up((c) => E.logLine(E.releaseAll(c, pickTarget), `🔓 Απελευθέρωση / λήξη σκηνής: ${nameOf(pickTarget)}`)); }}>🔓 Απελευθέρωση / Λήξη σκηνής</Btn>}
+          <div className="space-y-2 rounded-2xl bg-white/5 p-3">
+            <div className="font-semibold">🎴 Τράπεζα καρτών — προεπισκόπηση πριν σταλεί</div>
+            <div className="flex flex-wrap gap-1.5">{PHASES.map((p) => <button key={p.id} type="button" onClick={() => setPhase(p.id)} className={`rounded-full px-3 py-1 text-xs ${phase === p.id ? 'bg-[#E8C26B] text-black' : 'bg-white/10'}`}>{p.title}</button>)}</div>
+            <div className="flex flex-wrap gap-2">{MOVIE_CARDS.filter((c) => c.phase === phase && (!c.continent || c.continent === act.continent)).map((c) => <Btn key={c.id} onClick={() => setPreviewCard(c.id)}>{c.title}</Btn>)}</div>
+            {previewCard && (
+              <div className="space-y-2 rounded-xl bg-black/40 p-3">
+                <div className="text-xs opacity-60">Προεπισκόπηση TV</div>
+                <div className="font-bold">{cardOf(previewCard).title}</div>
+                <div className="text-sm opacity-85">{cardOf(previewCard).text}</div>
+                <input className="ui-input w-full" value={prompt} onChange={(e) => setPrompt(e.target.value)} placeholder="Δήλωση / θέμα για την TV (προαιρετικό)…" />
+                <div className="flex gap-2"><Btn color="bg-amber-500" onClick={() => sendCard(previewCard)}>📺 Αποστολή σε TV & κινητά</Btn><Btn onClick={() => setPreviewCard('')}>Άκυρο</Btn></div>
+              </div>
+            )}
+            {cg.card && (
+              <div className="space-y-2 rounded-xl bg-[#2C2C2E] p-3 text-sm">
+                <div className="font-semibold">Στην TV: {cardOf(cg.card.id)?.title}{cg.card.pid ? ` · ${nameOf(cg.card.pid)}` : ''}</div>
+                {cg.votes && <div>🗳️ {cg.votes.open ? `Ψήφοι ${Object.values(cg.votes.ballots || {}).filter(Boolean).length}/${players.length}` : 'Κλειστή'} · {E.tallyVotes(cg).map(([k, n]) => `${names[k] || k} ${n}`).join(' · ') || '—'}</div>}
+                <div className="flex flex-wrap gap-2">
+                  {cg.votes?.open && <Btn onClick={() => up((c) => E.closeVote(c))}>🔒 Κλείσιμο ψηφοφορίας</Btn>}
+                  <Btn color="bg-emerald-600" disabled={!cg.card.pid} onClick={() => cardResult('win')}>✅ Κέρδος</Btn>
+                  <Btn color="bg-red-600" disabled={!cg.card.pid} onClick={() => cardResult('lose')}>❌ Ποινή</Btn>
+                  <Btn onClick={() => up((c) => ({ ...c, card: null, votes: null }))}>Τέλος κάρτας</Btn>
+                </div>
+              </div>
+            )}
+          </div>
+        </Panel>
+      )}
+
+      {screen === 4 && (
+        <Panel title="🌙 Οθόνη 4 — Βράδυ στον Ύπνο" accent="gold">
+          <div className="flex flex-wrap gap-2">
+            <Btn color="bg-violet-600" onClick={() => up((c) => E.logLine({ ...c, night: !E.isNight(c) }, E.isNight(c) ? '☀️ Τέλος νυχτερινής λειτουργίας' : '🌙 Νυχτερινή λειτουργία (σιωπηλή TV)'))}>{E.isNight(cg) ? '☀️ Κλείσιμο νύχτας / πρωινό recap' : '🌙 Νυχτερινή λειτουργία'}</Btn>
+            <Btn onClick={() => up((c) => players.reduce((acc, p) => E.setState(acc, p.id, { outfit: 'pajamas' }), E.logLine(c, `👘 ${MOVIE_TV.pajamas.title}`)))}>👘 Πέρασμα στις πιτζάμες</Btn>
+          </div>
+          <p className="text-xs opacity-70">Μόνο ανάμεσα σε όσες δέχτηκαν τη νυχτερινή επιδρομή: {nightOk.map((p) => p.name).join(', ') || 'καμία'}.</p>
+          <div className="flex flex-wrap gap-2">
+            <PlayerSelect value={nightTarget} onChange={setNightTarget} list={nightOk.filter((p) => E.canRemove(E.statsOf(cg, p.id).state, 'sockL') || E.canRemove(E.statsOf(cg, p.id).state, 'sockR') || E.statsOf(cg, p.id).state.sockL === 'on')} label="Στόχος (έχει κάλτσα)" />
+            <PlayerSelect value={nightExec} onChange={setNightExec} list={nightOk.filter((p) => p.id !== nightTarget)} label="Εκτελέστρια" />
+            <Btn color="bg-amber-500" onClick={() => { const pool = nightOk.filter((p) => E.statsOf(cg, p.id).state.sockL === 'on' || E.statsOf(cg, p.id).state.sockR === 'on'); const pick = pool[Math.floor(Math.random() * pool.length)]; if (pick) setNightTarget(pick.id); }}>🎲 Κλήρωση στόχου</Btn>
+            <Btn color="bg-violet-600" disabled={!nightTarget || !nightExec || !!trialLive} onClick={() => startTrial('nightsock', nightTarget, [nightExec])}>🧦 Έναρξη νυχτερινού γύρου</Btn>
+          </div>
+          {TrialBox}
+          <p className="text-xs opacity-60">Επιτυχία: εκτελέστρια +4 & +2 Λεία · στόχος −2 & +1 Wanted · η κάλτσα σημειώνεται «Βγαλμένη στον ύπνο». Μία κάλτσα ανά απόπειρα.</p>
+          <MissionPanel ctx={ctx} pool={MOVIE_MISSIONS} title="📲 Κρυφές νυχτερινές αποστολές" onSuccess={(_m, pid) => up((c) => E.applyDelta(c, pid, { points: 3 }))} onFail={(_m, pid) => up((c) => E.applyDelta(c, pid, { points: -1 }, { penalty: true }))} />
+        </Panel>
+      )}
+
+      {screen === 5 && (
+        <Panel title="👑 Οθόνη 5 — Σκορ, Λεία, Tokens, Καταζητούμενη & Μεγάλο Δώρο" accent="gold">
+          <div className="overflow-x-auto"><table className="w-full text-left text-sm"><thead><tr className="text-xs opacity-60"><th>#</th><th>Παίκτρια</th><th>Σκορ</th><th>Πόντοι</th><th>Λεία</th><th>Tokens</th><th>Wanted</th><th>Ζώνες</th></tr></thead>
+            <tbody>{rank.map((p, i) => {
+              const s = p.stats;
+              const b = (delta, label) => <button type="button" onClick={() => up((c) => E.logLine(E.applyDelta(c, p.id, delta), `✎ ${p.name}: ${fmt(delta) || label}`))} className="rounded-md bg-white/10 px-1.5 text-xs">{label}</button>;
+              return (
+                <tr key={p.id} className="border-t border-white/10">
+                  <td className="py-1.5 pr-2">{i + 1}</td><td className="pr-2 font-semibold">{p.name}</td><td className="pr-2 font-bold text-[#E8C26B]">{p.score}</td>
+                  <td className="pr-2 whitespace-nowrap">{b({ points: -1 }, '−')} {s.points} {b({ points: 1 }, '+')}</td>
+                  <td className="pr-2 whitespace-nowrap">{b({ loot: -1 }, '−')} {s.loot} {b({ loot: 1 }, '+')}</td>
+                  <td className="pr-2 whitespace-nowrap">{b({ tokens: -1 }, '−')} {s.tokens} {b({ tokens: 1 }, '+')}</td>
+                  <td className="pr-2 whitespace-nowrap">{b({ wanted: -1 }, '−')} <span title={WANTED_LEVELS[s.wanted].label}>{s.wanted}</span> {b({ wanted: 1 }, '+')}</td>
+                  <td className="whitespace-nowrap">{b({ zones: -1 }, '−')} {s.zones} {b({ zones: 1 }, '+')}</td>
+                </tr>
+              );
+            })}</tbody></table></div>
+          <p className="text-xs opacity-60">Τελικό Σκορ = Πόντοι + Λεία×2 + Ζώνες Βίλας×3 + αχρησιμοποίητα Tokens + μπόνους φινάλε · Wanted 5 στο φινάλε: −4.</p>
+          <details className="rounded-2xl bg-white/5 p-3 text-sm"><summary className="cursor-pointer font-semibold">🧾 Μητρώο κατάστασης παίκτριας (live)</summary>
+            <div className="mt-2 space-y-2">{players.map((p) => {
+              const s = E.statsOf(cg, p.id).state;
+              return (
+                <div key={p.id} className="space-y-1 rounded-xl bg-black/30 p-2">
+                  <div className="font-semibold">{p.name}{s.hands === 'hogtie' ? ' · 🔒 Συνδυαστικό Δέσιμο Hogtie' : ''}</div>
+                  <div className="flex flex-wrap gap-1.5">
+                    {Object.keys(STATE_OPTIONS).map((k) => (
+                      <label key={k} className="text-xs">{STATE_LABELS[k]}<select className="ui-input ml-1 text-xs" value={s[k]} onChange={(e) => up((c) => E.setState(c, p.id, { [k]: e.target.value }))}>{STATE_OPTIONS[k].map((v) => <option key={v} value={v}>{VALUE_LABELS[v]}</option>)}</select></label>
+                    ))}
+                    <label className="text-xs"><input type="checkbox" checked={!!s.mask} onChange={(e) => up((c) => E.setState(c, p.id, { mask: e.target.checked }))} /> Μάσκα ύπνου</label>
+                  </div>
+                </div>
+              );
+            })}</div>
+          </details>
+          <div className="space-y-2 rounded-2xl bg-[#2A2112] p-3">
+            <div className="font-semibold">🎁 Τελική κρίση & Μεγάλο Δώρο</div>
+            <div className="flex flex-wrap gap-2">
+              <Btn onClick={() => up((c) => E.openVote({ ...c, card: { id: 'partyvote', at: Date.now() } }, { kind: 'final', q: 'Η Ψήφος της Παρέας', cardId: 'partyvote' }))}>🗳️ Ψήφος της Παρέας (+5/+3)</Btn>
+              <Btn onClick={() => up((c) => E.openVote({ ...c, card: { id: 'lastrisk', at: Date.now() } }, { kind: 'risk', q: 'Τελευταίο Ρίσκο', cardId: 'lastrisk' }))}>🎲 Τελευταίο Ρίσκο (Top 3)</Btn>
+              <Btn color="bg-amber-500" disabled={cg.finalApplied} onClick={() => up((c) => E.logLine(E.applyFinalVotes(c), '🗳️ Εφαρμόστηκε η Ψήφος της Παρέας'))}>✓ Εφαρμογή ψήφου παρέας</Btn>
+            </div>
+            <div className="text-xs opacity-70">Ψήφοι παρέας: {Object.keys(cg.finalVotes || {}).length}/{players.length}{cg.finalTally ? ` · ${cg.finalTally.map(([k, n]) => `${names[k]} ${n}`).join(' · ')}` : ''}</div>
+            {Object.entries(cg.risk || {}).filter(([, v]) => v === 'risk').map(([pid]) => (
+              <div key={pid} className="flex flex-wrap items-center gap-2 text-sm"><span>🎲 {nameOf(pid)} ρισκάρει ±6</span>
+                {(cg.riskDone || {})[pid] ? <b>{cg.riskDone[pid] === 'win' ? '+6' : '−6'}</b> : <><Btn color="bg-emerald-600" onClick={() => up((c) => E.resolveRisk(c, pid, true))}>+6</Btn><Btn color="bg-red-600" onClick={() => up((c) => E.resolveRisk(c, pid, false))}>−6</Btn></>}
+              </div>
+            ))}
+            <div className="flex flex-wrap gap-2">
+              <Btn color="bg-amber-500" disabled={status === 'finale'} onClick={() => up((c) => E.toFinale(c))}>👑 Τελετή νικήτριας στην TV</Btn>
+              <Btn color="bg-emerald-600" disabled={status !== 'finale'} onClick={() => { const w = E.ranking(cg, players, { final: true })[0]; setMg({ movieWinner: w?.id, villaQueen: w?.id }); log(`👑 Μεγάλη νικήτρια: ${w?.name || '—'}`); onFinish(); }}>■ Τέλος & αρχειοθέτηση</Btn>
+            </div>
+          </div>
+        </Panel>
+      )}
+
+      {screen === 6 && (
+        <Panel title="🗄️ Οθόνη 6 — Admin, Backup & Αρχείο Στατιστικών" accent="gold">
+          <div className="flex flex-wrap gap-2">
+            <Btn onClick={() => { const { json } = E.exportCampaign(cg, players); download(`deal-tainia-${new Date().toISOString().slice(0, 10)}.json`, json, 'application/json'); }}>⬇ Εξαγωγή JSON</Btn>
+            <Btn onClick={() => { const { csv } = E.exportCampaign(cg, players); download(`deal-tainia-${new Date().toISOString().slice(0, 10)}.csv`, csv, 'text/csv;charset=utf-8'); }}>⬇ Εξαγωγή CSV</Btn>
+            <Btn onClick={() => up((c) => E.checkpoint(c, players, 'Χειροκίνητο σημείο'))}>📌 Σημείο επαναφοράς τώρα</Btn>
+          </div>
+          <div className="space-y-1 text-sm">
+            <div className="font-semibold">Σημεία επαναφοράς (αυτόματα σε κάθε Έναρξη/Κλείσιμο πράξης)</div>
+            {(cg.checkpoints || []).length === 0 && <div className="opacity-60">Κανένα ακόμα.</div>}
+            {(cg.checkpoints || []).map((cp) => (
+              <div key={cp.id} className="flex flex-wrap items-center justify-between gap-2 rounded-xl bg-white/5 px-3 py-2">
+                <span>{new Date(cp.at).toLocaleString('el-GR')} · Πράξη {cp.act + 1} · {cp.label} · {cp.top.map((t) => `${t.name} ${t.score}`).join(', ')}</span>
+                <Btn onClick={() => { if (window.confirm('ΕΠΑΝΑΦΟΡΑ σε αυτό το σημείο; Οι μεταγενέστερες αλλαγές χάνονται.')) up((c) => E.restoreCheckpoint(c, cp.id)); }}>↩ Επαναφορά</Btn>
+              </div>
+            ))}
+          </div>
+          <details className="text-sm"><summary className="cursor-pointer font-semibold">Χρονολόγιο ({(cg.log || []).length})</summary>
+            <div className="mt-2 max-h-72 space-y-0.5 overflow-auto text-xs opacity-80">{(cg.log || []).map((l) => <div key={l.t + l.text}>{new Date(l.t).toLocaleTimeString('el-GR')} · {l.text}</div>)}</div>
+          </details>
+        </Panel>
+      )}
+    </div>
+  );
+}

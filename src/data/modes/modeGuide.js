@@ -1,3 +1,4 @@
+import { FORMATS as MOVIE_FORMATS } from './campaignContent.js';
 import { phaseOf as villaPhaseOf } from '../../lib/villaEngine.js';
 // Ο επίσημος οδηγός του DEAL OF TEMPTATION: κανόνες, φάσεις και τρόπος νίκης για κάθε ενεργό mode.
 // Χρησιμοποιείται στην εισαγωγή (Tablet / TV / κινητό), στις οδηγίες κάθε φάσης και στο Admin → Οδηγός.
@@ -68,6 +69,19 @@ export const MODE_GUIDE = {
     ],
   },
 
+  deal_movie: {
+    tagline: 'Το μεγάλο ψηφιακό παιχνίδι / Live TV Show / ταινία: ο χάρτης των 5 ηπείρων σε πράξεις — Γρήγορο σετ, 48h ή 72h.',
+    goal: 'Κάθε πράξη ανάβει μία ήπειρο (mode) στον χάρτη της TV. Κληρώσεις, δήλωση νυχιών, παπούτσια/κάλτσες ένα-ένα, χοροί, δεσίματα, γαργάλημα, νυχτερινή φάση, κάρτες διαλόγου και ψήφοι. Πόντοι, λεία, tokens, Wanted και συμμαχίες περνούν από πράξη σε πράξη χωρίς να μηδενίζουν.',
+    win: 'Τελικό Σκορ = Πόντοι + Λεία×2 + Ζώνες Βίλας×3 + αχρησιμοποίητα Tokens + μπόνους φινάλε (Ψήφος Παρέας +5/+3, Τελευταίο Ρίσκο ±6, Wanted 5: −4). Ισοβαθμία: περισσότερες ήπειροι, μετά περισσότερα Tokens.',
+    phases: [
+      { id: 'classic', title: 'Ήπειρος 1 — Classic', text: 'Εκκίνηση & βάση: ρόλοι, δήλωση νυχιών, παπούτσια/κάλτσες ένα-ένα, χορός στο ένα πόδι, γαργάλημα, 1η Καταζητούμενη.', next: 'Διάλεξε ροή, άνοιξε τη δήλωση νυχιών και πάτα «Έναρξη πράξης».' },
+      { id: 'arrest_heist', title: 'Ήπειρος 2 — Arrest Heist', text: 'Ληστεία & καταδίωξη: λεία, tokens, εντάλματα, χειροπέδες, κλοπές πόντων.', next: 'Τρέξε κληρώσεις και δοκιμασίες από την Οθόνη 3.' },
+      { id: 'lockdown', title: 'Ήπειρος 3 — Pajama Lockdown 18+', text: 'Κλειστή ζώνη & μυστικά: πιτζάμες, μάσκα ύπνου, δεσίματα ποδιών/δαχτύλων, κρυφές ψήφοι, βγάλσιμο καλτσών στον ύπνο.', next: 'Οθόνη 4: νυχτερινή λειτουργία και κρυφές αποστολές.' },
+      { id: 'marathon_4h', title: 'Ήπειρος 4 — Pajama Heist & Arrest', text: 'Νυχτερινή σύγκρουση: σαγιονάρες με δεμένα πόδια, χορός με δεμένα χέρια, hogtie, διπλά εντάλματα.', next: 'Κράτα το Wanted Level και τα εντάλματα ενεργά.' },
+      { id: 'villa_takeover', title: 'Ήπειρος 5 — Villa Takeover', text: 'Κυριαρχία 48h/72h: ζώνες βίλας, στάση στις μύτες με χέρια ψηλά, συμμαχίες, τελική αναμέτρηση.', next: 'Μοίρασε ζώνες (+3 η καθεμία στο φινάλε).' },
+      { id: 'finale', title: 'Μεγάλο Φινάλε & Μεγάλο Δώρο', text: 'Ολοκληρωμένος χάρτης, recap, Ψήφος της Παρέας, Τελευταίο Ρίσκο και στέψη.', next: 'Οθόνη 5: ψήφος παρέας, ρίσκο, τελετή, Τέλος & αρχειοθέτηση.' },
+    ],
+  },
   villa_takeover: {
     tagline: 'VILLA LOCKDOWN 48/72: πολυήμερο 100% ψηφιακό παιχνίδι ίντριγκας και 18+ προκλήσεων σε βίλα ή Airbnb — έκδοση 48 ή 72 ωρών.',
     goal: 'Κάθε ώρα ανοίγει ένα τετράγωνο (48 ή 72) στους 3 κύκλους του ταμπλό (Εξωτερικός Day & Social, Μεσαίος Tension & Restraint, Εσωτερικός Villa Core & Midnight Vault). 4-Step Round Strip, σαγιονάρες & χρώμα νυχιών, δεσίματα, μύτες, γαργάλημα, χορός, σφηνάκια με δεμένα χέρια, Απόλυτες Διαταγές, Night Sock Heist, μυστικοί ρόλοι, συμμαχίες και 4 ενδείξεις για τον τετραψήφιο κωδικό.',
@@ -93,6 +107,7 @@ export const MODE_GUIDE = {
   },
 };
 
+const FORMAT_ACTS = Object.fromEntries(Object.entries(MOVIE_FORMATS).map(([k, f]) => [k, f.acts]));
 export const ENGINE_GUIDE_MODES = ['classic', 'arrest_heist'];
 const LOCKDOWN_STAGE = { init: 'level1', l1: 'level1', l2: 'level2', l3: 'level3', exit: 'level4', won: 'level5', lost: 'level4' };
 
@@ -100,6 +115,12 @@ const LOCKDOWN_STAGE = { init: 'level1', l1: 'level1', l2: 'level2', l3: 'level3
 export function phaseIdFor(state) {
   const mg = state?.mg || {};
   if (state?.mode === 'lockdown') return LOCKDOWN_STAGE[mg.ld?.stage || 'init'] || 'level1';
+  if (state?.mode === 'deal_movie') {
+    const cg = mg.cg;
+    if (!cg) return 'classic';
+    if (cg.status === 'finale') return 'finale';
+    return cg.jump || (cg.format && FORMAT_ACTS[cg.format]?.[cg.act || 0]?.continent) || 'classic';
+  }
   if (state?.mode === 'villa_takeover') {
     if (!mg.villa) return 'arrival';
     return villaPhaseOf(Number(mg.villa.sq || 1), mg.villa).media;

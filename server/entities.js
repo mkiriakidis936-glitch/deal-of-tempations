@@ -332,6 +332,7 @@ export function validatePlayerPatch(current, patch, playerId) {
       'midnight_pass', 'lockdown_exit_code', 'morning_clue', 'morning_code',
       'lounge_code', 'lounge_mission_done', 'lounge_roll',
       'villa_code', 'villa_vote', 'villa_quiet', 'villa_response', 'villa_profile', 'villa_heist',
+      'cg_nail', 'cg_vote', 'cg_final', 'cg_risk', 'cg_token', 'cg_buyout',
     ]);
     let validAction = Object.keys(next).length === 1 && isObject(action) &&
       action.playerId === playerId && actionTypes.has(action.type) && Number.isFinite(action.at);
@@ -345,6 +346,11 @@ export function validatePlayerPatch(current, patch, playerId) {
     if (validAction && action.type === 'villa_quiet') validAction = typeof action.value === 'boolean';
     if (validAction && action.type === 'villa_response') validAction = ['done', 'pass'].includes(action.value);
     if (validAction && action.type === 'villa_heist') validAction = validTarget(action.target);
+    if (validAction && action.type === 'cg_nail') validAction = ['Κόκκινο', 'Μαύρο', 'Ροζ', 'Σκούρο', 'Nude', 'Φούξια', 'Λευκό', 'Φυσικό'].includes(action.nail);
+    if (validAction && action.type === 'cg_vote') validAction = typeof action.value === 'string' && action.value.length > 0 && action.value.length <= 40;
+    if (validAction && action.type === 'cg_final') validAction = validTarget(action.target);
+    if (validAction && action.type === 'cg_risk') validAction = ['lock', 'risk'].includes(action.value);
+    if (validAction && action.type === 'cg_token') validAction = ['shield', 'steal', 'switch', 'double'].includes(action.use) && (action.target === undefined || validTarget(action.target));
     if (validAction && action.type === 'villa_profile') validAction = (action.nail === undefined || ['Σκούρο', 'Κόκκινο', 'Έντονο', 'Φυσικό', 'Ξεβαμμένο'].includes(action.nail)) && (action.footwear === undefined || [0, 1, 2, 3].includes(action.footwear)) && (action.nail !== undefined || action.footwear !== undefined);
     // Consent check-in: κάθε παίκτρια γράφει ΜΟΝΟ τη δική της καταχώρηση, και μόνο πριν ξεκινήσει το παιχνίδι.
     const consentPlayers = next.consent?.players;
@@ -465,6 +471,20 @@ export function sanitizePublicSession(record, playerId = null) {
       attempts: (Array.isArray(v.attempts) ? v.attempts : []).map((a) => ({ pid: a?.pid, ok: !!a?.ok, at: a?.at })),
       sockBomb: undefined,
       heistLog: (Array.isArray(v.heistLog) ? v.heistLog : []).map((h) => (playerId && h?.thief === playerId ? h : { victim: h?.victim, n: h?.n, at: h?.at, night: h?.night })),
+    } };
+  }
+  if (isObject(state.mg?.cg)) {
+    // Η Ταινία: οι ψήφοι, η Ψήφος της Παρέας και τα ρίσκα μένουν κρυφά· τα βαριά αρχεία (αναίρεση, checkpoints) δεν φεύγουν στα κινητά.
+    const cg = state.mg.cg;
+    const ownOnly = (map) => (isObject(map) ? Object.fromEntries(Object.entries(map).map(([k, v], i) => (playerId && k === playerId ? [k, v] : [`__redacted_${i}`, true]))) : map);
+    state.mg = { ...state.mg, cg: {
+      ...cg,
+      undo: undefined,
+      checkpoints: undefined,
+      log: Array.isArray(cg.log) ? cg.log.slice(0, 20) : [],
+      votes: isObject(cg.votes) ? { ...cg.votes, ballots: cg.votes.open ? ownOnly(cg.votes.ballots) : cg.votes.ballots } : cg.votes,
+      finalVotes: ownOnly(cg.finalVotes),
+      risk: ownOnly(cg.risk),
     } };
   }
   if (state.mg?.lounge?.finale?.code) state.mg = { ...state.mg, lounge: { ...state.mg.lounge, finale: { ...state.mg.lounge.finale, code: undefined } } };
@@ -1097,7 +1117,7 @@ export function entityRoutes() {
           !allowedPreferences.every((key) => ['yes', 'no'].includes(answers.activityPreferences[key] || 'no'))) {
         return res.status(400).json({ error: 'Έλεγξε τις απαντήσεις της VIP φόρμας και δοκίμασε ξανά.' });
       }
-      const allowedGameModes = ['classic', 'marathon', 'arrest_heist', 'pajama', 'pedi_glam', 'pedi_extended', 'lockdown', 'marathon_4h', 'villa_takeover'];
+      const allowedGameModes = ['classic', 'marathon', 'arrest_heist', 'pajama', 'pedi_glam', 'pedi_extended', 'lockdown', 'marathon_4h', 'villa_takeover', 'deal_movie'];
       const gameMode = String(body.gameMode || invitations[0].data.gameMode || '');
       if (!allowedGameModes.includes(gameMode)) return res.status(400).json({ error: 'Επίλεξε ένα έγκυρο Mode παιχνιδιού.' });
       const answerLabels = {
@@ -1686,7 +1706,7 @@ export function entityRoutes() {
       }
       if (req.entity === 'PajamaIntake' && body.formType === 'modes') {
         const modes = body.preferredModes;
-        if (!Array.isArray(modes) || !modes.length || modes.some((mode) => !['pedi_glam', 'pedi_extended', 'lockdown', 'marathon_4h', 'villa_takeover'].includes(mode))) {
+        if (!Array.isArray(modes) || !modes.length || modes.some((mode) => !['pedi_glam', 'pedi_extended', 'lockdown', 'marathon_4h', 'villa_takeover', 'deal_movie'].includes(mode))) {
           return res.status(400).json({ error: 'Επίλεξε τουλάχιστον ένα διαθέσιμο Mode.' });
         }
       }

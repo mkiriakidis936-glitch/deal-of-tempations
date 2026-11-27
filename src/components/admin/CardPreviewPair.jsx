@@ -1,12 +1,16 @@
 import React from 'react';
 import GameCard from '@/components/shared/GameCard';
 
+// Μόνο κείμενο φτάνει στην κάρτα: αντικείμενα (π.χ. κατηγορία) δεν επιτρέπεται να γίνουν παιδιά του React.
+const txt = (v) => (v == null ? '' : typeof v === 'string' || typeof v === 'number' ? String(v) : (v.label || v.title || v.name || ''));
+
 export function cardFromItem(item, fallbackKicker) {
+  fallbackKicker = txt(fallbackKicker);
   if (typeof item === 'string') return { title: '', text: item, kicker: fallbackKicker };
   const data = item || {};
   return {
-    title: data.title || data.name || data.label || data.say || data.question || '',
-    text: data.text || data.desc || data.description || data.detail || data.challenge || data.where || data.hint || '',
+    title: txt(data.title || data.name || data.label || data.say || data.question),
+    text: txt(data.text || data.desc || data.description || data.detail || data.challenge || data.where || data.hint),
     icon: data.icon,
     image: data.image,
     secs: data.secs || data.duration || data.timer,

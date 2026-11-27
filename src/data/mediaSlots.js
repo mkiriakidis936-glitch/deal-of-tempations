@@ -58,6 +58,7 @@ export const MODE_COVER_SLOTS = [
   { id: 'modeCover_pedi_glam', modeId: 'pedi_glam', label: 'Pajama Pedi-Glam 90′', filename: '', surfaces: ['tablet', 'forms'], retired: true },
   { id: 'modeCover_marathon_4h', modeId: 'marathon_4h', label: 'Pajama Heist & Arrest', filename: '', surfaces: ['tablet', 'forms'] },
   { id: 'modeCover_villa_takeover', modeId: 'villa_takeover', label: 'Villa Takeover 48/72', filename: '', surfaces: ['tablet', 'forms'] },
+  { id: 'modeCover_deal_movie', modeId: 'deal_movie', label: 'Deal of Temptation — Η Ταινία', filename: '', surfaces: ['tablet', 'forms'] },
 ];
 
 // Τα βίντεο έναρξης της τηλεόρασης.

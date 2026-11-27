@@ -13,8 +13,8 @@ const players = [
 ];
 
 test('the active digital modes keep their specified durations', () => {
-  assert.deepEqual(NEW_MODES.map((mode) => mode.id), ['lockdown', 'marathon_4h', 'villa_takeover']);
-  assert.deepEqual(NEW_MODES.map((mode) => mode.minutes), [60, 105, 2880]);
+  assert.deepEqual(NEW_MODES.map((mode) => mode.id), ['deal_movie', 'lockdown', 'marathon_4h', 'villa_takeover']);
+  assert.deepEqual(NEW_MODES.map((mode) => mode.minutes), [2880, 60, 105, 2880]);
 });
 
 test('player session response never exposes VIP profiles, and hidden roles only to their owner', () => {
@@ -319,4 +319,51 @@ test('προσωπικός PIN: ποτέ δημόσιος, απαραίτητο�
   const patch = { mg: { playerAction: { playerId: 'p0', type: 'board_roll', at: 1 } } };
   assert.equal(validatePlayerPatch({ ...state, mg: {} }, { players: sanitizePublicSession({ state }, 'p0').state.players.map((p) => ({ ...p })) , history: [{ type: 'double_down', player: 'Α', result: 'ελευθερία', timestamp: 1 }] }, 'p0'), true);
   assert.ok(patch);
+});
+
+test('9.0.0 Η Ταινία: πράξεις 4/6/9, κανόνας παπούτσι→κάλτσα, πίνακας πόντων, hogtie, tokens, τελικό σκορ', async () => {
+  const E = await import('../src/lib/campaignEngine.js');
+  const C = await import('../src/data/modes/campaignContent.js');
+  assert.deepEqual(['quick', 'h48', 'h72'].map((f) => C.FORMATS[f].acts.length), [4, 6, 9]);
+  for (const f of ['h48', 'h72']) assert.ok(C.FORMATS[f].acts.at(-1).finale && C.FORMATS[f].acts.at(-1).continent === 'villa_takeover');
+  assert.equal(C.CONTINENTS.length, 5);
+  const ps = [{ id: 'a', name: 'Α' }, { id: 'b', name: 'Β' }, { id: 'c', name: 'Γ' }];
+  let cg = E.startAct(E.initCampaign(ps, { format: 'h48' }), ps);
+  assert.equal(E.statsOf(cg, 'a').tokens, 2);
+  assert.equal(E.removePiece(cg, 'a', 'sockL').ok, false, 'η κάλτσα δεν βγαίνει πριν το παπούτσι');
+  cg = E.removePiece(cg, 'a', 'shoeL').cg;
+  assert.equal(E.removePiece(cg, 'a', 'sockL').ok, true);
+  cg = E.resolveTrial(E.startTrial(cg, 'tiptoe', 'b'), 'win');
+  assert.deepEqual([E.statsOf(cg, 'b').points, E.statsOf(cg, 'b').tokens], [6, 3]);
+  cg = E.startTrial(cg, 'hogtie', 'c');
+  assert.equal(E.setState(cg, 'c', { hands: 'free' }).players.c.state.hands, 'hogtie', 'το hogtie κλειδώνει μέχρι απελευθέρωση');
+  cg = E.resolveTrial(cg, 'lose');
+  assert.deepEqual([E.statsOf(cg, 'c').points, E.statsOf(cg, 'c').wanted], [-4, 2]);
+  assert.equal(E.resolveTrial(E.startTrial(cg, 'onefoot', 'c'), 'pass').players.c.points, -4, 'PASS = 0');
+  assert.equal(E.resolveTrial(E.startTrial(cg, 'onefoot', 'c'), 'lose').players.c.points, -7, 'Wanted 2: −1 επιπλέον σε αποτυχία');
+  assert.equal(E.spendToken(E.applyDelta(cg, 'c', { wanted: 1 }), 'c', 'shield').ok, false, 'Wanted 3: χωρίς Ασπίδα');
+  cg = E.applyDelta(cg, 'b', { loot: 2, zones: 1 });
+  assert.equal(E.finalScore(cg, 'b'), 6 + 4 + 3 + 3);
+  cg = E.closeAct(cg, ps);
+  assert.equal(cg.conquered[0].winner, 'b');
+  assert.equal(E.undo(E.applyDelta(cg, 'a', { points: 5 })).players.a.points, cg.players.a.points);
+  cg = E.goNext(cg);
+  assert.equal(E.currentAct(cg).continent, 'arrest_heist');
+  assert.equal(E.currentAct(E.jumpTo(cg, 'lockdown')).continent, 'lockdown');
+});
+
+test('9.0.0 Η Ταινία: τα κινητά δεν βλέπουν ξένες ψήφους, αναιρέσεις ή checkpoints', () => {
+  const cg = { act: 0, status: 'active', players: {}, undo: [{}], checkpoints: [{}], votes: { open: true, ballots: { p0: 'Ισχύει', p1: 'Μπλόφα' } }, finalVotes: { p0: 'p1', p1: 'p0' }, risk: { p1: 'risk' } };
+  const view = sanitizePublicSession({ state: { players, mg: { cg } } }, 'p0').state.mg.cg;
+  assert.equal(view.undo, undefined);
+  assert.equal(view.checkpoints, undefined);
+  assert.equal(view.votes.ballots.p0, 'Ισχύει');
+  assert.equal(view.votes.ballots.p1, undefined);
+  assert.equal(view.finalVotes.p1, undefined);
+  assert.equal(view.risk.p1, undefined);
+  const current = { players, mg: { stop: false } };
+  assert.equal(validatePlayerPatch(current, { mg: { playerAction: { playerId: 'p1', type: 'cg_nail', nail: 'Κόκκινο', at: 1 } } }, 'p1'), true);
+  assert.equal(validatePlayerPatch(current, { mg: { playerAction: { playerId: 'p1', type: 'cg_token', use: 'steal', at: 1 } } }, 'p1'), true);
+  assert.equal(validatePlayerPatch(current, { mg: { playerAction: { playerId: 'p1', type: 'cg_token', use: 'nuke', at: 1 } } }, 'p1'), false);
+  assert.equal(validatePlayerPatch(current, { mg: { playerAction: { playerId: 'p1', type: 'cg_final', target: 'p1', at: 1 } } }, 'p1'), false);
 });

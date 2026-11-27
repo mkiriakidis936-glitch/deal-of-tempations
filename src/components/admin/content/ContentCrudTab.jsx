@@ -269,7 +269,7 @@ export default function ContentCrudTab({ category }) {
             {(shape === 'list' || shape === 'stringList') && (
               <div>
                 <div className="text-xs font-bold mb-1">👁️ Προεπισκόπηση</div>
-                <CardPreviewPair card={cardFromItem(shape === 'stringList' ? (editing.data?.text || '') : editing.data, category)} />
+                <CardPreviewPair card={cardFromItem(shape === 'stringList' ? (editing.data?.text || '') : editing.data, label)} />
               </div>
             )}
             </div>

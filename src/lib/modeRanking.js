@@ -1,13 +1,17 @@
+import { finalScore } from './campaignEngine.js';
+
 // Κοινή κατάταξη για τα ψηφιακά modes (Tablet αποτελέσματα, TV τελετή, κινητό dashboard).
-export const pointsOf = (mg = {}, pid) => ((mg.scores || {})[pid] || 0)
+// Η Ταινία (mg.cg) μετράει με τον τελικό αλγόριθμο του PDF.
+export const pointsOf = (mg = {}, pid) => (mg.cg ? finalScore(mg.cg, pid) : ((mg.scores || {})[pid] || 0)
   + Math.round((((mg.lounge?.stats || {})[pid]?.loot) || 0) / 1000)
-  + ((mg.tokens || {})[pid] || 0);
+  + ((mg.tokens || {})[pid] || 0));
 
 export const rankPlayers = (players = [], mg = {}) => [...players].sort((a, b) => pointsOf(mg, b.id) - pointsOf(mg, a.id));
 
 // Ο τίτλος της νικήτριας: Lounge Queen αν έχει οριστεί, αλλιώς η πρώτη της κατάταξης.
 export function championOf(players = [], mg = {}) {
   const find = (id) => players.find((p) => p.id === id);
+  if (mg.movieWinner && find(mg.movieWinner)) return { player: find(mg.movieWinner), title: 'Η Μεγάλη Νικήτρια — Deal of Temptation' };
   if (mg.villaQueen && find(mg.villaQueen)) return { player: find(mg.villaQueen), title: 'Queen of the Villa' };
   if (mg.loungeQueen && find(mg.loungeQueen)) return { player: find(mg.loungeQueen), title: 'Ultimate Pajama Police Queen' };
   const top = rankPlayers(players, mg)[0];

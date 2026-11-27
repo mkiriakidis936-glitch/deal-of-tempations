@@ -3,6 +3,7 @@ import { useModesContentRev } from '@/lib/modesContentStore';
 import React, { useEffect, useRef, useState } from 'react';
 import GameCard from '@/components/shared/GameCard';
 import VillaMobile from '@/components/modes/VillaMobile';
+import CampaignMobile from '@/components/modes/CampaignMobile';
 import LoungeMobile from '@/components/modes/LoungeMobile';
 import { modeMeta } from '@/data/modes/modeRegistry';
 import { EXTENDED_CHAOS_MARKET_CARDS, GATE_TOKENS, ROUTES } from '@/data/modes/extendedContent';
@@ -134,6 +135,7 @@ export default function ModeMobile({ state, me, updateState, onChangePlayer, ses
 
         {act === 'lounge' && <LoungeMobile state={state} me={me} sendAction={sendAction} updateState={updateState} />}
         {act === 'villa' && <VillaMobile state={state} me={me} sendAction={sendAction} />}
+        {act === 'campaign' && <CampaignMobile state={state} me={me} sendAction={sendAction} />}
 
         {mission && mission.status === 'active' && (
           <GameCard

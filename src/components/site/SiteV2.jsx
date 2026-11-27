@@ -11,7 +11,7 @@ import { MODE_GUIDE, SAFETY_RULES } from '@/data/modes/modeGuide';
 // ------------------------------------------------------------------
 
 const COUNT_WORDS = { 3: 'Τρεις', 4: 'Τέσσερις', 5: 'Πέντε', 6: 'Έξι', 7: 'Επτά', 8: 'Οκτώ' };
-export const SITE_MODE_IDS = { classic: 'classic', heist: 'arrest_heist', lockdown: 'lockdown', marathon4h: 'marathon_4h', villa: 'villa_takeover' };
+export const SITE_MODE_IDS = { movie: 'deal_movie', classic: 'classic', heist: 'arrest_heist', lockdown: 'lockdown', marathon4h: 'marathon_4h', villa: 'villa_takeover' };
 
 const imageFor = (ev) => {
   const modeId = SITE_MODE_IDS[ev];
