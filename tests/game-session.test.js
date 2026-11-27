@@ -347,6 +347,13 @@ test('9.0.0 Η Ταινία: πράξεις 4/6/9, κανόνας παπούτσ
   cg = E.closeAct(cg, ps);
   assert.equal(cg.conquered[0].winner, 'b');
   assert.equal(E.undo(E.applyDelta(cg, 'a', { points: 5 })).players.a.points, cg.players.a.points);
+  assert.equal(E.goNext(cg).act || 0, 0, 'πρώτα η υποχρεωτική κλήρωση + Τροχός');
+  const MGE = await import('../src/lib/movieGamesEngine.js');
+  const drawn = MGE.mandatoryDraw(cg, ps, { pid: 'a' });
+  assert.equal(drawn.pid, 'a');
+  cg = MGE.spinWheel(drawn.cg, 2, 'a', { allowedIds: ['w2_chair'], reason: 'mandatory' }).cg;
+  assert.equal(cg.mandatory.pending, false);
+  assert.deepEqual([cg.players.a.state.hands, cg.players.a.state.feet], ['chair', 'chair']);
   cg = E.goNext(cg);
   assert.equal(E.currentAct(cg).continent, 'arrest_heist');
   assert.equal(E.currentAct(E.jumpTo(cg, 'lockdown')).continent, 'lockdown');
@@ -366,4 +373,39 @@ test('9.0.0 Η Ταινία: τα κινητά δεν βλέπουν ξένες 
   assert.equal(validatePlayerPatch(current, { mg: { playerAction: { playerId: 'p1', type: 'cg_token', use: 'steal', at: 1 } } }, 'p1'), true);
   assert.equal(validatePlayerPatch(current, { mg: { playerAction: { playerId: 'p1', type: 'cg_token', use: 'nuke', at: 1 } } }, 'p1'), false);
   assert.equal(validatePlayerPatch(current, { mg: { playerAction: { playerId: 'p1', type: 'cg_final', target: 'p1', at: 1 } } }, 'p1'), false);
+});
+
+test('Η Ταινία: Τροχοί, Deal or No Deal, ελευθερία και απόκρυψη κουτιών', async () => {
+  const E = await import('../src/lib/campaignEngine.js');
+  const G = await import('../src/lib/movieGamesEngine.js');
+  const ps = [{ id: 'a', name: 'A' }, { id: 'b', name: 'B' }];
+  let cg = E.initCampaign(ps, { format: 'quick', now: 1 });
+  let i = 0; const rng = () => ((i += 1) % 7) / 7;
+  cg = G.dondStart(cg, 'a', 'b', { rng });
+  assert.equal(cg.dond.boxes.length, 16);
+  cg = G.dondPick(cg, 1);
+  for (let n = 2; n <= 6; n += 1) cg = G.dondOpen(cg, n).cg;
+  assert.equal(cg.dond.status, 'offer_wait');
+  cg = G.dondDecide(G.dondOffer(cg, 'Ελευθερία'), 'deal');
+  assert.equal(cg.dond.status, 'deal');
+  cg = G.dondAward(cg, true);
+  assert.equal(G.isFree(cg, 'b'), true);
+  assert.equal(G.spinWheel(cg, 1, 'b').item, null, 'ελεύθερη = εκτός Τροχών');
+  const session = { state: { mg: { cg: { ...cg, guess: { pid: 'a', item: 'Φτερό', at: 1, until: 2, result: null } } }, players: ps } };
+  const pub = sanitizePublicSession(session, 'a');
+  const closed = pub.state.mg.cg.dond.boxes.filter((b) => !b.open);
+  assert.ok(closed.length > 0 && closed.every((b) => b.label === undefined && b.kind === undefined));
+  assert.equal(pub.state.mg.cg.guess.item, undefined);
+  assert.equal(validatePlayerPatch({ players: ps, mg: {} }, { mg: { playerAction: { type: 'cg_dond', value: 'deal', playerId: 'a', at: 1 } } }, 'a'), true);
+  assert.equal(validatePlayerPatch({ players: ps, mg: {} }, { mg: { playerAction: { type: 'cg_dond_box', value: 99, playerId: 'a', at: 1 } } }, 'a'), false);
+});
+
+test('Η Ταινία: τα όρια της φόρμας κόβουν ποινές του Τροχού και μένουν κρυφά από τα κινητά', async () => {
+  const G = await import('../src/lib/movieGamesEngine.js');
+  const { WHEELS } = await import('../src/data/modes/movieGames.js');
+  const profile = { alcoholOk: false, chairOk: false, wheelNo: ['w1_ice'] };
+  const ok = WHEELS.flatMap((w) => w.items).filter((i) => G.profileAllows(profile, i)).map((i) => i.id);
+  assert.ok(!ok.includes('w1_shot') && !ok.includes('w2_chair') && !ok.includes('w1_ice') && ok.includes('w1_shoeL'));
+  const pub = sanitizePublicSession({ state: { players: [{ id: 'a', name: 'A', movieProfile: profile }] } }, 'a');
+  assert.equal('movieProfile' in pub.state.players[0], false);
 });

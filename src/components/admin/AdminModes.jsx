@@ -10,7 +10,7 @@ import { COLLECTIONS, defaultsOf, fetchModesRecord, saveModesContent, modeOfColl
 
 const inp = 'w-full px-3 py-2 rounded-lg border-2 border-border bg-background text-foreground font-body text-sm';
 const ORIGIN = typeof window !== 'undefined' ? window.location.origin : '';
-const SITE_IDS = { pedi_glam: 'pedi_glam', pedi_extended: 'pedi_extended', lockdown: 'lockdown', marathon_4h: 'marathon4h', villa_takeover: 'villa' };
+const SITE_IDS = { deal_movie: 'movie', pedi_glam: 'pedi_glam', pedi_extended: 'pedi_extended', lockdown: 'lockdown', marathon_4h: 'marathon4h', villa_takeover: 'villa' };
 
 // modeId: δείχνει μόνο τις λίστες ενός mode (Admin → Κάρτες & περιεχόμενο → καρτέλα του mode).
 export default function AdminModes({ modeId }) {
@@ -83,7 +83,7 @@ export default function AdminModes({ modeId }) {
         <span className="text-[11px] font-bold text-primary/90">{f.label}</span>
         {f.type === 'area' && <textarea rows={3} className={inp} value={v ?? ''} onChange={(e) => onChange({ ...item, [f.key]: e.target.value })} />}
         {f.type === 'image' && <MediaField value={v || ''} onChange={(url) => onChange({ ...item, [f.key]: url || undefined })} />}
-        {f.type === 'text' && <input className={inp} value={v ?? ''} onChange={(e) => onChange({ ...item, [f.key]: e.target.value })} />}
+        {f.type === 'text' && <input className={inp} readOnly={!!f.readOnly} value={v ?? ''} onChange={(e) => onChange({ ...item, [f.key]: e.target.value })} />}
         {f.type === 'number' && <input type="number" className={inp} value={v ?? ''} onChange={(e) => onChange({ ...item, [f.key]: e.target.value === '' ? undefined : Number(e.target.value) })} />}
         {f.type === 'select' && (
           <select className={inp} value={v ?? ''} onChange={(e) => onChange({ ...item, [f.key]: e.target.value })}>

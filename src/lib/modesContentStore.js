@@ -5,6 +5,7 @@ import * as LD from '@/data/modes/lockdownContent';
 import * as LG from '@/data/modes/loungeContent';
 import * as VL from '@/data/modes/villaContent';
 import * as MV from '@/data/modes/campaignContent';
+import * as MG from '@/data/modes/movieGames';
 
 // Λίστες περιεχομένου των νέων modes που επεξεργάζονται από Admin → 🎮 Νέα Modes.
 // Οι αλλαγές αποθηκεύονται στο AppSetting (key modes_content) και εφαρμόζονται "επί τόπου" στις λίστες.
@@ -32,6 +33,14 @@ export const COLLECTIONS = [
   { id: 'movie_cards', group: '🎬 Deal of Temptation — Η Ταινία', label: 'Κάρτες διαλόγου, ρίσκου & ψηφοφοριών', arr: MV.MOVIE_CARDS, fixedItems: true, blank: {}, fields: [T('title', 'Τίτλος'), A('text', 'Κείμενο στην TV')] },
   { id: 'movie_trials', group: '🎬 Deal of Temptation — Η Ταινία', label: 'Σωματικές δοκιμασίες (κείμενα)', arr: MV.TRIALS, fixedItems: true, blank: {}, fields: [T('title', 'Τίτλος'), A('text', 'Κείμενο στην TV'), N('secs', 'Χρονόμετρο (δευτ.)')] },
   { id: 'movie_missions', group: '🎬 Deal of Temptation — Η Ταινία', label: 'Μυστικές αποστολές (κινητό)', arr: MV.MOVIE_MISSIONS, blank: { id: '', title: '', text: '', mins: 60 }, fields: [T('title', 'Τίτλος'), A('text', 'Κείμενο που βλέπει στο κινητό'), N('mins', 'Λεπτά διορίας')] },
+  { id: 'movie_wheel1', group: '🎬 Deal of Temptation — Η Ταινία', label: '1ος Τροχός — Οι Ποινές στην Αρχή', arr: MG.WHEELS[0].items, fixedItems: true, blank: {}, fields: [T('title', 'Ποινή'), A('tv', 'Κείμενο TV'), A('mobile', 'Κείμενο κινητού'), N('secs', 'Χρονόμετρο (δευτ.)')] },
+  { id: 'movie_wheel2', group: '🎬 Deal of Temptation — Η Ταινία', label: '2ος Τροχός — Οι Ποινές στη Συνέχεια', arr: MG.WHEELS[1].items, fixedItems: true, blank: {}, fields: [T('title', 'Ποινή'), A('tv', 'Κείμενο TV'), A('mobile', 'Κείμενο κινητού'), N('secs', 'Χρονόμετρο (δευτ.)')] },
+  { id: 'movie_wheel3', group: '🎬 Deal of Temptation — Η Ταινία', label: '3ος Τροχός — Οι Ποινές (Πράξεις)', arr: MG.WHEELS[2].items, fixedItems: true, blank: {}, fields: [T('title', 'Ποινή'), A('tv', 'Κείμενο TV'), A('mobile', 'Κείμενο κινητού'), N('secs', 'Χρονόμετρο (δευτ.)')] },
+  { id: 'movie_games', group: '🎬 Deal of Temptation — Η Ταινία', label: 'Τα 4 παιχνίδια', arr: MG.GAMES, fixedItems: true, blank: {}, fields: [T('icon', 'Εικονίδιο'), T('name', 'Όνομα'), A('text', 'Περιγραφή')] },
+  { id: 'movie_dond_boxes', group: '🎬 Deal of Temptation — Η Ταινία', label: 'Deal or No Deal — 16 κουτιά', arr: MG.DOND_BOXES, fixedItems: true, blank: {}, fields: [T('label', 'Περιεχόμενο κουτιού'), N('value', 'Αξία (κατάταξη στον πίνακα)'), N('wheel', 'Τροχός ποινής (1–3, κενό = κανένας)')] },
+  { id: 'movie_dond_offers', group: '🎬 Deal of Temptation — Η Ταινία', label: 'Deal or No Deal — έτοιμες προσφορές τραπεζίτη', arr: MG.DOND_OFFERS, strings: true },
+  { id: 'movie_guess_items', group: '🎬 Deal of Temptation — Η Ταινία', label: 'Μάντεψε τι είναι — αντικείμενα', arr: MG.GUESS_ITEMS, strings: true },
+  { id: 'movie_texts', group: '🎬 Deal of Temptation — Η Ταινία', label: 'Όλα τα κείμενα-διαταγές (TV & κινητό)', arr: MG.movieTextItems(), targetArr: [], fixedItems: true, blank: {}, fields: [T('where', 'Πού εμφανίζεται', { readOnly: true }), A('text', 'Κείμενο')], toRuntime: (items) => MG.applyMovieTexts(items) },
   { id: 'villa2_questions', group: '🏝️ Villa Takeover 48/72', label: '20 σκληρές ερωτήσεις 18+ (Ανάκριση · Truth · Πειράγματα)', arr: VL.VILLA_QUESTIONS, fixedItems: true, blank: {}, fields: [T('title', 'Τίτλος'), A('text', 'Κείμενο'), N('secs', 'Χρονόμετρο (δευτ.)'), I()] },
   { id: 'villa2_dares', group: '🏝️ Villa Takeover 48/72', label: '20 τολμηρά Dares 18+ & πειράγματα', arr: VL.VILLA_DARES, fixedItems: true, blank: {}, fields: [T('title', 'Τίτλος'), A('text', 'Κείμενο'), N('secs', 'Χρονόμετρο (δευτ.)'), I()] },
   { id: 'villa2_nails', group: '🏝️ Villa Takeover 48/72', label: '15 κάρτες σαγιονάρες, χρώμα νυχιών, δεσίματα & μύτες', arr: VL.VILLA_NAIL_CARDS, fixedItems: true, blank: {}, fields: [T('title', 'Τίτλος'), A('text', 'Κείμενο'), N('secs', 'Χρονόμετρο (δευτ.)'), I()] },

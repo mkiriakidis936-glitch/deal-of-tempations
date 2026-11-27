@@ -1,0 +1,103 @@
+/* DEAL OF TEMPTATION — Η ΤΑΙΝΙΑ · «Παιχνίδι-Ταινία» (iOS 27 Liquid Glass + ελαφρύ 3D)
+   .mvg      → Tablet & κινητό: στατικό βάθος, γυαλί, φωτισμός — ΧΩΡΙΣ animations.
+   .mvg-tv   → TV: επιτρέπονται κινήσεις (αργή αιώρηση, σάρωση φωτός). */
+
+.mvg {
+  --mv-gold: #E8C26B; --mv-gold-hi: #F7E3A8; --mv-red: #FF3B5C; --mv-ink: #07070b;
+  position: relative;
+  isolation: isolate;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', system-ui, sans-serif;
+}
+.mvg::before {
+  content: ''; position: fixed; inset: 0; z-index: -1; pointer-events: none;
+  background:
+    radial-gradient(120% 70% at 50% -10%, rgba(255, 59, 92, 0.22), transparent 60%),
+    radial-gradient(90% 60% at 100% 100%, rgba(232, 194, 107, 0.16), transparent 60%),
+    radial-gradient(80% 60% at 0% 90%, rgba(100, 210, 255, 0.10), transparent 60%),
+    linear-gradient(180deg, #0b0910 0%, #050507 100%);
+}
+
+/* Γυαλί iOS 27: ημιδιαφανές, θόλωση, φωτεινή ακμή πάνω, βάθος κάτω. */
+.mvg-glass,
+.mvg .ui-card {
+  border-radius: 28px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.10), rgba(255, 255, 255, 0.03) 55%, rgba(0, 0, 0, 0.25));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.28),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.45),
+    0 18px 40px -18px rgba(0, 0, 0, 0.85),
+    0 2px 0 rgba(0, 0, 0, 0.4);
+  color: #F5F1E8;
+}
+@supports ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+  .mvg-glass, .mvg .ui-card { -webkit-backdrop-filter: blur(18px) saturate(160%); backdrop-filter: blur(18px) saturate(160%); }
+}
+.mvg .ui-card--gold { border-color: rgba(232, 194, 107, 0.45); background: linear-gradient(160deg, rgba(232, 194, 107, 0.16), rgba(255, 255, 255, 0.03) 50%, rgba(0, 0, 0, 0.3)); }
+.mvg .ui-card--danger { border-color: rgba(255, 59, 92, 0.5); background: linear-gradient(160deg, rgba(255, 59, 92, 0.18), rgba(0, 0, 0, 0.3)); }
+.mvg .ui-card > h3 {
+  font-weight: 800; letter-spacing: 0.02em; text-transform: uppercase; font-size: 17px;
+  background: linear-gradient(180deg, #FFF6DA, #E8C26B 70%, #A87C2A); -webkit-background-clip: text; background-clip: text; color: transparent !important;
+}
+
+/* Ελαφρύ 3D: στατική προοπτική. */
+.mvg-3d { transform: perspective(1400px) rotateX(1.5deg); transform-origin: 50% 0; }
+
+/* Κουμπιά-«πλήκτρα» παιχνιδιού: ανάγλυφα με κάτω ακμή· πάτημα = βυθίζεται (χωρίς animation). */
+.mvg-btn,
+.mvg .ui-btn {
+  position: relative;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0) 48%, rgba(0, 0, 0, 0.18));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35), 0 4px 0 rgba(0, 0, 0, 0.55), 0 10px 18px -8px rgba(0, 0, 0, 0.7);
+  font-weight: 800; letter-spacing: 0.01em;
+  transition: none;
+}
+.mvg .ui-btn { background-color: rgba(255, 255, 255, 0.10); border-radius: 18px; }
+.mvg .ui-btn--primary { background-color: var(--mv-gold); color: #1a1205; }
+.mvg .ui-btn--danger { background-color: var(--mv-red); color: #fff; }
+.mvg .ui-btn--success { background-color: #30D158; color: #04140a; }
+.mvg-btn:active:not(:disabled),
+.mvg .ui-btn:active:not(:disabled) { transform: translateY(3px); box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25), 0 1px 0 rgba(0, 0, 0, 0.55); opacity: 1; }
+.mvg .ui-input { border-radius: 16px; background: rgba(0, 0, 0, 0.35); border: 1px solid rgba(255, 255, 255, 0.16); box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.5); }
+
+/* Μαρκίζα τίτλων ταινίας */
+.mvg-marquee {
+  display: flex; align-items: baseline; justify-content: center; gap: 10px; padding: 10px 14px;
+  border-radius: 999px; border: 1px solid rgba(232, 194, 107, 0.35);
+  background: linear-gradient(180deg, rgba(232, 194, 107, 0.14), rgba(0, 0, 0, 0.4));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 10px 24px -14px rgba(232, 194, 107, 0.6);
+  text-transform: uppercase; letter-spacing: 0.22em; font-size: 11px; color: rgba(245, 241, 232, 0.6);
+}
+.mvg-marquee b {
+  font-size: 18px; letter-spacing: 0.12em; font-weight: 900;
+  background: linear-gradient(180deg, #FFF6DA, #E8C26B 65%, #9C7125); -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.mvg-num { text-shadow: 0 0 18px rgba(232, 194, 107, 0.45); }
+
+/* Κάρτες-οθόνες του Tablet (καρτέλες σαν μενού παιχνιδιού) */
+.mvg-tabs { display: flex; gap: 8px; overflow-x: auto; padding: 4px 2px 8px; }
+.mvg-tab {
+  flex: 0 0 auto; padding: 10px 14px; border-radius: 18px; font-size: 13px; font-weight: 800;
+  border: 1px solid rgba(255, 255, 255, 0.12); background: rgba(255, 255, 255, 0.06); color: #F5F1E8;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18), 0 4px 0 rgba(0, 0, 0, 0.5);
+}
+.mvg-tab[aria-selected='true'] { background: linear-gradient(180deg, #F7E3A8, #C99A3E); color: #1a1205; border-color: transparent; transform: translateY(2px); box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5), 0 2px 0 rgba(0, 0, 0, 0.5), 0 0 24px rgba(232, 194, 107, 0.35); }
+.mvg-hud { position: sticky; top: 0; z-index: 10; border-radius: 24px; padding: 10px; }
+
+/* ---------- TV: κινούμενο 3D ---------- */
+.mvg-tv { perspective: 1800px; }
+.mvg-tv .mvg-float { transform-style: preserve-3d; animation: mvg-float 9s ease-in-out infinite; }
+@keyframes mvg-float { 0%, 100% { transform: rotateX(6deg) rotateY(-4deg) translateZ(0); } 50% { transform: rotateX(3deg) rotateY(4deg) translateZ(20px); } }
+.mvg-tv .mvg-sheen { position: relative; overflow: hidden; }
+.mvg-tv .mvg-sheen::after { content: ''; position: absolute; inset: -40% -60%; background: linear-gradient(100deg, transparent 40%, rgba(255, 255, 255, 0.16) 50%, transparent 60%); animation: mvg-sheen 6s ease-in-out infinite; pointer-events: none; }
+@keyframes mvg-sheen { 0% { transform: translateX(-60%); } 60%, 100% { transform: translateX(60%); } }
+.mvg-tv .mvg-floor { position: absolute; left: -20%; right: -20%; bottom: -10%; height: 55%; pointer-events: none; transform: rotateX(72deg); transform-origin: 50% 100%;
+  background-image: linear-gradient(rgba(232, 194, 107, 0.22) 1px, transparent 1px), linear-gradient(90deg, rgba(232, 194, 107, 0.22) 1px, transparent 1px); background-size: 80px 80px;
+  -webkit-mask-image: linear-gradient(to top, #000, transparent); mask-image: linear-gradient(to top, #000, transparent); }
+.mvg-tv .mvg-spot { position: absolute; top: -30%; width: 50vw; height: 140vh; pointer-events: none; background: radial-gradient(closest-side, rgba(255, 240, 200, 0.18), transparent); filter: blur(10px); animation: mvg-spot 12s ease-in-out infinite alternate; }
+@keyframes mvg-spot { from { transform: translateX(-20vw) rotate(-12deg); } to { transform: translateX(70vw) rotate(12deg); } }
+.mvg-tv .mvg-title3d { color: #FFF6DA; text-shadow: 0 1px 0 #d9b25e, 0 2px 0 #c49a45, 0 3px 0 #a87c2a, 0 4px 0 #8a6420, 0 10px 24px rgba(0, 0, 0, 0.8), 0 0 40px rgba(232, 194, 107, 0.35); }
+@media (prefers-reduced-motion: reduce) {
+  .mvg-tv .mvg-float, .mvg-tv .mvg-sheen::after, .mvg-tv .mvg-spot { animation: none; }
+}

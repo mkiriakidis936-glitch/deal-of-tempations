@@ -130,7 +130,7 @@ const deepMerge = (target, patch, field = '', allowClear = false) => {
   return merged;
 };
 
-const PRIVATE_PLAYER_KEYS = ['vipProfile', 'role', 'pin'];
+const PRIVATE_PLAYER_KEYS = ['vipProfile', 'movieProfile', 'role', 'pin'];
 // Προσωπικός PIN παίκτριας: χωρίς σωστό PIN δεν δίνεται τίποτα προσωπικό. Παλιές βραδιές χωρίς PIN λειτουργούν όπως πριν.
 export const pinOk = (state, playerId, pin) => {
   const player = (state?.players || []).find((item) => item?.id === playerId);
@@ -332,7 +332,7 @@ export function validatePlayerPatch(current, patch, playerId) {
       'midnight_pass', 'lockdown_exit_code', 'morning_clue', 'morning_code',
       'lounge_code', 'lounge_mission_done', 'lounge_roll',
       'villa_code', 'villa_vote', 'villa_quiet', 'villa_response', 'villa_profile', 'villa_heist',
-      'cg_nail', 'cg_vote', 'cg_final', 'cg_risk', 'cg_token', 'cg_buyout',
+      'cg_nail', 'cg_vote', 'cg_final', 'cg_risk', 'cg_token', 'cg_buyout', 'cg_tod', 'cg_dond_box', 'cg_dond', 'cg_wheel_ok',
     ]);
     let validAction = Object.keys(next).length === 1 && isObject(action) &&
       action.playerId === playerId && actionTypes.has(action.type) && Number.isFinite(action.at);
@@ -351,6 +351,9 @@ export function validatePlayerPatch(current, patch, playerId) {
     if (validAction && action.type === 'cg_final') validAction = validTarget(action.target);
     if (validAction && action.type === 'cg_risk') validAction = ['lock', 'risk'].includes(action.value);
     if (validAction && action.type === 'cg_token') validAction = ['shield', 'steal', 'switch', 'double'].includes(action.use) && (action.target === undefined || validTarget(action.target));
+    if (validAction && action.type === 'cg_tod') validAction = ['truth', 'dare'].includes(action.value);
+    if (validAction && action.type === 'cg_dond_box') validAction = Number.isInteger(action.value) && action.value >= 1 && action.value <= 16;
+    if (validAction && action.type === 'cg_dond') validAction = ['deal', 'nodeal'].includes(action.value);
     if (validAction && action.type === 'villa_profile') validAction = (action.nail === undefined || ['Σκούρο', 'Κόκκινο', 'Έντονο', 'Φυσικό', 'Ξεβαμμένο'].includes(action.nail)) && (action.footwear === undefined || [0, 1, 2, 3].includes(action.footwear)) && (action.nail !== undefined || action.footwear !== undefined);
     // Consent check-in: κάθε παίκτρια γράφει ΜΟΝΟ τη δική της καταχώρηση, και μόνο πριν ξεκινήσει το παιχνίδι.
     const consentPlayers = next.consent?.players;
@@ -371,7 +374,7 @@ export function validatePlayerPatch(current, patch, playerId) {
     const changed = old.filter((p, i) => !sameJson(withoutKeys(p, PRIVATE_PLAYER_KEYS), withoutKeys(next[i], PRIVATE_PLAYER_KEYS)) || !privateKeysUnchanged(p, next[i]));
     const before = old.find((p) => p.id === playerId);
     const after = next.find((p) => p.id === playerId);
-    if (!before || !after || !sameExceptKeys(withoutKeys(before, ['vipProfile', 'pin']), withoutKeys(after, ['vipProfile', 'pin']), ['penaltyStep']) || !privateKeysUnchanged(before, after)) return false;
+    if (!before || !after || !sameExceptKeys(withoutKeys(before, ['vipProfile', 'movieProfile', 'pin']), withoutKeys(after, ['vipProfile', 'movieProfile', 'pin']), ['penaltyStep']) || !privateKeysUnchanged(before, after)) return false;
     const delta = (after.penaltyStep || 0) - (before.penaltyStep || 0);
     const doubleDown = patch.history?.[0];
     const validPenaltyChange =
@@ -407,7 +410,7 @@ export function sanitizePublicSession(record, playerId = null) {
     // Το VIP προφίλ (όρια, προτιμήσεις) το βλέπει μόνο το Tablet. Ο κρυφός ρόλος μόνο η ίδια η παίκτρια.
     state.players = state.players.map((player) => {
       if (!isObject(player)) return player;
-      const { vipProfile: _vip, role, pin, ...rest } = player;
+      const { vipProfile: _vip, movieProfile: _movie, role, pin, ...rest } = player;
       const publicPlayer = pin ? { ...rest, hasPin: true } : rest;
       return playerId && player.id === playerId && role !== undefined ? { ...publicPlayer, role } : publicPlayer;
     });
@@ -485,6 +488,9 @@ export function sanitizePublicSession(record, playerId = null) {
       votes: isObject(cg.votes) ? { ...cg.votes, ballots: cg.votes.open ? ownOnly(cg.votes.ballots) : cg.votes.ballots } : cg.votes,
       finalVotes: ownOnly(cg.finalVotes),
       risk: ownOnly(cg.risk),
+      // Deal or No Deal: τα κλειστά κουτιά δεν αποκαλύπτουν τι έχουν· «Μάντεψε τι είναι»: το αντικείμενο μένει στο Tablet.
+      dond: isObject(cg.dond) ? { ...cg.dond, boxes: (Array.isArray(cg.dond.boxes) ? cg.dond.boxes : []).map((b) => (b?.open ? b : { no: b?.no, open: false })) } : cg.dond,
+      guess: isObject(cg.guess) ? { ...cg.guess, item: undefined } : cg.guess,
     } };
   }
   if (state.mg?.lounge?.finale?.code) state.mg = { ...state.mg, lounge: { ...state.mg.lounge, finale: { ...state.mg.lounge.finale, code: undefined } } };

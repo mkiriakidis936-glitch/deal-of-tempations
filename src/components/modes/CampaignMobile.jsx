@@ -3,9 +3,10 @@ import WorldMap from '@/components/modes/WorldMap';
 import * as E from '@/lib/campaignEngine';
 import { NAIL_COLORS, TOKEN_USES, WANTED_LEVELS, STATE_LABELS, VALUE_LABELS, STATUS_LABEL, BUYOUT_TOKENS, trialOf, cardOf } from '@/data/modes/campaignContent';
 import { useTick } from '@/lib/modeKit';
+import MovieShowMobile from '@/components/modes/MovieShowMobile';
 
 const Card = ({ title, children, tone }) => (
-  <section className="rounded-3xl p-4" style={{ background: tone || '#1C1C1E' }}>
+  <section className="mvg-glass mvg-3d p-4" style={tone ? { background: `linear-gradient(160deg, ${tone}ee, #0b0b10cc)` } : undefined}>
     {title && <div className="mb-1.5 text-[13px] font-semibold uppercase tracking-[0.12em] text-white/55">{title}</div>}
     {children}
   </section>
@@ -36,7 +37,9 @@ export default function CampaignMobile({ state, me, sendAction }) {
   const changed = cg.previously && Date.now() - cg.previously.at < 60000;
 
   return (
-    <div className="space-y-3 text-white">
+    <div className="mvg space-y-3 text-white">
+      <div className="mvg-marquee"><span>Deal of Temptation</span><b>Η ΤΑΙΝΙΑ</b><span>{act.info.name}</span></div>
+      <MovieShowMobile cg={cg} me={me} nameOf={nameOf} sendAction={sendAction} />
       {changed && status !== 'finale' && <Card tone="#3A0A12"><div className="font-bold">🗺️ Νέα ήπειρος: {act.info.name}</div><div className="text-sm text-white/75">Πράξη {act.index + 1}: {act.title}</div></Card>}
       {drawnMe && <Card tone="#2A2112"><div className="text-xl font-black">🎲 Κληρώθηκες!</div><div className="text-sm text-white/80">Μπαίνεις στη σκηνή — κοίτα την TV.</div></Card>}
 
@@ -47,7 +50,7 @@ export default function CampaignMobile({ state, me, sendAction }) {
         </div>
         <WorldMap active={status === 'active' || status === 'transition' ? act.continent : null} conquered={cg.conquered} compact labels={false} className="mt-2 aspect-[2/1] w-full rounded-2xl" />
         <div className="mt-3 grid grid-cols-4 gap-2 text-center">
-          <div><div className="text-2xl font-bold tabular-nums text-[#E8C26B]">{s.points}</div><div className="text-[11px] text-white/55">Πόντοι</div></div>
+          <div><div className="mvg-num text-2xl font-bold tabular-nums text-[#E8C26B]">{s.points}</div><div className="text-[11px] text-white/55">Πόντοι</div></div>
           <div><div className="text-2xl font-bold tabular-nums">{s.loot}</div><div className="text-[11px] text-white/55">Λεία</div></div>
           <div><div className="text-2xl font-bold tabular-nums">{s.tokens}</div><div className="text-[11px] text-white/55">Tokens</div></div>
           <div><div className="text-2xl font-bold tabular-nums text-[#FF6B85]">{s.wanted}</div><div className="text-[11px] text-white/55">Wanted</div></div>

@@ -163,6 +163,7 @@ export const VALUE_LABELS = {
   on: 'Φορεμένο', off: 'Βγαλμένο', sleep: 'Βγαλμένη στον ύπνο', no: 'Όχι', tied: 'Δεμένα', normal: 'Κανονική', pajamas: 'Πιτζάμες',
   free: 'Ελεύθερα', cuffs_front: 'Χειροπέδες μπροστά', cuffs_back: 'Χειροπέδες πίσω', tied_front: 'Δεμένα μπροστά', tied_back: 'Δεμένα πίσω από την πλάτη', tied_up: 'Δεμένα ψηλά',
   toes: 'Μεγάλα δάχτυλα δεμένα', tiptoe: 'Στάση στις μύτες', hogtie: 'Hogtie',
+  chair: 'Δεμένη στην Καρέκλα Ανάκρισης', sofa: 'Δεμένη στον καναπέ', bed: 'Δεμένη στο κρεβάτι (ανοιχτά)',
 };
 
 export const MOVIE_TV = {

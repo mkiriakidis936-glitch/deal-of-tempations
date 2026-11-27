@@ -144,6 +144,7 @@ export function createInitialState(mode, intensity, players) {
     bringsOwnSlippers: p.bringsOwnSlippers !== false,
     hasFlipFlops: p.hasFlipFlops !== false,
     ...(p.vipProfile ? { vipProfile: p.vipProfile } : {}),
+    ...(p.movieProfile ? { movieProfile: p.movieProfile } : {}),
   }));
   if (isNewMode(mode)) {
     return {

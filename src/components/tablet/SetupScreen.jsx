@@ -26,6 +26,7 @@ function playerFromRow(row, index) {
     slipperType: i.slipperType || '', nailColor: i.nailColor || 'Pink', pajamaStyle: i.pajamaStyle || '',
     bringsOwnSlippers: i.bringsOwnSlippers ?? true, hasFlipFlops: i.hasFlipFlops ?? true,
     ...(i.vipProfile ? { vipProfile: i.vipProfile } : {}),
+    ...(i.movieProfile ? { movieProfile: i.movieProfile } : {}),
     formInfo: [i.shoeType && `👟 ${SHOE_LABEL[i.shoeType] || i.shoeType}`, i.nailColor && `💅 ${i.nailColor}`, i.slipperType && `🩴 ${i.slipperType}`, i.alcoholFree === true && '🚫🍸 χωρίς αλκοόλ', i.boundaries && `⚠️ ${String(i.boundaries).slice(0, 60)}`].filter(Boolean),
   };
 }

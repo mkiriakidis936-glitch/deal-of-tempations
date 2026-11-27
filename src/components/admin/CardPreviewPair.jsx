@@ -10,7 +10,7 @@ export function cardFromItem(item, fallbackKicker) {
   const data = item || {};
   return {
     title: txt(data.title || data.name || data.label || data.say || data.question),
-    text: txt(data.text || data.desc || data.description || data.detail || data.challenge || data.where || data.hint),
+    text: txt(data.text || data.tv || data.desc || data.description || data.detail || data.challenge || data.where || data.hint),
     icon: data.icon,
     image: data.image,
     secs: data.secs || data.duration || data.timer,

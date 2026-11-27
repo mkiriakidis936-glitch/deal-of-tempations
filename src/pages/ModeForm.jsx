@@ -3,12 +3,21 @@ import { useSearchParams } from 'react-router-dom';
 import { appApi } from '@/api/apiClient';
 import { NEW_MODES, durationLabel } from '@/data/modes/modeRegistry';
 import CustomFormQuestions from '@/components/forms/CustomFormQuestions';
+import { WHEELS, GAMES } from '@/data/modes/movieGames';
+import { FORMATS } from '@/data/modes/campaignContent';
 import { FormShell, Section, Field, TextInput, TextArea, ChoiceGroup, Scale, Toggle, ConsentCheck, FooterBar, SuccessScreen, formImageFor } from '@/components/forms/FormKit';
 
 const NAIL_COLORS = [
   { id: 'Red', label: 'Κόκκινο', icon: '🔴' }, { id: 'Pink', label: 'Ροζ', icon: '🩷' }, { id: 'White', label: 'Άσπρο', icon: '⚪' }, { id: 'Black', label: 'Μαύρο', icon: '⚫' },
   { id: 'Nude', label: 'Nude', icon: '🤎' }, { id: 'French', label: 'Γαλλικό', icon: '💅' }, { id: 'Blue', label: 'Μπλε', icon: '🔵' }, { id: 'Purple', label: 'Μωβ', icon: '🟣' },
   { id: 'Green', label: 'Πράσινο', icon: '🟢' }, { id: 'Orange', label: 'Πορτοκαλί', icon: '🟠' }, { id: 'Gold', label: 'Χρυσό', icon: '✨' }, { id: 'Silver', label: 'Ασημί', icon: '🤍' }, { id: 'None', label: 'Χωρίς', icon: '⭕' },
+];
+const MOVIE_FORMATS = Object.values(FORMATS).map((f) => ({ id: f.id, label: f.label, icon: '🎬' }));
+const SHOES = [{ id: 'sneakers', label: 'Αθλητικά', icon: '👟' }, { id: 'heels', label: 'Τακούνια', icon: '👠' }, { id: 'boots', label: 'Μποτάκια', icon: '🥾' }, { id: 'flats', label: 'Μπαλαρίνες', icon: '🥿' }, { id: 'flipflops', label: 'Σαγιονάρες', icon: '🩴' }];
+const SOCKS = [{ id: 'short', label: 'Κοντές', icon: '🧦' }, { id: 'long', label: 'Ψηλές', icon: '🧦' }, { id: 'fluffy', label: 'Χνουδωτές', icon: '☁️' }, { id: 'none', label: 'Χωρίς', icon: '⭕' }];
+const MOVIE_LIMITS = [
+  ['chairOk', '🪑 Καρέκλα Ανάκρισης (δέσιμο χέρια & πόδια)'], ['cuffsOk', '⛓️ Χειροπέδες / δέσιμο χεριών'], ['tickleOk', '🪶 Γαργάλημα πελμάτων'],
+  ['iceOk', '🧊 Παγάκι στο στόμα'], ['alcoholOk', '🥃 Σφηνάκι (αλκοόλ)'], ['shoesOffOk', '👟 Βγάλσιμο παπουτσιών & καλτσών'], ['nightOk', '🌙 Βράδυ στον Ύπνο (μένω τη νύχτα)'], ['photosOk', '📸 Φωτογραφίες μου στην TV & στους τίτλους τέλους'],
 ];
 const LEVELS = [
   { id: 'none', label: 'Όχι', icon: '🙅', hint: 'καθόλου δέσιμο' },
@@ -38,6 +47,8 @@ export default function ModeForm() {
     boundaries: '',
     safeWordConfirmed: false,
     customAnswers: {},
+    movieFormat: 'h48', shoeType: 'sneakers', shoeSize: '', sockType: 'short', health: '', favGames: [], wheelNo: [],
+    chairOk: true, cuffsOk: true, tickleOk: true, iceOk: true, alcoholOk: true, shoesOffOk: true, nightOk: true, photosOk: true,
   });
   const [step, setStep] = useState(first && NEW_MODES.some((m) => m.id === first) ? 1 : 0);
   const [saving, setSaving] = useState(false);
@@ -48,7 +59,16 @@ export default function ModeForm() {
   const set = (k, v) => setForm((f) => ({ ...f, [k]: v }));
   const selectMode = (id) => set('mode', id);
   const has = (...ids) => ids.includes(form.mode);
-  const pajamaish = has('pedi_glam', 'pedi_extended', 'lockdown', 'marathon_4h', 'villa_takeover');
+  const pajamaish = has('pedi_glam', 'pedi_extended', 'lockdown', 'marathon_4h', 'villa_takeover', 'deal_movie');
+  const movie = has('deal_movie');
+  const toggleIn = (k, id) => setForm((f) => ({ ...f, [k]: f[k].includes(id) ? f[k].filter((x) => x !== id) : [...f[k], id] }));
+  // Όρια της Ταινίας → ένα κείμενο που φαίνεται στο Admin και φιλτράρει τους Τροχούς.
+  const movieLimitsText = () => {
+    if (!movie) return '';
+    const no = MOVIE_LIMITS.filter(([k]) => !form[k]).map(([, l]) => `ΟΧΙ: ${l.replace(/^\S+\s/, '')}`);
+    const wheel = WHEELS.flatMap((w) => w.items).filter((i) => form.wheelNo.includes(i.id)).map((i) => `ΟΧΙ ποινή: ${i.title}`);
+    return [...no, ...wheel, form.health ? `Υγεία/αλλεργίες: ${form.health}` : ''].filter(Boolean).join('\n');
+  };
   const canSend = form.name.trim() && NEW_MODES.some((m) => m.id === form.mode) && form.adult && form.safeWordConfirmed && customQuestionsValid && !saving;
 
   async function submit() {
@@ -72,7 +92,15 @@ export default function ModeForm() {
         ticklish: Number(form.ticklish),
         restraintLevel: form.restraintLevel,
         blindfoldOk: form.blindfoldOk,
-        boundaries: form.boundaries,
+        boundaries: [form.boundaries, movieLimitsText()].filter(Boolean).join('\n'),
+        ...(movie ? {
+          movieProfile: {
+            format: form.movieFormat, shoeType: form.shoeType, shoeSize: form.shoeSize, sockType: form.sockType, health: form.health,
+            favGames: form.favGames, wheelNo: form.wheelNo, ...Object.fromEntries(MOVIE_LIMITS.map(([k]) => [k, !!form[k]])),
+          },
+          alcohol: form.alcoholOk ? 'yes' : 'no',
+          answers: { safetyBoundaries: [!form.cuffsOk || !form.chairOk ? 'restraints' : '', !form.alcoholOk ? 'alcohol' : ''].filter(Boolean) },
+        } : {}),
         safeWordConfirmed: true,
         customAnswers: form.customAnswers,
         approved: false,
@@ -157,6 +185,30 @@ export default function ModeForm() {
               </Field>
             </Section>
           )}
+          {movie && (
+            <Section icon="🎬" title="Για την Ταινία" hint="Ροή, παπούτσια & κάλτσες (βγαίνουν ένα-ένα στο παιχνίδι) και τα παιχνίδια που θες.">
+              <Field label="Ποια ροή προτιμάς;">
+                <ChoiceGroup cols={3} size="sm" options={MOVIE_FORMATS} value={form.movieFormat} onChange={(v) => set('movieFormat', v)} />
+              </Field>
+              <Field label="Τι παπούτσια θα φοράς;">
+                <ChoiceGroup cols={3} size="sm" options={SHOES} value={form.shoeType} onChange={(v) => set('shoeType', v)} />
+              </Field>
+              <Field label="Νούμερο παπουτσιού" input>
+                <TextInput value={form.shoeSize} onChange={(e) => set('shoeSize', e.target.value)} placeholder="π.χ. 38" inputMode="numeric" />
+              </Field>
+              <Field label="Τι κάλτσες θα φοράς;">
+                <ChoiceGroup cols={4} size="sm" options={SOCKS} value={form.sockType} onChange={(v) => set('sockType', v)} />
+              </Field>
+              <Field label="Σε ποια παιχνίδια θες να πρωταγωνιστήσεις;">
+                <div className="grid grid-cols-2 gap-2">
+                  {GAMES.map((g) => (
+                    <button key={g.id} type="button" onClick={() => toggleIn('favGames', g.id)} aria-pressed={form.favGames.includes(g.id)}
+                      className={`rounded-2xl border px-3 py-3 text-left text-sm font-semibold ${form.favGames.includes(g.id) ? 'border-[#E8C26B] bg-[#E8C26B]/15' : 'border-white/15 bg-white/5'}`}>{g.icon} {g.name}</button>
+                  ))}
+                </div>
+              </Field>
+            </Section>
+          )}
         </>
       )}
 
@@ -170,6 +222,27 @@ export default function ModeForm() {
             </Field>
             <Toggle label="Δέχομαι μάσκα ύπνου" hint="Στις «τυφλές» δοκιμασίες" checked={form.blindfoldOk} onChange={(v) => set('blindfoldOk', v)} />
           </Section>
+          {movie && (
+            <Section icon="🎡" title="Τροχοί Ποινών & Καρέκλα Ανάκρισης" hint="Ό,τι κλείσεις εδώ δεν σου βγαίνει ποτέ από τον Τροχό. Το ΣΤΟΠ ισχύει πάντα.">
+              {MOVIE_LIMITS.map(([k, l]) => <Toggle key={k} label={l} checked={form[k]} onChange={(v) => set(k, v)} />)}
+              <Field label="Ποινές του Τροχού που ΔΕΝ θέλεις">
+                {WHEELS.map((w) => (
+                  <div key={w.id} className="mt-2">
+                    <div className="mb-1 text-xs font-semibold opacity-70">{w.name} — {w.subtitle}</div>
+                    <div className="flex flex-wrap gap-1.5">
+                      {w.items.map((i) => (
+                        <button key={i.id} type="button" onClick={() => toggleIn('wheelNo', i.id)} aria-pressed={form.wheelNo.includes(i.id)}
+                          className={`rounded-full border px-3 py-1.5 text-xs font-semibold ${form.wheelNo.includes(i.id) ? 'border-[#FF453A] bg-[#FF453A]/20 line-through' : 'border-white/15 bg-white/5'}`}>{i.title}</button>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </Field>
+              <Field label="Υγεία, αλλεργίες ή κάτι που πρέπει να ξέρουμε" input>
+                <TextArea value={form.health} onChange={(e) => set('health', e.target.value)} placeholder="π.χ. αλλεργία σε λάτεξ, ευαίσθητοι καρποί" />
+              </Field>
+            </Section>
+          )}
           <Section icon="🔒" title="Τα όριά σου" hint="Τα βλέπει μόνο η διοργανώτρια — ποτέ οι υπόλοιπες.">
             <Field label="Τι ΔΕΝ θέλεις να σου συμβεί" input>
               <TextArea value={form.boundaries} onChange={(e) => set('boundaries', e.target.value)} placeholder="Γράψε ελεύθερα — όλα γίνονται σεβαστά." />

@@ -5,6 +5,7 @@ import { MOVIE_MODE_ID, STATUS_LABEL, continentOf, trialOf, cardOf, WANTED_LEVEL
 import { MODE_MEDIA } from '@/data/brandArt';
 import { useTick } from '@/lib/modeKit';
 import { isVideoUrl } from '@/lib/mediaKind';
+import { showScreen, warrantLines } from '@/components/modes/MovieShowTV';
 import { MOVIE_CSS, ActTitleCard, useMovieSounds, CastScreen, EndCredits, montagePhotos } from '@/components/modes/MovieFX';
 
 // DEAL OF TEMPTATION — Η ΤΑΙΝΙΑ · TV (δημόσια σκηνή): χάρτης 5 ηπείρων και 4 καταστάσεις (Ενεργή, Μετάβαση, Standby, Φινάλε).
@@ -50,11 +51,16 @@ export default function CampaignTV({ state }) {
   const info = act.info;
   const night = E.isNight(cg) && cg.status === 'active';
   const rank = E.ranking(cg, players, { final: cg.status === 'finale' });
-  const wanted = E.wantedOne(cg, players);
+  const wanted = cg.mostWanted || E.wantedOne(cg, players);
   const status = cg.status || 'transition';
   const actTitle = `ΠΡΑΞΗ ${two(act.index + 1)} · ${info.name}`;
   const elapsed = cg.actStartedAt ? now - cg.actStartedAt : 0;
   const nailOf = (id) => E.statsOf(cg, id).nail;
+
+  // ---------- SHOW: Τροχοί, ανακοινώσεις, υποχρεωτική κλήρωση, παιχνίδια, Καρέκλα ----------
+  const show = showScreen({ cg, act, nameOf, artFor, statsOf: E.statsOf, now });
+  if (show) return <><style>{MOVIE_CSS}</style>{show}</>;
+  const warrants = warrantLines(cg, players, nameOf, act);
 
   // ---------- ΦΙΝΑΛΕ ----------
   if (status === 'finale' && cg.finaleAt && now - cg.finaleAt > 12000) {
@@ -63,7 +69,7 @@ export default function CampaignTV({ state }) {
   if (status === 'finale') {
     const top = rank[0];
     return (
-      <div className="relative min-h-screen overflow-hidden bg-black text-white">
+      <div className="relative min-h-screen w-full overflow-hidden bg-black text-white">
         <Backdrop src={artFor('finale', 'villa_takeover')} dim={0.18} />
         <div className="relative grid h-screen grid-cols-[1.25fr_1fr]" style={{ gap: u(2), padding: u(2.6) }}>
           <div className="flex min-h-0 flex-col" style={{ gap: u(1.2) }}>
@@ -86,7 +92,7 @@ export default function CampaignTV({ state }) {
                 <div className="font-semibold text-[#E8C26B]" style={{ fontSize: u(1.2), marginTop: u(0.6) }}>🎁 Το Μεγάλο Δώρο</div>
               </div>
             )}
-            <ol className="rounded-3xl bg-[#1C1C1E]/90" style={{ padding: u(1.2) }}>
+            <ol className="mvg-glass" style={{ padding: u(1.2) }}>
               {rank.map((p, i) => (
                 <li key={p.id} className="flex justify-between border-b border-white/10 last:border-0" style={{ fontSize: u(1.3), padding: `${u(0.4)} 0` }}>
                   <span>{i + 1}. {p.name}</span><span className="font-bold tabular-nums text-[#E8C26B]">{p.score}</span>
@@ -107,7 +113,7 @@ export default function CampaignTV({ state }) {
     const prev = cg.previously;
     const leader = rank[0];
     return (
-      <div className="relative min-h-screen overflow-hidden bg-black text-white">
+      <div className="relative min-h-screen w-full overflow-hidden bg-black text-white">
         <Backdrop src={artFor('transition', act.continent)} dim={0.25} />
         <div className="relative grid h-screen grid-cols-[1.3fr_1fr] items-center" style={{ gap: u(2.4), padding: u(2.8) }}>
           <WorldMap active={act.continent} conquered={cg.conquered} names={names} focus zoom={act.continent} route={prev?.from && prev.from !== act.continent ? [prev.from, act.continent] : null} className="aspect-[2/1] w-full rounded-3xl" />
@@ -132,7 +138,7 @@ export default function CampaignTV({ state }) {
   if (status === 'standby') {
     const next = E.actsOf(cg)[Math.min(act.index + (cg.lastClosed ? 1 : 0), act.total - 1)];
     return (
-      <div className="relative min-h-screen overflow-hidden bg-black text-white">
+      <div className="relative min-h-screen w-full overflow-hidden bg-black text-white">
         <Backdrop src={artFor('standby', act.continent)} dim={0.14} />
         <div className="relative grid h-screen grid-cols-[1.4fr_1fr] items-center" style={{ gap: u(2.4), padding: u(2.8) }}>
           <WorldMap active={null} conquered={cg.conquered} names={names} night className="aspect-[2/1] w-full rounded-3xl" />
@@ -140,7 +146,7 @@ export default function CampaignTV({ state }) {
             <div className="font-semibold uppercase tracking-[0.3em] text-[#E8C26B]" style={{ fontSize: u(1.1) }}>⏸ Επόμενη πράξη σε Standby</div>
             <div className="font-black" style={{ fontSize: u(2.6) }}>{next ? `${continentOf(next.continent).name}` : 'Φινάλε'}</div>
             <div className="text-white/70" style={{ fontSize: u(1.4) }}>{next?.title}</div>
-            <ol className="rounded-3xl bg-[#1C1C1E]/90" style={{ padding: u(1.1) }}>
+            <ol className="mvg-glass" style={{ padding: u(1.1) }}>
               {rank.slice(0, 3).map((p, i) => <li key={p.id} className="flex justify-between" style={{ fontSize: u(1.6), padding: `${u(0.3)} 0` }}><span>{['🥇', '🥈', '🥉'][i]} {p.name}</span><b className="tabular-nums text-[#E8C26B]">{p.score}</b></li>)}
             </ol>
             {wanted && <div className="font-semibold text-[#FF6B85]" style={{ fontSize: u(1.4) }}>🎯 Καταζητούμενη: {nameOf(wanted)}</div>}
@@ -158,20 +164,21 @@ export default function CampaignTV({ state }) {
   const votes = cg.votes;
   const tally = votes && !votes.open ? E.tallyVotes(cg) : [];
   return (
-    <div className="relative min-h-screen overflow-hidden text-white" style={{ background: night ? '#05060c' : '#000' }}>
+    <div className="mvg mvg-tv relative min-h-screen w-full overflow-hidden text-white" style={{ background: night ? '#05060c' : '#000' }}>
       <Backdrop src={artFor(night ? 'night' : act.continent, act.continent)} dim={night ? 0.06 : 0.16} />
+      {!night && <div className="mvg-spot" />}
       <div className="relative grid h-screen grid-cols-[1fr_min(30vw,560px)]" style={{ gap: u(1.6), padding: `${u(2.2)} ${u(2.4)}` }}>
         <div className="flex min-h-0 flex-col" style={{ gap: u(1) }}>
           <div className="flex items-end justify-between">
             <div>
               <div className="font-semibold uppercase tracking-[0.3em] text-[#FF6B85]" style={{ fontSize: u(1) }}>{STATUS_LABEL.active}{night ? ' · 🌙 Νυχτερινή λειτουργία' : ''} · {E.formatOf(cg).label}{act.day ? ` · Ημέρα ${act.day}` : ''}</div>
-              <div className="font-black leading-none" style={{ fontSize: u(2.8) }}>{actTitle}</div>
+              <div className="mvg-title3d font-black leading-none" style={{ fontSize: u(2.8) }}>{actTitle}</div>
               <div className="font-bold text-[#F7E3A8]" style={{ fontSize: u(1.5) }}>{act.title}</div>
             </div>
             <div className="text-right tabular-nums text-white/70" style={{ fontSize: u(1.6) }}>⏱ {clock(elapsed)}</div>
           </div>
-          <WorldMap active={act.continent} conquered={cg.conquered} names={names} night={night} focus className="aspect-[2.1/1] w-full rounded-3xl" />
-          <div className="min-h-0 flex-1 rounded-3xl bg-[#1C1C1E]/90" style={{ padding: u(1.4) }}>
+          <div style={{ perspective: '1600px' }}><div className="mvg-float"><WorldMap active={act.continent} conquered={cg.conquered} names={names} night={night} focus className="aspect-[2.1/1] w-full rounded-3xl" /></div></div>
+          <div className="min-h-0 flex-1 mvg-glass" style={{ padding: u(1.4) }}>
             {drawn && !trial && !card && (
               <div className="text-center">
                 <div className="font-semibold uppercase tracking-[0.3em] text-[#E8C26B]" style={{ fontSize: u(1.1) }}>{MOVIE_TV.draw}</div>
@@ -206,7 +213,7 @@ export default function CampaignTV({ state }) {
           </div>
         </div>
         <aside className="flex min-h-0 flex-col" style={{ gap: u(1) }}>
-          <div className="min-h-0 flex-1 overflow-hidden rounded-3xl bg-[#1C1C1E]/90" style={{ padding: u(1.2) }}>
+          <div className="min-h-0 flex-1 overflow-hidden mvg-glass" style={{ padding: u(1.2) }}>
             <div className="font-semibold uppercase tracking-[0.2em] text-[#E8C26B]" style={{ fontSize: u(0.9) }}>Live Show · κατάταξη</div>
             <ol style={{ marginTop: u(0.5) }}>
               {rank.map((p, i) => {
@@ -221,7 +228,8 @@ export default function CampaignTV({ state }) {
             </ol>
           </div>
           {wanted && <div className="rounded-3xl bg-[#3A0A12]/90 font-semibold" style={{ padding: u(1), fontSize: u(1.2) }}>🎯 Καταζητούμενη: {nameOf(wanted)} · {WANTED_LEVELS[E.statsOf(cg, wanted).wanted].label}</div>}
-          <div className="rounded-3xl bg-[#1C1C1E]/90 text-white/70" style={{ padding: u(1), fontSize: u(0.95) }}>{info.motif} · {info.action}</div>
+          {warrants.map((w) => <div key={w} className="rounded-3xl bg-[#FF3B5C]/20 font-semibold text-[#FF8A9C]" style={{ padding: u(0.8), fontSize: u(1) }}>🚨 {w}</div>)}
+          <div className="mvg-glass text-white/70" style={{ padding: u(1), fontSize: u(0.95) }}>{info.motif} · {info.action}</div>
         </aside>
       </div>
       <style>{MOVIE_CSS}</style>

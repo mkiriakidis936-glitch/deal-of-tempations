@@ -8,7 +8,7 @@ import { SCENES } from '../src/data/sceneLibrary.js';
 
 test('κάθε ενεργό mode έχει cover + hero + ενότητες + 6 gallery (Villa 12, Ταινία 9, τα άλλα 7)', () => {
   for (const { id } of MEDIA_MODES) {
-    const sections = { villa_takeover: 12, deal_movie: 9 }[id] || 7;
+    const sections = { villa_takeover: 12, deal_movie: 17 }[id] || 7;
     const slots = expectedNames([{ id }], MODE_MEDIA_SECTIONS, MODE_COVER_SLOTS);
     assert.equal(new Set(slots.map((s) => s.field)).size, 8 + sections, `${id}: ${slots.length}`);
     assert.equal((MODE_MEDIA_SECTIONS[id] || []).length, sections, `${id} sections`);

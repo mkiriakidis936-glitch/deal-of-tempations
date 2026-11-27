@@ -230,7 +230,9 @@ export function closeAct(cg, players = [], now = Date.now()) {
   const gains = players.map((p) => ({ id: p.id, gain: liveScore(out, p.id) - (statsOf(out, p.id).actStart || 0) })).sort((a, b) => b.gain - a.gain);
   const winner = gains[0] && gains[0].gain > 0 ? gains[0].id : null;
   const act = currentAct(out);
-  out = { ...out, conquered: { ...(out.conquered || {}), [out.act || 0]: { continent: act.continent, title: act.title, winner, at: now } }, trial: null, card: null, votes: null };
+  // Δ. Υποχρεωτικό γεγονός μετά από κάθε ήπειρο: κλήρωση παίκτριας + Τροχός Ποινής πριν ανοίξει η επόμενη.
+  out = { ...out, conquered: { ...(out.conquered || {}), [out.act || 0]: { continent: act.continent, title: act.title, winner, at: now } }, trial: null, card: null, votes: null,
+    mandatory: { pending: true, pid: null, wheelId: null, itemId: null, at: now, drawnAt: null } };
   out = checkpoint(out, players, 'Κλείσιμο πράξης', now);
   const last = (out.act || 0) >= act.total - 1;
   out = { ...out, status: last ? 'finale' : (act.standbyAfter ? 'standby' : 'transition'), lastClosed: now };
@@ -239,6 +241,7 @@ export function closeAct(cg, players = [], now = Date.now()) {
 
 // Μετάβαση: γραμμικά στην επόμενη πράξη ή «Έκτακτο Άλμα» σε άλλη ήπειρο για την ίδια πράξη.
 export function goNext(cg, now = Date.now()) {
+  if (cg.mandatory?.pending) return cg; // πρώτα η υποχρεωτική κλήρωση + Τροχός
   const total = actsOf(cg).length;
   const next = Math.min((cg.act || 0) + 1, total - 1);
   const from = currentAct(cg).continent;
@@ -246,6 +249,7 @@ export function goNext(cg, now = Date.now()) {
   return logLine(out, `➡️ Μετάβαση στην Πράξη ${next + 1}`, now);
 }
 export function jumpTo(cg, continentId, now = Date.now()) {
+  if (cg.mandatory?.pending) return cg;
   if (!CONTINENTS.some((c) => c.id === continentId)) return cg;
   const from = currentAct(cg).continent;
   return logLine({ ...cg, jump: continentId, status: 'transition', previously: { at: now, from, to: continentId, jump: true } }, `⚡ Έκτακτο άλμα στην ήπειρο ${continentOf(continentId).name}`, now);

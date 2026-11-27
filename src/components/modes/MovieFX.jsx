@@ -8,6 +8,8 @@ import { isVideoUrl } from '@/lib/mediaKind';
 // Μόνο στην TV (Tablet και κινητά μένουν χωρίς animations). Σέβεται το prefers-reduced-motion.
 
 export const MOVIE_CSS = `
+@keyframes mv-pulse { 0%,100% { transform: scale(1); opacity: 1 } 50% { transform: scale(1.06); opacity: .85 } }
+.mv-pulse { animation: mv-pulse 1.4s ease-in-out infinite }
 @keyframes mv-bars { from { height: 0 } to { height: 11vh } }
 @keyframes mv-fade { 0% { opacity: 0; transform: scale(1.04) } 15% { opacity: 1; transform: none } 85% { opacity: 1 } 100% { opacity: 0 } }
 @keyframes mv-rise { from { opacity: 0; transform: translateY(24px); letter-spacing: .5em } to { opacity: 1; transform: none } }
@@ -62,15 +64,25 @@ export function useMovieSounds(cg) {
     if (cg.actStartedAt && cg.actStartedAt !== p.actStartedAt && p.actStartedAt !== undefined) play('drama');
     if (cg.drawn?.at && cg.drawn.at !== p.drawnAt && p.drawnAt !== undefined) play('dice');
     if (cg.trial?.at && cg.trial.at !== p.trialAt && !cg.trial.done && p.trialAt !== undefined) play(cg.trial.id === 'hogtie' ? 'arrest' : cg.trial.id === 'tickle' ? 'tickle' : 'alert');
-    prev.current = { status: cg.status, actStartedAt: cg.actStartedAt || null, drawnAt: cg.drawn?.at || null, trialAt: cg.trial?.at || null };
-  }, [cg?.status, cg?.actStartedAt, cg?.drawn?.at, cg?.trial?.at]);
+    if (cg.wheel?.at && cg.wheel.at !== p.wheelAt && p.wheelAt !== undefined) { play('dice'); setTimeout(() => play('alert'), 4600); }
+    if (cg.announce?.at && cg.announce.at !== p.announceAt && p.announceAt !== undefined) play(cg.announce.kind === 'mostwanted' ? 'crown' : 'arrest');
+    if (cg.mandatory?.at && cg.mandatory.at !== p.mandatoryAt && p.mandatoryAt !== undefined) play('news');
+    if (cg.mandatory?.drawnAt && cg.mandatory.drawnAt !== p.mDrawnAt && p.mDrawnAt !== undefined) play('dice');
+    if (cg.dond?.lastOpened?.at && cg.dond.lastOpened.at !== p.boxAt && p.boxAt !== undefined) play('round');
+    if (cg.dond?.offerAt && cg.dond.offerAt !== p.offerAt && p.offerAt !== undefined) play('news');
+    if (cg.dond?.awardedAt && cg.dond.awardedAt !== p.awardAt && p.awardAt !== undefined) play('crown');
+    if (cg.chair?.at && cg.chair.at !== p.chairAt && p.chairAt !== undefined) play('arrest');
+    prev.current = { status: cg.status, actStartedAt: cg.actStartedAt || null, drawnAt: cg.drawn?.at || null, trialAt: cg.trial?.at || null,
+      wheelAt: cg.wheel?.at || null, announceAt: cg.announce?.at || null, mandatoryAt: cg.mandatory?.at || null, mDrawnAt: cg.mandatory?.drawnAt || null,
+      boxAt: cg.dond?.lastOpened?.at || null, offerAt: cg.dond?.offerAt || null, awardAt: cg.dond?.awardedAt || null, chairAt: cg.chair?.at || null };
+  }, [cg?.status, cg?.actStartedAt, cg?.drawn?.at, cg?.trial?.at, cg?.wheel?.at, cg?.announce?.at, cg?.mandatory?.at, cg?.mandatory?.drawnAt, cg?.dond?.lastOpened?.at, cg?.dond?.offerAt, cg?.dond?.awardedAt, cg?.chair?.at]);
 }
 
 // «Πρωταγωνιστούν»: το καστ πριν από την πρώτη πράξη.
 export function CastScreen({ players = [], cg, statsOf }) {
   const u = (n) => `min(${n}vw, ${n * 1.75}vh)`;
   return (
-    <div className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-black px-[5vw] text-white">
+    <div className="relative flex min-h-screen w-full flex-col items-center justify-center overflow-hidden bg-black px-[5vw] text-white">
       <Letterbox />
       <div className="mv-rise font-semibold uppercase tracking-[0.5em] text-white/60" style={{ fontSize: u(1.2) }}>Deal of Temptation παρουσιάζει</div>
       <div className="mv-rise font-black" style={{ fontSize: u(5.5), animationDelay: '.3s' }}>Η ΤΑΙΝΙΑ</div>
@@ -112,7 +124,7 @@ export function EndCredits({ cg, players = [], rank = [], acts = [], nameOf, pho
   const winner = rank[0];
   const Line = ({ a, b }) => <div className="flex justify-between" style={{ gap: u(2), fontSize: u(1.45), padding: `${u(0.25)} 0` }}><span className="text-white/55">{a}</span><span className="font-semibold">{b}</span></div>;
   return (
-    <div className="relative min-h-screen overflow-hidden bg-black text-white">
+    <div className="relative min-h-screen w-full overflow-hidden bg-black text-white">
       {photos[i] && <img key={photos[i]} src={photos[i]} alt="" onError={(e) => { e.currentTarget.style.display = 'none'; }} className="mv-kb absolute inset-0 h-full w-full object-cover" style={{ opacity: 0.32 }} />}
       <div className="absolute inset-0 bg-gradient-to-r from-black via-black/70 to-black/30" />
       <Letterbox />
