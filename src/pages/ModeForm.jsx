@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { appApi } from '@/api/apiClient';
-import { NEW_MODES } from '@/data/modes/modeRegistry';
+import { NEW_MODES, durationLabel } from '@/data/modes/modeRegistry';
 import CustomFormQuestions from '@/components/forms/CustomFormQuestions';
 import { FormShell, Section, Field, TextInput, TextArea, ChoiceGroup, Scale, Toggle, ConsentCheck, FooterBar, SuccessScreen, formImageFor } from '@/components/forms/FormKit';
 
@@ -100,7 +100,7 @@ export default function ModeForm() {
       image={image}
       kicker="Φόρμα συμμετοχής · 18+"
       title={selectedMode ? selectedMode.name : 'Διάλεξε εμπειρία'}
-      subtitle={selectedMode ? `${selectedMode.minutes}′ · ${selectedMode.min}–${selectedMode.max} παίκτριες` : 'Μία εμπειρία ανά αίτηση.'}
+      subtitle={selectedMode ? `${durationLabel(selectedMode)} · ${selectedMode.min}–${selectedMode.max} παίκτριες` : 'Μία εμπειρία ανά αίτηση.'}
       steps={['Εμπειρία', 'Στοιχεία', 'Όρια']}
       step={step}
       footer={(
@@ -126,7 +126,7 @@ export default function ModeForm() {
                   <div className="min-w-0 flex-1">
                     <div className="font-semibold text-white">{m.icon} {m.name}</div>
                     <div className="mt-0.5 line-clamp-2 text-xs text-white/55">{m.desc}</div>
-                    <div className="mt-1 text-[11px] font-semibold text-[#E8C26B]">{m.minutes}′ · {m.min}–{m.max} παίκτριες</div>
+                    <div className="mt-1 text-[11px] font-semibold text-[#E8C26B]">{durationLabel(m)} · {m.min}–{m.max} παίκτριες</div>
                   </div>
                   <span className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 text-xs ${on ? 'border-[#E8C26B] bg-[#E8C26B] text-black' : 'border-white/30'}`}>{on ? '✓' : ''}</span>
                 </button>

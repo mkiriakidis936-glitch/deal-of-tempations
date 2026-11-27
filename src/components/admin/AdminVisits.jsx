@@ -30,7 +30,7 @@ export default function AdminVisits() {
     <div className="space-y-3">
       <ComicPanel className="bg-card flex items-center justify-between gap-2 flex-wrap">
         <div>
-          <div className="font-heading text-xl text-primary">📈 ΕΠΙΣΚΕΨΕΙΣ ΣΤΗΝ ΙΣΤΟΣΕΛΙΔΑ</div>
+          <div className="font-heading text-xl text-primary">📈 Επισκέψεις στην ιστοσελίδα</div>
           <div className="text-xs text-foreground/70">Όλες οι δημόσιες σελίδες: Site (κάθε εμπειρία), φόρμες, VIP πρόσκληση, promo. 1 επίσκεψη ανά επισκέπτρια και σελίδα κάθε 30 λεπτά. <b>Δεν μετράνε</b> οι συσκευές όπου είσαι συνδεδεμένη στο Admin· για δοκιμή άνοιξε το site σε ιδιωτικό παράθυρο.</div>
         </div>
         <ComicButton variant="dark" size="sm" onClick={load}>🔄 Ανανέωση</ComicButton>
@@ -40,15 +40,15 @@ export default function AdminVisits() {
 
       <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
         <Stat label="ΣΥΝΟΛΟ ΕΠΙΣΚΕΨΕΩΝ" value={s?.views} />
-        <Stat label="ΜΟΝΑΔΙΚΟΙ ΕΠΙΣΚΕΠΤΕΣ" value={s?.visitors} />
-        <Stat label="ΣΗΜΕΡΑ" value={s?.today} />
-        <Stat label="ΤΕΛΕΥΤΑΙΕΣ 7 ΜΕΡΕΣ" value={s?.week} />
-        <Stat label="ΤΕΛΕΥΤΑΙΕΣ 30 ΜΕΡΕΣ" value={s?.month} />
-        <Stat label="ΜΟΝΑΔΙΚΟΙ (30 ΜΕΡΕΣ)" value={s?.visitors_month} />
+        <Stat label="Μοναδικοί επισκέπτες" value={s?.visitors} />
+        <Stat label="Σήμερα" value={s?.today} />
+        <Stat label="Τελευταίες 7 μέρες" value={s?.week} />
+        <Stat label="Τελευταίες 30 μέρες" value={s?.month} />
+        <Stat label="Μοναδικοί (30 μέρες)" value={s?.visitors_month} />
       </div>
 
       <ComicPanel className="bg-card space-y-2">
-        <div className="font-heading text-lg">ΤΕΛΕΥΤΑΙΕΣ 30 ΜΕΡΕΣ</div>
+        <div className="font-heading text-lg">Τελευταίες 30 μέρες</div>
         <div className="flex items-end gap-[3px] h-32">
           {(s?.days || []).map((d) => (
             <div key={d.day} className="flex-1 flex flex-col justify-end h-full" title={`${d.day}: ${d.views}`}>
@@ -63,7 +63,7 @@ export default function AdminVisits() {
 
       {!!s?.pages?.length && (
         <ComicPanel className="bg-card space-y-2">
-          <div className="font-heading text-lg">ΑΝΑΛΥΣΗ ΑΝΑ ΣΕΛΙΔΑ / EVENT</div>
+          <div className="font-heading text-lg">Ανάλυση ανά σελίδα / event</div>
           {s.pages.map((page) => (
             <div key={page.path} className="flex items-center justify-between gap-3 text-sm border-b border-border/20 py-1">
               <span className="break-all">{page.path}</span>
@@ -75,7 +75,7 @@ export default function AdminVisits() {
 
       {!!s?.refs?.length && (
         <ComicPanel className="bg-card space-y-1">
-          <div className="font-heading text-lg">ΑΠΟ ΠΟΥ ΕΡΧΟΝΤΑΙ</div>
+          <div className="font-heading text-lg">Από πού έρχονται</div>
           {s.refs.map((r) => (
             <div key={r.ref} className="flex justify-between text-sm"><span>{r.ref}</span><b>{r.views}</b></div>
           ))}

@@ -7,7 +7,7 @@ const EVENT_TYPES = [
   { id: 'one_night', label: 'ONE NIGHT', firstPhase: 'arrival' },
   { id: 'villa_48h', label: '48H VILLA', firstPhase: 'arrival' },
 ];
-const choiceLabel = (choice) => choice === 'yes' ? 'ΘΕΛΩ ΝΑ ΣΥΜΜΕΤΕΧΩ' : 'ΔΕΝ ΜΠΟΡΩ ΝΑ ΣΥΜΜΕΤΕΧΩ';
+const choiceLabel = (choice) => choice === 'yes' ? 'Θέλω να συμμετέχω' : 'Δεν μπορώ να συμμετέχω';
 const makeRoomCode = () => {
   const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
   const bytes = new Uint8Array(4);
@@ -146,7 +146,7 @@ export default function AdminInterestParticipation() {
   return (
     <div className="space-y-4">
       <ComicPanel className="bg-card space-y-3">
-        <h2 className="font-heading text-2xl text-primary">ΕΝΔΙΑΦΕΡΟΝ & ΣΥΜΜΕΤΟΧΗ</h2>
+        <h2 className="font-heading text-2xl text-primary">Ενδιαφέρον & συμμετοχή</h2>
         <div className="space-y-1.5 rounded-xl border border-primary/30 bg-primary/5 p-3 text-sm text-foreground/80">
           <div className="font-bold text-foreground">Σε τι χρησιμεύει (3 βήματα)</div>
           <div><b>1.</b> Στέλνεις τον σύνδεσμο <b>{window.location.origin}/deal</b>. Η καλεσμένη γράφει όνομα, διαλέγει <b>ONE NIGHT</b> ή <b>48H VILLA</b> και πατά «Θέλω να συμμετέχω» ή «Δεν μπορώ». Οι δηλώσεις εμφανίζονται εδώ.</div>
@@ -165,7 +165,7 @@ export default function AdminInterestParticipation() {
                   <div className="text-xs text-foreground/55">{EVENT_TYPES.find((type) => type.id === item.eventType)?.label || item.eventType} · {choiceLabel(item.declaration)}</div>
                   <div className="text-[10px] text-foreground/40">{item.submittedAt ? new Date(item.submittedAt).toLocaleString('el-GR') : item.created_date ? new Date(item.created_date).toLocaleString('el-GR') : ''}{item.dotEventId ? ' · Συνδεδεμένο με Event' : ''}</div>
                 </div>
-                <ComicButton size="sm" variant="red" disabled={busy} onClick={() => deleteInterest(item)}>ΔΙΑΓΡΑΦΗ</ComicButton>
+                <ComicButton size="sm" variant="red" disabled={busy} onClick={() => deleteInterest(item)}>Διαγραφή</ComicButton>
               </div>
             </div>
           ))}
@@ -173,23 +173,23 @@ export default function AdminInterestParticipation() {
         </div>
         <div className="flex flex-wrap items-center justify-between gap-2 border-t border-border pt-3">
           <span className="text-xs text-foreground/60">Επιλεγμένες θετικές δηλώσεις: {selectedInterests.length}</span>
-          <ComicButton disabled={!canCreateEvent || busy} onClick={createEventFromInterests}>ΔΗΜΙΟΥΡΓΙΑ EVENT ΑΠΟ ΣΥΜΜΕΤΟΧΕΣ</ComicButton>
+          <ComicButton disabled={!canCreateEvent || busy} onClick={createEventFromInterests}>Δημιουργία EVENT από συμμετοχές</ComicButton>
         </div>
         {selectedInterests.length > 0 && selectedTypes.length > 1 && <p className="text-xs text-destructive">Επίλεξε δηλώσεις ίδιου τύπου Event.</p>}
       </ComicPanel>
 
       <ComicPanel className="bg-card space-y-3">
-        <h2 className="font-heading text-2xl text-primary">ΣΥΜΜΕΤΟΧΕΣ ΑΝΑ EVENT</h2>
+        <h2 className="font-heading text-2xl text-primary">Συμμετοχές ανά EVENT</h2>
         <select value={selectedEventId} onChange={(e) => setSelectedEventId(e.target.value)} className="w-full rounded-lg border border-border bg-background px-3 py-2 text-foreground">
           <option value="">Επίλεξε Event</option>
           {events.map((event) => <option key={event.id} value={event.id}>{event.title} · {event.room_code}</option>)}
         </select>
         {selectedEvent && <>
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-            <div className="rounded-lg border border-border p-3"><div className="text-[10px] text-foreground/50">ΑΝΑΜΕΝΟΜΕΝΕΣ</div><div className="font-heading text-2xl">{selectedEvent.expectedCount ?? 0}</div></div>
+            <div className="rounded-lg border border-border p-3"><div className="text-[10px] text-foreground/50">Αναμενόμενες</div><div className="font-heading text-2xl">{selectedEvent.expectedCount ?? 0}</div></div>
             <div className="rounded-lg border border-emerald-700/40 p-3"><div className="text-[10px] text-foreground/50">ΘΑ</div><div className="font-heading text-2xl">{yesCount}</div></div>
-            <div className="rounded-lg border border-red-700/40 p-3"><div className="text-[10px] text-foreground/50">ΔΕΝ ΘΑ</div><div className="font-heading text-2xl">{noCount}</div></div>
-            <div className="rounded-lg border border-amber-700/40 p-3"><div className="text-[10px] text-foreground/50">ΧΩΡΙΣ ΑΠΑΝΤΗΣΗ</div><div className="font-heading text-2xl">{noResponseCount}</div></div>
+            <div className="rounded-lg border border-red-700/40 p-3"><div className="text-[10px] text-foreground/50">Δεν θα</div><div className="font-heading text-2xl">{noCount}</div></div>
+            <div className="rounded-lg border border-amber-700/40 p-3"><div className="text-[10px] text-foreground/50">Χωρίς απάντηση</div><div className="font-heading text-2xl">{noResponseCount}</div></div>
           </div>
           <div className="text-xs text-foreground/55">Θετικές επιβεβαιώσεις: {yesCount} / {selectedEvent.expectedCount ?? 0} · Κωδικός Event: {selectedEvent.room_code}</div>
           <div className="space-y-2">
@@ -198,10 +198,10 @@ export default function AdminInterestParticipation() {
                 <div><div className="font-bold">{item.name}</div><div className="text-[10px] text-foreground/45">{item.submittedAt ? new Date(item.submittedAt).toLocaleString('el-GR') : item.created_date ? new Date(item.created_date).toLocaleString('el-GR') : ''}</div></div>
                 <div className="flex items-center gap-2">
                   <select value={item.choice} disabled={busy} onChange={(e) => updateParticipation(item, e.target.value)} className="rounded-lg border border-border bg-background px-2 py-2 text-xs text-foreground">
-                    <option value="yes">ΘΑ ΣΥΜΜΕΤΕΧΩ</option>
-                    <option value="no">ΔΕΝ ΘΑ ΣΥΜΜΕΤΕΧΩ</option>
+                    <option value="yes">Θα συμμετέχω</option>
+                    <option value="no">Δεν θα συμμετέχω</option>
                   </select>
-                  <ComicButton size="sm" variant="red" disabled={busy} onClick={() => deleteParticipation(item)}>ΔΙΑΓΡΑΦΗ</ComicButton>
+                  <ComicButton size="sm" variant="red" disabled={busy} onClick={() => deleteParticipation(item)}>Διαγραφή</ComicButton>
                 </div>
               </div>
             ))}

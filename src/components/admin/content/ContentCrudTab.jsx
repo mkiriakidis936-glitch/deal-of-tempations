@@ -214,7 +214,7 @@ export default function ContentCrudTab({ category }) {
 
       {error && <div className="text-xs text-destructive font-bold">{error}</div>}
       <ComicPanel className="bg-card space-y-2">
-        <div className="font-heading text-base">🕘 ΙΣΤΟΡΙΚΟ ΕΚΔΟΣΕΩΝ — {label}</div>
+        <div className="font-heading text-base">🕘 Ιστορικό εκδόσεων — {label}</div>
         {versions.length === 0 ? <div className="text-xs text-foreground/50">Δεν υπάρχουν προηγούμενες εκδόσεις.</div> : versions.map((version) => (
           <div key={version.id} className="flex flex-wrap items-center justify-between gap-2 rounded border border-border/40 p-2">
             <div className="text-xs">{new Date(version.createdAt).toLocaleString('el-GR')} · {version.itemId}</div>

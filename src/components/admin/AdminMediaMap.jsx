@@ -1,6 +1,8 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { appApi } from '@/api/apiClient';
 import { uploadMedia } from '@/lib/media';
+import { playSoundFile } from '@/lib/gameSounds';
+import { sfx, tvSfx } from '@/lib/modeKit';
 import { IMAGE_ACCEPT, VIDEO_ACCEPT, MEDIA_ACCEPT, mediaKindOf } from '@/lib/mediaKind';
 import { slug, stripPrefix } from '@/lib/autoLink';
 import { PHOTO_SPOT_IDS } from '@/data/mediaSlots';
@@ -228,17 +230,26 @@ export default function AdminMediaMap({ ov = {}, library = [], onSave, onRefresh
             <button key={id} type="button" role="tab" aria-selected={surface === id} onClick={() => setSurface(id)} className={`shrink-0 rounded-full px-3.5 py-1.5 text-[13px] font-semibold ${surface === id ? 'bg-white text-black' : 'bg-black/40 text-white/75'}`}>{label}</button>
           ))}
         </div>
-        <div className="grid gap-2 sm:grid-cols-3">
+        <div className="-mx-1 flex gap-1.5 overflow-x-auto px-1 pb-1" role="tablist" aria-label="Ομάδα">
+          {[{ id: 'all', label: 'Όλα' }, ...groups].map((g) => {
+            const live = entries.filter((e) => e.need !== 'inactive' && (g.id === 'all' || e.group === g.id));
+            const done = live.filter((e) => ['ok', 'default'].includes(e.status)).length;
+            return (
+              <button key={g.id} type="button" role="tab" aria-selected={group === g.id} onClick={() => setGroup(g.id)}
+                className={`shrink-0 rounded-2xl px-3.5 py-2 text-left ${group === g.id ? 'bg-[#E8C26B] text-black' : 'bg-black/40 text-white/80'}`}>
+                <div className="text-[13px] font-semibold">{g.label}</div>
+                <div className={`text-[11px] ${group === g.id ? 'text-black/70' : 'text-white/45'}`}>{done}/{live.length} έτοιμα</div>
+              </button>
+            );
+          })}
+        </div>
+        <div className="grid gap-2 sm:grid-cols-2">
           <select value={status} onChange={(e) => setStatus(e.target.value)} aria-label="Κατάσταση" className="h-10 rounded-xl border border-white/10 bg-[#2C2C2E] px-3 text-sm">
             <option value="attention">Χρειάζονται προσοχή (λείπουν / σβήστηκαν)</option>
             <option value="missing">Όλα όσα λείπουν (και προαιρετικά)</option>
             <option value="ok">Όσα υπάρχουν</option>
             <option value="live">Όλες οι θέσεις σε χρήση</option>
             <option value="all">Όλα (και όσα δεν εμφανίζονται πουθενά)</option>
-          </select>
-          <select value={group} onChange={(e) => setGroup(e.target.value)} aria-label="Ομάδα" className="h-10 rounded-xl border border-white/10 bg-[#2C2C2E] px-3 text-sm">
-            <option value="all">Όλες οι ομάδες</option>
-            {groups.map((g) => <option key={g.id} value={g.id}>{g.label}</option>)}
           </select>
           <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Αναζήτηση (όνομα, θέση…)" className="h-10 rounded-xl border border-white/10 bg-[#2C2C2E] px-3 text-sm" />
         </div>
@@ -271,6 +282,7 @@ export default function AdminMediaMap({ ov = {}, library = [], onSave, onRefresh
                   </div>
                   {e.need !== 'inactive' && (
                     <div className="flex shrink-0 gap-1.5">
+                      {e.group === 'sounds' && <button type="button" aria-label={`Ακρόαση: ${e.label}`} onClick={() => { const id = e.id.slice(6); if (e.url) { try { playSoundFile(e.url); } catch { /* χωρίς ήχο */ } } else { const [g, n] = id.split('.'); (g === 'tv' ? tvSfx : sfx)[n]?.(); } }} className="h-9 w-9 rounded-full bg-[#2C2C2E] text-sm">▶</button>}
                       <button type="button" disabled={disabled} onClick={() => pick(e)} className="h-9 rounded-full bg-[#E8C26B] px-3.5 text-xs font-bold text-black disabled:opacity-50">{busy === e.id ? 'Ανέβασμα…' : e.url && e.status !== 'default' ? 'Αλλαγή' : 'Ανέβασμα'}</button>
                       {e.url && e.status !== 'default' && <button type="button" disabled={disabled} onClick={() => clear(e)} className="h-9 rounded-full bg-[#2C2C2E] px-3 text-xs text-white/70 disabled:opacity-50">Αφαίρεση</button>}
                     </div>

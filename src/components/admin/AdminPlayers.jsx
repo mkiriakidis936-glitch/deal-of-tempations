@@ -115,7 +115,7 @@ export default function AdminPlayers({ sessions, selectedSession, onSelect, onUp
             <div className="mt-1 text-[11px] text-foreground/70">Σειρά: {currentPlayer?.name || '—'} · Τελευταία ενέργεια: {String(activityLabel).replace(/[_-]/g, ' ')}</div>
           </div>
           <div className="flex gap-2 flex-wrap">
-            <ComicButton variant="green" size="sm" onClick={saveAll}>💾 ΑΠΟΘΗΚΕΥΣΗ ΟΛΩΝ</ComicButton>
+            <ComicButton variant="green" size="sm" onClick={saveAll}>💾 Αποθήκευση όλων</ComicButton>
           </div>
         </div>
       </ComicPanel>
@@ -128,7 +128,7 @@ export default function AdminPlayers({ sessions, selectedSession, onSelect, onUp
             <ComicPanel key={p.id} className="bg-card">
               <div className="flex items-center gap-2 mb-3">
                 <div className="font-heading text-lg flex-1">{p.name}</div>
-                <span className={`text-[10px] font-bold px-2 py-1 rounded-full ${presence[p.id] && Date.now() - Number(presence[p.id]) <= 45000 ? 'bg-emerald-500/15 text-emerald-300' : 'bg-secondary text-foreground/45'}`}>{presence[p.id] && Date.now() - Number(presence[p.id]) <= 45000 ? '● ΣΥΝΔΕΔΕΜΕΝΗ' : '○ ΕΚΤΟΣ ΣΥΝΔΕΣΗΣ'}</span>
+                <span className={`text-[10px] font-bold px-2 py-1 rounded-full ${presence[p.id] && Date.now() - Number(presence[p.id]) <= 45000 ? 'bg-emerald-500/15 text-emerald-300' : 'bg-secondary text-foreground/45'}`}>{presence[p.id] && Date.now() - Number(presence[p.id]) <= 45000 ? '● Συνδεδεμένη' : '○ Εκτός σύνδεσης'}</span>
                 {mode === 'classic' && edit.isChief && <span className="bg-tarot-teal text-foreground text-xs px-2 py-0.5 rounded font-bold">🚔 Αστυνόμος</span>}
                 {mode === 'pajama' && state.pajama?.saboteurId === p.id && <span className="bg-destructive/30 text-foreground text-xs px-2 py-0.5 rounded font-bold">🎭 Saboteur</span>}
                 {isArrestHeist && edit.isLeader && <span className="bg-tarot-teal text-foreground text-xs px-2 py-0.5 rounded font-bold">👑 Αρχηγός</span>}
@@ -137,7 +137,7 @@ export default function AdminPlayers({ sessions, selectedSession, onSelect, onUp
               </div>
               {p.vipProfile?.answerLabels && (
                 <details className="mb-3 rounded-lg border border-[#b99a45]/35 bg-black/30 p-3">
-                  <summary className="cursor-pointer text-xs font-bold text-[#E8C26B]">✦ VIP ΠΡΟΦΙΛ ΣΥΜΜΕΤΕΧΟΥΣΑΣ</summary>
+                  <summary className="cursor-pointer text-xs font-bold text-[#E8C26B]">✦ VIP προφίλ συμμετέχουσας</summary>
                   <div className="mt-2 space-y-1 text-xs text-foreground/75">
                     {Object.entries(p.vipProfile.answerLabels).filter(([, value]) => String(value || '').trim()).map(([label, value]) => (
                       <div key={label}><span className="text-[#E8C26B]">{label}:</span> {String(value)}</div>
@@ -294,7 +294,7 @@ export default function AdminPlayers({ sessions, selectedSession, onSelect, onUp
                 >
                   🛡️ Ασυλία
                 </button>
-                <ComicButton variant="green" size="sm" onClick={() => savePlayer(p.id)}>💾 ΑΠΟΘΗΚΕΥΣΗ</ComicButton>
+                <ComicButton variant="green" size="sm" onClick={() => savePlayer(p.id)}>💾 Αποθήκευση</ComicButton>
               </div>
             </ComicPanel>
           );

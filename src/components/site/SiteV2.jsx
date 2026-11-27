@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import MediaSpot from '@/components/shared/MediaSpot';
 import { ART, PHOTO, FILM, MODE_COVERS, MODE_MEDIA, HEIST_PHOTOS, PAJAMA_PHOTOS, videosFor } from '@/data/brandArt';
 import { SITE_EVENTS, getSiteContent } from '@/data/siteContent';
-import { modeMeta } from '@/data/modes/modeRegistry';
+import { modeMeta, durationLabel } from '@/data/modes/modeRegistry';
 import { MODE_GUIDE, SAFETY_RULES } from '@/data/modes/modeGuide';
 
 // ------------------------------------------------------------------
@@ -10,6 +10,7 @@ import { MODE_GUIDE, SAFETY_RULES } from '@/data/modes/modeGuide';
 // Admin → Site & Σενάριο και όλα τα media από το MODE MEDIA CENTER.
 // ------------------------------------------------------------------
 
+const COUNT_WORDS = { 3: 'Τρεις', 4: 'Τέσσερις', 5: 'Πέντε', 6: 'Έξι', 7: 'Επτά', 8: 'Οκτώ' };
 export const SITE_MODE_IDS = { classic: 'classic', heist: 'arrest_heist', lockdown: 'lockdown', marathon4h: 'marathon_4h', villa: 'villa_takeover' };
 
 const imageFor = (ev) => {
@@ -21,7 +22,7 @@ const imageFor = (ev) => {
 const factsFor = (ev) => {
   const meta = modeMeta(SITE_MODE_IDS[ev]);
   if (!meta) return ['2 ομάδες', '4–10 παίκτριες', '18+'];
-  const hours = meta.minutes >= 60 ? `${Math.floor(meta.minutes / 60)}${meta.minutes % 60 ? `.${Math.round((meta.minutes % 60) / 6)}` : ''} ώρ${meta.minutes >= 120 ? 'ες' : 'α'}` : `${meta.minutes}′`;
+  const hours = durationLabel(meta);
   return [hours, `${meta.min}–${meta.max} παίκτριες`, '18+'];
 };
 
@@ -135,7 +136,7 @@ export function ExperiencesRail({ onOpen, onBook }) {
   return (
     <section id="experiences" className="relative py-20 sm:py-28">
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
-        <SectionTitle kicker="Οι εμπειρίες" title={<>Διάλεξε τη <span className="dot-gold-text">βραδιά σου</span></>} text="Έξι διαφορετικές εμπειρίες, μία ιδιωτική παρέα. Κάθε μία με δικό της σενάριο, ρυθμό και φινάλε." />
+        <SectionTitle kicker="Οι εμπειρίες" title={<>Διάλεξε τη <span className="dot-gold-text">βραδιά σου</span></>} text={`${COUNT_WORDS[SITE_EVENTS.length] || SITE_EVENTS.length} διαφορετικές εμπειρίες, μία ιδιωτική παρέα. Κάθε μία με δικό της σενάριο, ρυθμό και φινάλε.`} />
       </div>
       <div className="dot-rail flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-6 sm:gap-6 sm:px-6 lg:mx-auto lg:grid lg:max-w-7xl lg:grid-cols-3 lg:overflow-visible">
         {SITE_EVENTS.map((event, index) => {

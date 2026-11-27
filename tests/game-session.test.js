@@ -243,23 +243,66 @@ test('villa takeover: phones see only their own role, clues, alliances and alert
   assert.equal(validatePlayerPatch(current, { mg: { playerAction: { playerId: 'p1', type: 'villa_code', code: '4721', at: 1 } } }, 'p1'), true);
   assert.equal(validatePlayerPatch(current, { mg: { playerAction: { playerId: 'p1', type: 'villa_vote', target: 'p1', at: 1 } } }, 'p1'), false);
   assert.equal(validatePlayerPatch(current, { mg: { playerAction: { playerId: 'p1', type: 'villa_quiet', value: true, at: 1 } } }, 'p1'), true);
+  assert.equal(validatePlayerPatch(current, { mg: { playerAction: { playerId: 'p1', type: 'villa_profile', nail: 'Κόκκινο', at: 1 } } }, 'p1'), true);
+  assert.equal(validatePlayerPatch(current, { mg: { playerAction: { playerId: 'p1', type: 'villa_profile', footwear: 7, at: 1 } } }, 'p1'), false);
+  assert.equal(validatePlayerPatch(current, { mg: { playerAction: { playerId: 'p1', type: 'villa_heist', target: 'p0', at: 1 } } }, 'p1'), true);
+  const withHeist = sanitizePublicSession({ state: { ...rec.state, mg: { villa: { ...villa, sockBomb: 'p0', heistLog: [{ thief: 'p1', victim: 'p0', n: 1, at: 1, night: 1 }] } } } }, 'p0').state.mg.villa;
+  assert.equal(withHeist.sockBomb, undefined);
+  assert.equal(withHeist.heistLog[0].thief, undefined);
 });
 
-test('villa engine: unique roles, hourly schedule, PASS never penalises, code check', async () => {
+test('villa engine: 48/72 ώρες, 4-step Round Strip, νύχτες, κλοπές, PASS χωρίς ποινή, κωδικός', async () => {
   const V = await import('../src/lib/villaEngine.js');
+  const C = await import('../src/data/modes/villaContent.js');
   const ps = Array.from({ length: 8 }, (_, i) => ({ id: `p${i}` }));
   const v = V.initVilla(ps, { rng: () => 0.3, now: 0 });
   const roles = Object.values(v.roles).filter((r) => r !== 'guest');
   assert.equal(new Set(roles).size, roles.length);
   assert.match(v.code, /^\d{4}$/);
+  // Κάθε ώρα έχει τετράγωνο, και οι 4 ενδείξεις υπάρχουν μία φορά σε κάθε έκδοση.
+  for (const hours of [48, 72]) {
+    const board = V.boardOf({ hours });
+    assert.equal(board.length, hours);
+    assert.ok(board.every(Boolean), `${hours}h: λείπει τετράγωνο`);
+    assert.deepEqual(board.filter((s) => s.clue !== undefined).map((s) => s.clue).sort(), [0, 1, 2, 3]);
+    assert.equal(board[hours - 1].finale, 'awards');
+    assert.ok(board.some((s) => s.finale === 'code'));
+    assert.equal(V.phasesOf({ hours }).at(-1).to, hours);
+  }
+  assert.equal(V.boardOf({ hours: 72 }).filter((s) => s.heist).length, 2, '72ωρο = διπλή νύχτα');
+  assert.equal(V.squareAt(49, { hours: 72 }).shift, true, 'Alliance Shift στην 49η ώρα');
   assert.equal(V.scheduledSquare(v, 3 * 3600000 + 5), 4);
   assert.equal(V.scheduledSquare(v, 99 * 3600000), 48);
-  assert.equal(V.scheduledSquare({ ...v, extended: true }, 99 * 3600000), 56);
-  assert.equal(V.pointsFor(V.squareAt(26), 'pass'), 0);
-  assert.ok(V.pointsFor(V.squareAt(26), 'lose') < 0);
+  assert.equal(V.scheduledSquare({ ...v, hours: 72 }, 99 * 3600000), 72);
+  // Round Strip μόνο προς τα πάνω.
+  let s = V.setStrip(v, 1);
+  assert.equal(s.strip, 1);
+  assert.equal(V.setStrip(s, 1), s);
+  s = V.setStrip(V.setStrip(V.setStrip(s, 2), 3), 4);
+  assert.equal(V.footwearLevelOf(s, 'p0'), 0);
+  assert.equal(C.STRIP_STEPS.length, 4);
+  // Νύχτα → κλοπή (Phantom ×2) → πρωινός απολογισμός.
+  let n = { ...v, hours: 72 };
+  while ((n.sq || 1) < 20) n = V.advance(n);
+  assert.equal(n.night, true);
+  const phantom = Object.keys(n.roles).find((id) => n.roles[id] === 'phantom');
+  const { villa: afterHeist, n: got } = V.logHeist(n, phantom, phantom === 'p0' ? 'p1' : 'p0');
+  assert.equal(got, 2);
+  let m = afterHeist;
+  while ((m.sq || 1) < 25) m = V.advance(m);
+  assert.equal(m.night, false);
+  assert.equal(m.morningSummary.top, phantom);
+  // Πόντοι, κωδικός, διαταγή, άγαλμα.
+  assert.equal(V.pointsFor(V.squareAt(14, { hours: 72 }), 'pass'), 0);
+  assert.ok(V.pointsFor(V.squareAt(13, { hours: 72 }), 'lose') < 0);
   assert.equal(V.tryCode(v, 'p1', v.code).ok, true);
-  assert.equal(V.tryCode(v, 'p1', '0000' === v.code ? '1111' : '0000').ok, false);
+  assert.ok(V.tryCode(v, 'p1', v.code === '0000' ? '1111' : '0000').villa.surge);
   assert.equal(V.cluesFound(V.awardClue(V.awardClue(v, 1, 'p0'), 1, 'p3')), 1);
+  assert.equal(V.commandActive(V.startCommand(v, 'p0', C.VILLA_ROYAL_COMMANDS[0], 0), 5 * 60000), true);
+  assert.equal(V.statueActive(V.startStatue(v, 30, 0), 31000), false);
+  // Όλο το περιεχόμενο του PDF.
+  assert.deepEqual([C.VILLA_QUESTIONS.length, C.VILLA_DARES.length, C.VILLA_NAIL_CARDS.length, C.VILLA_FLIRT_QUESTIONS.length, C.VILLA_COMMAND_CARDS.length, C.VILLA_HUNT_CARDS.length, C.VILLA_NIGHT_CHALLENGES.length], [20, 20, 15, 20, 15, 10, 5]);
+  assert.ok(C.VILLA_DECKS.every((d) => C.deckCards(d.id).length > 0));
 });
 
 test('προσωπικός PIN: ποτέ δημόσιος, απαραίτητος για προσωπικά δεδομένα, παλιές βραδιές χωρίς PIN λειτουργούν', async () => {

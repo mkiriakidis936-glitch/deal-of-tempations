@@ -6,7 +6,7 @@ import { CONTENT_CATEGORIES } from '@/components/admin/content/contentSchemas';
 const MODE_GROUPS = [
   {
     id: 'classic',
-    label: '🎲 ΚΛΑΣΙΚΟ MODE',
+    label: '🎲 Κλασικό mode',
     desc: '44 κουτιά · Σκάλα 7 Ποινών · Στάδια 1-3',
     color: 'bg-tarot-wine',
     cats: ['board', 'penalties', 'footwear_levels', 'hidden_roles', 'toenail_perks', 'warrant_cards', 'glitch_cards', 'black_market_options', 'street_truths', 'street_dares', 'hardcore_truths', 'ultimate_truths', 'extreme_protocols'],
@@ -23,7 +23,7 @@ const MODE_GROUPS = [
     label: '🚨 ARREST & HEIST',
     desc: '6 γύροι · Σκάλα Σύλληψης · Grand Heist Escape',
     color: 'bg-destructive',
-    badge: '⚡ ΝΕΟ',
+    badge: '⚡ Νέο',
     cats: ['arrest_heist_ladder', 'arrest_heist_dares', 'arrest_heist_truths', 'arrest_heist_intensity'],
   },
   {
@@ -42,7 +42,7 @@ const MODE_GROUPS = [
   },
   {
     id: 'global',
-    label: '⚙️ ΓΕΝΙΚΕΣ ΡΥΘΜΙΣΕΙΣ',
+    label: '⚙️ Γενικές ρυθμίσεις',
     desc: 'Game Modes · Intensity Levels · Square Types',
     color: 'bg-tarot-teal',
     cats: ['game_modes', 'intensity_levels', 'square_types'],
@@ -61,7 +61,7 @@ export default function AdminContent({ modeFilter }) {
   return (
     <div className="space-y-3">
       <ComicPanel className="bg-primary">
-        <div className="font-heading text-xl comic-text-stroke">📦 ΔΙΑΧΕΙΡΙΣΗ ΠΕΡΙΕΧΟΜΕΝΟΥ</div>
+        <div className="font-heading text-xl comic-text-stroke">📦 Διαχείριση περιεχομένου</div>
         <div className="text-xs font-bold mt-1">
           Οργανωμένο ανά Mode — κάθε ομάδα ελέγχει ξεχωριστά το περιεχόμενό της.
         </div>

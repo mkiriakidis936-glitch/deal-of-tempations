@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { GAME_MODES } from '@/data/gameConfig';
-import { NEW_MODES, modeMeta } from '@/data/modes/modeRegistry';
+import { NEW_MODES, modeMeta, durationLabel } from '@/data/modes/modeRegistry';
 import ModeForm from '@/pages/ModeForm';
 import InvitationIntakeForm from '@/components/invitation/InvitationIntakeForm';
 import { FormShell, SuccessScreen, formImageFor } from '@/components/forms/FormKit';
@@ -50,7 +50,7 @@ export default function PublicForms() {
                 <div className="absolute inset-y-0 left-0 flex max-w-[78%] flex-col justify-center p-5">
                   <div className="text-xl font-bold leading-tight text-white">{mode.icon} {mode.name}</div>
                   <div className="mt-1 line-clamp-2 text-xs text-white/70">{mode.desc}</div>
-                  {meta && <div className="mt-2 text-[11px] font-semibold text-[#E8C26B]">{meta.minutes}′ · {meta.min}–{meta.max} παίκτριες</div>}
+                  {meta && <div className="mt-2 text-[11px] font-semibold text-[#E8C26B]">{durationLabel(meta)} · {meta.min}–{meta.max} παίκτριες</div>}
                 </div>
                 <span className="absolute bottom-4 right-4 flex h-10 w-10 items-center justify-center rounded-full bg-[#E8C26B] text-lg font-bold text-black">→</span>
               </button>

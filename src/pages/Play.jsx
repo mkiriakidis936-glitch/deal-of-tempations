@@ -3,6 +3,7 @@ import ScreenWallpaper from '@/components/shared/ScreenWallpaper';
 import SoundUnlock from '@/components/shared/SoundUnlock';
 import GameCard from '@/components/shared/GameCard';
 import ModeMobile from '@/components/modes/ModeMobile';
+import ModeArt from '@/components/modes/ModeArt';
 import { isNewMode } from '@/data/modes/modeRegistry';
 import { ART } from '@/data/brandArt';
 import React, { useRef, useState } from 'react';
@@ -294,6 +295,7 @@ function PlayInner() {
 
         {activeTab === 'status' && (
           <>
+            {(state.mode === 'classic' || state.mode === 'arrest_heist') && <ModeArt state={state} alt="" className="aspect-[16/9] rounded-2xl" />}
             <MobileStatus state={state} myPlayer={myPlayer} isMyTurn={isMyTurn} />
             {state.absoluteInterrogation?.active && <AbsoluteInterrogationMobile state={state} myPlayer={myPlayer} updateState={updateState} />}
             {state.bailoutAuction?.active && <BailoutAuctionMobile state={state} myPlayer={myPlayer} updateState={updateState} />}

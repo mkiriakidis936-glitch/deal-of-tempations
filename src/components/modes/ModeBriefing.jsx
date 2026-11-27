@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { MODE_GUIDE, SAFETY_RULES, PLAYER_REMINDERS, SCREENS, currentPhase, phaseIdFor } from '@/data/modes/modeGuide';
 import { modeMeta } from '@/data/modes/modeRegistry';
-import { modeArtUrl, artSectionFor } from '@/components/modes/ModeArt';
+import ModeArt, { modeArtUrl, artSectionFor } from '@/components/modes/ModeArt';
 import { rankPlayers, pointsOf, championOf, finalStandings, liveStandings } from '@/lib/modeRanking';
 import { GAME_MODES } from '@/data/gameConfig';
 import { introVideoFor } from '@/components/tv/GameIntroTV';
@@ -117,6 +117,7 @@ export function PhaseGuideTablet({ state }) {
   if (!phase) return null;
   return (
     <div className="rounded-3xl border border-[#E8C26B]/30 bg-[#17140C] p-4">
+      <ModeArt state={state} alt={phase.title} className="mb-3 aspect-[21/8] rounded-2xl" />
       <div className="flex items-center justify-between gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-[#E8C26B]">
         <span>Φάση {phase.index + 1}/{phase.total}</span>
         <span className="flex gap-1">{Array.from({ length: phase.total }, (_, i) => <span key={i} className={`h-1.5 w-6 rounded-full ${i <= phase.index ? 'bg-[#E8C26B]' : 'bg-white/15'}`} />)}</span>

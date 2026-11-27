@@ -88,14 +88,14 @@ if (fs.existsSync(dist)) {
     } catch { /* κρατάμε το τελευταίο γνωστό */ }
     return indexTemplate;
   };
-  const SITE_DESC = 'DEAL OF TEMPTATIONS — THE PRIVATE REALITY GAME NIGHT. Ιδιωτική βιωματική Reality Show εμπειρία με παιχνίδια, σκηνοθεσία, ήχο, εικόνα και προαιρετικό recap. 18+.';
+  const SITE_DESC = 'Deal of Temptation — The private reality game night. Ιδιωτική βιωματική Reality Show εμπειρία με παιχνίδια, σκηνοθεσία, ήχο, εικόνα και προαιρετικό recap. 18+.';
   const PAGES = {
-    '/site': { title: 'DEAL OF TEMPTATIONS — THE PRIVATE REALITY GAME NIGHT', desc: SITE_DESC, index: true },
-    '/portal': { title: 'DEAL OF TEMPTATIONS — Πληροφορίες Event', desc: 'Ημερομηνία, τοποθεσία και πρακτικές πληροφορίες της εκδήλωσης.' },
-    '/promo': { title: 'DEAL OF TEMPTATIONS — Trailer', desc: SITE_DESC, index: true },
-    '/gift-unlock': { title: 'DEAL OF TEMPTATIONS — Ξεκλείδωσε το δώρο σου', desc: 'Βάλε τον κωδικό σου και ξεκλείδωσε το δώρο.' },
+    '/site': { title: 'Deal of Temptation — The private reality game night', desc: SITE_DESC, index: true },
+    '/portal': { title: 'Deal of Temptation — Πληροφορίες Event', desc: 'Ημερομηνία, τοποθεσία και πρακτικές πληροφορίες της εκδήλωσης.' },
+    '/promo': { title: 'Deal of Temptation — Trailer', desc: SITE_DESC, index: true },
+    '/gift-unlock': { title: 'Deal of Temptation — Ξεκλείδωσε το δώρο σου', desc: 'Βάλε τον κωδικό σου και ξεκλείδωσε το δώρο.' },
     '/play': { title: 'DT Play — Deal of Temptation', desc: 'Το κινητό σου στο παιχνίδι.' },
-    '/forms': { title: 'DEAL OF TEMPTATIONS — Φόρμα συμμετοχής', desc: 'Ενιαία φόρμα επιλογής Mode και υποβολής συμμετοχής.' },
+    '/forms': { title: 'Deal of Temptation — Φόρμα συμμετοχής', desc: 'Ενιαία φόρμα επιλογής Mode και υποβολής συμμετοχής.' },
   };
   const esc = (v) => String(v).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
   const renderIndex = (req) => {

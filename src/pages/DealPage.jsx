@@ -41,7 +41,7 @@ export default function DealPage() {
     <main className="min-h-screen flex items-center justify-center bg-[#080808] px-4 py-10 text-[#f5ebd1]">
       <form onSubmit={submit} className={panel}>
         <div className="text-center">
-          <div className="text-xs tracking-[.4em] text-[#E8C26B]">DEAL OF TEMPTATIONS</div>
+          <div className="text-xs tracking-[.4em] text-[#E8C26B]">DEAL OF TEMPTATION</div>
           <h1 className="mt-3 font-display text-3xl text-[#F7E3A8]">{roomCode ? 'ΔΗΛΩΣΗ ΣΥΜΜΕΤΟΧΗΣ' : 'ΔΗΛΩΣΗ ΕΝΔΙΑΦΕΡΟΝΤΟΣ'}</h1>
           <p className="mt-2 text-sm text-[#b6aa8b]">{roomCode ? 'Η δήλωση αφορά αποκλειστικά το συγκεκριμένο Event.' : 'Η δήλωση είναι ανεξάρτητη από Event, πρόσκληση ή παιχνίδι.'}</p>
         </div>

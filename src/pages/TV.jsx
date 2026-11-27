@@ -235,6 +235,8 @@ export default function TVScreen() {
   const engineCeremony = isEngine && state.stage === 3;
   // Classic/Arrest Heist: η φωτογραφία της στιγμής (κάρτα, ποινή, φάση) από το MODE MEDIA CENTER, ως φόντο.
   const engineArt = isEngine && state.stage > 0 ? modeArtUrl(state.mode, artSectionFor(state), state) : '';
+  // Αναμονή έναρξης: φωτογραφία της ενότητας «Προετοιμασία» (Classic) / «Alpha vs Beta» (Arrest Heist).
+  const waitingArt = (isEngine ? modeArtUrl(state.mode, artSectionFor(state), state) : '') || PHOTO.tv || ART.heist5;
 
   return (
     <div className={`dot-tv-shell ui-tv min-h-screen text-foreground flex flex-col ${fullscreen ? 'dot-tv-fullscreen' : ''}`}>
@@ -319,10 +321,13 @@ export default function TVScreen() {
           )}
 
 
+          {engineArt && !engineBriefing && state.stage !== 3 && !state.bombEvent && (
+            <img key={engineArt} src={engineArt} alt="" onError={(e) => { e.currentTarget.style.display = 'none'; }} className="h-[16vh] w-full shrink-0 rounded-3xl object-cover" />
+          )}
           <div className="flex-1 flex items-center justify-center">
             {state.stage === 0 && !isPajama ? (
               <div className="ui-card relative flex w-full max-w-[min(88vw,1700px)] items-center gap-12 overflow-hidden p-12">
-                {(PHOTO.tv || ART.heist5) && <img src={PHOTO.tv || ART.heist5} alt="" onError={(e) => { e.currentTarget.style.display = 'none'; }} className="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-35" />}
+                {waitingArt && <img src={waitingArt} alt="" onError={(e) => { e.currentTarget.style.display = 'none'; }} className="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-35" />}
                 <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-black via-black/70 to-black/20" />
                 <div className="relative flex-1 space-y-4 text-left">
                   <div className="ui-tv-eyebrow ui-tv-eyebrow--gold">Deal of Temptation</div>

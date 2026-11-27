@@ -65,7 +65,7 @@ export default function AdminSiteVersions({ eventId, onRestore }) {
 
   return (
     <ComicPanel className="bg-card space-y-2">
-      <div className="font-heading text-lg">🕘 ΙΣΤΟΡΙΚΟ ΕΚΔΟΣΕΩΝ SITE</div>
+      <div className="font-heading text-lg">🕘 Ιστορικό εκδόσεων SITE</div>
       {message && <div className="text-xs font-bold text-primary">{message}</div>}
       {loading ? <div className="text-xs">Φόρτωση…</div> : versions.length === 0 ? (
         <div className="text-xs text-foreground/50">Δεν υπάρχουν προηγούμενες εκδόσεις για αυτό το event.</div>
@@ -74,7 +74,7 @@ export default function AdminSiteVersions({ eventId, onRestore }) {
           {versions.map((version) => (
             <div key={version.id} className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-border/50 p-2">
               <div className="text-xs min-w-0"><div>{new Date(version.createdAt).toLocaleString('el-GR')}</div><div className="text-[10px] text-foreground/50">Αλλαγή από: {version.changedBy || 'Admin'}</div><div className="text-[10px] text-foreground/50">Πεδία: {(version.changedFields || []).join(', ') || 'Περιεχόμενο'}</div></div>
-              <ComicButton size="sm" variant="dark" disabled={busy} onClick={() => restore(version)}>ΑΝΑΙΡΕΣΗ / ΕΠΑΝΑΦΟΡΑ</ComicButton>
+              <ComicButton size="sm" variant="dark" disabled={busy} onClick={() => restore(version)}>Αναίρεση / επαναφορά</ComicButton>
             </div>
           ))}
         </div>

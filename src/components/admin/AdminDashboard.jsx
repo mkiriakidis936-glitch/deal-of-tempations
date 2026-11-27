@@ -32,7 +32,7 @@ export default function AdminDashboard() {
   }, []);
 
   if (loading) {
-    return <ComicPanel className="bg-card text-center py-8"><div className="font-heading text-2xl comic-pulse">ΦΟΡΤΩΣΗ...</div></ComicPanel>;
+    return <ComicPanel className="bg-card text-center py-8"><div className="font-heading text-2xl comic-pulse">Φόρτωση...</div></ComicPanel>;
   }
   if (error || !stats) {
     return <ComicPanel className="bg-card text-center py-8 text-red-400">{error || 'Δεν υπάρχουν διαθέσιμα στατιστικά.'}</ComicPanel>;

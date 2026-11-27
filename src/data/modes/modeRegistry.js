@@ -27,7 +27,7 @@ export const NEW_MODES = [
     id: 'villa_takeover',
     name: 'VILLA TAKEOVER 48/72',
     icon: '🏝️',
-    desc: 'Πολυήμερο ψηφιακό παιχνίδι 18+ σε Villa / Airbnb: 48 ώρες σε 3 κύκλους (+24 ώρες After Dark), ταμπλό 48 τετραγώνων, μυστικοί ρόλοι, συμμαχίες, Truth or Dare 18+, Night Sock Heist, κωδικός 4 ψηφίων και Queen of the Villa.',
+    desc: 'Πολυήμερο ψηφιακό παιχνίδι 18+ σε Villa / Airbnb, σε έκδοση 48 ή 72 ωρών: ταμπλό 3 κύκλων και 48/72 τετραγώνων, 4-Step Round Strip, σαγιονάρες & χρώμα νυχιών, δεσίματα, μύτες, γαργάλημα, χορός, σφηνάκια με δεμένα χέρια, Απόλυτες Διαταγές, Κλέφτρες & Αστυνομικίνες, διπλό Night Sock Heist, μυστικοί ρόλοι, συμμαχίες και τετραψήφιος κωδικός για την Τελική Αναμέτρηση.',
     min: 3,
     max: 8,
     acts: ['villa'],
@@ -100,13 +100,18 @@ export const MODE_MEDIA_SECTIONS = {
     { id: 'arrest', label: 'Σύλληψη & ανάκριση', filename: 'heist_arrest.jpg', alt: 'penalties' },
   ],
   villa_takeover: [
-    { id: 'arrival', label: 'Κύκλος 1 — The Arrival', filename: 'villa_cycle1.jpg' },
-    { id: 'temptation', label: 'Κύκλος 2 — The Temptation', filename: 'villa_cycle2.jpg' },
-    { id: 'takeover', label: 'Κύκλος 3 — The Final Takeover', filename: 'villa_cycle3.jpg' },
-    { id: 'afterdark', label: 'After Dark — The Final 24', filename: 'villa_afterdark.jpg' },
-    { id: 'night', label: 'Night Mode / Night Sock Heist', filename: 'villa_night.jpg' },
-    { id: 'crown', label: 'Grand Finale & Queen of the Villa', filename: 'villa_crown.jpg' },
-    { id: 'roles', label: 'Μυστικοί ρόλοι & συμμαχίες', filename: 'villa_roles.jpg', alt: 'temptation' },
+    { id: 'arrival', label: 'Ημέρα 1 — Άφιξη & Round Strip', filename: 'villa_day1.jpg' },
+    { id: 'temptation', label: 'Ημέρα 2 — Ένταση & Μίνι-Παιχνίδια', filename: 'villa_day2.jpg' },
+    { id: 'takeover', label: 'Ημέρα 3 — Ανατροπή Συμμαχιών', filename: 'villa_day3.jpg' },
+    { id: 'night', label: 'Νύχτες — Night Mode & Night Sock Heist', filename: 'villa_night.jpg' },
+    { id: 'strip', label: '4-Step Round Strip', filename: 'villa_round_strip.jpg', alt: 'arrival' },
+    { id: 'restraint', label: 'Δεσίματα, μύτες & γαργάλημα', filename: 'villa_restraint.jpg', alt: 'temptation' },
+    { id: 'nails', label: 'Σαγιονάρες & χρώμα νυχιών', filename: 'villa_nails.jpg', alt: 'arrival' },
+    { id: 'command', label: 'Απόλυτη Διαταγή & Άγαλμα', filename: 'villa_command.jpg' },
+    { id: 'cops', label: 'Κλέφτρες & Αστυνομικίνες', filename: 'villa_cops.jpg' },
+    { id: 'roles', label: 'Μυστικοί ρόλοι, συμμαχίες & ψηφοφορίες', filename: 'villa_roles.jpg', alt: 'takeover' },
+    { id: 'finale', label: 'Τελική Αναμέτρηση & κωδικός', filename: 'villa_finale.jpg' },
+    { id: 'crown', label: 'Απονομή — Queen of the Villa', filename: 'villa_crown.jpg' },
   ],
   marathon_4h: [
     { id: 'phase1', label: 'Φάση 1 — Warm-up & Slipper Grabbing', filename: 'lounge_phase1.jpg' },
@@ -162,3 +167,12 @@ export const MEDIA_MODES = [
   ...ENGINE_MODES,
   ...NEW_MODES.map(({ id, name, icon }) => ({ id, name, icon, kind: 'digital' })),
 ];
+
+// Διάρκεια για Site, Promo και φόρμες: «105′», «3 ώρες», «48 ή 72 ώρες».
+export function durationLabel(meta) {
+  if (!meta?.minutes) return '';
+  if (meta.id === 'villa_takeover') return '48 ή 72 ώρες';
+  if (meta.minutes < 120) return `${meta.minutes}′`;
+  const h = meta.minutes / 60;
+  return `${h.toLocaleString('el-GR', { maximumFractionDigits: 1 })} ώρες`;
+}

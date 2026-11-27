@@ -199,7 +199,7 @@ export default function AdminLiveShow({ sessions = [], selectedSession, onSelect
             onClick={togglePause}
             className={`flex w-full items-center justify-center gap-2 rounded-2xl py-5 text-lg font-black ${paused ? 'bg-emerald-600 text-white' : 'bg-[#FF453A] text-white'}`}
           >
-            {paused ? <><Play size={20} /> ΣΥΝΕΧΕΙΑ ΕΚΠΟΜΠΗΣ</> : <><Square size={20} /> ΣΤΟΠ ΣΕ ΟΛΕΣ ΤΙΣ ΟΘΟΝΕΣ</>}
+            {paused ? <><Play size={20} /> Συνέχεια εκπομπής</> : <><Square size={20} /> Στοπ σε όλες τις οθόνες</>}
           </button>
           <div className="rounded-xl border border-border/50 p-3 text-sm">
             <div className="text-[11px] text-foreground/55">Στην TV τώρα</div>

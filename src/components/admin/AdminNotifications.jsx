@@ -60,7 +60,7 @@ export default function AdminNotifications() {
   return (
     <div className="space-y-3">
       <ComicPanel className="bg-card space-y-3">
-        <div className="font-heading text-xl text-primary">🔔 ΕΙΔΟΠΟΙΗΣΕΙΣ (PUSH)</div>
+        <div className="font-heading text-xl text-primary">🔔 Ειδοποιήσεις (PUSH)</div>
         <p className="text-xs font-body text-foreground/70">
           Παίρνεις ειδοποίηση στη συσκευή σου όταν υποβάλλεται νέα αίτηση από την ενιαία δημόσια φόρμα <b>/forms</b> ή όταν συμπληρώνεται το <b>VIP ερωτηματολόγιο</b>.
           Ενεργοποίησέ τες σε κάθε συσκευή που θες (κινητό, MacBook).
@@ -100,7 +100,7 @@ export default function AdminNotifications() {
       </ComicPanel>
 
       <ComicPanel className="bg-card space-y-2">
-        <div className="font-heading text-lg">📲 ΕΓΚΑΤΑΣΤΑΣΗ ΩΣ ΕΦΑΡΜΟΓΗ</div>
+        <div className="font-heading text-lg">📲 Εγκατάσταση ως εφαρμογή</div>
         {isStandalone() ? (
           <div className="text-sm font-bold text-green-400">✅ Τρέχεις ήδη ως εγκατεστημένη εφαρμογή.</div>
         ) : (
@@ -117,10 +117,10 @@ export default function AdminNotifications() {
       </ComicPanel>
 
       <ComicPanel className="bg-card space-y-2">
-        <div className="flex flex-wrap items-center justify-between gap-2"><div className="font-heading text-lg">🕘 ΤΕΛΕΥΤΑΙΕΣ ΕΙΔΟΠΟΙΗΣΕΙΣ</div><ComicButton size="sm" variant="red" disabled={busy || !status.history.length} onClick={deleteAllHistory}>ΔΙΑΓΡΑΦΗ ΟΛΩΝ</ComicButton></div>
+        <div className="flex flex-wrap items-center justify-between gap-2"><div className="font-heading text-lg">🕘 Τελευταίες ειδοποιήσεις</div><ComicButton size="sm" variant="red" disabled={busy || !status.history.length} onClick={deleteAllHistory}>Διαγραφή όλων</ComicButton></div>
         {!status.history.length && <div className="text-xs text-foreground/60">Δεν έχει έρθει καμία ακόμα.</div>}
         {status.history.map((n) => (
-          <div key={n.id} className="flex items-start gap-2 border-2 border-border/40 rounded-lg p-2 bg-secondary/40"><a href={n.url || '/admin'} className="min-w-0 flex-1 hover:underline"><div className="text-sm font-bold">{n.title}</div><div className="text-xs text-foreground/70">{n.body}</div><div className="text-[10px] text-foreground/50">{when(n.created_date)}</div></a><ComicButton size="sm" variant="red" onClick={() => deleteHistoryItem(n)}>ΔΙΑΓΡΑΦΗ</ComicButton></div>
+          <div key={n.id} className="flex items-start gap-2 border-2 border-border/40 rounded-lg p-2 bg-secondary/40"><a href={n.url || '/admin'} className="min-w-0 flex-1 hover:underline"><div className="text-sm font-bold">{n.title}</div><div className="text-xs text-foreground/70">{n.body}</div><div className="text-[10px] text-foreground/50">{when(n.created_date)}</div></a><ComicButton size="sm" variant="red" onClick={() => deleteHistoryItem(n)}>Διαγραφή</ComicButton></div>
         ))}
       </ComicPanel>
     </div>

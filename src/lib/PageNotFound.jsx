@@ -1,73 +1,30 @@
 import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-import { appApi } from '@/api/apiClient';
-import { useQuery } from '@tanstack/react-query';
 
+// Σελίδα 404 — καθαρή, iOS 27, με επιστροφή στο Site.
+export default function PageNotFound() {
+  const location = useLocation();
+  const pageName = location.pathname.substring(1);
 
-export default function PageNotFound({}) {
-    const location = useLocation();
-    const pageName = location.pathname.substring(1);
+  useEffect(() => {
+    const meta = document.createElement('meta');
+    meta.name = 'prerender-status-code';
+    meta.content = '404';
+    document.head.appendChild(meta);
+    return () => { document.head.removeChild(meta); };
+  }, []);
 
-    useEffect(() => {
-        const meta = document.createElement('meta');
-        meta.name = 'prerender-status-code';
-        meta.content = '404';
-        document.head.appendChild(meta);
-        return () => {
-            document.head.removeChild(meta);
-        };
-    }, []);
-
-    const { data: authData, isFetched } = useQuery({
-        queryKey: ['user'],
-        queryFn: async () => {
-            try {
-                const user = await appApi.auth.me();
-                return { user, isAuthenticated: true };
-            } catch (error) {
-                return { user: null, isAuthenticated: false };
-            }
-        }
-    });
-    
-    return (
-        <div className="flex min-h-screen items-center justify-center p-6 comic-dots-dark">
-            <div className="w-full max-w-md">
-                <div className="space-y-8 text-center">
-                    <div className="space-y-3">
-                        <div className="ds-eyebrow text-primary/70">Σφάλμα 404</div>
-                        <h1 className="ds-title text-6xl text-foreground/30">404</h1>
-                        <div className="ds-rule mx-auto w-16"></div>
-                    </div>
-                    
-                    <div className="space-y-3">
-                        <h2 className="ds-title text-2xl">
-                            Η σελίδα δεν βρέθηκε
-                        </h2>
-                        <p className="ds-lede text-sm">
-                            Η διαδρομή <span className="ds-value text-foreground/80">/{pageName}</span> δεν υπάρχει σε αυτή την εφαρμογή.
-                        </p>
-                    </div>
-                    
-                    {isFetched && authData.isAuthenticated && authData.user?.role === 'admin' && (
-                        <div className="rounded-sm border border-primary/12 bg-surface-2/60 p-4 text-left">
-                            <div className="ds-label mb-1 text-primary/80">Σημείωση διαχειριστή</div>
-                            <p className="font-body text-sm leading-relaxed text-foreground/65">
-                                Η σελίδα δεν έχει υλοποιηθεί ακόμα. Ζήτησέ την από τον builder στο chat.
-                            </p>
-                        </div>
-                    )}
-                    
-                    <div className="pt-2">
-                        <button 
-                            onClick={() => window.location.href = '/'} 
-                            className="comic-boom inline-flex items-center gap-2 bg-primary px-5 py-2.5 font-ui text-[11px] uppercase tracking-label text-primary-foreground"
-                        >
-                            Επιστροφή στην αρχή
-                        </button>
-                    </div>
-                </div>
-            </div>
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-black p-6 text-center text-white">
+      <div className="w-full max-w-sm space-y-6">
+        <img src="/icons/icon-192.png" alt="" className="mx-auto h-16 w-16 rounded-2xl" />
+        <div className="space-y-2">
+          <div className="text-[13px] font-semibold uppercase tracking-[0.2em] text-[#E8C26B]">Σφάλμα 404</div>
+          <h1 className="text-3xl font-bold tracking-tight">Η σελίδα δεν βρέθηκε</h1>
+          <p className="text-[15px] text-white/60">Η διαδρομή <span className="font-semibold text-white/85">/{pageName}</span> δεν υπάρχει.</p>
         </div>
-    )
+        <a href="/site" className="inline-flex h-12 items-center justify-center rounded-full bg-[#E8C26B] px-6 text-[15px] font-bold text-black">Στο Deal of Temptation</a>
+      </div>
+    </div>
+  );
 }

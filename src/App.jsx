@@ -86,6 +86,7 @@ const AuthenticatedApp = () => {
       <Route path="/deal" element={<DealPage />} />
       <Route path="/deal/:roomCode" element={<DealPage />} />
       <Route path="/gift-unlock" element={<GiftUnlock />} />
+      <Route path="/gift" element={<Navigate to="/gift-unlock" replace />} />
       <Route path="/site" element={<Site />} />
       <Route path="/av-setup" element={<AvSetup />} />
       <Route path="/memories/:token" element={<Memories />} />

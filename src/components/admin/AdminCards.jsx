@@ -47,13 +47,13 @@ export default function AdminCards() {
       <ComicPanel className="bg-tarot-wine/40">
         <div className="flex items-center justify-between gap-2 flex-wrap">
           <div>
-            <div className="font-heading text-xl comic-text-stroke">🃏 ΔΙΑΧΕΙΡΙΣΗ ΚΑΡΤΩΝ</div>
+            <div className="font-heading text-xl comic-text-stroke">🃏 Διαχείριση καρτών</div>
             <div className="text-xs font-bold mt-1">
               Προσθήκη, επεξεργασία και διαγραφή για κάθε κατηγορία καρτών (Αλήθειες, Πάντα, Warrant, Glitch, κλπ).
             </div>
           </div>
           <ComicButton variant="red" size="sm" onClick={handleReseed} disabled={reseeding}>
-            {reseeding ? '… ΕΠΑΝΑΣΠΟΡΑ' : '🔄 ΕΠΑΝΑΣΠΟΡΑ ΑΡΧΕΙΩΝ'}
+            {reseeding ? '… Επανασπορά' : '🔄 Επανασπορά αρχείων'}
           </ComicButton>
         </div>
         {reseedMsg && <div className="text-xs font-bold mt-2">{reseedMsg}</div>}

@@ -67,13 +67,13 @@ export default function AdminFormsBuilder() {
 
   return <div className="space-y-3">
     <ComicPanel className="bg-card space-y-2">
-      <div className="font-heading text-xl text-primary">ΔΙΑΧΕΙΡΙΣΗ ΦΟΡΜΩΝ</div>
+      <div className="font-heading text-xl text-primary">Διαχείριση φορμών</div>
       <select className="w-full rounded border border-border bg-background p-2" value={formType} onChange={(e) => { setFormType(e.target.value); setEditing(null); }} >{FORM_TYPES.map((form) => <option key={form.id} value={form.id}>{form.label}</option>)}</select>
-      <ComicButton onClick={() => setEditing(blank())}>＋ ΝΕΑ ΕΡΩΤΗΣΗ</ComicButton>
+      <ComicButton onClick={() => setEditing(blank())}>＋ Νέα ερώτηση</ComicButton>
     </ComicPanel>
     {message && <ComicPanel className="bg-secondary"><div className="text-sm font-bold">{message}</div></ComicPanel>}
     {editing && <ComicPanel className="bg-card space-y-3">
-      <div className="font-heading text-lg">ΕΠΕΞΕΡΓΑΣΙΑ ΕΡΩΤΗΣΗΣ</div>
+      <div className="font-heading text-lg">Επεξεργασία ερώτησης</div>
       <label className="block text-xs font-bold">Ερώτηση / τίτλος<input className="mt-1 w-full rounded border border-border bg-background p-2" value={editing.label} onChange={(e) => update({ label: e.target.value })} /></label>
       <label className="block text-xs font-bold">Τύπος απάντησης<select className="mt-1 w-full rounded border border-border bg-background p-2" value={editing.type} onChange={(e) => update({ type: e.target.value })}><option value="text">Σύντομο κείμενο</option><option value="textarea">Μεγάλο κείμενο</option><option value="select">Επιλογή από λίστα</option></select></label>
       {editing.type === 'select' && <label className="block text-xs font-bold">Επιλογές (μία ανά γραμμή)<textarea rows={4} className="mt-1 w-full rounded border border-border bg-background p-2" value={(editing.options || []).join('\n')} onChange={(e) => update({ options: e.target.value.split('\n') })} /></label>}
@@ -81,7 +81,7 @@ export default function AdminFormsBuilder() {
       <label className="block text-xs font-bold">Ή URL εικόνας<input className="mt-1 w-full rounded border border-border bg-background p-2" value={editing.image || ''} onChange={(e) => update({ image: e.target.value })} placeholder="https://..." /></label>
       {editing.image && <img src={editing.image} alt="" className="max-h-36 rounded-lg object-cover" />}
       <label className="flex items-center gap-2 text-xs"><input type="checkbox" checked={!!editing.required} onChange={(e) => update({ required: e.target.checked })} /> Υποχρεωτική ερώτηση</label>
-      <div className="flex gap-2"><ComicButton variant="green" disabled={busy} onClick={save}>ΑΠΟΘΗΚΕΥΣΗ</ComicButton><ComicButton variant="dark" onClick={() => setEditing(null)}>ΑΚΥΡΟ</ComicButton></div>
+      <div className="flex gap-2"><ComicButton variant="green" disabled={busy} onClick={save}>Αποθήκευση</ComicButton><ComicButton variant="dark" onClick={() => setEditing(null)}>Άκυρο</ComicButton></div>
     </ComicPanel>}
     <div className="space-y-2">
       {list.length === 0 && <ComicPanel className="bg-card text-sm text-foreground/60">Δεν υπάρχουν πρόσθετες ερωτήσεις σε αυτή τη φόρμα.</ComicPanel>}
@@ -89,11 +89,11 @@ export default function AdminFormsBuilder() {
         <div className="font-bold">{question.label} {question.required ? '*' : ''}</div>
         <div className="text-xs text-foreground/60">{question.type} · {(question.options || []).join(' / ')}</div>
         {question.image && <img src={question.image} alt="" className="max-h-28 rounded object-cover" />}
-        <div className="flex gap-2"><ComicButton size="sm" variant="dark" onClick={() => setEditing({ ...question })}>ΕΠΕΞΕΡΓΑΣΙΑ</ComicButton><ComicButton size="sm" variant="red" disabled={busy} onClick={() => remove(question.id)}>ΔΙΑΓΡΑΦΗ</ComicButton></div>
+        <div className="flex gap-2"><ComicButton size="sm" variant="dark" onClick={() => setEditing({ ...question })}>Επεξεργασία</ComicButton><ComicButton size="sm" variant="red" disabled={busy} onClick={() => remove(question.id)}>Διαγραφή</ComicButton></div>
       </ComicPanel>)}
     </div>
     {editing && <ComicPanel className="bg-card space-y-2">
-      <div className="font-heading text-sm text-primary">ΖΩΝΤΑΝΗ ΠΡΟΕΠΙΣΚΟΠΗΣΗ · ΕΡΩΤΗΣΗ ΦΟΡΜΑΣ</div>
+      <div className="font-heading text-sm text-primary">Ζωντανή προεπισκόπηση · ερώτηση φόρμας</div>
       {editing.image && <img src={editing.image} alt="" className="max-h-40 w-full rounded-lg object-cover" />}
       <div className="font-bold">{editing.label || 'Η ερώτηση θα εμφανιστεί εδώ'} {editing.required ? '*' : ''}</div>
       {editing.type === 'select'

@@ -47,7 +47,7 @@ export default function ModeTV({ state }) {
         </div>
       )}
 
-      {act !== 'lounge' && <ModeArt state={state} alt={meta.name} className="mt-4 aspect-[21/7] rounded-3xl" />}
+      <ModeArt state={state} alt={meta.name} className={`mt-4 rounded-3xl ${act === 'lounge' ? 'aspect-[21/5]' : 'aspect-[21/7]'}`} />
 
       {mg.stop && <div className="ui-card ui-card--danger text-center"><div className="ui-tv-title ui-tv-title--red">⏸ Όλα σταμάτησαν</div><div className="ui-tv-text mt-2">Αναμονή για ομόφωνη συναίνεση πριν τη συνέχεια.</div></div>}
       {act === 'lounge' && <LoungeTV state={state} />}
@@ -65,7 +65,6 @@ export default function ModeTV({ state }) {
         </div>
       )}
 
-      {act === 'villa' && <div className="ui-card ui-card--gold text-center text-4xl">🏡 VILLA — 48 ΩΡΕΣ<div className="text-xl opacity-80 mt-3">{['Άφιξη','Ημέρα','Απόγευμα','Νύχτα','Πρωινή Φάση','Δεύτερη Ημέρα','Τελικό SHOW','FINALE'][mg.villaPhaseIndex || 0]}</div><div className="text-sm opacity-60 mt-2">Φάση {(mg.villaPhaseIndex || 0) + 1}/8</div></div>}
       {act === 'pedi_glam' && <div className="ui-card ui-card--gold text-center text-3xl">💅 Pajama Pedi-Glam<div className="text-lg opacity-70 mt-2">Sensory & Pamper Edition · {mg.pediGlamUsed || 0}/20 κάρτες ολοκληρωμένες</div></div>}
       {act === 'board' && <TVBoard mg={mg} players={players} />}
       {act === 'midnight' && <div className="ui-card ui-card--gold text-center text-3xl">🌙 Midnight ASMR & Tickle Vault<div className="text-lg opacity-70 mt-2">Φώτα χαμηλά. Οι ερωτήσεις ψιθυρίζονται — δεν φαίνονται εδώ.</div></div>}

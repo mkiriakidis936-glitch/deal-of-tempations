@@ -71,7 +71,7 @@ export default function AdminGlobalDesign() {
   return (
     <div className="space-y-3">
       <ComicPanel className="bg-card space-y-3">
-        <div className="font-heading text-xl">ΣΧΕΔΙΑΣΗ ΕΦΑΡΜΟΓΗΣ</div>
+        <div className="font-heading text-xl">Σχεδίαση εφαρμογής</div>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           {[
             ['background', 'Φόντο'], ['foreground', 'Κείμενο'], ['card', 'Κάρτες'],
@@ -103,7 +103,7 @@ export default function AdminGlobalDesign() {
         </div>
         {message && <div className="text-xs font-bold">{message}</div>}
         <div className="flex flex-wrap gap-2">
-          <ComicButton variant="green" disabled={busy} onClick={save}>{busy ? 'ΑΠΟΘΗΚΕΥΣΗ…' : 'ΑΠΟΘΗΚΕΥΣΗ'}</ComicButton>
+          <ComicButton variant="green" disabled={busy} onClick={save}>{busy ? 'Αποθήκευση…' : 'Αποθήκευση'}</ComicButton>
           <ComicButton variant="white" disabled={busy} onClick={reset}>Επαναφορά προεπιλογών</ComicButton>
         </div>
         <AdminSettingVersionHistory settingKey={GLOBAL_DESIGN_KEY} onRestore={(restored) => setValue({ ...GLOBAL_DESIGN_DEFAULTS, ...(restored || {}) })} />

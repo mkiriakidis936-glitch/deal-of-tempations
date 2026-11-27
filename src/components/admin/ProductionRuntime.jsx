@@ -45,9 +45,9 @@ export default function ProductionRuntime({selected,record,draft,onChange,onSave
  const persist=async(patch,success)=>{
    if(!selected?.sessionCode)return;
    setBusy(true);setMessage('');
-   const next={...draft,...patch,sessionCode:selected.sessionCode,sessionId:selected.id,mode:selected.mode||'',eventTitle:selected.event?.title||selected.mode||'DEAL OF TEMPTATIONS'};
+   const next={...draft,...patch,sessionCode:selected.sessionCode,sessionId:selected.id,mode:selected.mode||'',eventTitle:selected.event?.title||selected.mode||'DEAL OF TEMPTATION'};
    try{
-     const saved=record?.id?await appApi.entities.ShowProduction.update(record.id,{...patch,sessionCode:selected.sessionCode,sessionId:selected.id,mode:selected.mode||'',eventTitle:selected.event?.title||selected.mode||'DEAL OF TEMPTATIONS'}):await appApi.entities.ShowProduction.create(next);
+     const saved=record?.id?await appApi.entities.ShowProduction.update(record.id,{...patch,sessionCode:selected.sessionCode,sessionId:selected.id,mode:selected.mode||'',eventTitle:selected.event?.title||selected.mode||'DEAL OF TEMPTATION'}):await appApi.entities.ShowProduction.create(next);
      onSaved?.(saved,patch);setMessage(success||'Η παραγωγή αποθηκεύτηκε.');return saved;
    }catch(error){setMessage(error.message||'Η αποθήκευση απέτυχε.');return null;}
    finally{setBusy(false);}
@@ -184,26 +184,26 @@ export default function ProductionRuntime({selected,record,draft,onChange,onSave
    if(!saved&&deleted.length)setMessage('Τα αρχεία διαγράφηκαν, αλλά η ενημέρωση του αρχείου παραγωγής απέτυχε. Ανανέωσε τη σελίδα πριν συνεχίσεις.');
  };
  const copyRecap=async()=>{
-   const text=[draft.title||'DEAL OF TEMPTATIONS',draft.winnerName? `Νικητής: ${draft.winnerName}`:'',draft.recapNotes||'',draft.socialTeaser||'',(draft.recapPublishedMedia||[]).join('\n')].filter(Boolean).join('\n\n');
+   const text=[draft.title||'DEAL OF TEMPTATION',draft.winnerName? `Νικητής: ${draft.winnerName}`:'',draft.recapNotes||'',draft.socialTeaser||'',(draft.recapPublishedMedia||[]).join('\n')].filter(Boolean).join('\n\n');
    try{await navigator.clipboard.writeText(text);setMessage('Το κείμενο recap αντιγράφηκε.');}
    catch{setMessage('Δεν ήταν δυνατή η αντιγραφή από αυτή τη συσκευή.');}
  };
  if(!selected?.sessionCode)return null;
  return <div className="space-y-4">
   <ComicPanel className="bg-card space-y-3">
-   <div className="flex flex-wrap items-center justify-between gap-2"><div><h3 className="font-heading text-xl text-primary">ΣΚΗΝΟΘΕΣΙΑ LIVE SHOW</h3></div><span className="rounded-full bg-secondary px-3 py-1 text-xs">{draft.status||'planning'}</span></div>
+   <div className="flex flex-wrap items-center justify-between gap-2"><div><h3 className="font-heading text-xl text-primary">Σκηνοθεσία LIVE SHOW</h3></div><span className="rounded-full bg-secondary px-3 py-1 text-xs">{draft.status||'planning'}</span></div>
    <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
-    <ComicButton size="sm" variant="dark" onClick={()=>setStatus('ready')} disabled={busy||draft.status==='ready'}>ΕΤΟΙΜΑΣΙΑ</ComicButton>
-    <ComicButton size="sm" onClick={()=>setStatus('live')} disabled={busy||draft.status==='live'||draft.status==='completed'}>ΕΝΑΡΞΗ SHOW</ComicButton>
-    <ComicButton size="sm" variant="dark" onClick={()=>setStatus('paused')} disabled={busy||draft.status==='paused'||draft.status==='completed'}>ΠΑΥΣΗ / ΔΙΑΛΕΙΜΜΑ</ComicButton>
-    <ComicButton size="sm" onClick={()=>setStatus('live')} disabled={busy||draft.status!=='paused'}>ΣΥΝΕΧΕΙΑ ΕΚΠΟΜΠΗΣ</ComicButton>
-    <ComicButton size="sm" variant="dark" onClick={()=>setStatus('completed')} disabled={busy||draft.status==='completed'}>ΟΛΟΚΛΗΡΩΣΗ</ComicButton>
+    <ComicButton size="sm" variant="dark" onClick={()=>setStatus('ready')} disabled={busy||draft.status==='ready'}>Ετοιμασία</ComicButton>
+    <ComicButton size="sm" onClick={()=>setStatus('live')} disabled={busy||draft.status==='live'||draft.status==='completed'}>Έναρξη SHOW</ComicButton>
+    <ComicButton size="sm" variant="dark" onClick={()=>setStatus('paused')} disabled={busy||draft.status==='paused'||draft.status==='completed'}>Παύση / διάλειμμα</ComicButton>
+    <ComicButton size="sm" onClick={()=>setStatus('live')} disabled={busy||draft.status!=='paused'}>Συνέχεια εκπομπής</ComicButton>
+    <ComicButton size="sm" variant="dark" onClick={()=>setStatus('completed')} disabled={busy||draft.status==='completed'}>Ολοκλήρωση</ComicButton>
    </div>
    <div className="rounded-xl border border-border p-3 space-y-2">
-    <div className="flex justify-between gap-2 text-xs"><b>ΕΝΕΡΓΟ ΣΤΑΔΙΟ</b><span>{(draft.rundown||[]).length?stageIndex+1+' / '+draft.rundown.length:'—'}</span></div>
+    <div className="flex justify-between gap-2 text-xs"><b>Ενεργό στάδιο</b><span>{(draft.rundown||[]).length?stageIndex+1+' / '+draft.rundown.length:'—'}</span></div>
     <div className="font-heading text-xl">{activeStage?.title||'Δεν έχει οριστεί στάδιο'}</div>
     <p className="text-xs text-foreground/60">{activeStage?.notes||'—'}</p>
-    <div className="flex flex-wrap gap-2"><ComicButton size="sm" variant="dark" onClick={()=>goToStage(stageIndex-1)} disabled={busy||stageIndex===0}>ΠΡΟΗΓΟΥΜΕΝΟ</ComicButton><ComicButton size="sm" onClick={()=>goToStage(stageIndex+1)} disabled={busy||stageIndex>=(draft.rundown||[]).length-1}>ΕΠΟΜΕΝΟ ΣΤΑΔΙΟ + TV</ComicButton><ComicButton size="sm" variant="dark" onClick={stopCue}>ΔΙΑΚΟΠΗ ΓΡΑΦΙΚΟΥ TV</ComicButton></div>
+    <div className="flex flex-wrap gap-2"><ComicButton size="sm" variant="dark" onClick={()=>goToStage(stageIndex-1)} disabled={busy||stageIndex===0}>Προηγούμενο</ComicButton><ComicButton size="sm" onClick={()=>goToStage(stageIndex+1)} disabled={busy||stageIndex>=(draft.rundown||[]).length-1}>Επόμενο στάδιο + TV</ComicButton><ComicButton size="sm" variant="dark" onClick={stopCue}>Διακοπή γραφικού TV</ComicButton></div>
    </div>
    <div className="grid gap-2 sm:grid-cols-2">
     {(draft.rundown||[]).map((stage,index)=><button key={stage.id||index} onClick={()=>goToStage(index)} className={`rounded-lg border p-3 text-left text-xs ${index===stageIndex?'border-primary bg-primary/10':'border-border bg-background'}`}><b>{String(index+1).padStart(2,'0')} · {stage.title}</b><span className="block mt-1 text-foreground/55">{stage.duration||0} λεπτά</span></button>)}
@@ -212,9 +212,9 @@ export default function ProductionRuntime({selected,record,draft,onChange,onSave
   </ComicPanel>
 
   {draft.overnight&&<ComicPanel className="bg-card space-y-3">
-   <div><h3 className="font-heading text-lg">ΔΙΑΝΥΚΤΕΡΕΥΣΗ</h3></div>
+   <div><h3 className="font-heading text-lg">Διανυκτέρευση</h3></div>
    {phases.map((phase,index)=><div key={phase.id||index} className={`rounded-lg border p-3 space-y-2 ${index===(Number(draft.overnightPhaseIndex)||0)?'border-primary bg-primary/10':'border-border'}`}><div className="grid grid-cols-[1fr_110px_auto] gap-2"><input className={field} value={phase.title||''} onChange={e=>editPhase(phase.id||String(index),{title:e.target.value})}/><input className={field} type="time" value={phase.time||''} onChange={e=>editPhase(phase.id||String(index),{time:e.target.value})}/><button className="text-xs text-red-400" onClick={()=>removePhase(phase.id||String(index))} disabled={phases.length<=1}>×</button></div><input className={field} value={phase.notes||''} placeholder="Οδηγίες φάσης" onChange={e=>editPhase(phase.id||String(index),{notes:e.target.value})}/></div>)}
-   <div className="flex flex-wrap gap-2"><ComicButton size="sm" onClick={()=>advancePhase()} disabled={busy||(Number(draft.overnightPhaseIndex)||0)>=phases.length-1}>ΕΠΟΜΕΝΗ ΦΑΣΗ</ComicButton><ComicButton size="sm" variant="dark" onClick={()=>persist(withLog('overnight-reset','Επαναφορά φάσης Overnight',{overnightPhaseIndex:0}),'Η φάση Overnight επανήλθε στην αρχή.')}>ΕΠΑΝΑΦΟΡΑ</ComicButton><ComicButton size="sm" variant="dark" onClick={addPhase}>+ ΦΑΣΗ</ComicButton></div>
+   <div className="flex flex-wrap gap-2"><ComicButton size="sm" onClick={()=>advancePhase()} disabled={busy||(Number(draft.overnightPhaseIndex)||0)>=phases.length-1}>Επόμενη φάση</ComicButton><ComicButton size="sm" variant="dark" onClick={()=>persist(withLog('overnight-reset','Επαναφορά φάσης Overnight',{overnightPhaseIndex:0}),'Η φάση Overnight επανήλθε στην αρχή.')}>Επαναφορά</ComicButton><ComicButton size="sm" variant="dark" onClick={addPhase}>+ Φάση</ComicButton></div>
    <p className="text-[10px] text-foreground/50">Οι ώρες είναι σημεία προγραμματισμού. Η αλλαγή φάσης γίνεται από τον υπεύθυνο παραγωγής.</p>
   </ComicPanel>}
 
@@ -222,26 +222,26 @@ export default function ProductionRuntime({selected,record,draft,onChange,onSave
    <div><h3 className="font-heading text-lg">WINNER’S VAULT · LIVE REVEAL</h3></div>
    <label className={label}>Νικητής<input className={field} value={draft.winnerName||''} onChange={e=>update({winnerName:e.target.value})}/></label>
    <label className={label}>Κείμενο ανακοίνωσης<textarea className={field} rows="2" value={draft.winnerNotes||''} onChange={e=>update({winnerNotes:e.target.value})}/></label>
-   <div className="flex flex-wrap gap-2"><ComicButton size="sm" onClick={revealWinner} disabled={busy||!String(draft.winnerName||'').trim()}>ΑΠΟΚΑΛΥΨΗ ΣΤΗΝ TV</ComicButton><ComicButton size="sm" variant="dark" onClick={()=>persist(withLog('winner-saved','Αποθήκευση στοιχείων Winner’s Vault'),'Τα στοιχεία Winner’s Vault αποθηκεύτηκαν.')}>ΑΠΟΘΗΚΕΥΣΗ VAULT</ComicButton></div>
+   <div className="flex flex-wrap gap-2"><ComicButton size="sm" onClick={revealWinner} disabled={busy||!String(draft.winnerName||'').trim()}>Αποκάλυψη στην TV</ComicButton><ComicButton size="sm" variant="dark" onClick={()=>persist(withLog('winner-saved','Αποθήκευση στοιχείων Winner’s Vault'),'Τα στοιχεία Winner’s Vault αποθηκεύτηκαν.')}>Αποθήκευση VAULT</ComicButton></div>
   </ComicPanel>
 
   <ComicPanel className="bg-card space-y-3">
-   <div><h3 className="font-heading text-lg">ΑΝΑΣΚΟΠΗΣΗ ΓΙΑ SOCIAL</h3></div>
+   <div><h3 className="font-heading text-lg">Ανασκόπηση για SOCIAL</h3></div>
    <label className={label}>Προσθήκη φωτογραφιών / βίντεο / ήχου<input className={field} type="file" multiple accept="image/*,video/*,audio/*" disabled={!privateMediaAllowed||uploading} onChange={e=>uploadMedia(e.target.files)}/></label>
    <p className="text-xs text-foreground/60">{privateMediaAllowed?'Η ιδιωτική καταγραφή επιτρέπεται για όλους τους δηλωμένους συμμετέχοντες.':'Η μεταφόρτωση παραμένει κλειδωμένη μέχρι να καταχωριστούν οι απαιτούμενες ατομικές συγκαταθέσεις.'}</p>
    {uploading&&<p className="text-xs">Μεταφόρτωση αρχείων…</p>}
-   <div className="rounded-lg border border-border p-3 space-y-2"><b className="text-xs">ΠΟΙΟΙ ΕΜΦΑΝΙΖΟΝΤΑΙ ΣΤΟ ΥΛΙΚΟ</b>{participants.map((person,index)=>{const name=String(person.name||person.displayName||'').trim();return name?<label key={person.id||name+index} className="flex items-center gap-2 text-xs"><input type="checkbox" checked={mediaParticipantNames.includes(name)} onChange={e=>setMediaParticipantNames(current=>e.target.checked?[...current,name]:current.filter(item=>item!==name))}/>{name}</label>:null})}</div>
-   <div className="space-y-2">{(draft.recapMedia||[]).map((url,index)=><div key={url+index} className="flex items-center justify-between gap-2 rounded-lg border border-border p-2"><button className="min-w-0 truncate text-left text-xs underline" onClick={()=>openMedia(url)}>{String(url).startsWith('private:')?String(url).slice(8):url.split('/').pop()}</button>{String(url).startsWith('private:')&&<ComicButton size="sm" variant="dark" onClick={()=>publishMedia(url)} disabled={!canPublishItem(url)||(draft.recapPublishedMediaItems||[]).some(item=>item.sourceName===String(url).slice(8))}>ΔΗΜΟΣΙΕΥΣΗ</ComicButton>}<button className="text-xs text-red-400" onClick={()=>removeMedia(url)}>ΑΦΑΙΡΕΣΗ</button></div>)}</div>
-   {(latestConsents.filter(item=>item.withdrawn)).length>0&&<div className="rounded-lg border border-amber-500/40 p-3 space-y-2"><b className="text-xs">ΑΝΑΚΛΗΣΕΙΣ ΣΥΓΚΑΤΑΘΕΣΗΣ</b>{latestConsents.filter(item=>item.withdrawn).map(item=><div key={item.id} className="flex flex-wrap items-center justify-between gap-2 text-xs"><span>{item.participantName} · αίτημα ανάκλησης</span><ComicButton size="sm" variant="dark" onClick={()=>applyWithdrawal(item)}>ΕΦΑΡΜΟΓΗ ΑΝΑΚΛΗΣΗΣ</ComicButton></div>)}<p className="text-[10px] text-foreground/50">Η εφαρμογή αφαιρεί τα ιδιωτικά και δημόσια αρχεία της εφαρμογής που έχουν συσχετιστεί με το συγκεκριμένο άτομο. Αντίγραφα που έχουν ήδη αναρτηθεί σε τρίτες πλατφόρμες χρειάζονται ξεχωριστή αφαίρεση.</p></div>}
-   {(draft.recapPublishedMedia||[]).length>0&&<div className="rounded-lg border border-primary/30 p-3 space-y-2"><b className="text-xs">ΔΗΜΟΣΙΕΥΜΕΝΑ ΑΡΧΕΙΑ</b>{(draft.recapPublishedMedia||[]).map(url=><a key={url} className="block break-all text-xs underline" href={url} target="_blank" rel="noreferrer">{url}</a>)}</div>}
+   <div className="rounded-lg border border-border p-3 space-y-2"><b className="text-xs">Ποιοι εμφανίζονται στο υλικό</b>{participants.map((person,index)=>{const name=String(person.name||person.displayName||'').trim();return name?<label key={person.id||name+index} className="flex items-center gap-2 text-xs"><input type="checkbox" checked={mediaParticipantNames.includes(name)} onChange={e=>setMediaParticipantNames(current=>e.target.checked?[...current,name]:current.filter(item=>item!==name))}/>{name}</label>:null})}</div>
+   <div className="space-y-2">{(draft.recapMedia||[]).map((url,index)=><div key={url+index} className="flex items-center justify-between gap-2 rounded-lg border border-border p-2"><button className="min-w-0 truncate text-left text-xs underline" onClick={()=>openMedia(url)}>{String(url).startsWith('private:')?String(url).slice(8):url.split('/').pop()}</button>{String(url).startsWith('private:')&&<ComicButton size="sm" variant="dark" onClick={()=>publishMedia(url)} disabled={!canPublishItem(url)||(draft.recapPublishedMediaItems||[]).some(item=>item.sourceName===String(url).slice(8))}>Δημοσίευση</ComicButton>}<button className="text-xs text-red-400" onClick={()=>removeMedia(url)}>Αφαίρεση</button></div>)}</div>
+   {(latestConsents.filter(item=>item.withdrawn)).length>0&&<div className="rounded-lg border border-amber-500/40 p-3 space-y-2"><b className="text-xs">Ανακλήσεις συγκατάθεσης</b>{latestConsents.filter(item=>item.withdrawn).map(item=><div key={item.id} className="flex flex-wrap items-center justify-between gap-2 text-xs"><span>{item.participantName} · αίτημα ανάκλησης</span><ComicButton size="sm" variant="dark" onClick={()=>applyWithdrawal(item)}>Εφαρμογή ανάκλησης</ComicButton></div>)}<p className="text-[10px] text-foreground/50">Η εφαρμογή αφαιρεί τα ιδιωτικά και δημόσια αρχεία της εφαρμογής που έχουν συσχετιστεί με το συγκεκριμένο άτομο. Αντίγραφα που έχουν ήδη αναρτηθεί σε τρίτες πλατφόρμες χρειάζονται ξεχωριστή αφαίρεση.</p></div>}
+   {(draft.recapPublishedMedia||[]).length>0&&<div className="rounded-lg border border-primary/30 p-3 space-y-2"><b className="text-xs">Δημοσιευμένα αρχεία</b>{(draft.recapPublishedMedia||[]).map(url=><a key={url} className="block break-all text-xs underline" href={url} target="_blank" rel="noreferrer">{url}</a>)}</div>}
    <label className={label}>Ανασκόπηση<textarea className={field} rows="3" value={draft.recapNotes||''} onChange={e=>update({recapNotes:e.target.value})}/></label>
    <label className={label}>Teaser για social<textarea className={field} rows="2" value={draft.socialTeaser||''} onChange={e=>update({socialTeaser:e.target.value})}/></label>
-   <div className="rounded-lg border border-border p-3 space-y-1"><b className="text-xs">ΔΗΜΟΣΙΑ ΧΡΗΣΗ ΥΛΙΚΟΥ</b><p className="text-xs">{publicMediaAllowed?'Υπάρχει ρητή δημόσια συγκατάθεση καταγραφής και δημοσίευσης από όλους τους συμμετέχοντες.':'Η δημόσια χρήση ελέγχεται ανά αρχείο και επιτρέπεται μόνο όταν όλοι οι επιλεγμένοι συμμετέχοντες έχουν ενεργή συγκατάθεση καταγραφής και δημόσιας χρήσης.'}</p><span className="text-[10px] text-foreground/50">{latestConsents.length} ατομικές δηλώσεις · {requiredNames.length} συμμετέχοντες</span></div>
-   <ComicButton size="sm" variant="dark" onClick={copyRecap}>ΑΝΤΙΓΡΑΦΗ ΚΕΙΜΕΝΟΥ RECAP</ComicButton>
+   <div className="rounded-lg border border-border p-3 space-y-1"><b className="text-xs">Δημόσια χρήση υλικού</b><p className="text-xs">{publicMediaAllowed?'Υπάρχει ρητή δημόσια συγκατάθεση καταγραφής και δημοσίευσης από όλους τους συμμετέχοντες.':'Η δημόσια χρήση ελέγχεται ανά αρχείο και επιτρέπεται μόνο όταν όλοι οι επιλεγμένοι συμμετέχοντες έχουν ενεργή συγκατάθεση καταγραφής και δημόσιας χρήσης.'}</p><span className="text-[10px] text-foreground/50">{latestConsents.length} ατομικές δηλώσεις · {requiredNames.length} συμμετέχοντες</span></div>
+   <ComicButton size="sm" variant="dark" onClick={copyRecap}>Αντιγραφή κειμένου RECAP</ComicButton>
   </ComicPanel>
 
   <ComicPanel className="bg-card space-y-3">
-   <div className="flex items-center justify-between gap-2"><h3 className="font-heading text-lg">ΗΜΕΡΟΛΟΓΙΟ ΠΑΡΑΓΩΓΗΣ</h3><span className="text-xs text-foreground/50">{log.length} εγγραφές</span></div>
+   <div className="flex items-center justify-between gap-2"><h3 className="font-heading text-lg">Ημερολόγιο παραγωγής</h3><span className="text-xs text-foreground/50">{log.length} εγγραφές</span></div>
    {log.length?log.slice(0,30).map(item=><div key={item.id} className="flex gap-3 border-b border-border/60 pb-2 text-xs"><span className="shrink-0 text-foreground/45">{new Date(item.at).toLocaleTimeString('el-GR',{hour:'2-digit',minute:'2-digit'})}</span><div><b>{item.action}</b><p className="text-foreground/60">{item.detail}</p></div></div>):<p className="text-xs text-foreground/50">Δεν υπάρχουν ακόμη ενέργειες παραγωγής.</p>}
   </ComicPanel>
  </div>;

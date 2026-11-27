@@ -1,3 +1,4 @@
+import { phaseOf as villaPhaseOf } from '../../lib/villaEngine.js';
 // Ο επίσημος οδηγός του DEAL OF TEMPTATION: κανόνες, φάσεις και τρόπος νίκης για κάθε ενεργό mode.
 // Χρησιμοποιείται στην εισαγωγή (Tablet / TV / κινητό), στις οδηγίες κάθε φάσης και στο Admin → Οδηγός.
 
@@ -68,14 +69,15 @@ export const MODE_GUIDE = {
   },
 
   villa_takeover: {
-    tagline: 'Πολυήμερη εμπειρία 18+ σε Villa: 48 ώρες, 3 κύκλοι, μυστικοί ρόλοι, συμμαχίες και ένας κωδικός 4 ψηφίων.',
-    goal: 'Κάθε ώρα ανοίγει ένα τετράγωνο του ταμπλό (48 συνολικά). Παίξτε δοκιμασίες και Truth or Dare 18+, ολοκληρώστε μυστικές αποστολές, κλείστε (και προδώστε) συμμαχίες και μαζέψτε τις 4 ενδείξεις του κωδικού.',
-    win: 'Η νικήτρια αναδεικνύεται από πόντους, αποστολές και διακρίσεις: Queen of the Villa στο Grand Finale. Όποια σπάσει τον κωδικό παίρνει +50.',
+    tagline: 'VILLA LOCKDOWN 48/72: πολυήμερο 100% ψηφιακό παιχνίδι ίντριγκας και 18+ προκλήσεων σε βίλα ή Airbnb — έκδοση 48 ή 72 ωρών.',
+    goal: 'Κάθε ώρα ανοίγει ένα τετράγωνο (48 ή 72) στους 3 κύκλους του ταμπλό (Εξωτερικός Day & Social, Μεσαίος Tension & Restraint, Εσωτερικός Villa Core & Midnight Vault). 4-Step Round Strip, σαγιονάρες & χρώμα νυχιών, δεσίματα, μύτες, γαργάλημα, χορός, σφηνάκια με δεμένα χέρια, Απόλυτες Διαταγές, Night Sock Heist, μυστικοί ρόλοι, συμμαχίες και 4 ενδείξεις για τον τετραψήφιο κωδικό.',
+    win: 'Πόντοι από Dares 18+, αποδεκτές απαντήσεις, αποστολές, Night Sock Heist και κωδικό (σωστός = Lockdown Override +50, λάθος = Alarm / Penalty Surge). Στο κλείσιμο: Μεγάλη Νικήτρια (Queen of the Villa) και ειδικοί τίτλοι.',
     phases: [
-      { id: 'arrival', title: 'Κύκλος 1 — The Arrival', text: 'Ώρες 1–16: check-in, μυστικοί ρόλοι, πρώτες αλήθειες, πρώτη ψηφοφορία και πρώτη προδοσία.', next: 'Μοίρασε τους ρόλους (γίνεται αυτόματα) και στείλε την ειδοποίηση «VILLA TAKEOVER».' },
-      { id: 'temptation', title: 'Κύκλος 2 — The Temptation', text: 'Ώρες 17–32: Temptation Cards, συμμαχίες, Blackmail Market, δοκιμασίες ισορροπίας και η δεύτερη νύχτα.', next: 'Κράτα ζωντανές τις συμμαχίες και στείλε μυστικές αποστολές.' },
-      { id: 'takeover', title: 'Κύκλος 3 — The Final Takeover', text: 'Ώρες 33–48: Night Sock Heist, Sealed Votes, οι τελευταίες ενδείξεις και ο τελικός κωδικός.', next: 'Ενεργοποίησε το Night Mode και ετοίμασε το Grand Finale.' },
-      { id: 'afterdark', title: 'After Dark — The Final 24', text: 'Προαιρετική επέκταση 72h, μόνο με απόφαση της ομάδας: νέες αποστολές, revenge, τελική κατάταξη.', next: 'Ξεκλείδωσε την επέκταση μόνο αν συμφωνούν όλες.' },
+      { id: 'arrival', title: 'Ημέρα 1 — Άφιξη & Πρώτη Επαφή', text: 'Κατανομή μυστικών ρόλων, οι 4 γύροι Round Strip, πρώτες ερωτήσεις 18+, πειράγματα, χορός στο ένα πόδι, πρώτες συμμαχίες και #1 ένδειξη κωδικού.', next: 'Διάλεξε 48 ή 72 ώρες, στείλε Silent Ping γνωριμίας και ξεκίνα το 1ο γύρο Round Strip.' },
+      { id: 'night', title: 'Νύχτα — Night Mode & Night Sock Heist', text: 'Night Raid Alert, αθόρυβη κλοπή καλτσών μόνο ανάμεσα σε όσες συμμετέχουν, νυχτερινές δοκιμασίες, Δωμάτιο Ανάκρισης και το νυχτερινό ψηφίο (#3).', next: 'Στείλε Night Raid Alert και κατέγραψε το Sock Loot· οι παίκτριες δηλώνουν κλοπές και από το κινητό.' },
+      { id: 'temptation', title: 'Ημέρα 2 — Ένταση, Περιορισμοί & Μίνι-Παιχνίδια', text: 'Morning Sock Reveal, γαργάλημα, μύτες με δεμένα πόδια, Duel/Decoy Pings, Κλέφτρες & Αστυνομικίνες, Τυφλή Ταυτοποίηση, Δημοπρασία Λαφύρων και Blackmail Market.', next: 'Τρέξε τα μίνι-παιχνίδια από το τρέχον τετράγωνο και δώσε την ένδειξη #2.' },
+      { id: 'takeover', title: 'Ημέρα 3 — Ανατροπή Συμμαχιών & Inner Core', text: 'Alliance Shift στην 49η ώρα, Grand Jury 18+, ανατροπές (Reverse Arrest, Judas Ping, Κάλτσα-Βόμβα, Mass Lockdown), Hogtie μετά τον 4ο γύρο και κλείδωμα του #4 ψηφίου.', next: 'Άνοιξε το Alliance Shift και τις Sealed Votes· κλείδωσε το τελευταίο ψηφίο.' },
+      { id: 'finale', title: 'Τελική Αναμέτρηση — Final Lockdown Showdown', text: 'Final Round Strip, παζάρι ψηφίων, τελική δοκιμασία έντασης, εισαγωγή κωδικού (Lockdown Override ή Alarm / Penalty Surge), Μεγάλη Αποκάλυψη ρόλων/συμμαχιών και απονομή.', next: 'Ζήτησε από τις φιναλίστ να βάλουν τον κωδικό στο κινητό και κάνε την αποκάλυψη στην TV.' },
     ],
   },
   marathon_4h: {
@@ -99,8 +101,8 @@ export function phaseIdFor(state) {
   const mg = state?.mg || {};
   if (state?.mode === 'lockdown') return LOCKDOWN_STAGE[mg.ld?.stage || 'init'] || 'level1';
   if (state?.mode === 'villa_takeover') {
-    const sq = Number(mg.villa?.sq || 1);
-    return sq > 48 ? 'afterdark' : sq > 32 ? 'takeover' : sq > 16 ? 'temptation' : 'arrival';
+    if (!mg.villa) return 'arrival';
+    return villaPhaseOf(Number(mg.villa.sq || 1), mg.villa).media;
   }
   if (state?.mode === 'marathon_4h') return `phase${Math.min(4, (mg.lounge?.phase || 0) + 1)}`;
   // Μηχανές: η φάση είναι το πραγματικό στάδιο του παιχνιδιού (state.stage 0–3).

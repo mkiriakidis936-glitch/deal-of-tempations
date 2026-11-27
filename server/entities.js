@@ -331,7 +331,7 @@ export function validatePlayerPatch(current, patch, playerId) {
       'board_roll', 'board_route', 'board_complete', 'board_pass',
       'midnight_pass', 'lockdown_exit_code', 'morning_clue', 'morning_code',
       'lounge_code', 'lounge_mission_done', 'lounge_roll',
-      'villa_code', 'villa_vote', 'villa_quiet', 'villa_response',
+      'villa_code', 'villa_vote', 'villa_quiet', 'villa_response', 'villa_profile', 'villa_heist',
     ]);
     let validAction = Object.keys(next).length === 1 && isObject(action) &&
       action.playerId === playerId && actionTypes.has(action.type) && Number.isFinite(action.at);
@@ -344,6 +344,8 @@ export function validatePlayerPatch(current, patch, playerId) {
     if (validAction && action.type === 'villa_vote') validAction = validTarget(action.target);
     if (validAction && action.type === 'villa_quiet') validAction = typeof action.value === 'boolean';
     if (validAction && action.type === 'villa_response') validAction = ['done', 'pass'].includes(action.value);
+    if (validAction && action.type === 'villa_heist') validAction = validTarget(action.target);
+    if (validAction && action.type === 'villa_profile') validAction = (action.nail === undefined || ['Σκούρο', 'Κόκκινο', 'Έντονο', 'Φυσικό', 'Ξεβαμμένο'].includes(action.nail)) && (action.footwear === undefined || [0, 1, 2, 3].includes(action.footwear)) && (action.nail !== undefined || action.footwear !== undefined);
     // Consent check-in: κάθε παίκτρια γράφει ΜΟΝΟ τη δική της καταχώρηση, και μόνο πριν ξεκινήσει το παιχνίδι.
     const consentPlayers = next.consent?.players;
     const consentPatch = Object.keys(next).length === 1 && isObject(next.consent) && Object.keys(next.consent).length === 1 &&
@@ -461,6 +463,8 @@ export function sanitizePublicSession(record, playerId = null) {
       alerts: (Array.isArray(v.alerts) ? v.alerts : []).filter((a) => a?.to === 'all' || (playerId && a?.to === playerId)),
       vote: isObject(v.vote) ? { ...v.vote, votes: Object.fromEntries(Object.keys(v.vote.votes || {}).map((id, i) => (playerId && id === playerId ? [id, v.vote.votes[id]] : [`__redacted_${i}`, true]))) } : v.vote,
       attempts: (Array.isArray(v.attempts) ? v.attempts : []).map((a) => ({ pid: a?.pid, ok: !!a?.ok, at: a?.at })),
+      sockBomb: undefined,
+      heistLog: (Array.isArray(v.heistLog) ? v.heistLog : []).map((h) => (playerId && h?.thief === playerId ? h : { victim: h?.victim, n: h?.n, at: h?.at, night: h?.night })),
     } };
   }
   if (state.mg?.lounge?.finale?.code) state.mg = { ...state.mg, lounge: { ...state.mg.lounge, finale: { ...state.mg.lounge.finale, code: undefined } } };
@@ -1531,8 +1535,8 @@ export function entityRoutes() {
     let effectiveSort = sort;
     let effectiveLimit = limit;
     let effectiveSkip = skip;
-    if (req.entity === 'GameSession' && isAdmin(req) && isObject(effectiveQuery) && 'playerId' in effectiveQuery) {
-      const { playerId: _viewer, ...rest } = effectiveQuery;
+    if (req.entity === 'GameSession' && isAdmin(req) && isObject(effectiveQuery) && ('playerId' in effectiveQuery || 'pin' in effectiveQuery)) {
+      const { playerId: _viewer, pin: _pin, ...rest } = effectiveQuery;
       effectiveQuery = rest;
     }
     if (req.entity === 'GameSession' && !isAdmin(req)) {

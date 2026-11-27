@@ -49,7 +49,7 @@ export default function AdminGuide() {
         <p className="text-sm text-white/75">Πριν την έναρξη κάθε συμμετέχουσα δηλώνει προσωπικά τι δεν επιθυμεί. Οι επιλογές δεν φαίνονται στις άλλες.</p>
         <div className="mt-2 flex flex-wrap gap-2">{SAFETY_RULES.boundaries.map((b, i) => <span key={b} className="rounded-full bg-white/10 px-3 py-1 text-sm">{i + 1}. {b}</span>)}</div>
         <p className="mt-3 text-sm"><b>PASS</b> — {SAFETY_RULES.pass.replace(/^PASS: /, '')}</p>
-        <p className="mt-1 text-sm"><b className="text-[#FF8A80]">ΣΤΟΠ</b> — {SAFETY_RULES.stop.replace(/^ΣΤΟΠ: /, '')}</p>
+        <p className="mt-1 text-sm"><b className="text-[#FF8A80]">Στοπ</b> — {SAFETY_RULES.stop.replace(/^ΣΤΟΠ: /, '')}</p>
         <p className="mt-1 text-sm text-white/70">{SAFETY_RULES.adults}</p>
       </Section>
 

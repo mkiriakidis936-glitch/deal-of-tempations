@@ -1,3 +1,4 @@
+import { squareAt as villaSquareAt } from '@/lib/villaEngine';
 import React from 'react';
 import { MODE_MEDIA, MEDIA_FOCAL_POINTS, SCENE_MEDIA } from '@/data/brandArt';
 import { isVideoUrl } from '@/lib/mediaKind';
@@ -25,10 +26,19 @@ function baseSectionFor(state) {
     // Βαριά ποινή (στάδιο 4+): η φωτογραφία «Σύλληψη & ανάκριση», αν υπάρχει.
     return Number(state.history[0].step) >= 4 && hasSection(mode, 'arrest') ? 'arrest' : 'penalties';
   }
-  if (mode === 'villa_takeover') {
-    if (mg.finishedAll) return 'crown';
-    if (mg.villa?.night) return 'night';
-    if (mg.villa?.vote && hasSection(mode, 'roles')) return 'roles'; // μυστική ψηφοφορία = «Μυστικοί ρόλοι & συμμαχίες»
+  if (mode === 'villa_takeover' && mg.villa) {
+    const v = mg.villa;
+    const sq = villaSquareAt(v.sq || 1, v);
+    const has = (id) => hasSection(mode, id);
+    if (mg.finishedAll || sq?.finale === 'awards') return 'crown';
+    if (v.statue?.until > Date.now() || (v.command?.until > Date.now())) { if (has('command')) return 'command'; }
+    if (v.cops && has('cops')) return 'cops';
+    if (v.night) return 'night';
+    if ((sq?.action === 'strip' || sq?.action === 'finalStrip') && has('strip')) return 'strip';
+    if (sq?.finale && has('finale')) return 'finale';
+    if ((sq?.decks?.includes('nail') || sq?.vote === 'nail' || sq?.beat === 'slipper') && has('nails')) return 'nails';
+    if (sq?.type === 'penalty' && sq?.ring !== 'outer' && has('restraint')) return 'restraint';
+    if ((v.vote?.open || sq?.alliance || sq?.shift) && has('roles')) return 'roles';
   }
   return phaseIdFor(state);
 }

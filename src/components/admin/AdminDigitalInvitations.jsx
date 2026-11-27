@@ -180,15 +180,15 @@ export default function AdminDigitalInvitations() {
 
   return <div className="space-y-4">
     <ComicPanel className="bg-card space-y-3 border border-[#b99a45]/60">
-      <div className="font-heading text-xl text-primary">ΙΔΙΩΤΙΚΗ VIP ΠΡΟΣΚΛΗΣΗ</div>
+      <div className="font-heading text-xl text-primary">Ιδιωτική VIP πρόσκληση</div>
       <div className="rounded-xl border border-[#b99a45]/50 bg-black p-4 text-center">
-        <div className="text-xs tracking-[0.35em] text-[#E8C26B]">ΑΠΟΚΛΕΙΣΤΙΚΗ ΠΡΟΣΒΑΣΗ</div>
-        <div className="my-2 font-serif text-2xl tracking-[0.12em] text-[#f4e6bd]">VIP ΠΡΟΣΚΛΗΣΗ</div>
+        <div className="text-xs tracking-[0.35em] text-[#E8C26B]">Αποκλειστική πρόσβαση</div>
+        <div className="my-2 font-serif text-2xl tracking-[0.12em] text-[#f4e6bd]">VIP πρόσκληση</div>
         <div className="text-xs text-[#b99a45]">DEAL OF TEMPTATION</div>
       </div>
-      <ComicButton disabled={vipBusy} onClick={createVipInvitation}>＋ ΔΗΜΙΟΥΡΓΙΑ ΕΤΟΙΜΗΣ VIP ΠΡΟΣΚΛΗΣΗΣ</ComicButton>
+      <ComicButton disabled={vipBusy} onClick={createVipInvitation}>＋ Δημιουργία έτοιμης VIP πρόσκλησης</ComicButton>
       {vipMessage && <div className="text-sm font-bold text-foreground">{vipMessage}</div>}
-      <label className="block space-y-1 text-sm font-bold text-[#E8C26B]">ΣΥΝΔΕΣΗ ΜΕ EVENT<select value={selectedEventId} onChange={(e) => setSelectedEventId(e.target.value)} className="w-full rounded-lg border border-[#b99a45]/50 bg-black px-3 py-3 text-sm text-[#f4e6bd]"><option value="">Επίλεξε Event</option>{events.filter((event) => !['closing', 'completed'].includes(event.status)).map((event) => <option key={event.id} value={event.id}>{event.title} · {event.room_code}</option>)}</select></label>
+      <label className="block space-y-1 text-sm font-bold text-[#E8C26B]">Σύνδεση με EVENT<select value={selectedEventId} onChange={(e) => setSelectedEventId(e.target.value)} className="w-full rounded-lg border border-[#b99a45]/50 bg-black px-3 py-3 text-sm text-[#f4e6bd]"><option value="">Επίλεξε Event</option>{events.filter((event) => !['closing', 'completed'].includes(event.status)).map((event) => <option key={event.id} value={event.id}>{event.title} · {event.room_code}</option>)}</select></label>
     </ComicPanel>
 
     {vipInvitations.map((invitation) => {
@@ -197,13 +197,13 @@ export default function AdminDigitalInvitations() {
       return <ComicPanel key={invitation.id} className="bg-card space-y-3 border border-[#b99a45]/40">
         <div className="flex items-center justify-between gap-2">
           <div>
-            <div className="font-heading text-lg text-[#E8C26B]">VIP ΠΡΟΣΚΛΗΣΗ</div>
+            <div className="font-heading text-lg text-[#E8C26B]">VIP πρόσκληση</div>
             <div className="text-xs text-foreground/60">{new Date(invitation.created_date).toLocaleString('el-GR')}</div>
-            <div className="text-xs text-[#E8C26B]">Mode: {invitation.gameMode ? invitation.gameMode : 'ΕΠΙΛΟΓΗ ΑΠΟ ΤΗΝ ΚΑΛΕΣΜΕΝΗ'}</div>
+            <div className="text-xs text-[#E8C26B]">Mode: {invitation.gameMode ? invitation.gameMode : 'Επιλογή από την καλεσμένη'}</div>
             <div className="text-xs text-foreground/60">Event: {invitation.eventTitle || '—'} · {invitation.roomCode || '—'}</div>
           </div>
           <span className={invitation.active ? 'rounded-full border border-[#b99a45] px-3 py-1 text-xs text-[#E8C26B]' : 'rounded-full border border-white/20 px-3 py-1 text-xs text-foreground/50'}>
-            {invitation.active ? 'ΕΝΕΡΓΗ' : 'ΑΝΕΝΕΡΓΗ'}
+            {invitation.active ? 'Ενεργή' : 'Ανενεργή'}
           </span>
         </div>
         {url && <div className="flex flex-col sm:flex-row items-center gap-4 rounded-xl bg-black p-3">
@@ -211,15 +211,15 @@ export default function AdminDigitalInvitations() {
           <div className="min-w-0 flex-1 space-y-2 text-center sm:text-left">
             <div className="break-all text-xs text-[#E8C26B]">{url}</div>
             <div className="flex flex-wrap justify-center sm:justify-start gap-2">
-              <ComicButton size="sm" onClick={() => navigator.clipboard.writeText(url)}>ΑΝΤΙΓΡΑΦΗ ΣΥΝΔΕΣΜΟΥ</ComicButton>
-              <ComicButton size="sm" variant="dark" onClick={() => { if (navigator.share) navigator.share({ title: 'VIP Πρόσκληση — DEAL OF TEMPTATION', url }).catch(() => {}); else navigator.clipboard.writeText(url); }}>ΚΟΙΝΟΠΟΙΗΣΗ</ComicButton>
+              <ComicButton size="sm" onClick={() => navigator.clipboard.writeText(url)}>Αντιγραφή συνδέσμου</ComicButton>
+              <ComicButton size="sm" variant="dark" onClick={() => { if (navigator.share) navigator.share({ title: 'VIP Πρόσκληση — DEAL OF TEMPTATION', url }).catch(() => {}); else navigator.clipboard.writeText(url); }}>Κοινοποίηση</ComicButton>
             </div>
           </div>
         </div>}
         <div className="flex flex-wrap gap-2">
-          <ComicButton size="sm" variant="dark" disabled={vipBusy} onClick={() => loadVipSubmissions(invitation)}>ΑΠΑΝΤΗΣΕΙΣ / ΣΥΜΜΕΤΟΧΕΣ</ComicButton>
-          <ComicButton size="sm" variant={invitation.active ? 'red' : 'green'} disabled={vipBusy} onClick={() => toggleVipInvitation(invitation)}>{invitation.active ? 'ΑΠΕΝΕΡΓΟΠΟΙΗΣΗ ΣΥΝΔΕΣΜΟΥ' : 'ΕΝΕΡΓΟΠΟΙΗΣΗ ΣΥΝΔΕΣΜΟΥ'}</ComicButton>
-          <ComicButton size="sm" variant="red" disabled={vipBusy} onClick={() => deleteVipInvitation(invitation)}>ΔΙΑΓΡΑΦΗ VIP ΠΡΟΣΚΛΗΣΗΣ + ΑΠΑΝΤΗΣΕΩΝ</ComicButton>
+          <ComicButton size="sm" variant="dark" disabled={vipBusy} onClick={() => loadVipSubmissions(invitation)}>Απαντήσεις / συμμετοχές</ComicButton>
+          <ComicButton size="sm" variant={invitation.active ? 'red' : 'green'} disabled={vipBusy} onClick={() => toggleVipInvitation(invitation)}>{invitation.active ? 'Απενεργοποίηση συνδέσμου' : 'Ενεργοποίηση συνδέσμου'}</ComicButton>
+          <ComicButton size="sm" variant="red" disabled={vipBusy} onClick={() => deleteVipInvitation(invitation)}>Διαγραφή VIP πρόσκλησης + απαντήσεων</ComicButton>
         </div>
         {responses && <div className="space-y-2 border-t border-[#b99a45]/30 pt-3">
           <div className="font-heading text-sm text-[#E8C26B]">ΣΥΜΜΕΤΟΧΕΣ: {responses.length}</div>
@@ -231,12 +231,12 @@ export default function AdminDigitalInvitations() {
                 {Object.entries(response.answerLabels || response.answers || {}).map(([label, answer]) => <div key={label}><span className="text-[#E8C26B]">{label}:</span> {String(answer)}</div>)}
               </div>
               <details className="mt-2 rounded-lg border border-[#b99a45]/25 p-2 text-xs">
-                <summary className="cursor-pointer font-bold text-[#E8C26B]">ΟΛΑ ΤΑ ΑΠΟΘΗΚΕΥΜΕΝΑ ΠΕΔΙΑ ΚΑΙ ΑΠΑΝΤΗΣΕΙΣ</summary>
+                <summary className="cursor-pointer font-bold text-[#E8C26B]">Όλα τα αποθηκευμένα πεδία και απαντήσεις</summary>
                 <pre className="mt-2 whitespace-pre-wrap break-words text-foreground/70">{JSON.stringify({ answers: response.answers || {}, customAnswers: response.customAnswers || {}, customAnswerLabels: response.customAnswerLabels || {} }, null, 2)}</pre>
               </details>
               <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
-                <div className="text-[10px] text-foreground/40">{new Date(response.created_date).toLocaleString('el-GR')} · {response.approved ? '✅ ΕΓΚΕΚΡΙΜΕΝΗ' : response.approvalStatus === 'rejected' ? '✕ ΑΠΟΡΡΙΦΘΕΙΣΑ' : '⏳ ΣΕ ΑΝΑΜΟΝΗ'}</div>
-                <div className="flex flex-wrap gap-2">{!response.approved && response.approvalStatus !== 'rejected' && <><ComicButton size="sm" variant="green" disabled={vipBusy} onClick={() => approveVipSubmission(invitation, response)}>ΕΓΚΡΙΣΗ & ΔΗΜΙΟΥΡΓΙΑ ΠΡΟΦΙΛ</ComicButton><ComicButton size="sm" variant="red" disabled={vipBusy} onClick={() => rejectVipSubmission(invitation, response)}>ΑΠΟΡΡΙΨΗ</ComicButton></>}<ComicButton size="sm" variant="red" disabled={vipBusy} onClick={() => deleteVipSubmission(invitation, response)}>ΔΙΑΓΡΑΦΗ ΑΠΑΝΤΗΣΗΣ</ComicButton></div>
+                <div className="text-[10px] text-foreground/40">{new Date(response.created_date).toLocaleString('el-GR')} · {response.approved ? '✅ Εγκεκριμένη' : response.approvalStatus === 'rejected' ? '✕ ΑΠΟΡΡΙΦΘΕΙΣΑ' : '⏳ Σε αναμονή'}</div>
+                <div className="flex flex-wrap gap-2">{!response.approved && response.approvalStatus !== 'rejected' && <><ComicButton size="sm" variant="green" disabled={vipBusy} onClick={() => approveVipSubmission(invitation, response)}>Έγκριση & δημιουργία προφίλ</ComicButton><ComicButton size="sm" variant="red" disabled={vipBusy} onClick={() => rejectVipSubmission(invitation, response)}>Απόρριψη</ComicButton></>}<ComicButton size="sm" variant="red" disabled={vipBusy} onClick={() => deleteVipSubmission(invitation, response)}>Διαγραφή απάντησης</ComicButton></div>
               </div>
             </div>
           ))}
@@ -245,12 +245,12 @@ export default function AdminDigitalInvitations() {
     })}
 
     <ComicPanel className="bg-card space-y-3">
-      <div className="font-heading text-xl text-primary">ΨΗΦΙΑΚΕΣ ΠΡΟΣΚΛΗΣΕΙΣ</div>
+      <div className="font-heading text-xl text-primary">Ψηφιακές προσκλήσεις</div>
       <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Τίτλος πρόσκλησης" className="w-full rounded-lg border-2 border-border bg-background px-3 py-2 text-sm" />
       <select value={target} onChange={(e) => setTarget(e.target.value)} className="w-full rounded-lg border-2 border-border bg-background px-3 py-2 text-sm">
         {TARGETS.map((item) => <option key={item.path} value={item.path}>{item.label}</option>)}
       </select>
-      <ComicButton disabled={busy || !title.trim()} onClick={add}>＋ ΔΗΜΙΟΥΡΓΙΑ ΠΡΟΣΚΛΗΣΗΣ</ComicButton>
+      <ComicButton disabled={busy || !title.trim()} onClick={add}>＋ Δημιουργία πρόσκλησης</ComicButton>
       {message && <div className="text-xs font-bold">{message}</div>}
     </ComicPanel>
     {items.map((item) => {
@@ -262,9 +262,9 @@ export default function AdminDigitalInvitations() {
             <div className="font-heading text-lg">{item.title}</div>
             <div className="text-xs text-foreground/60 break-all my-2">{url}</div>
             <div className="flex flex-wrap gap-2">
-              <ComicButton size="sm" onClick={() => { if (navigator.share) navigator.share({ title: item.title, url }).catch(() => {}); else navigator.clipboard.writeText(url); }}>ΑΠΟΣΤΟΛΗ / ΚΟΙΝΟΠΟΙΗΣΗ</ComicButton>
-              <ComicButton size="sm" variant="dark" onClick={() => navigator.clipboard.writeText(url)}>ΑΝΤΙΓΡΑΦΗ ΣΥΝΔΕΣΜΟΥ</ComicButton>
-              <ComicButton size="sm" variant="red" disabled={busy} onClick={() => save(items.filter((x) => x.id !== item.id))}>ΔΙΑΓΡΑΦΗ</ComicButton>
+              <ComicButton size="sm" onClick={() => { if (navigator.share) navigator.share({ title: item.title, url }).catch(() => {}); else navigator.clipboard.writeText(url); }}>Αποστολή / κοινοποίηση</ComicButton>
+              <ComicButton size="sm" variant="dark" onClick={() => navigator.clipboard.writeText(url)}>Αντιγραφή συνδέσμου</ComicButton>
+              <ComicButton size="sm" variant="red" disabled={busy} onClick={() => save(items.filter((x) => x.id !== item.id))}>Διαγραφή</ComicButton>
             </div>
           </div>
         </div>

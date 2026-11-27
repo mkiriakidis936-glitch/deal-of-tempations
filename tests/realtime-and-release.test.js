@@ -16,9 +16,10 @@ test('realtime: όλες οι συνδρομές μιας σελίδας μοι�
   assert.match(server, /JSON\.stringify\(\{ \.\.\.delivered, entity \}\)/);
 });
 
-test('realtime: ο admin που ανοίγει /play δεν χάνει τη συνεδρία λόγω playerId', () => {
+test('realtime: ο admin που ανοίγει /play δεν χάνει τη συνεδρία λόγω playerId ή PIN', () => {
   const server = read('server/entities.js');
-  assert.match(server, /isAdmin\(req\) && isObject\(effectiveQuery\) && 'playerId' in effectiveQuery/);
+  assert.match(server, /isAdmin\(req\) && isObject\(effectiveQuery\) && \('playerId' in effectiveQuery \|\| 'pin' in effectiveQuery\)/);
+  assert.match(server, /const \{ playerId: _viewer, pin: _pin, \.\.\.rest \} = effectiveQuery/);
 });
 
 test('TV: μία μόνο έξοδος παραγωγής (χωρίς διπλή αναπαραγωγή media)', () => {

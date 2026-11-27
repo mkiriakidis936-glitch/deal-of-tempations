@@ -139,16 +139,16 @@ export default function AdminBackup() {
       )}
 
       <ComicPanel className="bg-card space-y-2">
-        <div className="font-heading text-lg text-primary">ΤΕΛΕΥΤΑΙΟ ΑΝΤΙΓΡΑΦΟ</div>
+        <div className="font-heading text-lg text-primary">Τελευταίο αντίγραφο</div>
         <div className="text-sm">{latestBackup ? `${when(latestBackup.modified)} · ${KIND_LABEL[latestBackup.kind] || latestBackup.kind} · ${mb(latestBackup.size)}` : 'Δεν υπάρχει αποθηκευμένο αντίγραφο.'}</div>
-        <ComicButton size="sm" variant="dark" disabled={busy} onClick={load}>ΕΛΕΓΧΟΣ ΚΑΤΑΣΤΑΣΗΣ</ComicButton>
+        <ComicButton size="sm" variant="dark" disabled={busy} onClick={load}>Έλεγχος κατάστασης</ComicButton>
       </ComicPanel>
 
       <ComicPanel className="bg-card space-y-3">
-        <div className="font-heading text-lg text-primary">ΔΗΜΙΟΥΡΓΙΑ</div>
+        <div className="font-heading text-lg text-primary">Δημιουργία</div>
         <div className="flex flex-wrap gap-2">
-          <ComicButton variant="yellow" size="md" disabled={busy} onClick={downloadNow}>⬇ ΚΑΤΕΒΑΣΜΑ ΣΤΟΝ ΥΠΟΛΟΓΙΣΤΗ</ComicButton>
-          <ComicButton variant="dark" size="md" disabled={busy} onClick={saveNow}>💾 ΑΠΟΘΗΚΕΥΣΗ ΣΤΟΝ SERVER</ComicButton>
+          <ComicButton variant="yellow" size="md" disabled={busy} onClick={downloadNow}>⬇ Κατέβασμα στον υπολογιστή</ComicButton>
+          <ComicButton variant="dark" size="md" disabled={busy} onClick={saveNow}>💾 Αποθήκευση στον SERVER</ComicButton>
         </div>
         <div className="text-xs text-foreground/60 font-body">
           Τα αντίγραφα γίνονται <b>μόνο όταν πατήσεις</b> «Αποθήκευση στον server» (κρατιούνται τα 20 τελευταία), μέσα στο Volume. Το JSON περιλαμβάνει τα δεδομένα της εφαρμογής. Φωτογραφίες και βίντεο διαχειρίζονται ξεχωριστά από το Media Backup παρακάτω.
@@ -156,26 +156,26 @@ export default function AdminBackup() {
       </ComicPanel>
 
       <ComicPanel className="bg-card space-y-3">
-        <div className="font-heading text-lg text-primary">ΑΝΤΙΓΡΑΦΟ ΠΟΛΥΜΕΣΩΝ — ΦΩΤΟΓΡΑΦΙΕΣ & ΒΙΝΤΕΟ</div>
+        <div className="font-heading text-lg text-primary">Αντίγραφο πολυμέσων — φωτογραφίες & βίντεο</div>
         <div className="text-xs text-foreground/60 font-body">Δημιουργεί συμπιεσμένο αρχείο .tar.gz με όλα τα ανεβασμένα αρχεία του Βιβλιοθήκη πολυμέσων. Η επαναφορά κρατά πρώτα αντίγραφο των τωρινών αρχείων στον server και επαναφέρει τα αρχεία με τα αρχικά τους ονόματα.</div>
         <div className="flex flex-wrap gap-2">
-          <ComicButton variant="yellow" size="md" disabled={busy} onClick={downloadMediaNow}>⬇ ΚΑΤΕΒΑΣΜΑ MEDIA BACKUP</ComicButton>
+          <ComicButton variant="yellow" size="md" disabled={busy} onClick={downloadMediaNow}>⬇ Κατέβασμα αντιγράφου media</ComicButton>
           <input ref={mediaFileRef} type="file" accept=".tar.gz,application/gzip" className="hidden" onChange={onMediaRestorePick} />
-          <ComicButton variant="dark" size="md" disabled={busy} onClick={() => mediaFileRef.current?.click()}>📂 ΕΠΑΝΑΦΟΡΑ MEDIA BACKUP</ComicButton>
+          <ComicButton variant="dark" size="md" disabled={busy} onClick={() => mediaFileRef.current?.click()}>📂 Επαναφορά MEDIA BACKUP</ComicButton>
         </div>
       </ComicPanel>
 
       <ComicPanel className="bg-card space-y-3">
-        <div className="font-heading text-lg text-primary">ΕΠΑΝΑΦΟΡΑ ΑΠΟ ΑΡΧΕΙΟ</div>
+        <div className="font-heading text-lg text-primary">Επαναφορά από αρχείο</div>
         <input ref={fileRef} type="file" accept=".json,application/json" className="hidden" onChange={onPick} />
-        <ComicButton variant="dark" size="md" disabled={busy} onClick={() => fileRef.current?.click()}>📂 ΕΠΙΛΟΓΗ ΑΡΧΕΙΟΥ .json</ComicButton>
+        <ComicButton variant="dark" size="md" disabled={busy} onClick={() => fileRef.current?.click()}>📂 Επιλογή αρχείου .json</ComicButton>
         {picked && (
           <div className="space-y-2 border border-border p-3">
             <div className="text-sm font-body">«{picked.name}» · {picked.data.records.length} εγγραφές · {picked.data.exportedAt ? new Date(picked.data.exportedAt).toLocaleString('el-GR') : ''}</div>
             <div className="text-xs text-foreground/70 font-body">
               {Object.entries(picked.data.counts || {}).map(([k, v]) => `${k}: ${v}`).join(' · ')}
             </div>
-            <ComicButton variant="red" size="md" disabled={busy} onClick={restorePicked}>⚠ ΕΠΑΝΑΦΟΡΑ ΑΠΟ ΑΥΤΟ</ComicButton>
+            <ComicButton variant="red" size="md" disabled={busy} onClick={restorePicked}>⚠ Επαναφορά από αυτό</ComicButton>
           </div>
         )}
       </ComicPanel>
@@ -200,8 +200,8 @@ export default function AdminBackup() {
               <div className="text-xs text-foreground/60">{when(it.modified)} · {mb(it.size)}</div>
             </div>
             {!it.folder && <ComicButton variant="dark" size="sm" disabled={busy} onClick={() => run(() => download(`/api/backup/file/${encodeURIComponent(it.name)}`, it.name), 'Το αρχείο κατέβηκε.')}>⬇</ComicButton>}
-            {it.name.endsWith('.json') && <ComicButton variant="dark" size="sm" disabled={busy} onClick={() => testStored(it.name)}>ΕΛΕΓΧΟΣ</ComicButton>}
-            {!it.folder && <ComicButton variant="dark" size="sm" disabled={busy} onClick={() => restoreStored(it.name)}>ΕΠΑΝΑΦΟΡΑ</ComicButton>}
+            {it.name.endsWith('.json') && <ComicButton variant="dark" size="sm" disabled={busy} onClick={() => testStored(it.name)}>Έλεγχος</ComicButton>}
+            {!it.folder && <ComicButton variant="dark" size="sm" disabled={busy} onClick={() => restoreStored(it.name)}>Επαναφορά</ComicButton>}
             <ComicButton variant="red" size="sm" disabled={busy} aria-label="Διαγραφή" onClick={() => { if (window.confirm(`Οριστική διαγραφή του «${KIND_LABEL[it.kind] || it.kind}» (${when(it.modified)});`)) run(async () => { await request('DELETE', `/api/backup/file/${encodeURIComponent(it.name)}`); await load(); }, 'Διαγράφηκε.'); }}>🗑</ComicButton>
           </div>
         ))}

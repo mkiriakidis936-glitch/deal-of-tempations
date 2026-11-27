@@ -108,14 +108,14 @@ export default function AdminEventManager() {
   return (
     <div className="space-y-4">
       <ComicPanel className="bg-card space-y-2">
-        <h2 className="font-heading text-2xl text-primary">ΔΙΑΧΕΙΡΙΣΗ EVENT</h2>
+        <h2 className="font-heading text-2xl text-primary">Διαχείριση EVENT</h2>
         <div className="flex flex-wrap gap-2">
           <input value={newTitle} onChange={(e) => setNewTitle(e.target.value)} placeholder="Τίτλος (π.χ. Βραδιά Σαββάτου)" className="min-w-0 flex-1 rounded-lg border border-border bg-background px-3 py-2 text-sm" />
           <select value={newType} onChange={(e) => setNewType(e.target.value)} className="rounded-lg border border-border bg-background px-3 py-2 text-sm">
             <option value="one_night">ONE NIGHT</option>
             <option value="villa_48h">48H VILLA</option>
           </select>
-          <ComicButton size="sm" disabled={creating} onClick={createEvent}>{creating ? 'Δημιουργία…' : '+ ΝΕΟ EVENT'}</ComicButton>
+          <ComicButton size="sm" disabled={creating} onClick={createEvent}>{creating ? 'Δημιουργία…' : '+ Νέο EVENT'}</ComicButton>
         </div>
       </ComicPanel>
 
@@ -137,12 +137,12 @@ export default function AdminEventManager() {
             </div>
 
             <div className="grid gap-2 sm:grid-cols-2">
-              <label className="space-y-1 text-xs font-bold text-[#E8C26B]">ΚΑΤΑΣΤΑΣΗ
+              <label className="space-y-1 text-xs font-bold text-[#E8C26B]">Κατάσταση
                 <select className="w-full rounded-lg border border-border bg-background px-3 py-2 text-foreground" value={event.status} disabled={savingId === event.id} onChange={(e) => updateEvent(event, { status: e.target.value })}>
                   {STATUSES.map(([id, label]) => <option key={id} value={id}>{label}</option>)}
                 </select>
               </label>
-              <label className="space-y-1 text-xs font-bold text-[#E8C26B]">ΤΡΕΧΟΥΣΑ ΦΑΣΗ
+              <label className="space-y-1 text-xs font-bold text-[#E8C26B]">Τρέχουσα φάση
                 <select className="w-full rounded-lg border border-border bg-background px-3 py-2 text-foreground" value={event.phase} disabled={savingId === event.id} onChange={(e) => updateEvent(event, { phase: e.target.value })}>
                   {phases.map(([id, label]) => <option key={id} value={id}>{label}</option>)}
                 </select>
@@ -150,28 +150,28 @@ export default function AdminEventManager() {
             </div>
 
             <div className="rounded-xl border border-[#b99a45]/30 bg-black/40 p-3">
-              <div className="text-[10px] tracking-widest text-[#b99a45]">ΤΡΕΧΟΥΣΑ ΦΑΣΗ</div>
+              <div className="text-[10px] tracking-widest text-[#b99a45]">Τρέχουσα φάση</div>
               <div className="font-heading text-lg text-[#F7E3A8]">{phaseLabel(event)}</div>
-              <ComicButton size="sm" disabled={savingId === event.id || event.phase === phases.at(-1)?.[0]} onClick={() => nextPhase(event)}>ΕΠΟΜΕΝΗ ΦΑΣΗ</ComicButton>
+              <ComicButton size="sm" disabled={savingId === event.id || event.phase === phases.at(-1)?.[0]} onClick={() => nextPhase(event)}>Επόμενη φάση</ComicButton>
             </div>
 
-            <label className="block space-y-1 text-xs font-bold text-[#E8C26B]">ΣΥΝΤΟΝΙΣΤΙΚΕΣ ΣΗΜΕΙΩΣΕΙΣ
+            <label className="block space-y-1 text-xs font-bold text-[#E8C26B]">Συντονιστικές σημειώσεις
               <textarea defaultValue={event.notes || ''} key={`${event.id}-${event.notes || ''}`} rows={2} maxLength={3000} className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground" onBlur={(e) => { if (e.target.value !== (event.notes || '')) updateEvent(event, { notes: e.target.value }); }} />
             </label>
 
             <div className="grid gap-2 sm:grid-cols-2">
               <div className="rounded-lg border border-border p-3">
-                <div className="text-[10px] text-foreground/50">ΚΩΔΙΚΟΣ ΔΩΜΑΤΙΟΥ</div>
+                <div className="text-[10px] text-foreground/50">Κωδικός δωματίου</div>
                 <div className="font-mono text-xl tracking-[.2em] text-[#E8C26B]">{event.room_code}</div>
                 <div className="text-xs text-foreground/60">Αναμενόμενες συμμετοχές: {event.expectedCount ?? event.interestIds?.length ?? 0}</div>
               </div>
               <div className="rounded-lg border border-border p-3">
-                <div className="text-[10px] text-foreground/50">ΣΥΝΔΕΣΗ GAMESESSION · ΜΟΝΟ ΑΝΑΓΝΩΣΗ</div>
+                <div className="text-[10px] text-foreground/50">Σύνδεση GAMESESSION · μόνο ανάγνωση</div>
                 <div className="font-mono text-sm text-foreground">{event.gameSessionCode || 'Δεν έχει ξεκινήσει παιχνίδι'}</div>
               </div>
             </div>
             <div className="flex flex-wrap gap-2">
-              <ComicButton size="sm" onClick={() => navigator.clipboard.writeText(url)}>ΑΝΤΙΓΡΑΦΗ ΣΥΝΔΕΣΜΟΥ ΣΥΜΜΕΤΟΧΗΣ</ComicButton>
+              <ComicButton size="sm" onClick={() => navigator.clipboard.writeText(url)}>Αντιγραφή συνδέσμου συμμετοχής</ComicButton>
               <a href={`/deal/${event.room_code}`} target="_blank" rel="noreferrer" className="self-center text-xs underline text-[#E8C26B]">Άνοιγμα φόρμας Event</a>
             </div>
           </ComicPanel>

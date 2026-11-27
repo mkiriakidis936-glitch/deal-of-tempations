@@ -4,7 +4,7 @@ import MediaSpot from '@/components/shared/MediaSpot';
 import { ART, PHOTO, MODE_MEDIA, MODE_COVERS } from '@/data/brandArt';
 import { getSiteContent } from '@/data/siteContent';
 import { GAME_MODES } from '@/data/gameConfig';
-import { modeMeta } from '@/data/modes/modeRegistry';
+import { modeMeta, durationLabel } from '@/data/modes/modeRegistry';
 
 // /promo — η σύντομη προωθητική σελίδα που στέλνεις σε όποια θες να μάθει για τη βραδιά.
 // Δείχνει ΟΛΑ τα ενεργά modes. Τα κείμενα έρχονται από Admin → Ιστοσελίδα (ίδια με το /site),
@@ -20,7 +20,7 @@ export const promoModes = () => GAME_MODES
     const site = getSiteContent(PROMO_SITE_KEYS[mode.id]);
     const meta = modeMeta(mode.id);
     const media = MODE_MEDIA[mode.id] || {};
-    const hours = meta?.minutes ? (meta.minutes >= 1440 ? `${Math.round(meta.minutes / 60)} ώρες` : meta.minutes >= 60 ? `${(meta.minutes / 60).toLocaleString('el-GR', { maximumFractionDigits: 1 })} ώρες` : `${meta.minutes}′`) : '';
+    const hours = durationLabel(meta);
     return {
       id: mode.id,
       icon: mode.icon,

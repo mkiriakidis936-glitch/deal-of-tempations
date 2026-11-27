@@ -133,7 +133,7 @@ export default function AdminModes({ modeId }) {
         {msg && <div className={`text-sm font-bold ${msg.ok ? 'text-green-400' : 'text-red-400'}`}>{msg.text}</div>}
       </ComicPanel>
 
-      {!loaded && <div className="text-center font-heading comic-pulse">ΦΟΡΤΩΣΗ...</div>}
+      {!loaded && <div className="text-center font-heading comic-pulse">Φόρτωση...</div>}
 
       {loaded && col && (
         <ComicPanel className="bg-card space-y-3">
@@ -157,7 +157,7 @@ export default function AdminModes({ modeId }) {
           ))}
           {!col.fixedItems && <ComicButton size="sm" onClick={() => setList((l) => [...l, col.strings ? '' : { ...col.blank }])}>➕ Νέο στοιχείο</ComicButton>}
           <div className="flex gap-2 flex-wrap sticky bottom-2">
-            <ComicButton variant="green" disabled={busy || list.length === 0} onClick={save}>💾 ΑΠΟΘΗΚΕΥΣΗ</ComicButton>
+            <ComicButton variant="green" disabled={busy || list.length === 0} onClick={save}>💾 Αποθήκευση</ComicButton>
             <ComicButton variant="dark" disabled={busy} onClick={reset}>↩ Επαναφορά αρχικών</ComicButton>
           </div>
         </ComicPanel>

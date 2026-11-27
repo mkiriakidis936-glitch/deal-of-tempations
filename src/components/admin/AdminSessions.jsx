@@ -25,7 +25,7 @@ export default function AdminSessions({ sessions, loading, onSelect, onDelete, o
   }
 
   if (loading) {
-    return <ComicPanel className="bg-card text-center py-8"><div className="font-heading text-2xl comic-pulse">ΦΟΡΤΩΣΗ...</div></ComicPanel>;
+    return <ComicPanel className="bg-card text-center py-8"><div className="font-heading text-2xl comic-pulse">Φόρτωση...</div></ComicPanel>;
   }
 
   if (sessions.length === 0) {
@@ -42,11 +42,11 @@ export default function AdminSessions({ sessions, loading, onSelect, onDelete, o
     <div className="space-y-2">
       <ComicPanel className="bg-destructive/20 border-2 border-destructive/40 flex items-center justify-between flex-wrap gap-2">
         <div className="text-sm">
-          <div className="font-heading text-lg">⚡ ΤΡΕΧΟΥΣΑ ΣΥΝΕΔΡΙΑ</div>
+          <div className="font-heading text-lg">⚡ Τρέχουσα συνεδρία</div>
           <div className="text-xs text-foreground/70">{sessions[0]?.sessionCode} — {STAGE_NAMES[(sessions[0]?.state || {}).stage] || '—'}</div>
         </div>
         <ComicButton variant="red" size="sm" onClick={handleDeleteCurrent}>
-          🗑️ ΔΙΑΓΡΑΦΗ ΤΡΕΧΟΥΣΑΣ
+          🗑️ Διαγραφή τρέχουσας
         </ComicButton>
       </ComicPanel>
       {sessions.map((s) => {
@@ -113,10 +113,10 @@ export default function AdminSessions({ sessions, loading, onSelect, onDelete, o
 
                 <div className="flex gap-2 flex-wrap">
                   <ComicButton variant="magenta" size="sm" onClick={() => onSelect(s)}>
-                    ✏️ ΕΠΕΞΕΡΓΑΣΙΑ ΠΑΙΚΤΡΙΩΝ
+                    ✏️ Επεξεργασία παικτριών
                   </ComicButton>
                   <ComicButton variant="yellow" size="sm" onClick={() => handleRestart(s)}>
-                    🔄 ΟΛΙΚΟ RESTART
+                    🔄 Ολικό RESTART
                   </ComicButton>
                   <ComicButton
                     variant="red"
@@ -125,7 +125,7 @@ export default function AdminSessions({ sessions, loading, onSelect, onDelete, o
                       if (confirm(`Διαγραφή συνεδρίας ${s.sessionCode};`)) Promise.resolve(onDelete(s.id)).catch((error) => window.alert(error.message || 'Η διαγραφή της συνεδρίας απέτυχε.'));
                     }}
                   >
-                    🗑️ ΔΙΑΓΡΑΦΗ
+                    🗑️ Διαγραφή
                   </ComicButton>
                 </div>
               </div>

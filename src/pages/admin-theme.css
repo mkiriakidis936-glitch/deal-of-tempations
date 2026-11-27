@@ -685,3 +685,18 @@
 #admin-root .adm-footer { color: var(--ios-label-3) !important; }
 /* Προεπισκόπηση του site μέσα στο Admin: όλα τα sections ορατά αμέσως (χωρίς εφέ εμφάνισης). */
 #admin-root .dot-reveal { opacity: 1 !important; transform: none !important; }
+
+/* 8.0.0 — τελευταία παλιά στοιχεία: κίτρινα banner, tarot χρώματα και comic τίτλοι γίνονται καθαρές κάρτες iOS 27. */
+#admin-root div[class~="bg-primary"], #admin-root section[class~="bg-primary"] {
+  background: var(--adm-gold-soft) !important;
+  border: 1px solid var(--adm-gold-line) !important;
+  color: var(--adm-text) !important;
+  box-shadow: none !important;
+}
+#admin-root div[class~="bg-primary"] :not(button):not(.comic-boom):not(.comic-boom *),
+#admin-root section[class~="bg-primary"] :not(button):not(.comic-boom):not(.comic-boom *) { color: inherit !important; }
+#admin-root div[class*="bg-tarot-"]:not(button), #admin-root span[class*="bg-tarot-"] { background-color: var(--adm-fill-2) !important; color: var(--adm-text) !important; }
+#admin-root [class*="text-tarot-"]:not(.comic-boom):not([class~="bg-primary"]) { color: var(--adm-gold) !important; }
+#admin-root [class~="bg-primary"][class*="text-tarot-"], #admin-root button[class~="bg-primary"] { color: #000 !important; }
+#admin-root .comic-pulse { animation: none !important; }
+#admin-root .font-heading { text-transform: none !important; letter-spacing: -0.01em !important; font-weight: 700; }

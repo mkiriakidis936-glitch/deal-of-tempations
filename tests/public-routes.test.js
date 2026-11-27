@@ -56,7 +56,7 @@ test('mobile player heartbeat is validated and visible in live Admin presence', 
   assert.match(server, /broadcast\('PlayerPresence'/);
   assert.match(play, /\/api\/entities\/player-presence/);
   assert.match(adminPlayers, /appApi\.entities\.PlayerPresence\.subscribe/);
-  assert.match(adminPlayers, /ΣΥΝΔΕΔΕΜΕΝΗ/);
+  assert.match(adminPlayers, /Συνδεδεμένη/);
 });
 
 
@@ -117,4 +117,14 @@ test('7.5.0: παλιοί σύνδεσμοι δεν δείχνουν κενή σ
   assert.match(app, /<Navigate to="\/site" replace \/>/);
   const promo = read('../src/pages/Promo.jsx');
   for (const id of ['classic', 'arrest_heist', 'lockdown', 'marathon_4h', 'villa_takeover']) assert.match(promo, new RegExp(`${id}:`));
+});
+
+test('8.0.0: το Site δείχνει κάθε εμπειρία μία φορά και ο αριθμός «εμπειρίες» είναι σωστός', () => {
+  const src = read('../src/data/siteContent.js');
+  assert.doesNotMatch(src, /SITE_EVENTS\.push/, 'κανένα mode δεν προστίθεται δεύτερη φορά');
+  const list = src.slice(src.indexOf('export const SITE_EVENTS = ['), src.indexOf('];', src.indexOf('export const SITE_EVENTS = [')));
+  const ids = [...list.matchAll(/id: '([a-z0-9_]+)'/g)].map((m) => m[1]);
+  assert.equal(new Set(ids).size, ids.length);
+  assert.deepEqual(ids, ['classic', 'heist', 'lockdown', 'marathon4h', 'villa']);
+  assert.match(src, /tab: 'Heist Night',\n.*\n    titleLines: \['HEIST', 'NIGHT'\]/, 'ο τίτλος του Heist δεν είναι το όνομα της εφαρμογής');
 });

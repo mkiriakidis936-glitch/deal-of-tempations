@@ -27,37 +27,37 @@ const AUTO_TITLES = {
  "break_02_slippers": "Διάλειμμα: παντόφλες",
  "break_03_vault_dial": "Διάλειμμα: καντράν",
  "break_05_women_whisper": "Διάλειμμα: ψιθυρίζουν",
- "highlight_big_win": "ΜΕΓΑΛΗ ΝΙΚΗ",
- "highlight_laughter_montage": "ΤΑ ΚΑΛΥΤΕΡΑ ΓΕΛΙΑ",
- "highlight_penalty_reaction": "ΠΟΙΝΗ!",
- "highlight_team_cheer": "ΟΜΑΔΕΣ ALPHA & BETA",
- "highlight_vault_open": "ΑΝΟΙΓΕΙ ΤΟ ΧΡΗΜΑΤΟΚΙΒΩΤΙΟ",
+ "highlight_big_win": "Μεγάλη νίκη",
+ "highlight_laughter_montage": "Τα καλύτερα γέλια",
+ "highlight_penalty_reaction": "Ποινή!",
+ "highlight_team_cheer": "Ομάδες ALPHA & BETA",
+ "highlight_vault_open": "Ανοίγει το χρηματοκιβώτιο",
  "logo_reveal": "Αποκάλυψη λογοτύπου",
  "opening_02_vault_awakens": "ΤΟ ΧΡΗΜΑΤΟΚΙΒΩΤΙΟ ΞΥΠΝΑ",
- "opening_03_the_four_enter": "ΟΙ ΠΑΙΚΤΡΙΕΣ",
+ "opening_03_the_four_enter": "Οι παίκτριες",
  "opening_04_welcome_toast": "ΚΑΛΩΣΗΡΘΑΤΕ",
- "opening_05_rules_tease": "ΤΡΑΒΑ ΚΑΡΤΑ",
+ "opening_05_rules_tease": "Τράβα κάρτα",
  "recap_00_goodbye": "ΕΥΧΑΡΙΣΤΟΥΜΕ ΠΟΥ ΠΑΙΞΑΤΕ",
- "recap_01_montage_open": "Η ΒΡΑΔΙΑ ΣΕ ΛΙΓΕΣ ΣΤΙΓΜΕΣ",
+ "recap_01_montage_open": "Η Βραδιά σε λίγες στιγμές",
  "recap_02_golden_hour": "ΤΕΛΕΙΑ ΒΡΑΔΙΑ",
- "recap_03_goodnight": "ΚΑΛΗΝΥΧΤΑ",
+ "recap_03_goodnight": "Καληνύχτα",
  "recap_04_credits_bg": "ΕΥΧΑΡΙΣΤΟΥΜΕ ΠΟΥ ΠΑΙΞΑΤΕ",
  "mode_intro_arrest_heist": "Εισαγωγή Mode: ARREST & HEIST",
  "mode_intro_classic": "Εισαγωγή Mode: ΚΛΑΣΙΚΗ",
  "mode_intro_lockdown": "Εισαγωγή Mode: PAJAMA LOCKDOWN",
  "mode_intro_marathon": "Εισαγωγή Mode: MEGA MARATHON",
  "mode_intro_pajama": "Εισαγωγή Mode: PAJAMA PEDI-GLAM",
- "scene_arrest_chase": "ΣΥΛΛΗΨΗ!",
- "scene_heist_round_start": "ΓΥΡΟΣ ΛΗΣΤΕΙΑΣ",
+ "scene_arrest_chase": "Σύλληψη!",
+ "scene_heist_round_start": "Γύρος ληστείας",
  "scene_lockdown_cipher": "LEVEL 2 · SENSORY CIPHER",
  "scene_lockdown_exit_code": "LEVEL 4 · EXIT CODE",
  "scene_lockdown_level1": "LEVEL 1 · HOSTAGE SACRIFICE",
- "scene_pajama_pedicure": "ΒΡΑΔΥ ΠΕΡΙΠΟΙΗΣΗΣ",
+ "scene_pajama_pedicure": "Βράδυ περιποίησης",
  "transition_00_gold": "Μετάβαση χρυσή (λογότυπο)",
- "winner_00_reveal": "ΚΑΙ Η ΝΙΚΗΤΡΙΑ ΕΙΝΑΙ... / Η ΝΙΚΗΤΡΙΑ",
- "winner_01_envelope": "ΤΟ ΑΠΟΤΕΛΕΣΜΑ ΕΙΝΑΙ ΕΤΟΙΜΟ",
- "winner_02_vault_gold": "ΤΟ ΧΡΥΣΟ ΧΡΗΜΑΤΟΚΙΒΩΤΙΟ",
- "winner_03_crown_ceremony": "Η ΣΤΕΨΗ",
+ "winner_00_reveal": "Και Η νικήτρια είναι... / Η νικήτρια",
+ "winner_01_envelope": "Το αποτέλεσμα είναι έτοιμο",
+ "winner_02_vault_gold": "Το χρυσό χρηματοκιβώτιο",
+ "winner_03_crown_ceremony": "Η Στέψη",
  "winner_04_confetti_burst": "ΜΠΡΑΒΟ!",
  "winner_05_spotlight_trophy": "Ο ΘΡΙΑΜΒΟΣ",
  "sting_logo": "Ήχος λογοτύπου",
@@ -296,10 +296,10 @@ export default function AVControlRoom({ mediaFiles = [], onRefreshMedia }) {
   return <div className="space-y-4">
     <ComicPanel className="bg-card space-y-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <div><h2 className="font-heading text-2xl text-primary">AV CONTROL ROOM — ΧΕΙΡΙΣΜΟΣ TV</h2><p className="text-xs text-foreground/60">Επιλογή αρχείων από την κεντρική βιβλιοθήκη για δικαιώματα, ουρά και ζωντανή έξοδο TV. Δεν ανεβάζει ούτε διατηρεί δεύτερη βιβλιοθήκη.</p></div>
+        <div><h2 className="font-heading text-2xl text-primary">AV Control Room — χειρισμός TV</h2><p className="text-xs text-foreground/60">Επιλογή αρχείων από την κεντρική βιβλιοθήκη για δικαιώματα, ουρά και ζωντανή έξοδο TV. Δεν ανεβάζει ούτε διατηρεί δεύτερη βιβλιοθήκη.</p></div>
         <div className="flex gap-2"><ComicButton size="sm" variant="dark" onClick={onRefreshMedia} disabled={busy}>↻ Ανανέωση Βιβλιοθήκης</ComicButton><ComicButton size="sm" variant="dark" onClick={load} disabled={busy}>Ανανέωση Event</ComicButton></div>
       </div>
-      <label className="block space-y-1 text-xs font-bold">ΕΝΕΡΓΟ EVENT
+      <label className="block space-y-1 text-xs font-bold">Ενεργό EVENT
         <select className={field} value={sessionCode} onChange={(e) => { selectSession(e.target.value); setCueRecord(null); }}>
           <option value="">Επιλογή Event</option>
           {sessions.map((session) => <option key={session.id} value={session.sessionCode}>{session.event?.title || session.mode || 'Game'} · {session.sessionCode}</option>)}
@@ -317,7 +317,7 @@ export default function AVControlRoom({ mediaFiles = [], onRefreshMedia }) {
 
     <div className="grid xl:grid-cols-[1.1fr_.9fr] gap-3">
       <ComicPanel className="bg-card space-y-3">
-        <div className="flex flex-wrap items-center justify-between gap-2"><h3 className="font-heading text-lg">ΕΠΙΛΟΓΗ ΑΡΧΕΙΟΥ ΑΠΟ ΤΗΝ ΚΕΝΤΡΙΚΗ ΒΙΒΛΙΟΘΗΚΗ · {files.length}</h3><span className="text-[10px] text-foreground/50">Προβολή και επιλογή — χωρίς ανεβάσματα ή δεύτερο αποθηκευτικό χώρο</span><ComicButton size="sm" onClick={autoCategorize} disabled={busy || !files.length}>⚡ ΑΥΤΟΜΑΤΗ ΚΑΤΗΓΟΡΙΟΠΟΙΗΣΗ ΑΠΟ ΟΝΟΜΑ ΑΡΧΕΙΟΥ</ComicButton></div>
+        <div className="flex flex-wrap items-center justify-between gap-2"><h3 className="font-heading text-lg">ΕΠΙΛΟΓΗ ΑΡΧΕΙΟΥ ΑΠΟ ΤΗΝ ΚΕΝΤΡΙΚΗ ΒΙΒΛΙΟΘΗΚΗ · {files.length}</h3><span className="text-[10px] text-foreground/50">Προβολή και επιλογή — χωρίς ανεβάσματα ή δεύτερο αποθηκευτικό χώρο</span><ComicButton size="sm" onClick={autoCategorize} disabled={busy || !files.length}>⚡ Αυτόματη κατηγοριοποίηση από όνομα αρχείου</ComicButton></div>
         <input className={field} type="search" placeholder="Αναζήτηση ονόματος αρχείου…" value={search} onChange={(e) => setSearch(e.target.value)} />
         <div className="flex flex-wrap gap-1">{kinds.map((kind) => <ComicButton key={kind.id} size="sm" variant={filter === kind.id ? 'default' : 'dark'} onClick={() => setFilter(kind.id)}>{kind.label}</ComicButton>)}</div>
         <select className={field} value={folderFilter} onChange={(e) => setFolderFilter(e.target.value)}><option value="all">Όλοι οι φάκελοι</option>{folders.map((folder) => <option key={folder}>{folder}</option>)}</select>
@@ -335,34 +335,34 @@ export default function AVControlRoom({ mediaFiles = [], onRefreshMedia }) {
 
       <div className="space-y-3">
         <ComicPanel className="bg-card space-y-3">
-          <h3 className="font-heading text-lg">ΠΡΟΕΠΙΣΚΟΠΗΣΗ & ΣΤΟΙΧΕΙΑ</h3>
+          <h3 className="font-heading text-lg">Προεπισκόπηση & στοιχεία</h3>
           {selectedFile ? <>
             <div className="rounded-lg bg-black/70 min-h-40 flex items-center justify-center p-2">
               {selectedFile.kind === 'video' ? <video key={selectedFile.url} src={selectedFile.url} controls playsInline preload="none" className="max-h-64 max-w-full" /> : selectedFile.kind === 'audio' ? <audio key={selectedFile.url} src={selectedFile.url} controls preload="none" className="w-full" /> : <img src={selectedFile.url} alt="" className="max-h-64 max-w-full object-contain" />}
             </div>
-            <label className="block space-y-1 text-xs font-bold">ΤΙΤΛΟΣ<input className={field} value={selectedMeta.title || ''} onChange={(e) => setMetadata((v) => ({ ...v, [selected]: { ...selectedMeta, title: e.target.value } }))} onBlur={(e) => saveMetadata({ title: e.target.value })} /></label>
-            <label className="block space-y-1 text-xs font-bold">ΦΑΚΕΛΟΣ / ΚΑΤΗΓΟΡΙΑ<select className={field} value={selectedMeta.folder || 'Γενικά'} onChange={(e) => saveMetadata({ folder: e.target.value })}>{folders.map((folder) => <option key={folder}>{folder}</option>)}</select></label>
-            <label className="block space-y-1 text-xs font-bold">MODE / ΧΡΗΣΗ<input className={field} value={selectedMeta.mode || ''} placeholder="π.χ. Heist Night, Pajama…" onChange={(e) => setMetadata((v) => ({ ...v, [selected]: { ...selectedMeta, mode: e.target.value } }))} onBlur={(e) => saveMetadata({ mode: e.target.value })} /></label>
+            <label className="block space-y-1 text-xs font-bold">Τίτλος<input className={field} value={selectedMeta.title || ''} onChange={(e) => setMetadata((v) => ({ ...v, [selected]: { ...selectedMeta, title: e.target.value } }))} onBlur={(e) => saveMetadata({ title: e.target.value })} /></label>
+            <label className="block space-y-1 text-xs font-bold">Φάκελος / κατηγορία<select className={field} value={selectedMeta.folder || 'Γενικά'} onChange={(e) => saveMetadata({ folder: e.target.value })}>{folders.map((folder) => <option key={folder}>{folder}</option>)}</select></label>
+            <label className="block space-y-1 text-xs font-bold">MODE / χρήση<input className={field} value={selectedMeta.mode || ''} placeholder="π.χ. Heist Night, Pajama…" onChange={(e) => setMetadata((v) => ({ ...v, [selected]: { ...selectedMeta, mode: e.target.value } }))} onBlur={(e) => saveMetadata({ mode: e.target.value })} /></label>
             <div className="grid grid-cols-2 gap-2">
-              <label className="block space-y-1 text-xs font-bold">ΓΥΡΟΣ<input className={field} value={selectedMeta.round || ''} onChange={(e) => setMetadata((v) => ({ ...v, [selected]: { ...selectedMeta, round: e.target.value } }))} onBlur={(e) => saveMetadata({ round: e.target.value })} /></label>
-              <label className="block space-y-1 text-xs font-bold">ΣΚΗΝΗ / ΓΕΓΟΝΟΣ<input className={field} value={selectedMeta.scene || ''} onChange={(e) => setMetadata((v) => ({ ...v, [selected]: { ...selectedMeta, scene: e.target.value } }))} onBlur={(e) => saveMetadata({ scene: e.target.value })} /></label>
+              <label className="block space-y-1 text-xs font-bold">Γύρος<input className={field} value={selectedMeta.round || ''} onChange={(e) => setMetadata((v) => ({ ...v, [selected]: { ...selectedMeta, round: e.target.value } }))} onBlur={(e) => saveMetadata({ round: e.target.value })} /></label>
+              <label className="block space-y-1 text-xs font-bold">Σκηνή / γεγονός<input className={field} value={selectedMeta.scene || ''} onChange={(e) => setMetadata((v) => ({ ...v, [selected]: { ...selectedMeta, scene: e.target.value } }))} onBlur={(e) => saveMetadata({ scene: e.target.value })} /></label>
             </div>
-            <label className="block space-y-1 text-xs font-bold">ΔΙΚΑΙΩΜΑΤΑ / ΣΥΓΚΑΤΑΘΕΣΗ
+            <label className="block space-y-1 text-xs font-bold">Δικαιώματα / συγκατάθεση
               <select className={field} value={selectedMeta.permission || 'pending'} onChange={(e) => saveMetadata({ permission: e.target.value })}>
                 <option value="cleared">Επιτρέπεται η χρήση</option><option value="pending">Εκκρεμεί άδεια / συγκατάθεση</option><option value="blocked">Απαγορεύεται η χρήση</option>
               </select>
             </label>
-            <label className="block space-y-1 text-xs font-bold">ΣΗΜΕΙΩΣΕΙΣ / ΠΗΓΗ ΑΔΕΙΑΣ<textarea className={field} rows={2} value={selectedMeta.notes || ''} onChange={(e) => setMetadata((v) => ({ ...v, [selected]: { ...selectedMeta, notes: e.target.value } }))} onBlur={(e) => saveMetadata({ notes: e.target.value })} /></label>
-            <div className="flex flex-wrap gap-2"><ComicButton size="sm" onClick={() => addToQueue(selectedFile)}>＋ ΣΤΗΝ ΟΥΡΑ</ComicButton><ComicButton size="sm" onClick={() => publish({ ...selectedFile, label: selectedMeta.title || selectedFile.name }, queueIndex)} disabled={busy || selectedMeta.permission !== 'cleared'}>▶ ΑΜΕΣΗ ΠΡΟΒΟΛΗ TV</ComicButton></div>
+            <label className="block space-y-1 text-xs font-bold">Σημειώσεις / πηγή άδειας<textarea className={field} rows={2} value={selectedMeta.notes || ''} onChange={(e) => setMetadata((v) => ({ ...v, [selected]: { ...selectedMeta, notes: e.target.value } }))} onBlur={(e) => saveMetadata({ notes: e.target.value })} /></label>
+            <div className="flex flex-wrap gap-2"><ComicButton size="sm" onClick={() => addToQueue(selectedFile)}>＋ Στην ουρά</ComicButton><ComicButton size="sm" onClick={() => publish({ ...selectedFile, label: selectedMeta.title || selectedFile.name }, queueIndex)} disabled={busy || selectedMeta.permission !== 'cleared'}>▶ Άμεση προβολή TV</ComicButton></div>
           </> : <p className="text-xs text-foreground/50">Επίλεξε αρχείο από τη βιβλιοθήκη.</p>}
         </ComicPanel>
 
         <ComicPanel className="bg-card space-y-3">
-          <div className="flex items-center justify-between"><h3 className="font-heading text-lg">ΕΞΟΔΟΣ ΗΧΟΥ & ΕΙΚΟΝΑΣ TV</h3><span className={`rounded-full px-2 py-1 text-[10px] ${cueRecord?.active ? 'bg-emerald-500/20 text-emerald-300' : 'bg-secondary text-foreground/60'}`}>{cueRecord?.active ? 'LIVE' : 'ΑΝΑΜΟΝΗ'}</span></div>
+          <div className="flex items-center justify-between"><h3 className="font-heading text-lg">Έξοδος ήχου & εικόνας TV</h3><span className={`rounded-full px-2 py-1 text-[10px] ${cueRecord?.active ? 'bg-emerald-500/20 text-emerald-300' : 'bg-secondary text-foreground/60'}`}>{cueRecord?.active ? 'LIVE' : 'Αναμονή'}</span></div>
           <div className="rounded-lg bg-secondary/70 p-2 text-xs" role="status">Κατάσταση TV: <b>{cueRecord?.playbackStatus || (cueRecord?.active ? 'pending' : 'standby')}</b>{cueRecord?.playbackError ? <span className="block text-destructive mt-1">{cueRecord.playbackError}</span> : null}</div>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2"><ComicButton size="sm" disabled={busy || !queue.length} onClick={() => playQueue(0)}>▶ ΑΝΑΠΑΡΑΓΩΓΗ</ComicButton><ComicButton size="sm" variant="dark" disabled={busy || queueIndex <= 0} onClick={() => playQueue(-1)}>ΠΡΟΗΓ.</ComicButton><ComicButton size="sm" variant="dark" disabled={busy || queueIndex < 0 || queueIndex >= queue.length - 1} onClick={() => playQueue(1)}>ΕΠΟΜ.</ComicButton></div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2"><ComicButton size="sm" disabled={busy || !queue.length} onClick={() => playQueue(0)}>▶ Αναπαραγωγή</ComicButton><ComicButton size="sm" variant="dark" disabled={busy || queueIndex <= 0} onClick={() => playQueue(-1)}>Προηγ.</ComicButton><ComicButton size="sm" variant="dark" disabled={busy || queueIndex < 0 || queueIndex >= queue.length - 1} onClick={() => playQueue(1)}>Επόμ.</ComicButton></div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-2"><ComicButton size="sm" variant="dark" disabled={busy || !cueRecord?.active} onClick={() => sendPlaybackCommand("play")}>▶ CONTINUE</ComicButton><ComicButton size="sm" variant="dark" disabled={busy || !cueRecord?.active} onClick={() => sendPlaybackCommand("pause")}>Ⅱ PAUSE</ComicButton><ComicButton size="sm" variant="dark" disabled={busy || !cueRecord?.active} onClick={() => sendPlaybackCommand("stop")}>■ STOP MEDIA</ComicButton></div>
-          <div className="flex flex-wrap items-center gap-3 text-xs"><span>ΕΝΤΑΣΗ</span><input aria-label="Ένταση TV" className="min-w-0 flex-1 basis-32" type="range" min="0" max="1" step="0.05" value={volume} onChange={(e) => setVolume(Number(e.target.value))} /><b>{Math.round(volume * 100)}%</b><ComicButton size="sm" variant="dark" disabled={busy || !cueRecord?.active} onClick={() => sendPlaybackCommand("volume", volume)}>SET</ComicButton><ComicButton size="sm" variant="dark" disabled={busy || !cueRecord?.active} onClick={() => sendPlaybackCommand("mute")}>ΣΙΓΑΣΗ</ComicButton><ComicButton size="sm" variant="dark" disabled={busy || !cueRecord?.active} onClick={() => sendPlaybackCommand("unmute")}>ΗΧΟΣ ON</ComicButton></div>
+          <div className="flex flex-wrap items-center gap-3 text-xs"><span>Ένταση</span><input aria-label="Ένταση TV" className="min-w-0 flex-1 basis-32" type="range" min="0" max="1" step="0.05" value={volume} onChange={(e) => setVolume(Number(e.target.value))} /><b>{Math.round(volume * 100)}%</b><ComicButton size="sm" variant="dark" disabled={busy || !cueRecord?.active} onClick={() => sendPlaybackCommand("volume", volume)}>SET</ComicButton><ComicButton size="sm" variant="dark" disabled={busy || !cueRecord?.active} onClick={() => sendPlaybackCommand("mute")}>Σίγαση</ComicButton><ComicButton size="sm" variant="dark" disabled={busy || !cueRecord?.active} onClick={() => sendPlaybackCommand("unmute")}>Ήχος ON</ComicButton></div>
           <ComicButton size="sm" variant="dark" disabled={busy} onClick={stopOutput}>■ STOP TV OVERLAY</ComicButton>
           <div className="text-xs text-foreground/60">Τρέχον στοιχείο: {currentCue?.label || '—'}</div>
           <div className="space-y-1 max-h-56 overflow-y-auto">{queue.map((item, index) => <div key={item.id} className={`flex items-center gap-1 rounded-lg border p-2 ${index === queueIndex ? 'border-primary bg-primary/10' : 'border-border'}`}><button className="min-w-0 flex-1 text-left text-xs truncate" onClick={() => publish(item, index)}>{index + 1}. {item.label}</button><button className="px-2 text-xs" disabled={index === 0} onClick={() => moveQueueItem(index, -1)}>↑</button><button className="px-2 text-xs" disabled={index === queue.length - 1} onClick={() => moveQueueItem(index, 1)}>↓</button><button className="px-2 text-xs text-red-400" onClick={() => removeQueueItem(item.id)}>×</button></div>)}</div>

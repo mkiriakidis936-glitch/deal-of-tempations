@@ -60,7 +60,7 @@ export default function AdminModeBuilder() {
   function addMode(fromLounge = false) {
     const fresh = newCustomMode();
     if (fromLounge) {
-      fresh.name = 'PAJAMA HEIST & ARREST (ΑΝΤΙΓΡΑΦΟ)';
+      fresh.name = 'PAJAMA HEIST & ARREST (αντίγραφο)';
       fresh.icon = '🚔';
       fresh.cards = LOUNGE_CARDS.map((card) => ({ ...card, id: `${fresh.id}_${card.id}` }));
       fresh.questions = [...INTERROGATION_QUESTIONS];
@@ -99,7 +99,7 @@ export default function AdminModeBuilder() {
     <div className="space-y-3">
       <ComicPanel className="bg-card space-y-3">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <div className="font-heading text-xl text-primary">🛠️ ΚΑΤΑΣΚΕΥΑΣΤΗΣ MODES</div>
+          <div className="font-heading text-xl text-primary">🛠️ Κατασκευαστής MODES</div>
           <div className="flex flex-wrap gap-2">
             <button type="button" className="adm-pill" onClick={() => addMode(false)}>+ Νέο mode</button>
             <button type="button" className="adm-pill" onClick={() => addMode(true)}>+ Αντίγραφο του Pajama Heist & Arrest</button>
@@ -215,12 +215,12 @@ export default function AdminModeBuilder() {
             <span className="text-xs">{dirty ? 'Μη αποθηκευμένες αλλαγές' : 'Αποθηκευμένο'} · {mode.board.length} τετράγωνα · {mode.cards.length} κάρτες · {minutes}′</span>
             <div className="flex gap-2">
               <ComicButton size="sm" variant="red" onClick={remove}>Διαγραφή mode</ComicButton>
-              <ComicButton size="sm" variant="green" disabled={busy} onClick={save}>{busy ? 'ΑΠΟΘΗΚΕΥΣΗ…' : 'ΑΠΟΘΗΚΕΥΣΗ'}</ComicButton>
+              <ComicButton size="sm" variant="green" disabled={busy} onClick={save}>{busy ? 'Αποθήκευση…' : 'Αποθήκευση'}</ComicButton>
             </div>
           </div>
         </>
       )}
-      {!mode && dirty && <ComicButton variant="green" disabled={busy} onClick={save}>ΑΠΟΘΗΚΕΥΣΗ ΑΛΛΑΓΩΝ</ComicButton>}
+      {!mode && dirty && <ComicButton variant="green" disabled={busy} onClick={save}>Αποθήκευση αλλαγών</ComicButton>}
       <AdminSettingVersionHistory settingKey={CUSTOM_MODES_KEY} title="Ιστορικό εκδόσεων modes" onRestore={(value) => { const list = (value?.items || []).map(normalizeCustomMode); setItems(list); setSelectedId(list[0]?.id || ''); setDirty(false); }} />
     </div>
   );

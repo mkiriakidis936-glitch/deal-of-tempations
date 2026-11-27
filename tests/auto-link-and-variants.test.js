@@ -6,11 +6,12 @@ import { MEDIA_MODES, MODE_MEDIA_SECTIONS } from '../src/data/modes/modeRegistry
 import { MODE_COVER_SLOTS } from '../src/data/mediaSlots.js';
 import { SCENES } from '../src/data/sceneLibrary.js';
 
-test('κάθε ενεργό mode έχει 15 θέσεις: cover + hero + 7 ενότητες + 6 gallery', () => {
+test('κάθε ενεργό mode έχει cover + hero + ενότητες + 6 gallery (Villa: 12 ενότητες του PDF, τα άλλα 7)', () => {
   for (const { id } of MEDIA_MODES) {
+    const sections = id === 'villa_takeover' ? 12 : 7;
     const slots = expectedNames([{ id }], MODE_MEDIA_SECTIONS, MODE_COVER_SLOTS);
-    assert.equal(new Set(slots.map((s) => s.field)).size, 15, `${id}: ${slots.length}`);
-    assert.equal((MODE_MEDIA_SECTIONS[id] || []).length, 7, `${id} sections`);
+    assert.equal(new Set(slots.map((s) => s.field)).size, 8 + sections, `${id}: ${slots.length}`);
+    assert.equal((MODE_MEDIA_SECTIONS[id] || []).length, sections, `${id} sections`);
   }
 });
 

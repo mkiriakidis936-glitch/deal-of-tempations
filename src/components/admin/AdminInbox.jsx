@@ -106,8 +106,8 @@ export default function AdminInbox({ sessions = [] }) {
   return <div className="space-y-3">
     <ComicPanel className="bg-card space-y-3">
       <div className="flex items-center justify-between gap-2 flex-wrap">
-        <div><div className="font-heading text-2xl text-primary">ΚΕΝΤΡΙΚΟ ΕΙΣΕΡΧΟΜΕΝΟ</div><div className="text-xs text-foreground/60">Όλες οι αιτήσεις και οι δηλώσεις συμμετοχής σε μία λίστα.</div></div>
-        <ComicButton size="sm" variant="dark" disabled={loading} onClick={load}>ΑΝΑΝΕΩΣΗ</ComicButton>
+        <div><div className="font-heading text-2xl text-primary">Κεντρικό εισερχόμενο</div><div className="text-xs text-foreground/60">Όλες οι αιτήσεις και οι δηλώσεις συμμετοχής σε μία λίστα.</div></div>
+        <ComicButton size="sm" variant="dark" disabled={loading} onClick={load}>Ανανέωση</ComicButton>
       </div>
       <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Αναζήτηση ονόματος, email, τηλεφώνου, Event..." className="w-full rounded-lg border border-border bg-background p-3 text-sm" />
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
@@ -125,15 +125,15 @@ export default function AdminInbox({ sessions = [] }) {
       return <ComicPanel key={item._entity + item.id} className="bg-card space-y-2">
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0"><div className="font-heading text-lg">{nameFor(item)}</div><div className="text-[11px] text-primary">{labelFor(item._entity)} · {new Date(dateFor(item) || Date.now()).toLocaleString('el-GR')}</div></div>
-          {!item.readAt && <span className="rounded-full bg-primary/20 px-2 py-1 text-[10px] font-bold">ΝΕΟ</span>}
+          {!item.readAt && <span className="rounded-full bg-primary/20 px-2 py-1 text-[10px] font-bold">Νέο</span>}
         </div>
         <div className="text-sm text-foreground/75 break-words">{[item.eventType, ...modesFor(item).map(modeName), item.sessionCode, contact].filter(Boolean).join(' · ')}</div>
         {GAME_ENTITIES.has(item._entity) && (
           <div className="flex flex-wrap items-center gap-2">
             <span className={`rounded-full px-3 py-1 text-xs font-bold ${item.approved ? 'bg-emerald-500/20 text-emerald-300' : 'bg-amber-500/15 text-amber-300'}`}>{item.approved ? '✓ Εγκεκριμένη για το παιχνίδι' : 'Αναμένει έγκριση'}</span>
             {item.approved
-              ? <ComicButton size="sm" variant="dark" onClick={() => setApproval(item, false)}>ΑΚΥΡΩΣΗ ΕΓΚΡΙΣΗΣ</ComicButton>
-              : <ComicButton size="sm" variant="green" onClick={() => setApproval(item, true)}>ΕΓΚΡΙΣΗ ΓΙΑ ΤΟ ΠΑΙΧΝΙΔΙ</ComicButton>}
+              ? <ComicButton size="sm" variant="dark" onClick={() => setApproval(item, false)}>Ακύρωση έγκρισης</ComicButton>
+              : <ComicButton size="sm" variant="green" onClick={() => setApproval(item, true)}>Έγκριση για το παιχνίδι</ComicButton>}
             {calendarOptionsFor(calendar, item).length > 0 && (
               <select aria-label="Βραδιά" value={item.calendarDate || ''} onChange={async (e) => { await updateItem(item, { calendarDate: e.target.value || null }); resync(); }} className="rounded border border-border bg-background p-2 text-xs">
                 <option value="">Βραδιά: —</option>
@@ -145,7 +145,7 @@ export default function AdminInbox({ sessions = [] }) {
         {(item.message || item.suggestion) && <div className="rounded-lg bg-secondary p-2 text-sm whitespace-pre-wrap">{item.message || item.suggestion}</div>}
         <div className="flex flex-wrap items-center gap-2">
           <select value={status} onChange={(e) => updateItem(item, { status: e.target.value })} className="rounded border border-border bg-background p-2 text-xs">{STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}</select>
-          {!item.readAt && <ComicButton size="sm" variant="dark" onClick={() => updateItem(item, { readAt: new Date().toISOString() })}>ΣΗΜΑΝΣΗ ΩΣ ΑΝΑΓΝΩΣΜΕΝΟ</ComicButton>}
+          {!item.readAt && <ComicButton size="sm" variant="dark" onClick={() => updateItem(item, { readAt: new Date().toISOString() })}>Σήμανση ως αναγνωσμένο</ComicButton>}
           {contact && (() => {
             // Μετά την έγκριση: έτοιμο μήνυμα επιβεβαίωσης θέσης (WhatsApp ή SMS / email).
             const text = item.approved
@@ -157,7 +157,7 @@ export default function AdminInbox({ sessions = [] }) {
               : `https://wa.me/${String(contact).replace(/[^0-9]/g, '')}?text=${encodeURIComponent(text)}`;
             return <a className={`rounded px-3 py-2 text-xs font-bold ${item.approved ? 'bg-[#30D158] text-black' : 'border border-border'}`} href={href} target="_blank" rel="noreferrer">{item.approved ? (isMail ? '✉️ ΕΙΔΟΠΟΙΗΣΕ ΤΗΝ (EMAIL)' : '📲 ΕΙΔΟΠΟΙΗΣΕ ΤΗΝ (WHATSAPP)') : (isMail ? 'EMAIL' : 'WHATSAPP')}</a>;
           })()}
-          <ComicButton size="sm" variant="red" onClick={() => remove(item)}>ΔΙΑΓΡΑΦΗ</ComicButton>
+          <ComicButton size="sm" variant="red" onClick={() => remove(item)}>Διαγραφή</ComicButton>
         </div>
       </ComicPanel>;
     })}
