@@ -4,9 +4,10 @@ import { pointsOf } from '@/lib/modeRanking';
 import { SQUARE_TYPES, STRIP_STEPS, NAIL_COLORS, FOOTWEAR_LEVELS, KIND_LABEL, COPS_GAME, VILLA_LOOT } from '@/data/modes/villaContent';
 import { consentOf } from '@/lib/consent';
 import { useTick } from '@/lib/modeKit';
+import { PlayerAvatar, useDelta, DeltaBurst, colorOf } from '@/components/modes/MovieGameUI';
 
 const Card = ({ title, children, tone }) => (
-  <section className="rounded-3xl p-4" style={{ background: tone || '#1C1C1E' }}>
+  <section className="gx-glass p-4" style={tone ? { background: `linear-gradient(160deg, ${tone}f0, #0b0b10e6)`, borderColor: `${tone}aa` } : undefined}>
     {title && <div className="mb-1.5 text-[13px] font-semibold uppercase tracking-[0.12em] text-white/55">{title}</div>}
     {children}
   </section>
@@ -21,6 +22,7 @@ export default function VillaMobile({ state, me, sendAction }) {
   const nameOf = (id) => players.find((p) => p.id === id)?.name || '—';
   const [code, setCode] = useState('');
   const [victim, setVictim] = useState('');
+  const ptsDelta = useDelta(mg.villa ? pointsOf(mg, me.id) : null);
   if (!mg.villa) return <Card><div className="text-white/70">Η Villa ετοιμάζεται… Περίμενε τη διοργανώτρια.</div></Card>;
   const now = Date.now();
   const role = V.roleOf(v.roles?.[me.id]);
@@ -53,7 +55,7 @@ export default function VillaMobile({ state, me, sendAction }) {
   }
 
   return (
-    <div className="space-y-3 text-white">
+    <div className="mvg space-y-3 text-white">
       {command && command.pid === me.id && (
         <Card tone="#B0130B">
           <div className="text-2xl font-black">🟥 ΑΠΟΛΥΤΗ ΔΙΑΤΑΓΗ</div>
@@ -65,9 +67,14 @@ export default function VillaMobile({ state, me, sendAction }) {
       {command && command.pid !== me.id && <Card tone="#3A0A08"><div className="font-semibold">🟥 Απόλυτη Διαταγή σε εξέλιξη · Διοικητής: {nameOf(command.pid)}</div></Card>}
 
       <Card>
-        <div className="flex items-center justify-between">
-          <div><div className="text-[13px] text-white/55">Οι πόντοι μου</div><div className="text-3xl font-bold tabular-nums text-[#E8C26B]">{pointsOf(mg, me.id)}</div></div>
-          <div className="text-right"><div className="text-[13px] text-white/55">Ημέρα {phase.day} · τετράγωνο</div><div className="text-2xl font-bold tabular-nums">{no}<span className="text-base text-white/40">/{V.lastSquare(v)}</span></div></div>
+        <div className="flex items-center gap-3">
+          <PlayerAvatar name={me.name} color={colorOf(players, me.id)} size={50} />
+          <div className="relative min-w-0 flex-1">
+            <div className="truncate text-[17px] font-bold">{me.name}</div>
+            <div className="gx-gold mvg-num text-[30px] font-black leading-none tabular-nums">{pointsOf(mg, me.id)}<span className="ml-1 text-[12px] font-semibold text-white/50">πόντοι</span></div>
+            <DeltaBurst delta={ptsDelta} />
+          </div>
+          <div className="text-right"><div className="text-[12px] text-white/55">Ημέρα {phase.day} · τετράγωνο</div><div className="text-2xl font-bold tabular-nums">{no}<span className="text-base text-white/40">/{V.lastSquare(v)}</span></div></div>
         </div>
         <div className="mt-2 text-sm text-white/75">{phase.title}{v.night ? ' · 🌙 Night Mode' : ''}</div>
         {square && <div className="mt-1 text-sm text-white/75">{SQUARE_TYPES[square.type]?.icon} {square.title}</div>}
@@ -76,7 +83,7 @@ export default function VillaMobile({ state, me, sendAction }) {
 
       <Card title={`👟 Round Strip · γύρος ${v.strip || 0}/4`}>
         <div className="grid grid-cols-4 gap-1.5">{STRIP_STEPS.map((s) => (
-          <div key={s.step} className="rounded-xl p-1.5 text-center text-[11px] font-semibold" style={{ background: (v.strip || 0) >= s.step ? '#E8C26B' : '#2C2C2E', color: (v.strip || 0) >= s.step ? '#000' : '#8E8E93' }}>{s.item}</div>
+          <div key={s.step} className="rounded-xl p-1.5 text-center text-[11px] font-semibold" style={{ background: (v.strip || 0) >= s.step ? 'linear-gradient(180deg,#F7E3A8,#C99B2E)' : '#2C2C2E', color: (v.strip || 0) >= s.step ? '#1c1405' : '#8E8E93', boxShadow: (v.strip || 0) >= s.step ? '0 0 16px rgba(232,194,107,.35)' : 'none' }}>{s.item}</div>
         ))}</div>
         {strip && <p className="mt-2 text-sm text-white/85">{strip.tv}</p>}
       </Card>

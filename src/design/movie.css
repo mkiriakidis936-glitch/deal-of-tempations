@@ -1,5 +1,6 @@
 /* DEAL OF TEMPTATION — Η ΤΑΙΝΙΑ · «Παιχνίδι-Ταινία» (iOS 27 Liquid Glass + ελαφρύ 3D)
-   .mvg      → Tablet & κινητό: στατικό βάθος, γυαλί, φωτισμός — ΧΩΡΙΣ animations.
+   .mvg      → Tablet & κινητό: στατικό βάθος, γυαλί, φωτισμός. Από 10.1.0 το κινητό έχει μόνο σύντομες
+               micro-κινήσεις (γύρισμα κάρτας, «+πόντοι»)· το Tablet μόνο το «μάζεμα» στο πάτημα.
    .mvg-tv   → TV: επιτρέπονται κινήσεις (αργή αιώρηση, σάρωση φωτός). */
 
 .mvg {
@@ -8,14 +9,18 @@
   isolation: isolate;
   font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', system-ui, sans-serif;
 }
+/* Φόντο ΜΟΝΟ πίσω από το κομμάτι της Ταινίας (absolute, όχι fixed): ποτέ πάνω από τίτλο/σκορ της σελίδας. */
 .mvg::before {
-  content: ''; position: fixed; inset: 0; z-index: -1; pointer-events: none;
+  content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none; border-radius: 28px;
   background:
     radial-gradient(120% 70% at 50% -10%, rgba(255, 59, 92, 0.22), transparent 60%),
     radial-gradient(90% 60% at 100% 100%, rgba(232, 194, 107, 0.16), transparent 60%),
     radial-gradient(80% 60% at 0% 90%, rgba(100, 210, 255, 0.10), transparent 60%),
     linear-gradient(180deg, #0b0910 0%, #050507 100%);
 }
+
+/* Φωτογραφία φόντου (σκηνικό ηπείρου / κονσόλα) πίσω από το κομμάτι της Ταινίας. */
+.mvg-bgimg { position: absolute; inset: 0; z-index: -1; pointer-events: none; border-radius: 28px; background-size: cover; background-position: center top; background-repeat: no-repeat; }
 
 /* Γυαλί iOS 27: ημιδιαφανές, θόλωση, φωτεινή ακμή πάνω, βάθος κάτω. */
 .mvg-glass,
@@ -100,4 +105,114 @@
 .mvg-tv .mvg-title3d { color: #FFF6DA; text-shadow: 0 1px 0 #d9b25e, 0 2px 0 #c49a45, 0 3px 0 #a87c2a, 0 4px 0 #8a6420, 0 10px 24px rgba(0, 0, 0, 0.8), 0 0 40px rgba(232, 194, 107, 0.35); }
 @media (prefers-reduced-motion: reduce) {
   .mvg-tv .mvg-float, .mvg-tv .mvg-sheen::after, .mvg-tv .mvg-spot { animation: none; }
+}
+
+/* ==========================================================================
+   10.1.0 · GAME UI (iOS 27 σκούρο) — ταμπλό ηπείρων, πιόνια, κάρτες γεγονότων,
+   κάρτες που γυρίζουν, σακίδιο. TV: πλήρεις κινήσεις. Κινητό: μόνο σύντομες
+   micro-κινήσεις (≤0,6″). Tablet: μόνο το «μάζεμα» στο πάτημα.
+   Όλα σέβονται το prefers-reduced-motion.
+   ========================================================================== */
+.gx-gold { background: linear-gradient(180deg, #FFF1C7 0%, #E8C26B 55%, #C99B2E 100%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.gx-glass {
+  border-radius: 28px; border: 1px solid rgba(255, 255, 255, 0.10);
+  background: rgba(22, 22, 26, 0.62);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16), 0 20px 50px -20px rgba(0, 0, 0, 0.8);
+  color: #F2F2F7;
+}
+@supports ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+  .gx-glass { -webkit-backdrop-filter: blur(24px) saturate(180%); backdrop-filter: blur(24px) saturate(180%); }
+}
+.gx-capsule { display: inline-flex; align-items: center; gap: 0.6em; border-radius: 999px; white-space: nowrap; }
+.gx-live-dot { width: 0.62em; height: 0.62em; border-radius: 50%; background: #FF453A; box-shadow: 0 0 12px #FF453A; flex: none; }
+.gx-press { transition: transform .18s cubic-bezier(.3, 1.6, .5, 1); }
+.gx-press:active:not(:disabled) { transform: scale(.94); }
+
+/* Avatar παίκτριας: αρχικό γράμμα, δαχτυλίδι στο χρώμα της, λάμψη. */
+.gx-avatar {
+  display: inline-flex; align-items: center; justify-content: center; flex: none; border-radius: 50%;
+  font-weight: 800; color: #fff; letter-spacing: 0; line-height: 1;
+  background: radial-gradient(120% 120% at 30% 20%, rgba(255, 255, 255, 0.22), rgba(20, 20, 24, 0.95) 60%);
+  border: 3px solid var(--gx-c, #E8C26B);
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.55), 0 10px 22px rgba(0, 0, 0, 0.55);
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.55), 0 10px 22px rgba(0, 0, 0, 0.55), 0 0 18px color-mix(in srgb, var(--gx-c, #E8C26B) 55%, transparent);
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
+}
+.gx-icon { object-fit: contain; filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.55)); flex: none; }
+.gx-icon-coin { display: inline-block; flex: none; border-radius: 50%; overflow: hidden; box-shadow: 0 0 0 2px rgba(232, 194, 107, 0.85), 0 6px 14px rgba(0, 0, 0, 0.6); }
+.gx-icon-coin img { display: block; width: 100%; height: 100%; object-fit: cover; transform: scale(1.35); }
+
+/* ---------- TV: 3D ταμπλό ηπείρων ---------- */
+.gx-board { position: relative; perspective: 2200px; perspective-origin: 50% 20%; padding-top: 4%; }
+.gx-plane { position: relative; transform: rotateX(36deg); transform-style: preserve-3d; transform-origin: 50% 55%; }
+.gx-plane-bg {
+  position: absolute; inset: -5% 0; border-radius: 48px;
+  background: rgba(16, 14, 22, 0.78); border: 1.5px solid rgba(232, 194, 107, 0.35);
+  box-shadow: 0 0 80px rgba(232, 194, 107, 0.14), inset 0 0 60px rgba(0, 0, 0, 0.65);
+}
+.gx-route { position: absolute; left: 8%; right: 8%; top: 50%; height: 4px; background: repeating-linear-gradient(90deg, #E8C26B 0 18px, transparent 18px 34px); opacity: .5; }
+.gx-tiles { position: relative; display: flex; justify-content: space-between; align-items: center; transform-style: preserve-3d; padding: 0 2%; }
+.gx-tile {
+  position: relative; width: 17.5%; aspect-ratio: 4 / 5; border-radius: 26px; transform-style: preserve-3d;
+  transition: transform .7s cubic-bezier(.3, 1.4, .5, 1), box-shadow .7s, filter .7s;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.12), 0 20px 40px rgba(0, 0, 0, 0.6);
+  filter: saturate(.55) brightness(.68);
+}
+.gx-tile.is-active { transform: translateZ(48px); filter: none; box-shadow: 0 0 0 3px #E8C26B, 0 0 70px rgba(232, 194, 107, 0.55), 0 30px 60px rgba(0, 0, 0, 0.7); }
+.gx-tile.is-done { filter: saturate(.9) brightness(.85); box-shadow: 0 0 0 2px rgba(69, 217, 138, 0.8), 0 20px 40px rgba(0, 0, 0, 0.6); }
+.gx-tile-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; border-radius: 26px; }
+.gx-tile-shade { position: absolute; inset: 0; border-radius: 26px; background: linear-gradient(180deg, rgba(0, 0, 0, 0) 40%, rgba(0, 0, 0, 0.88)); }
+.gx-tile-label { position: absolute; left: 6%; right: 6%; bottom: 7%; text-align: center; font-weight: 800; letter-spacing: .06em; color: #F7E3A8; line-height: 1.1; }
+.gx-upright { position: absolute; left: 0; right: 0; display: flex; justify-content: center; flex-wrap: wrap; transform: rotateX(-36deg); transform-style: preserve-3d; }
+.gx-pawns { top: 42%; left: -16%; right: -16%; transform: rotateX(-36deg) translateZ(70px); gap: 4px; }
+.gx-tile-icon { top: -14%; transform: rotateX(-36deg) translateZ(24px); }
+.gx-crown { top: 18%; transform: rotateX(-36deg) translateZ(40px); flex-direction: column; align-items: center; gap: 4px; }
+
+/* ---------- TV: κάρτα γεγονότος σε όλη την οθόνη ---------- */
+.gx-takeover { position: absolute; inset: 0; z-index: 25; display: flex; align-items: center; justify-content: center; background: rgba(0, 0, 0, 0.6); pointer-events: none; }
+.gx-takeover-card { width: min(58vw, 1000px); border-radius: 40px; overflow: hidden; background: rgba(14, 12, 18, 0.92); }
+.gx-takeover-art { position: relative; aspect-ratio: 21 / 9; background: #111; }
+.gx-takeover-art img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.gx-takeover-art::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0, 0, 0, 0) 40%, rgba(14, 12, 18, 1)); }
+.gx-takeover-title { font-weight: 900; line-height: .95; letter-spacing: .02em; }
+
+/* ---------- Κινητό ---------- */
+.gx-stat { display: flex; align-items: center; gap: 8px; padding: 9px 10px; border-radius: 20px; min-width: 0; }
+.gx-stat b { font-size: 20px; line-height: 1; font-variant-numeric: tabular-nums; }
+.gx-stat small { display: block; font-size: 10.5px; color: #8E8E93; margin-top: 2px; }
+.gx-cont-strip { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; }
+.gx-cont-chip { position: relative; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 6px 2px 5px; border-radius: 16px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.08); font-size: 9.5px; font-weight: 700; color: #8E8E93; text-align: center; line-height: 1.1; }
+.gx-cont-chip.is-active { background: rgba(232, 194, 107, 0.16); border-color: rgba(232, 194, 107, 0.7); color: #F7E3A8; box-shadow: 0 0 18px rgba(232, 194, 107, 0.3); }
+.gx-cont-chip.is-done { border-color: rgba(69, 217, 138, 0.55); color: #8EEBB5; }
+.gx-flip { perspective: 1200px; }
+.gx-flip-inner { position: relative; display: grid; transform-style: preserve-3d; transition: transform .6s cubic-bezier(.3, 1.25, .5, 1); }
+.gx-flip.is-flipped .gx-flip-inner { transform: rotateY(180deg); }
+.gx-face { grid-area: 1 / 1; -webkit-backface-visibility: hidden; backface-visibility: hidden; border-radius: 30px; overflow: hidden; }
+.gx-face-back { transform: rotateY(180deg); }
+.gx-pack { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; }
+.gx-pack-item { position: relative; display: flex; gap: 10px; align-items: center; text-align: left; padding: 10px 12px; border-radius: 22px; color: #F2F2F7; }
+.gx-pack-item:disabled { opacity: .38; }
+.gx-cost { margin-left: auto; flex: none; font-size: 12px; font-weight: 800; color: #1c1405; background: #E8C26B; border-radius: 999px; padding: 2px 9px; }
+@keyframes gx-rise { 0% { transform: translateY(6px) scale(.7); opacity: 0 } 25% { transform: translateY(0) scale(1.15); opacity: 1 } 100% { transform: translateY(-34px) scale(1); opacity: 0 } }
+.gx-burst { position: absolute; left: 50%; top: -6px; transform: translateX(-50%); pointer-events: none; font-weight: 900; font-size: 18px; color: #F7E3A8; text-shadow: 0 0 14px rgba(232, 194, 107, 0.9); animation: gx-rise 1.6s ease-out forwards; white-space: nowrap; }
+.gx-burst.is-minus { color: #FF7A70; text-shadow: 0 0 14px rgba(255, 69, 58, 0.8); }
+@keyframes gx-pop { 0% { transform: scale(.8); opacity: 0 } 60% { transform: scale(1.04); opacity: 1 } 100% { transform: scale(1) } }
+.gx-pop { animation: gx-pop .45s cubic-bezier(.3, 1.4, .5, 1) both; }
+
+/* ---------- Tablet ---------- */
+.gx-strip { display: flex; gap: 8px; overflow-x: auto; padding: 2px; }
+.gx-strip-item { flex: 0 0 auto; display: flex; align-items: center; gap: 8px; padding: 6px 12px 6px 6px; border-radius: 999px; background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.08); font-size: 13px; }
+.gx-onair { display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-radius: 18px; border: 1px solid rgba(255, 69, 58, 0.45); background: rgba(255, 69, 58, 0.08); min-width: 0; }
+
+/* ---------- Κινήσεις μόνο TV ---------- */
+@keyframes gx-bob { 0%, 100% { transform: translateY(0) } 50% { transform: translateY(-8px) } }
+.mvg-tv .gx-bob { animation: gx-bob 2.6s ease-in-out infinite; }
+@keyframes gx-in { 0% { transform: scale(.7) translateY(40px); opacity: 0 } 60% { transform: scale(1.03) } 100% { transform: scale(1); opacity: 1 } }
+.mvg-tv .gx-takeover-card { animation: gx-in .6s cubic-bezier(.3, 1.4, .5, 1) both; }
+@keyframes gx-xfade { 0%, 100% { opacity: 0 } 8%, 90% { opacity: 1 } }
+.mvg-tv .gx-takeover { animation: gx-xfade 5s ease both; }
+@media (prefers-reduced-motion: reduce) {
+  .gx-tile, .gx-flip-inner, .gx-press { transition: none; }
+  .mvg-tv .gx-bob, .mvg-tv .gx-takeover-card, .mvg-tv .gx-takeover, .gx-burst, .gx-pop { animation: none; }
+  .gx-burst { opacity: 0; }
 }

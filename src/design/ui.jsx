@@ -117,6 +117,7 @@ export function TvLeaderboard({ rows }) {
       {rows.map((row, index) => (
         <div key={row.id} className={cx('ui-tv-row', index === 0 && 'ui-tv-row--lead')}>
           <span className="ui-tv-row__rank">{index + 1}</span>
+          {row.lead}
           <span className="ui-tv-row__name">{row.name}</span>
           {row.extra}
           <span className="ui-tv-row__value">{row.value}</span>

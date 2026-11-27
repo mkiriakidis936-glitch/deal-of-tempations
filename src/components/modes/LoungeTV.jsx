@@ -1,4 +1,5 @@
 import { playShowVideo } from '@/components/tv/TVShowVideos';
+import { PlayerAvatar, colorOf } from '@/components/modes/MovieGameUI';
 import React, { useEffect, useRef } from 'react';
 import { tvStingers } from '@/lib/tvStingers';
 import { tallyVotes } from '@/lib/boardEngine';
@@ -101,20 +102,20 @@ export default function LoungeTV({ state }) {
         </div>
       )}
 
-      {TV_VIEW !== 'scores' && <div className="grid grid-cols-7 gap-2">
+      {TV_VIEW !== 'scores' && <div className="mvg-tv" style={{ perspective: '1800px', perspectiveOrigin: '50% 0%', padding: '0 calc(var(--tv-unit) * 3)' }}><div className="grid grid-cols-7 gap-2" style={{ transform: 'rotateX(22deg)', transformStyle: 'preserve-3d', transformOrigin: '50% 0%', padding: 'calc(var(--tv-unit) * 0.8)', borderRadius: 'calc(var(--tv-unit) * 1.6)', background: 'rgba(16,14,22,.72)', border: '1.5px solid rgba(232,194,107,.32)', boxShadow: '0 0 60px rgba(232,194,107,.12), inset 0 0 40px rgba(0,0,0,.6)' }}>
         {RULES.board.map((type, i) => {
           const sq = SQUARE_TYPES[type];
           const here = players.filter((p) => (pos[p.id] || 0) === i);
           const last = lg.lastRoll && (pos[lg.lastRoll.pid] || 0) === i && now - lg.lastRoll.at < 8000;
           return (
-            <div key={i} className="flex flex-col items-center justify-center rounded-xl text-center" style={{ height: TV_VIEW === 'board' ? '21vh' : '10.5vh', background: `${sq.color}22`, border: `2px solid ${last ? '#fff' : `${sq.color}88`}` }}>
-              <div style={{ fontSize: 'calc(var(--tv-unit) * 2)' }}>{sq.icon}</div>
+            <div key={i} className="relative flex flex-col items-center justify-center rounded-xl text-center" style={{ height: TV_VIEW === 'board' ? '21vh' : '10.5vh', background: `linear-gradient(160deg, ${sq.color}40, ${sq.color}14 60%, rgba(0,0,0,.35))`, border: `2px solid ${last ? '#fff' : `${sq.color}88`}`, boxShadow: last ? `0 0 34px ${sq.color}, inset 0 1px 0 rgba(255,255,255,.2)` : 'inset 0 1px 0 rgba(255,255,255,.12), 0 4px 0 rgba(0,0,0,.5)', transform: last ? 'translateZ(18px)' : 'none', transition: 'transform .6s cubic-bezier(.3,1.4,.5,1)' }}>
+              <div style={{ fontSize: 'calc(var(--tv-unit) * 2)', filter: 'drop-shadow(0 3px 6px rgba(0,0,0,.6))' }}>{sq.icon}</div>
               <div className="ui-tv-muted" style={{ fontSize: 'calc(var(--tv-unit) * 0.95)' }}>{sq.name}</div>
-              <div className="mt-1 flex flex-wrap justify-center gap-1">{here.map((p) => <span key={p.id} className="rounded-md px-1.5 text-sm font-bold" style={{ background: p.id === cur?.id ? '#E8C26B' : '#fff', color: '#000' }}>{p.name.slice(0, 3)}</span>)}</div>
+              {here.length > 0 && <div className="mt-1 flex flex-wrap justify-center" style={{ gap: 'calc(var(--tv-unit) * 0.25)' }}>{here.map((p) => <span key={p.id} className={p.id === cur?.id ? 'gx-bob' : ''}><PlayerAvatar name={p.name} color={colorOf(players, p.id)} size={`calc(var(--tv-unit) * ${here.length > 3 ? 1.9 : 2.4})`} title={p.id === cur?.id ? `${p.name} · στη σειρά` : p.name} /></span>)}</div>}
             </div>
           );
         })}
-      </div>}
+      </div></div>}
       {TV_VIEW === 'board' && cur && <div className="text-center ui-tv-title">🎲 Στη σειρά: <span className="ui-tv-title--gold">{cur.name}</span></div>}
       {lg.lastRoll && now - lg.lastRoll.at < 15000 && <div className="text-center ui-tv-text">🎲 {nameOf(lg.lastRoll.pid)} έφερε <b className="text-[#E8C26B]">{lg.lastRoll.d}</b> → {SQUARE_TYPES[lg.lastRoll.square]?.icon} {SQUARE_TYPES[lg.lastRoll.square]?.name}</div>}
 
@@ -123,7 +124,8 @@ export default function LoungeTV({ state }) {
         {cur && (
           <div className="flex items-stretch overflow-hidden rounded-2xl border border-[#E8C26B]/50 bg-black">
             <div className="flex items-center px-4 ui-tv-eyebrow" style={{ background: 'var(--ui-gold)', color: '#000' }}>Στη σειρά</div>
-            <div className="px-5 py-2">
+            <div className="flex items-center pl-4"><PlayerAvatar name={cur.name} color={colorOf(players, cur.id)} size="calc(var(--tv-unit) * 3.2)" /></div>
+            <div className="px-4 py-2">
               <div className="ui-tv-text font-bold">{cur.name}</div>
               <div className="ui-tv-muted">{cur.id === lg.chief ? '👮 Αστυνόμος' : 'Φυγάς'} · <span style={{ color: 'var(--ui-gold)' }}>{stars(curStats.stars)}</span> · {money(curStats.loot)}</div>
             </div>
@@ -133,6 +135,7 @@ export default function LoungeTV({ state }) {
           const s = stats[p.id] || { stars: 1, loot: 0, footwear: 4 };
           return {
             id: p.id,
+            lead: <PlayerAvatar name={p.name} color={colorOf(players, p.id)} size="calc(var(--tv-unit) * 2.6)" />,
             name: `${p.id === lg.chief ? '👮 ' : ''}${p.name}`,
             extra: <span className="flex items-center gap-3"><span style={{ color: 'var(--ui-gold)' }}>{stars(s.stars)}</span><span>{'🩴'.repeat(Math.min(2, s.footwear))}{'🧦'.repeat(Math.max(0, s.footwear - 2))}{s.footwear === 0 ? '🦶' : ''}</span>{s.cuffs && s.cuffs !== 'none' && <span>⛓️</span>}{s.immune && <span>🛡️</span>}</span>,
             value: money(s.loot),

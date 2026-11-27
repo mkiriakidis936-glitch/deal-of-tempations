@@ -13,6 +13,7 @@ import ModeArt from '@/components/modes/ModeArt';
 import { BriefingTV, PhaseTransitionTV, ChampionCeremonyTV, briefingPending } from '@/components/modes/ModeBriefing';
 import { fmt, timerLeft, useTick, setGameStopActive } from '@/lib/modeKit';
 import { TvScreen, TvLeaderboard } from '@/design/ui';
+import { PlayerAvatar, colorOf } from '@/components/modes/MovieGameUI';
 
 // Τηλεόραση (/tv) για τα 4 νέα modes. Δεν δείχνει ποτέ κρυφές κάρτες, ερωτήσεις ψιθύρων ή μυστικές αποστολές.
 export default function ModeTV({ state }) {
@@ -78,6 +79,7 @@ export default function ModeTV({ state }) {
       {act !== 'lounge' && (
         <TvLeaderboard rows={ranking.map((p) => ({
           id: p.id,
+          lead: <PlayerAvatar name={p.name} color={colorOf(players, p.id)} size="calc(var(--tv-unit) * 2.6)" />,
           name: p.name,
           extra: <span className="ui-tv-muted">{`🪙 ${(mg.tokens || {})[p.id] || 0}`}</span>,
           value: `⭐ ${(mg.scores || {})[p.id] || 0}`,

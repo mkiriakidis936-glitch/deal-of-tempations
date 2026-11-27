@@ -4,6 +4,7 @@ import { SQUARE_TYPES, restraintFor, LOUNGE_FINALE } from '@/data/modes/loungeCo
 import { stars, rulesForGame } from '@/components/modes/ActLounge';
 import { Card, Button, ButtonRow, Stats, Badge, Input } from '@/design/ui';
 import ShowMobile from '@/components/modes/ShowMobile';
+import { PlayerAvatar, colorOf } from '@/components/modes/MovieGameUI';
 
 const money = (n) => `${Math.round(Number(n) || 0).toLocaleString('el-GR')}€`;
 
@@ -38,6 +39,14 @@ export default function LoungeMobile({ state, me, sendAction, updateState }) {
 
   return (
     <div className="space-y-3">
+      <header className="gx-glass flex items-center gap-3 p-3">
+        <PlayerAvatar name={me.name} color={colorOf(players, me.id)} size={48} />
+        <div className="min-w-0 flex-1">
+          <div className="truncate text-[18px] font-bold">{me.name}</div>
+          <div className="truncate text-[12px] text-white/55">{lg.chief === me.id ? '👮 Αστυνόμος' : '🏃‍♀️ Φυγάς'} · Γύρος {lg.round || 1}</div>
+        </div>
+        {cur && !myTurn && <div className="flex items-center gap-1.5 text-[12px] text-white/60">Σειρά<PlayerAvatar name={cur.name} color={colorOf(players, cur.id)} size={28} /></div>}
+      </header>
       <Stats items={[
         { label: 'Αστέρια', value: stars(s.stars), gold: true, small: true },
         { label: 'Λεία', value: money(s.loot) },
@@ -59,6 +68,7 @@ export default function LoungeMobile({ state, me, sendAction, updateState }) {
         </Card>
       )}
 
+      {myTurn && !pending && <div className="gx-gold gx-pop text-center text-[34px] font-black leading-none">ΣΕΙΡΑ ΣΟΥ</div>}
       {myTurn && !pending && (
         <Button variant="primary" size="xl" block disabled={!!mg.playerAction} onClick={() => sendAction('lounge_roll')}>🎲 Ρίξε ζάρι</Button>
       )}

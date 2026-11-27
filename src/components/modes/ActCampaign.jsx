@@ -5,6 +5,7 @@ import WorldMap from '@/components/modes/WorldMap';
 import MovieGamesTablet, { MandatoryPanel } from '@/components/modes/MovieGamesTablet';
 import * as G from '@/lib/movieGamesEngine';
 import { firstArt, contArt, trialArt } from '@/lib/movieArt';
+import { PlayerAvatar, WantedStars, colorOf, onAirLabel } from '@/components/modes/MovieGameUI';
 import { blockedBy, textOf, consentOf } from '@/lib/consent';
 import { sfx } from '@/lib/modeKit';
 import * as E from '@/lib/campaignEngine';
@@ -189,6 +190,7 @@ export default function ActCampaign({ ctx, updateState, onFinish }) {
     up((c) => E.logLine(E.applyDelta(c, c.card.pid, d, { penalty: outcome === 'lose' }), `${outcome === 'win' ? '✅' : '❌'} ${card.title} · ${nameOf(cg.card.pid)} · ${fmt(d)}`));
   };
 
+  const onAir = onAirLabel(cg, nameOf, now);
   const Bar = (
     <div className="mvg-glass mvg-hud -mx-1 space-y-2">
       <div className="flex flex-wrap items-center gap-2 text-sm">
@@ -199,6 +201,21 @@ export default function ActCampaign({ ctx, updateState, onFinish }) {
         <span className="ml-auto flex gap-2">
           <Btn disabled={!(cg.undo || []).length} onClick={() => { up((c) => E.undo(c)); log('↶ Αναίρεση τελευταίας κίνησης'); }}>↶ Αναίρεση</Btn>
         </span>
+      </div>
+      <div className="gx-onair" aria-live="polite">
+        <span className="gx-live-dot" style={{ fontSize: 14 }} />
+        <span className="shrink-0 text-[11px] font-bold uppercase tracking-[0.16em] text-[#FF6961]">Στον αέρα</span>
+        <span className="min-w-0 truncate text-sm font-semibold">{onAir.icon} {onAir.text}</span>
+      </div>
+      <div className="gx-strip" role="list" aria-label="Παίκτριες και σκορ">
+        {rank.map((p, i) => (
+          <div key={p.id} role="listitem" className="gx-strip-item" style={i === 0 ? { borderColor: 'rgba(232,194,107,.55)', background: 'rgba(232,194,107,.10)' } : undefined}>
+            <PlayerAvatar name={p.name} color={colorOf(players, p.id)} size={30} />
+            <span className="font-semibold">{i === 0 ? '👑 ' : ''}{p.name}</span>
+            <b className="gx-gold tabular-nums">{p.score}</b>
+            {p.stats.wanted > 0 && <WantedStars n={p.stats.wanted} size={11} />}
+          </div>
+        ))}
       </div>
       <div className="mvg-tabs" role="tablist">
         {SCREENS.map((s) => <button key={s.id} type="button" role="tab" aria-selected={screen === s.id} onClick={() => setScreen(s.id)} className="mvg-tab">{s.icon} {s.id}. {s.label}</button>)}
@@ -222,7 +239,7 @@ export default function ActCampaign({ ctx, updateState, onFinish }) {
 
   return (
     <div className="mvg space-y-4">
-      {firstArt('bg_tablet_console') && <div aria-hidden="true" className="pointer-events-none fixed inset-0 -z-[1] bg-cover bg-center" style={{ backgroundImage: `linear-gradient(180deg, rgba(5,5,8,.7), rgba(5,5,8,.94)), url("${firstArt('bg_tablet_console')}")` }} />}
+      {firstArt('bg_tablet_console') && <div aria-hidden="true" className="mvg-bgimg" style={{ backgroundImage: `linear-gradient(180deg, rgba(5,5,8,.7), rgba(5,5,8,.94)), url("${firstArt('bg_tablet_console')}")` }} />}
       <div className="mvg-marquee"><span>Deal of Temptation</span><b>Η ΤΑΙΝΙΑ</b><span>Κονσόλα σκηνοθεσίας</span></div>
       {Bar}
       <p className="rounded-xl bg-[#FF9F0A]/10 px-3 py-2 text-xs text-[#FFB340]">🛟 {MOVIE_SAFETY}</p>

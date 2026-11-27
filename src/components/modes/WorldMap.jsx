@@ -1,6 +1,21 @@
 import React from 'react';
 import { CONTINENTS } from '@/data/modes/campaignContent';
 import { contArt, movieArt } from '@/lib/movieArt';
+import { useCornerColor } from '@/components/modes/MovieGameUI';
+
+// Εικονίδιο ηπείρου πάνω στον χάρτη ως στρογγυλό νόμισμα (τα αρχεία MEGA δεν έχουν διαφάνεια).
+function MapIcon({ id, href, x, y, size }) {
+  const bg = useCornerColor(href);
+  const r = size / 2;
+  const coin = bg && bg !== 'transparent';
+  return (
+    <g style={{ filter: 'drop-shadow(0 4px 8px rgba(0,0,0,.6))' }}>
+      {coin && <defs><clipPath id={`wm-ic-${id}`}><circle cx={x} cy={y} r={r} /></clipPath></defs>}
+      {coin && <circle cx={x} cy={y} r={r} fill={bg} stroke="#E8C26B" strokeWidth="2.5" />}
+      <image href={href} x={x - r * (coin ? 1.35 : 1)} y={y - r * (coin ? 1.35 : 1)} width={size * (coin ? 1.35 : 1)} height={size * (coin ? 1.35 : 1)} preserveAspectRatio="xMidYMid slice" clipPath={coin ? `url(#wm-ic-${id})` : undefined} />
+    </g>
+  );
+}
 
 // Ο χάρτης των 5 ηπείρων — στο ύφος της εικόνας του PDF: σκούρο φόντο, γκρι στεριά, ενεργή ήπειρος ροζ-κόκκινη,
 // κατακτημένες πράσινες, πολύχρωμο πλαίσιο. Σχηματικά περιγράμματα (equirectangular 1000×500).
@@ -52,7 +67,7 @@ export default function WorldMap({ active, conquered = {}, names = {}, focus = f
                 const sz = compact ? 54 : 64;
                 return (
                   <g pointerEvents="none">
-                    {icon && <image href={icon} x={x - sz / 2} y={y - sz - (compact ? 14 : 22)} width={sz} height={sz} preserveAspectRatio="xMidYMid meet" style={{ filter: 'drop-shadow(0 4px 8px rgba(0,0,0,.6))' }} />}
+                    {icon && <MapIcon id={c.id} href={icon} x={x} y={y - sz / 2 - (compact ? 14 : 22)} size={sz} />}
                     <text x={x} y={y} textAnchor="middle" fontSize={compact ? 26 : 19} fontWeight="800" fill={isActive || done[c.id] ? '#0B0B0F' : '#1E1B24'} style={{ letterSpacing: '0.04em' }}>{c.no}</text>
                     {!compact && <text x={x} y={y + 22} textAnchor="middle" fontSize={c.region === 'sa' || c.region === 'eu' ? 11 : 13} fontWeight="700" fill={isActive || done[c.id] ? '#0B0B0F' : '#26232D'}>{c.short}</text>}
                     {!compact && winner && <text x={x} y={y + 40} textAnchor="middle" fontSize="13" fontWeight="800" fill="#0B3D22">👑 {winner}</text>}
