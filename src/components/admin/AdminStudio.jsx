@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
 import { request } from '@/api/apiClient';
 import { watchCamera } from '@/lib/liveCamera';
@@ -15,6 +15,13 @@ import { STATUS_LABEL } from '@/data/modes/campaignContent';
 import { AdminAvatar } from '@/components/admin/AdminGameUI';
 import { Scaled, TabletSummary } from '@/components/admin/AdminTriplePreview';
 import SectionErrorBoundary from '@/components/shared/SectionErrorBoundary';
+
+const PANELS = {
+  live: { label: '📡 Live Show', C: lazy(() => import('@/components/admin/AdminLiveShow')) },
+  players: { label: '👥 Παίκτριες', C: lazy(() => import('@/components/admin/AdminPlayers')) },
+  production: { label: '🎞 Παραγωγή', C: lazy(() => import('@/components/admin/AdminProduction')) },
+  lights: { label: '💡 Φώτα', C: lazy(() => import('@/components/admin/AdminLights')) },
+};
 
 // 🎬 ΣΤΟΥΝΤΙΟ: μία οθόνη σαν αίθουσα ελέγχου τηλεόρασης.
 // Στον αέρα (TV) · Κάμερες με TAKE · Tablet & όλα τα κινητά · «Πού είμαστε» · ΣΤΟΠ, διάλειμμα, stingers.
@@ -102,6 +109,7 @@ export default function AdminStudio({ sessions = [], selectedSession, onSelect, 
   const [presence, setPresence] = useState({});
   const [msg, setMsg] = useState('');
   const [phones, setPhones] = useState(true);
+  const [panel, setPanel] = useState('');
   const root = useRef(null);
 
   // Κάμερες & συνδέσεις κινητών (κάθε 3″).
@@ -204,10 +212,32 @@ export default function AdminStudio({ sessions = [], selectedSession, onSelect, 
         <section className="studio-side">
           <WhereWeAre state={state} nameOf={nameOf} />
           <div className="studio-panel">
+            <div className="studio-title">🧰 Πάνελ (χωρίς να φύγεις από το Στούντιο)</div>
+            <div className="flex flex-wrap gap-1.5">
+              {Object.entries(PANELS).map(([id, p]) => <button key={id} type="button" className={`studio-btn ${panel === id ? 'is-gold' : ''}`} onClick={() => setPanel(panel === id ? '' : id)}>{p.label}</button>)}
+            </div>
+          </div>
+          <div className="studio-panel">
             <div className="studio-title">📟 Tablet</div>
             <div className="studio-screen"><Scaled width={1024} height={768}><SectionErrorBoundary name="studio-tablet"><TabletSummary state={state} /></SectionErrorBoundary></Scaled></div>
           </div>
         </section>
+
+        {panel && (() => {
+          const P = PANELS[panel].C;
+          return (
+            <section className="studio-drawer">
+              <div className="flex items-center justify-between"><div className="studio-title">{PANELS[panel].label}</div><button type="button" className="studio-btn" onClick={() => setPanel('')}>✕ Κλείσιμο</button></div>
+              <div className="studio-drawer-body">
+                <SectionErrorBoundary name={`studio-panel:${panel}`} resetKey={panel}>
+                  <Suspense fallback={<div className="p-4 text-white/60">Φόρτωση…</div>}>
+                    <P sessions={sessions} selectedSession={selectedSession} onSelect={onSelect} onUpdate={onUpdate} />
+                  </Suspense>
+                </SectionErrorBoundary>
+              </div>
+            </section>
+          );
+        })()}
 
         <section className="studio-phones">
           <div className="flex items-center justify-between">

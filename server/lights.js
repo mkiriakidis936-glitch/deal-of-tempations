@@ -88,11 +88,11 @@ export function lightRoutes() {
     res.json({ ...publicStatus(await lights.getCfg()), found: devices.length });
   }));
 
-  // Ρόλος κάθε συσκευής: lamp (Λάμπα) / strip (LED ταινία) / off (εκτός παιχνιδιού).
+  // Ρόλος κάθε συσκευής: lamp (Λάμπα) / strip (LED ταινία) / tv (Samsung TV: ανοίγει στην αρχή) / off (εκτός).
   r.post('/devices', requireAdmin, safe(async (req, res) => {
     const roles = req.body?.roles || {};
     const c = await lights.getCfg();
-    const devices = (c.devices || []).map((d) => (['lamp', 'strip', 'off'].includes(roles[d.id]) ? { ...d, role: roles[d.id] } : d));
+    const devices = (c.devices || []).map((d) => (['lamp', 'strip', 'tv', 'off'].includes(roles[d.id]) ? { ...d, role: roles[d.id] } : d));
     res.json(publicStatus(await lights.persist({ devices })));
   }));
 

@@ -8,7 +8,7 @@ import { appApi, request } from '@/api/apiClient';
 import { getActiveSessionCode, setActiveSessionCode, subscribeActiveSession } from '@/lib/activeSession';
 import {
   LayoutDashboard, Inbox, Ticket, BarChart3, Radio, AudioLines, Video, Users, Layers,
-  Images, Globe, Mail, FileText, Link2, History, HardDrive, Settings, Bell, Search, RefreshCw, BookOpen, FlaskConical, Instagram, Lightbulb } from 'lucide-react';
+  Images, Globe, Mail, FileText, Link2, History, HardDrive, Settings, Bell, Search, RefreshCw, BookOpen, FlaskConical, Instagram, Lightbulb, Activity, RotateCcw } from 'lucide-react';
 import AdminNav, { AdminTabBar } from '@/components/admin/AdminNav';
 import AdminSessionBar from '@/components/admin/AdminSessionBar';
 const AdminContentHub = lazy(() => import('@/components/admin/AdminContentHub'));
@@ -38,68 +38,68 @@ const AdminAVControlRoom = lazy(() => import('@/components/admin/AdminAVControlR
 const AdminLights = lazy(() => import('@/components/admin/AdminLights'));
 const AdminLiveShow = lazy(() => import('@/components/admin/AdminLiveShow'));
 const AdminStudio = lazy(() => import('@/components/admin/AdminStudio'));
+const AdminHealth = lazy(() => import('@/components/admin/AdminHealth'));
+const AdminBots = lazy(() => import('@/components/admin/AdminBots'));
+const AdminChangeHistory = lazy(() => import('@/components/admin/AdminChangeHistory'));
 import { createInitialState } from '@/lib/gameLogic';
 
+// 12.0 · Το Admin σε 5 χώρους, «ανά τι κάνεις εκείνη τη στιγμή»: ετοιμασία, βραδιά, περιεχόμενο, καλεσμένες, σύστημα.
 const NAV_GROUPS = [
   {
     id: 'home',
-    label: 'Αρχική',
+    label: '🏠 Αρχική',
     tabs: [
-      { id: 'dashboard', label: 'Επισκόπηση', icon: LayoutDashboard },
+      { id: 'dashboard', label: 'Έτοιμο για βραδιά', icon: LayoutDashboard },
       { id: 'inbox', label: 'Αιτήσεις', icon: Inbox },
+      { id: 'guide', label: 'Οδηγός', icon: BookOpen },
     ],
   },
   {
     id: 'show',
-    label: 'Live Show',
+    label: '🎬 Βραδιά',
     tabs: [
-      { id: 'studio', label: '🎬 Στούντιο', icon: Video },
+      { id: 'studio', label: 'Στούντιο', icon: Video },
       { id: 'show', label: 'Live Show', icon: Radio },
       { id: 'players', label: 'Παίκτριες & ρόλοι', icon: Users },
       { id: 'production', label: 'Παραγωγή & ροή', icon: Video },
       { id: 'av', label: 'Ήχος & εικόνα TV', icon: AudioLines },
       { id: 'lights', label: 'Φώτα & Samsung TV', icon: Lightbulb },
+      { id: 'links', label: 'Σύνδεσμοι & QR', icon: Link2 },
+      { id: 'rehearsal', label: 'Πρόβα & ψεύτικα κινητά', icon: FlaskConical },
     ],
   },
   {
     id: 'game',
-    label: 'Παιχνίδι',
+    label: '🧩 Περιεχόμενο',
     tabs: [
-      { id: 'modes', label: 'Κάρτες & περιεχόμενο', icon: Layers },
+      { id: 'modes', label: 'Κάρτες, ταμπλό & κείμενα', icon: Layers },
       { id: 'media', label: 'Φωτογραφίες & βίντεο', icon: Images },
-    ],
-  },
-  {
-    id: 'guests',
-    label: 'Καλεσμένες',
-    tabs: [
-      { id: 'events', label: 'Διοργανώσεις', icon: Ticket },
-      { id: 'invitations', label: 'Προσκλήσεις', icon: Mail },
-      { id: 'forms', label: 'Ερωτήσεις φορμών', icon: FileText },
-      { id: 'interest', label: 'Ενδιαφέρον & συμμετοχή', icon: Users },
-      { id: 'history', label: 'Ιστορικό παικτριών', icon: History },
-      { id: 'links', label: 'Σύνδεσμοι & QR', icon: Link2 },
-    ],
-  },
-  {
-    id: 'site',
-    label: 'Ιστοσελίδα',
-    tabs: [
       { id: 'website', label: 'Ιστοσελίδα', icon: Globe },
-      { id: 'statistics', label: 'Στατιστικά & επισκέψεις', icon: BarChart3 },
+      { id: 'forms', label: 'Ερωτήσεις φορμών', icon: FileText },
       { id: 'social', label: 'Κάρτα για social', icon: Instagram },
     ],
   },
   {
-    id: 'system',
-    label: 'Σύστημα',
+    id: 'guests',
+    label: '👥 Καλεσμένες',
     tabs: [
+      { id: 'history', label: 'Κάρτες παικτριών', icon: History },
+      { id: 'events', label: 'Διοργανώσεις', icon: Ticket },
+      { id: 'invitations', label: 'Προσκλήσεις', icon: Mail },
+      { id: 'interest', label: 'Ενδιαφέρον & συμμετοχή', icon: Users },
+    ],
+  },
+  {
+    id: 'system',
+    label: '⚙️ Σύστημα',
+    tabs: [
+      { id: 'health', label: 'Υγεία server', icon: Activity },
+      { id: 'versions', label: 'Ιστορικό αλλαγών & αναίρεση', icon: RotateCcw },
       { id: 'settings', label: 'Ρυθμίσεις & έκδοση', icon: Settings },
       { id: 'notifications', label: 'Ειδοποιήσεις', icon: Bell },
       { id: 'sessions', label: 'Ιστορικό παρτίδων', icon: History },
       { id: 'backup', label: 'Αντίγραφα ασφαλείας', icon: HardDrive },
-      { id: 'rehearsal', label: 'Πρόβα 2′', icon: FlaskConical },
-      { id: 'guide', label: 'Οδηγός', icon: BookOpen },
+      { id: 'statistics', label: 'Στατιστικά & επισκέψεις', icon: BarChart3 },
     ],
   },
 ];
@@ -349,7 +349,12 @@ export default function Admin() {
       case 'history':
         return <AdminPlayerHistory />;
       case 'rehearsal':
-        return <AdminRehearsal />;
+        return (
+          <div className="space-y-4">
+            <AdminBots sessions={sessions} />
+            <AdminRehearsal />
+          </div>
+        );
       case 'guide':
         return <AdminGuide />;
       case 'backup':
@@ -392,6 +397,10 @@ export default function Admin() {
         return <AdminLinks sessions={sessions} selectedSession={activeSession} />;
       case 'visits':
         return <AdminVisits />;
+      case 'health':
+        return <AdminHealth sessions={sessions} />;
+      case 'versions':
+        return <AdminChangeHistory />;
       default:
         return <AdminOverview sessions={sessions} loading={loading} onNavigate={setTab} />;
     }
@@ -400,6 +409,9 @@ export default function Admin() {
   const searchItems = [
     ...NAV_GROUPS.flatMap((group) => group.tabs.map((item) => ({ type: 'tab', id: item.id, label: item.label, detail: group.label }))),
     ...sessions.map((session) => ({ type: 'session', id: session.id, label: session.event?.title || session.mode || 'Game', detail: `${session.sessionCode} · ${(session.state?.players || []).map((player) => player.name).join(', ')}` })),
+    // 12.0: παίκτριες → κάρτα παίκτριας (ιστορικό, όρια, βραβεία).
+    ...[...new Map(sessions.flatMap((session) => (session.state?.players || []).map((player) => [String(player.name || '').trim().toLocaleLowerCase('el-GR'), player.name]))).values()]
+      .filter(Boolean).map((name) => ({ type: 'tab', id: 'history', label: `👤 ${name}`, detail: 'Κάρτα παίκτριας' })),
   ];
   const needle = globalSearch.toLocaleLowerCase('el-GR');
   const searchResults = searchItems.filter((item) => !needle || `${item.label} ${item.detail}`.toLocaleLowerCase('el-GR').includes(needle)).slice(0, 30);

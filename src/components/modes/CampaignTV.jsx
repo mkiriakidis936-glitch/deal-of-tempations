@@ -12,6 +12,8 @@ import { firstArt, actTvArt, contArt, trialArt, cardArt, nailArt } from '@/lib/m
 import { MOVIE_CSS, ActTitleCard, useMovieSounds, CastScreen, EndCredits, montagePhotos } from '@/components/modes/MovieFX';
 import { Podiums, MarqueeSign, Ticker } from '@/components/modes/ShowKit';
 import { turnPid } from '@/lib/movieBoardEngine';
+import { actRecap } from '@/lib/actRecap';
+import { playerBadges } from '@/lib/playerBadges';
 import { ContinentBoard, Confetti, EventTakeover, PlayerAvatar, ArtIcon, colorOf } from '@/components/modes/MovieGameUI';
 
 // DEAL OF TEMPTATION — Η ΤΑΙΝΙΑ · TV (δημόσια σκηνή): χάρτης 5 ηπείρων και 4 καταστάσεις (Ενεργή, Μετάβαση, Standby, Φινάλε).
@@ -74,6 +76,7 @@ export default function CampaignTV({ state }) {
   }
   if (status === 'finale') {
     const top = rank[0];
+    const badgeMap = playerBadges(cg, players.filter((p) => !p.bot), { scoreOf: (id) => rank.find((p) => p.id === id)?.score || 0 });
     return (
       <div className="show-stage relative min-h-screen w-full overflow-hidden text-white">
         <Backdrop src={(cg.finaleAt && now - cg.finaleAt < 7000 && firstArt('vid_finale_map')) || firstArt('vid_big_gift', 'bg_tv_big_gift', 'bg_tv_final_recap') || artFor('finale', 'villa_takeover')} dim={0.32} />
@@ -101,11 +104,20 @@ export default function CampaignTV({ state }) {
             )}
             <ol className="mvg-glass" style={{ padding: u(1.2) }}>
               {rank.map((p, i) => (
-                <li key={p.id} className="flex justify-between border-b border-white/10 last:border-0" style={{ fontSize: u(1.3), padding: `${u(0.4)} 0` }}>
-                  <span>{i + 1}. {p.name}</span><span className="font-bold tabular-nums text-[#E8C26B]">{p.score}</span>
+                <li key={p.id} className="flex items-center justify-between gap-3 border-b border-white/10 last:border-0" style={{ fontSize: u(1.3), padding: `${u(0.4)} 0` }}>
+                  <span className="min-w-0 truncate italic font-bold">{i + 1}. {p.name} <span style={{ fontSize: u(1.2) }}>{(badgeMap[p.id] || []).map((b) => b.icon).join(' ')}</span></span><span className="show-led" style={{ fontSize: u(1.6) }}>{p.score}</span>
                 </li>
               ))}
             </ol>
+            {/* 12.0.0 · Παράσημα της βραδιάς */}
+            <div className="grid grid-cols-2" style={{ gap: u(0.5) }}>
+              {Object.entries(badgeMap).flatMap(([pid, list]) => list.filter((b) => b.id !== 'queen').map((b) => ({ ...b, pid }))).slice(0, 8).map((b, i) => (
+                <div key={`${b.id}${b.pid}`} className="gx-glass mv-rise flex items-center" style={{ gap: u(0.6), padding: `${u(0.45)} ${u(0.7)}`, animationDelay: `${0.3 + i * 0.25}s` }}>
+                  <span style={{ fontSize: u(1.8) }} aria-hidden="true">{b.icon}</span>
+                  <span className="min-w-0"><b className="block truncate italic" style={{ fontSize: u(1) }}>{b.title}</b><span className="block truncate text-white/70" style={{ fontSize: u(0.9) }}>{nameOf(b.pid)}</span></span>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>
@@ -119,20 +131,29 @@ export default function CampaignTV({ state }) {
   if (status === 'transition') {
     const prev = cg.previously;
     const leader = rank[0];
+    const recap = prev?.from ? actRecap(cg) : null;
     return (
       <div className="show-stage relative min-h-screen w-full overflow-hidden text-white">
         <Backdrop src={firstArt(prev?.from ? `vid_jump_${act.continent}` : '', 'vid_previously', 'bg_tv_previously_on') || artFor('transition', act.continent)} dim={0.32} />
         <div className="relative grid h-screen grid-cols-[1.3fr_1fr] items-center" style={{ gap: u(2.4), padding: u(2.8) }}>
           <WorldMap active={act.continent} conquered={cg.conquered} names={names} focus zoom={act.continent} route={prev?.from && prev.from !== act.continent ? [prev.from, act.continent] : null} className="aspect-[2/1] w-full rounded-3xl" />
           <div style={{ display: 'grid', gap: u(1.1) }}>
-            <div className="font-semibold uppercase tracking-[0.3em] text-[#FF6B85]" style={{ fontSize: u(1.1) }}>{prev?.from ? 'Previously On…' : 'Η ταινία ξεκινά'}</div>
-            {prev?.from && <div className="text-white/70" style={{ fontSize: u(1.4) }}>Από {continentOf(prev.from).name} → {info.name}{prev.jump ? ' · ⚡ Έκτακτο άλμα' : ''}</div>}
-            <div className="font-black leading-none" style={{ fontSize: u(3.4) }}>{actTitle}</div>
-            <div className="font-bold text-[#F7E3A8]" style={{ fontSize: u(2.2) }}>{act.title}</div>
-            <div className="text-white/80" style={{ fontSize: u(1.35) }}>{act.text}</div>
+            <div className="show-lower" style={{ fontSize: u(1.3), justifySelf: 'start' }}><span>{prev?.from ? '⏪ Previously On…' : 'Η ταινία ξεκινά'}</span></div>
+            {prev?.from && <div className="text-white/70" style={{ fontSize: u(1.3) }}>Από {continentOf(prev.from).name} → {info.name}{prev.jump ? ' · ⚡ Έκτακτο άλμα' : ''}</div>}
+            {recap && recap.moments.length > 0 && (
+              <div className="gx-glass" style={{ padding: u(1), display: 'grid', gap: u(0.45) }}>
+                <div className="show-kicker" style={{ fontSize: u(0.8) }}>Στην προηγούμενη πράξη{recap.winner ? ` · 👑 ${nameOf(recap.winner)}` : ''}</div>
+                {recap.moments.map((m, i) => <div key={i} className="mv-rise" style={{ fontSize: u(1.25), animationDelay: `${0.4 + i * 0.5}s` }}>★ {m}</div>)}
+              </div>
+            )}
+            <div className="show-sign show-bulbs" style={{ '--bulb': u(0.7), padding: `${u(0.7)} ${u(1.6)}`, justifySelf: 'start' }}>
+              <div className="show-kicker" style={{ fontSize: u(0.8) }}>{actTitle}</div>
+              <div className="show-title" style={{ fontSize: u(2.6) }}>{act.title}</div>
+            </div>
+            <div className="text-white/80" style={{ fontSize: u(1.3) }}>{act.text}</div>
             <div className="grid grid-cols-2" style={{ gap: u(0.8) }}>
-              <div className="rounded-2xl bg-white/5" style={{ padding: u(0.9) }}><div className="text-white/55" style={{ fontSize: u(0.9) }}>Προηγείται</div><div className="font-bold" style={{ fontSize: u(1.6) }}>{leader && leader.score ? `${leader.name} · ${leader.score}` : '—'}</div></div>
-              <div className="rounded-2xl bg-white/5" style={{ padding: u(0.9) }}><div className="text-white/55" style={{ fontSize: u(0.9) }}>Καταζητούμενη</div><div className="font-bold text-[#FF6B85]" style={{ fontSize: u(1.6) }}>{wanted ? `🎯 ${nameOf(wanted)}` : '—'}</div></div>
+              <div className="gx-glass" style={{ padding: u(0.9) }}><div className="show-kicker" style={{ fontSize: u(0.75) }}>Προηγείται</div><div className="show-led" style={{ fontSize: u(1.6) }}>{leader && leader.score ? `${leader.name} · ${leader.score}` : '—'}</div></div>
+              <div className="gx-glass" style={{ padding: u(0.9) }}><div className="show-kicker" style={{ fontSize: u(0.75) }}>Καταζητούμενη</div><div className="font-black italic text-[#FF6B85]" style={{ fontSize: u(1.6) }}>{wanted ? `🎯 ${nameOf(wanted)}` : '—'}</div></div>
             </div>
             <div className="text-white/55" style={{ fontSize: u(1) }}>Μεταφέρονται: πόντοι, λεία, tokens, εντάλματα, συμμαχίες και Καταζητούμενη.</div>
           </div>
@@ -244,11 +265,41 @@ export default function CampaignTV({ state }) {
                 </div>
               </div>
             )}
-            {votes && (
-              <div className="font-semibold text-[#64D2FF]" style={{ fontSize: u(1.35), marginTop: u(0.8) }}>
-                🗳️ {votes.q} · {votes.open ? `Ψηφίστε στο κινητό · ${Object.values(votes.ballots || {}).filter(Boolean).length}/${players.length}` : `Αποτέλεσμα: ${tally.map(([k, n]) => `${names[k] || k} ${n}`).join(' · ') || '—'}`}
-              </div>
-            )}
+            {votes && (() => {
+              // 12.0.0 · Ψηφοφορία: όσο είναι ανοιχτή, μόνο πόσες ψήφισαν (μυστικότητα)· μετά, μπάρες αποτελέσματος.
+              const voted = Object.values(votes.ballots || {}).filter(Boolean).length;
+              const total = Math.max(1, Object.keys(votes.ballots || {}).length || players.length);
+              const max = Math.max(1, ...tally.map(([, n]) => n));
+              return (
+                <div style={{ marginTop: u(0.6), display: 'grid', gap: u(0.6) }}>
+                  <div className="flex items-center" style={{ gap: u(0.8) }}>
+                    <span className="show-lower" style={{ fontSize: u(1) }}><span>🗳️ Ψηφοφορία</span></span>
+                    <span className="font-black italic" style={{ fontSize: u(1.5) }}>{votes.q}</span>
+                  </div>
+                  {votes.open ? (
+                    <div className="flex items-center" style={{ gap: u(1) }}>
+                      <div className="show-led-window flex-1" style={{ height: u(2.2), justifyContent: 'flex-start', overflow: 'hidden' }}>
+                        <div style={{ width: `${(voted / total) * 100}%`, height: '100%', background: 'linear-gradient(90deg,#ff2fb3,#ffd23f)', boxShadow: '0 0 18px #ff2fb3', transition: 'width .6s' }} />
+                      </div>
+                      <span className="show-led" style={{ fontSize: u(2) }}>{voted}/{total}</span>
+                      <span className="text-white/70" style={{ fontSize: u(1) }}>ψηφίστε στο κινητό</span>
+                    </div>
+                  ) : (
+                    <div style={{ display: 'grid', gap: u(0.4) }}>
+                      {tally.length ? tally.slice(0, 6).map(([k, n], i) => (
+                        <div key={k} className="grid items-center" style={{ gridTemplateColumns: `${u(12)} 1fr ${u(3)}`, gap: u(0.8) }}>
+                          <b className="truncate italic" style={{ fontSize: u(1.3) }}>{i === 0 ? '👑 ' : ''}{names[k] || k}</b>
+                          <div className="show-led-window" style={{ height: u(1.8), justifyContent: 'flex-start', overflow: 'hidden' }}>
+                            <div className="mv-rise" style={{ width: `${(n / max) * 100}%`, height: '100%', background: i === 0 ? 'linear-gradient(90deg,#ff9f00,#ffd23f)' : 'linear-gradient(90deg,#6b1cff,#2de2ff)', animationDelay: `${i * 0.25}s` }} />
+                          </div>
+                          <span className="show-led" style={{ fontSize: u(1.6) }}>{n}</span>
+                        </div>
+                      )) : <div className="text-white/60" style={{ fontSize: u(1.2) }}>Καμία ψήφος.</div>}
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
             {!drawn && !trial && !card && !votes && cg.board?.on && <BoardTrack cg={cg} players={players} nameOf={nameOf} u={u} />}
             {!drawn && !trial && !card && !votes && !cg.board?.on && (
               <div className="flex items-center" style={{ gap: u(1.2) }}>

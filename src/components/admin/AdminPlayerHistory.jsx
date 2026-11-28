@@ -1,6 +1,24 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { appApi, request } from '@/api/apiClient';
 import { modeDisplayName } from '@/data/gameConfig';
+import { WHEELS, GAMES } from '@/data/modes/movieGames';
+
+// 12.3 · Κάρτα παίκτριας: προτιμήσεις & όρια της Ταινίας (από τη φόρμα), όπως τα βλέπει η διοργανώτρια.
+const MOVIE_LIMIT_LABELS = { chairOk: 'Καρέκλα Ανάκρισης', cuffsOk: 'Χειροπέδες / δέσιμο χεριών', tickleOk: 'Γαργάλημα πελμάτων', iceOk: 'Παγάκι', alcoholOk: 'Σφηνάκι (αλκοόλ)', shoesOffOk: 'Βγάλσιμο παπουτσιών & καλτσών', nightOk: 'Βράδυ στον Ύπνο', photosOk: 'Φωτογραφίες στην TV' };
+const SHOE = { sneakers: 'Αθλητικά', heels: 'Τακούνια', boots: 'Μποτάκια', flats: 'Μπαλαρίνες', flipflops: 'Σαγιονάρες' };
+const SOCK = { short: 'Κοντές', long: 'Ψηλές', fluffy: 'Χνουδωτές', none: 'Χωρίς' };
+const FORMAT = { quick: 'Γρήγορο σετ', h48: '48 ώρες', h72: '72 ώρες' };
+const wheelTitle = (id) => WHEELS.flatMap((w) => w.items).find((i) => i.id === id)?.title || id;
+function movieInfo(app) {
+  const m = app?.movieProfile;
+  if (!m) return null;
+  return {
+    no: Object.entries(MOVIE_LIMIT_LABELS).filter(([k]) => m[k] === false).map(([, l]) => l),
+    wheelNo: (m.wheelNo || []).map(wheelTitle),
+    prefs: [m.format && `Ροή: ${FORMAT[m.format] || m.format}`, m.shoeType && `Παπούτσια: ${SHOE[m.shoeType] || m.shoeType}${m.shoeSize ? ` (${m.shoeSize})` : ''}`, m.sockType && `Κάλτσες: ${SOCK[m.sockType] || m.sockType}`, (m.favGames || []).length ? `Παιχνίδια: ${m.favGames.map((g) => GAMES.find((x) => x.id === g)?.name || g).join(', ')}` : ''].filter(Boolean),
+    health: m.health || '',
+  };
+}
 import { AdminAvatar } from '@/components/admin/AdminGameUI';
 
 // Ιστορικό παικτριών: βραδιές, νίκες, αγαπημένο mode, τελευταία βραδιά και τα όρια της πιο πρόσφατης αίτησης.
@@ -27,8 +45,8 @@ export default function AdminPlayerHistory() {
 
   const load = () => {
     const list = (entity) => appApi.entities[entity].filter({}, { sort: '-created_date', limit: 1000 }).then((r) => (r.items || []).map((item) => ({ ...item, _entity: entity }))).catch(() => []);
-    return Promise.all([list('PlayerProfile'), list('SessionArchive'), list('PlayerIntake'), list('PajamaIntake'), list('VIPInvitationSubmission')])
-      .then(([profiles, archives, ...apps]) => setData({ profiles, archives, apps: apps.flat() }));
+    return Promise.all([list('PlayerProfile'), list('SessionArchive'), list('Achievement'), list('PlayerIntake'), list('PajamaIntake'), list('VIPInvitationSubmission')])
+      .then(([profiles, archives, awards, ...apps]) => setData({ profiles, archives, awards, apps: apps.flat() }));
   };
   useEffect(() => { load(); }, []);
 
@@ -81,7 +99,7 @@ export default function AdminPlayerHistory() {
     const row = (name) => {
       const k = keyOf(name);
       if (!k) return null;
-      if (!map.has(k)) map.set(k, { name: String(name).trim(), nights: 0, wins: 0, modes: {}, last: '', apps: [] });
+      if (!map.has(k)) map.set(k, { name: String(name).trim(), nights: 0, wins: 0, modes: {}, last: '', apps: [], awards: [] });
       return map.get(k);
     };
     data.archives.forEach((arc) => (arc.playerNames || []).forEach((name) => {
@@ -94,11 +112,12 @@ export default function AdminPlayerHistory() {
     }));
     data.profiles.forEach((p) => { const r = row(p.playerName); if (r) { r.nights = Math.max(r.nights, p.totalSessions || 0); r.wins = Math.max(r.wins, p.totalWins || 0); } });
     data.apps.forEach((app) => { const r = row(app.displayName || app.name); if (r) r.apps.push(app); });
+    (data.awards || []).forEach((a) => { const k = keyOf(a.playerName); if (k && map.has(k)) map.get(k).awards.push(a); });
     return [...map.values()].map((r) => {
       const fav = Object.entries(r.modes).sort((a, b) => b[1] - a[1])[0]?.[0];
       const latest = [...r.apps].sort((a, b) => String(b.created_date || '').localeCompare(String(a.created_date || '')))[0];
       const wanted = latest ? (latest.preferredModes?.length ? latest.preferredModes : [latest.vipGameMode || latest.gameMode].filter(Boolean)) : [];
-      return { ...r, fav, latest, wanted, limits: limitsOf(latest), contact: latest?.contact || latest?.phone || latest?.email || '' };
+      return { ...r, fav, latest, wanted, limits: limitsOf(latest), movie: movieInfo(latest), nail: latest?.nailColor || '', pajama: latest?.pajamaStyle || '', slipper: latest?.slipperType || '', contact: latest?.contact || latest?.phone || latest?.email || '' };
     }).sort((a, b) => b.nights - a.nights || b.wins - a.wins || a.name.localeCompare(b.name, 'el'));
   }, [data]);
 
@@ -106,7 +125,7 @@ export default function AdminPlayerHistory() {
   if (!data) return <div className="text-white/60">Φόρτωση…</div>;
   return (
     <div className="mx-auto max-w-4xl space-y-4 text-white">
-      <p className="text-[15px] text-white/60">Κάθε παίκτρια που έχει κάνει αίτηση ή έχει παίξει: πόσες βραδιές, νίκες, αγαπημένο mode και τα όρια της πιο πρόσφατης αίτησής της — έτοιμα για την επόμενη πρόσκληση.</p>
+      <p className="text-[15px] text-white/60">Η κάρτα κάθε παίκτριας: βραδιές, νίκες, βραβεία, αγαπημένο mode, τα όρια και οι προτιμήσεις της πιο πρόσφατης αίτησης (και της Ταινίας) — έτοιμα για την επόμενη πρόσκληση και για τη βραδιά.</p>
       <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Αναζήτηση ονόματος…" className="h-11 w-full rounded-xl bg-[#1C1C1E] px-4 text-[15px]" />
       {msg && <div role="status" className="rounded-xl bg-[#2C2C2E] px-3 py-2 text-sm">{msg}</div>}
       <div className="overflow-hidden rounded-2xl bg-[#1C1C1E]">
@@ -115,7 +134,7 @@ export default function AdminPlayerHistory() {
           <div key={r.name} className="border-b border-white/10 last:border-0">
             <button type="button" onClick={() => setOpen(open === r.name ? '' : r.name)} className="flex w-full items-center gap-3 px-4 py-3 text-left">
               <AdminAvatar name={r.name} size={40} />
-              <span className="min-w-0 flex-1"><span className="block truncate font-semibold">{r.name}</span><span className="text-[13px] text-white/55">{r.nights} βραδιές · {r.wins} νίκες{r.fav ? ` · ❤️ ${modeDisplayName(r.fav)}` : ''}</span></span>
+              <span className="min-w-0 flex-1"><span className="block truncate font-semibold">{r.name}</span><span className="text-[13px] text-white/55">{r.nights} βραδιές · {r.wins} νίκες{r.awards.length ? ` · 🏅 ${r.awards.length}` : ''}{r.fav ? ` · ❤️ ${modeDisplayName(r.fav)}` : ''}{(r.limits.length || r.movie?.no.length || r.movie?.wheelNo.length) ? ' · ⚠️ όρια' : ''}</span></span>
               <span className="text-white/40">{open === r.name ? '−' : '›'}</span>
             </button>
             {open === r.name && (
@@ -123,6 +142,23 @@ export default function AdminPlayerHistory() {
                 {r.last && <div>Τελευταία βραδιά: {new Date(r.last).toLocaleDateString('el-GR')}</div>}
                 {r.wanted.length > 0 && <div>Ζήτησε: {r.wanted.map(modeDisplayName).join(', ')}</div>}
                 <div>Όρια: {r.limits.length ? r.limits.join(' · ') : 'δεν έχουν δηλωθεί'}</div>
+                {r.movie && (r.movie.no.length > 0 || r.movie.wheelNo.length > 0 || r.movie.health) && (
+                  <div className="rounded-xl bg-[#FF453A]/10 p-2.5">
+                    <div className="font-semibold text-[#FF8A80]">🎬 Ταινία — δεν θέλει</div>
+                    {r.movie.no.length > 0 && <div>{r.movie.no.join(' · ')}</div>}
+                    {r.movie.wheelNo.length > 0 && <div className="text-white/70">Ποινές Τροχού: {r.movie.wheelNo.join(' · ')}</div>}
+                    {r.movie.health && <div className="text-white/70">Υγεία/αλλεργίες: {r.movie.health}</div>}
+                  </div>
+                )}
+                {((r.movie?.prefs.length || 0) > 0 || r.nail || r.pajama || r.slipper) && (
+                  <div className="rounded-xl bg-white/5 p-2.5">
+                    <div className="font-semibold text-[#F7E3A8]">✨ Προτιμήσεις</div>
+                    <div>{[...(r.movie?.prefs || []), r.nail && `Νύχια: ${r.nail}`, r.pajama && `Πιτζάμες: ${r.pajama}`, r.slipper && `Παντόφλες: ${r.slipper}`].filter(Boolean).join(' · ')}</div>
+                  </div>
+                )}
+                {r.awards.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5">{r.awards.slice(0, 12).map((a, i) => <span key={a.id || i} className="rounded-full bg-[#E8C26B]/15 px-2.5 py-1 text-[12px] text-[#F7E3A8]">{a.icon || '🏅'} {a.achievementName || a.achievementId}</span>)}</div>
+                )}
                 {r.contact && <div>Επικοινωνία: {r.contact}</div>}
                 <div className="text-white/45">{r.apps.length} αιτήσεις · τελευταία: {r.latest?.approved ? '✓ εγκεκριμένη' : 'σε αναμονή'}</div>
                 <button type="button" disabled={busy} onClick={() => deleteOne(r)} className="mt-2 h-10 rounded-full bg-[#FF453A]/15 px-4 text-sm font-semibold text-[#FF8A80] disabled:opacity-50">🗑 Διαγραφή ιστορικού της {r.name}</button>

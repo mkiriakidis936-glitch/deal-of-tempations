@@ -1,5 +1,9 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { movieGuideStep } from '@/lib/movieGuide';
+import { botAction, makeBots, hasBots } from '@/lib/rehearsalBots';
+import ReadinessCheck from '@/components/tablet/ReadinessCheck';
+import { autopilotPlan, autopilotDueAt } from '@/lib/movieAutopilot';
+import { fullAutoStep, isFullAutoAllowed } from '@/lib/movieFullAuto';
 import { Panel, Btn } from '@/components/modes/ModeShell';
 import MissionPanel from '@/components/modes/MissionPanel';
 import WorldMap from '@/components/modes/WorldMap';
@@ -37,13 +41,26 @@ const fmt = (d = {}) => [d.points ? `${d.points > 0 ? '+' : ''}${d.points} πό�
 const download = (name, text, type) => { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([`﻿${text}`], { type })); a.download = name; document.body.appendChild(a); a.click(); a.remove(); };
 
 // DEAL OF TEMPTATION — Η ΤΑΙΝΙΑ · Tablet (κονσόλα σκηνοθεσίας): 6 οθόνες εργασίας + σταθερή μπάρα.
-export default function ActCampaign({ ctx, updateState, onFinish }) {
+export default function ActCampaign({ ctx, state, sessionCode = '', updateState, onFinish, mirror = false }) {
   const { players, mg, setMg, log, nameOf, stopped } = ctx;
   const cg = mg.cg;
-  const [screen, setScreen] = useState(() => (mg.cg?.boardMode ? 8 : 1));
+  const [screenLocal, setScreenLocal] = useState(() => (mg.cg?.boardMode ? 8 : 1));
+  // 12.1.0 · Στην πρόβα, η καρτέλα του Tablet φαίνεται και στα παράθυρα της TV (mirror).
+  const screen = mirror ? (state?.rehearsalTab || screenLocal) : screenLocal;
+  const setScreen = (id) => { setScreenLocal(id); if (!mirror && hasBots(players)) updateState?.({ rehearsalTab: id }); };
   const [moreTabs, setMoreTabs] = useState(false);
   // 10.5.2 · Οδηγός πρώτης βραδιάς: ανοιχτός από προεπιλογή, θυμάται αν τον έκλεισες σε αυτό το Tablet.
   const [guideOn, setGuideOn] = useState(() => { try { return localStorage.getItem('dot_movie_guide') !== 'off'; } catch { return true; } });
+  // 12.0.0 · Αυτόματος πιλότος (μόνο ακίνδυνα βήματα· βλ. lib/movieAutopilot.js).
+  const [autoOn, setAutoOn] = useState(() => { try { return localStorage.getItem('dot_autopilot') === 'on'; } catch { return false; } });
+  const [autoSince, setAutoSince] = useState({ key: '', at: 0 });
+  const [autoCancel, setAutoCancel] = useState('');
+  const toggleAuto = (on) => {
+    setAutoOn(on); setAutoCancel('');
+    try { localStorage.setItem('dot_autopilot', on ? 'on' : 'off'); } catch { /* χωρίς storage */ }
+    updateState?.({ videoMode: on ? 'auto' : 'manual' }); // με τον πιλότο, τα βίντεο παίζουν μόνα τους στις στιγμές τους
+    log(on ? '🤖 Αυτόματος πιλότος: ON' : '🤖 Αυτόματος πιλότος: OFF');
+  };
   const toggleGuide = (on) => { setGuideOn(on); try { localStorage.setItem('dot_movie_guide', on ? 'on' : 'off'); } catch { /* χωρίς storage */ } };
   const [target, setTarget] = useState('');
   const [executors, setExecutors] = useState([]);
@@ -66,7 +83,7 @@ export default function ActCampaign({ ctx, updateState, onFinish }) {
   // Ενέργειες από τα κινητά: νύχια, ψήφοι, tokens, ρίσκο, εξαγορά.
   useEffect(() => {
     const a = mg.playerAction;
-    if (!a || !mg.cg) return;
+    if (mirror || !a || !mg.cg) return;
     const pid = a.playerId;
     let c = mg.cg;
     if (a.type === 'cg_nail' && c.nailsOpen && !E.statsOf(c, pid).nailLocked && NAIL_COLORS.includes(a.nail)) {
@@ -119,6 +136,89 @@ export default function ActCampaign({ ctx, updateState, onFinish }) {
     setMg({ cg: c, playerAction: null });
   }, [mg.playerAction?.at]);
 
+  // 12.0.0 · Πρόβα: οι εικονικές παίκτριες «παίζουν» από εδώ, σαν να ήταν κινητά. Ποτέ σε ΣΤΟΠ.
+  const botsOn = hasBots(players);
+  useEffect(() => {
+    if (mirror || !botsOn) return undefined;
+    const t = setInterval(() => {
+      if (stopped || mg.playerAction) return;
+      const a = botAction({ cg: mg.cg, players });
+      if (a) setMg({ playerAction: { ...a, at: Date.now() } });
+    }, 1500);
+    return () => clearInterval(t);
+  }, [botsOn, stopped, mg.cg, mg.playerAction, players]);
+  // 12.0.0 · Εκτέλεση βήματος πιλότου (ίδιες ενέργειες με τα κουμπιά της διοργανώτριας).
+  const runPlan = (plan) => {
+    if (!plan || stopped) return;
+    if (plan.action === 'startAct') { up((c) => { const o = E.startAct(c, players); return o.boardMode ? BD.boardStart(o, players) : o; }); log('▶ ΕΝΑΡΞΗ ΠΡΑΞΗΣ'); }
+    else if (plan.action === 'goNext') { up((c) => E.goNext(c)); log('➡️ Μετάβαση στην επόμενη ήπειρο'); }
+    else if (plan.action === 'rollFor' && plan.pid) {
+      const v = BD.rollDie();
+      up((c) => (BD.turnPid(c) === plan.pid && !c.board?.pending ? BD.boardRoll(c, plan.pid, v).cg : c));
+      log(`🎲 Ο πιλότος έριξε για ${nameOf(plan.pid)}: ${v}`);
+    } else if (plan.action === 'finale' && window.confirm('Πέρασμα στο Μεγάλο Φινάλε;')) up((c) => E.toFinale(c));
+  };
+  const [, setAutoTick] = useState(0);
+  useEffect(() => {
+    if (mirror || !autoOn || !mg.cg) return undefined;
+    const t = setInterval(() => {
+      const g = movieGuideStep({ mg, players, stopped, nameOf });
+      const plan = autopilotPlan(g, mg.cg, { stopped, players });
+      const key = plan ? `${g.id}:${plan.action}:${plan.pid || ''}:${mg.cg.act}:${mg.cg.status}:${mg.cg.board?.rolls || 0}` : '';
+      if (key !== autoSince.key) { setAutoSince({ key, at: Date.now() }); return; }
+      if (plan?.auto && autoCancel !== key && Date.now() >= autopilotDueAt(plan, autoSince.at)) { runPlan(plan); setAutoSince({ key: '', at: 0 }); return; }
+      setAutoTick((x) => x + 1);
+    }, 500);
+    return () => clearInterval(t);
+  }, [autoOn, mg, players, stopped, autoSince, autoCancel]);
+
+  // 12.1.0 · Πλήρης αυτόματη πρόβα (μόνο όταν ΟΛΕΣ είναι εικονικές· βλ. lib/movieFullAuto.js).
+  const ra = state?.rehearsalAuto || {};
+  const fullAllowed = isFullAutoAllowed(players);
+  const [fullShown, setFullShown] = useState({ key: '', at: 0, label: '', wait: 0 });
+  useEffect(() => {
+    if (mirror || !ra.on) return undefined;
+    if (!fullAllowed) { updateState?.({ rehearsalAuto: { ...ra, on: false } }); log('⛔ Αυτόματη πρόβα: σταμάτησε (μπήκε αληθινή παίκτρια)'); return undefined; }
+    const t = setInterval(() => {
+      if (stopped || mg.playerAction) return;
+      const st = fullAutoStep({ cg: mg.cg, players, speed: ra.speed || 'normal', stopped });
+      if (!st) { if (fullShown.key) setFullShown({ key: '', at: 0, label: '', wait: 0 }); return; }
+      if (st.key !== fullShown.key) { setFullShown({ key: st.key, at: Date.now(), label: st.label, wait: st.wait }); return; }
+      if (Date.now() - fullShown.at >= st.wait) { up(st.run); log(`🎬 ${st.label}`); setFullShown({ key: '', at: 0, label: '', wait: 0 }); }
+    }, 500);
+    return () => clearInterval(t);
+  }, [mirror, ra.on, ra.speed, fullAllowed, stopped, mg, players, fullShown]);
+  const setFullAuto = (on, speed = ra.speed || 'normal') => { updateState?.({ rehearsalAuto: { on, speed } }); log(on ? `🎬 Αυτόματη πρόβα: ON (${speed === 'fast' ? 'γρήγορη' : 'κανονική'})` : '🎬 Αυτόματη πρόβα: OFF'); };
+  const FullAutoBar = botsOn && !mirror ? (
+    <div className="flex flex-wrap items-center gap-2 rounded-2xl bg-[#2de2ff]/15 px-3 py-2 text-sm" style={{ boxShadow: '0 0 0 1.5px rgba(45,226,255,.6)' }}>
+      <b>🎬 Αυτόματη πρόβα</b>
+      {!fullAllowed && <span className="text-xs opacity-75">(μόνο όταν παίζουν ΜΟΝΟ εικονικές)</span>}
+      {fullAllowed && (ra.on ? (
+        <>
+          <span className="text-xs opacity-80">{fullShown.label ? `${fullShown.label} σε ${Math.max(0, Math.ceil((fullShown.at + fullShown.wait - Date.now()) / 1000))}″` : 'περιμένει τις εικονικές…'}</span>
+          <Btn onClick={() => setFullAuto(true, ra.speed === 'fast' ? 'normal' : 'fast')}>{ra.speed === 'fast' ? '🐢 Κανονική' : '⚡ Γρήγορη'}</Btn>
+          <Btn color="bg-red-600" onClick={() => setFullAuto(false)}>■ Σταμάτα</Btn>
+        </>
+      ) : (
+        <>
+          <Btn color="bg-emerald-600" onClick={() => setFullAuto(true, 'normal')}>▶ Κανονική</Btn>
+          <Btn color="bg-amber-500" onClick={() => setFullAuto(true, 'fast')}>⚡ Γρήγορη (~10–15′)</Btn>
+        </>
+      ))}
+      {sessionCode && <a className="ml-auto text-xs underline" href={`/tv?code=${encodeURIComponent(sessionCode)}&view=wall`} target="_blank" rel="noreferrer">🪟 Παράθυρα στην TV ↗</a>}
+    </div>
+  ) : null;
+
+  const addBots = () => {
+    const bots = makeBots(players, Math.max(1, 4 - players.filter((p) => !p.bot).length));
+    if (!bots.length) return;
+    updateState?.({ players: [...players, ...bots] });
+    const at = Date.now();
+    setMg({ consent: { ...(mg.consent || {}), players: { ...((mg.consent || {}).players || {}), ...Object.fromEntries(bots.map((b) => [b.id, { confirmed: true, at, optOuts: [] }])) } } });
+    log(`🤖 Πρόβα: μπήκαν ${bots.length} εικονικές παίκτριες`);
+  };
+  const removeBots = () => { updateState?.({ players: players.filter((p) => !p.bot) }); log('🤖 Οι εικονικές παίκτριες βγήκαν'); };
+
   const rank = useMemo(() => (cg ? E.ranking(cg, players, { final: cg.status === 'finale' }) : []), [cg, players]);
 
   if (!cg) {
@@ -136,6 +236,23 @@ export default function ActCampaign({ ctx, updateState, onFinish }) {
             </div>
           ))}
         </div>
+        {sessionCode && !mirror && <ReadinessCheck state={state} sessionCode={sessionCode} />}
+        {/* 12.0.0 · Πρόβα χωρίς κόσμο */}
+        <div className="mvg-glass flex flex-col gap-2 p-4 sm:flex-row sm:items-center">
+          <div className="min-w-0 flex-1">
+            <div className="font-bold">🤖 Πρόβα με εικονικές παίκτριες</div>
+            <p className="text-sm opacity-75">Μπαίνουν «Ρομπο-» παίκτριες που ρίχνουν ζάρι, ανοίγουν κουτιά, ψηφίζουν και επιβεβαιώνουν ποινές μόνες τους. Δοκιμάζεις όλη τη βραδιά, TV και φώτα, χωρίς κόσμο.</p>
+          </div>
+          {botsOn ? <Btn onClick={removeBots}>Βγάλε τις εικονικές</Btn> : <Btn color="bg-amber-500" disabled={stopped} onClick={addBots}>🤖 Βάλε εικονικές</Btn>}
+        </div>
+        {botsOn && isFullAutoAllowed(players) && (
+          <div className="mvg-glass flex flex-wrap items-center gap-2 p-4">
+            <div className="min-w-0 flex-1"><div className="font-bold">🎬 Πλήρης αυτόματη πρόβα</div><p className="text-sm opacity-75">Όλη η ταινία τρέχει μόνη της (Γρήγορο σετ) και τη βλέπεις στην TV.</p></div>
+            <Btn color="bg-emerald-600" disabled={stopped} onClick={() => { start('quick'); setFullAuto(true, 'normal'); }}>▶ Κανονική</Btn>
+            <Btn color="bg-amber-500" disabled={stopped} onClick={() => { start('quick'); setFullAuto(true, 'fast'); }}>⚡ Γρήγορη</Btn>
+            {sessionCode && <a className="text-sm underline" href={`/tv?code=${encodeURIComponent(sessionCode)}&view=wall`} target="_blank" rel="noreferrer">🪟 Παράθυρα στην TV ↗</a>}
+          </div>
+        )}
       </Panel></div>
     );
   }
@@ -210,6 +327,7 @@ export default function ActCampaign({ ctx, updateState, onFinish }) {
       <div className="flex flex-wrap items-center gap-2 text-sm">
         {/* 11.0.0 · Κονσόλα σκηνοθέτη */}
         <span className="show-title text-[20px]">Κονσόλα</span>
+        {botsOn && <span className="rounded-full bg-[#2de2ff] px-2.5 py-0.5 text-xs font-black text-black" title="Παίζουν εικονικές παίκτριες">🤖 ΠΡΟΒΑ</span>}
         <span className="show-lower text-[13px]"><span className="flex items-center gap-1.5"><span className="gx-live-dot" />{status === 'active' ? 'ON AIR' : STATUS_LABEL[status]}</span></span>
         <span className="font-semibold">Πράξη {String(act.index + 1).padStart(2, '0')} / {String(act.total).padStart(2, '0')} · {act.info.name}</span>
         {act.day && <span className="opacity-60">Ημέρα {act.day}</span>}
@@ -258,6 +376,7 @@ export default function ActCampaign({ ctx, updateState, onFinish }) {
     <div className="mvg space-y-4">
       {firstArt('bg_tablet_console') && <div aria-hidden="true" className="mvg-bgimg" style={{ backgroundImage: `linear-gradient(180deg, rgba(5,5,8,.7), rgba(5,5,8,.94)), url("${firstArt('bg_tablet_console')}")` }} />}
       {Bar}
+      {FullAutoBar}
       {guideOn ? (() => {
         const g = movieGuideStep({ mg, players, stopped, nameOf });
         return (
@@ -268,8 +387,20 @@ export default function ActCampaign({ ctx, updateState, onFinish }) {
               <div className="show-title text-[22px]">{g.title}</div>
               <div className="text-sm opacity-80">{g.text}</div>
             </div>
-            <div className="flex shrink-0 flex-col gap-2">
+            <div className="flex shrink-0 flex-col items-end gap-2">
+              {(() => {
+                const plan = autopilotPlan(g, cg, { stopped, players });
+                const key = plan ? `${g.id}:${plan.action}:${plan.pid || ''}:${cg.act}:${cg.status}:${cg.board?.rolls || 0}` : '';
+                const due = autoOn && plan?.auto && autoCancel !== key && autoSince.key === key ? autopilotDueAt(plan, autoSince.at) : null;
+                return (
+                  <>
+                    {plan && <Btn color="bg-emerald-600" onClick={() => runPlan(plan)}>{plan.label}</Btn>}
+                    {due && <div className="text-right text-xs"><b className="show-led text-base">{Math.max(0, Math.ceil((due - Date.now()) / 1000))}″</b> αυτόματα · <button type="button" className="underline" onClick={() => setAutoCancel(key)}>Άκυρο</button></div>}
+                  </>
+                );
+              })()}
               {g.tab && g.tab !== screen && <Btn color="bg-amber-500" onClick={() => setScreen(g.tab)}>Πήγαινε εκεί →</Btn>}
+              <label className="flex cursor-pointer items-center gap-2 text-xs"><input type="checkbox" className="accent-[#ffd23f]" checked={autoOn} onChange={(e) => toggleAuto(e.target.checked)} />🤖 Αυτόματος πιλότος</label>
               <button type="button" className="text-xs opacity-60 underline" onClick={() => toggleGuide(false)}>Κρύψε τον οδηγό</button>
             </div>
           </div>
@@ -277,6 +408,7 @@ export default function ActCampaign({ ctx, updateState, onFinish }) {
       })() : (
         <div className="text-right"><button type="button" className="text-xs opacity-60 underline" onClick={() => toggleGuide(true)}>🧭 Δείξε τον οδηγό</button></div>
       )}
+      {sessionCode && !mirror && status === 'transition' && act.index === 0 && !cg.lastClosed && <ReadinessCheck state={state} sessionCode={sessionCode} compact />}
       <p className="rounded-xl bg-[#FF9F0A]/10 px-3 py-2 text-xs text-[#FFB340]">🛟 {MOVIE_SAFETY}</p>
 
       {screen === 1 && (

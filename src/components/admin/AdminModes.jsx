@@ -23,6 +23,21 @@ export default function AdminModes({ modeId }) {
   const [msg, setMsg] = useState(null);
   const [busy, setBusy] = useState(false);
   const [onlyMissing, setOnlyMissing] = useState(false);
+  const [q, setQ] = useState('');
+  const [gq, setGq] = useState('');
+  const norm = (v) => String(v ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase('el');
+  const textOfItem = (it) => (typeof it === 'string' ? it : Object.values(it || {}).filter((v) => typeof v === 'string' || typeof v === 'number').join(' '));
+  // 12.1: αναζήτηση σε ΟΛΕΣ τις λίστες (π.χ. «παγάκι» → Τροχός 1, κάρτες, κείμενα).
+  const globalHits = useMemo(() => {
+    const n = norm(gq.trim());
+    if (n.length < 2) return [];
+    const out = [];
+    visible.forEach((c) => {
+      const arr = saved[c.id] || c.arr;
+      (arr || []).forEach((it, i) => { if (norm(textOfItem(it)).includes(n)) out.push({ col: c, i, title: typeof it === 'string' ? it : (it.title || it.name || it.label || it.where || it.id || '') }); });
+    });
+    return out.slice(0, 40);
+  }, [gq, saved, visible]);
   const col = useMemo(() => COLLECTIONS.find((c) => c.id === sel), [sel]);
 
   useEffect(() => {
@@ -44,6 +59,8 @@ export default function AdminModes({ modeId }) {
     return Object.entries(g);
   }, [visible]);
 
+  // Κρύβεται από τη λίστα: «μόνο χωρίς εικόνα» ή δεν ταιριάζει με το φίλτρο.
+  const hiddenItem = (item) => (onlyMissing && !!item?.image) || (!!q.trim() && !norm(textOfItem(item)).includes(norm(q.trim())));
   const setItem = (i, v) => setList((l) => l.map((x, k) => (k === i ? v : x)));
   const move = (i, d) => setList((l) => { const j = i + d; if (j < 0 || j >= l.length) return l; const n = [...l]; [n[i], n[j]] = [n[j], n[i]]; return n; });
 
@@ -116,6 +133,16 @@ export default function AdminModes({ modeId }) {
 
       <ComicPanel className="bg-card space-y-2">
         <div className="font-heading text-lg">Λίστα προς επεξεργασία</div>
+        <input className={inp} value={gq} onChange={(e) => setGq(e.target.value)} placeholder="🔎 Αναζήτηση σε όλο το περιεχόμενο (π.χ. παγάκι, Καρέκλα, ζάρι)…" aria-label="Αναζήτηση σε όλο το περιεχόμενο" />
+        {globalHits.length > 0 && (
+          <div className="max-h-56 overflow-auto rounded-lg border border-border/40">
+            {globalHits.map((h) => (
+              <button key={`${h.col.id}-${h.i}`} type="button" className="block w-full truncate border-b border-border/30 px-3 py-1.5 text-left text-xs last:border-0 hover:bg-white/5" onClick={() => { setSel(h.col.id); setQ(String(h.title).slice(0, 40)); setGq(''); }}>
+                <b>{h.col.label}</b> · #{h.i + 1} · {String(h.title).slice(0, 80)}
+              </button>
+            ))}
+          </div>
+        )}
         <select className={inp} value={sel} onChange={(e) => setSel(e.target.value)}>
           {groups.map(([g, cs]) => (
             <optgroup key={g} label={g}>
@@ -124,6 +151,7 @@ export default function AdminModes({ modeId }) {
           ))}
         </select>
         <div className="text-xs opacity-70">{list.length} στοιχεία {saved[sel] ? '· έχει αλλαγές' : '· αρχικό περιεχόμενο'}</div>
+        <input className={inp} value={q} onChange={(e) => setQ(e.target.value)} placeholder="Φίλτρο μέσα στη λίστα…" aria-label="Φίλτρο λίστας" />
         {col?.fields?.some((f) => f.type === 'image') && (
           <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
             <span>📷 Με εικόνα: <b>{list.filter((x) => x?.image).length}/{list.length}</b> — εμφανίζεται στην κάρτα σε TV, Tablet και κινητό.</span>
@@ -137,7 +165,7 @@ export default function AdminModes({ modeId }) {
 
       {loaded && col && (
         <ComicPanel className="bg-card space-y-3">
-          {list.map((item, i) => (onlyMissing && item?.image) ? null : (
+          {list.map((item, i) => hiddenItem(item) ? null : (
             <div key={i} className="border-2 border-border/40 rounded-lg p-2.5 bg-secondary/40 space-y-2">
               <div className="text-[11px] opacity-60">#{i + 1}</div>
               <div className="grid gap-3 lg:grid-cols-2">
@@ -146,7 +174,7 @@ export default function AdminModes({ modeId }) {
                     ? <textarea rows={3} className={inp} value={item} onChange={(e) => setItem(i, e.target.value)} />
                     : col.fields.map((f) => renderField(item, f, (v) => setItem(i, v)))}
                 </div>
-                <CardPreviewPair card={cardFromItem(item, col.label)} />
+                <CardPreviewPair card={cardFromItem(item, item?.kind ? `${col.label} · ${item.kind}` : col.label)} />
               </div>
               <div className="flex gap-2">
                 <ComicButton size="sm" variant="dark" disabled={i === 0} onClick={() => move(i, -1)}>▲</ComicButton>

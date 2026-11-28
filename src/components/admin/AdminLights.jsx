@@ -8,7 +8,7 @@ import { getActiveSessionCode } from '@/lib/activeSession';
 
 const card = 'rounded-2xl bg-[#1C1C1E] p-4 text-white';
 const btn = 'rounded-full px-4 py-2 text-sm font-semibold disabled:opacity-40';
-const ROLE = { lamp: '💡 Λάμπα (ατμόσφαιρα)', strip: '🌈 LED ταινία (εφέ)', off: '⛔ Εκτός παιχνιδιού' };
+const ROLE = { lamp: '💡 Λάμπα (ατμόσφαιρα)', strip: '🌈 LED ταινία (εφέ)', tv: '📺 Samsung TV (ανοίγει μόνη στην αρχή)', off: '⛔ Εκτός παιχνιδιού' };
 const SCENES = [
   ['Κάθε ήπειρος', 'Δικό της χρώμα: Classic χρυσό · Arrest Heist κόκκινο/μπλε · Lockdown μωβ · Pajama ροζ · Villa τιρκουάζ'],
   ['🎡 Τροχός γυρίζει', 'Λάμπες χαμηλά, ταινίες αλλάζουν ροζ → μπλε → χρυσό'],
@@ -19,6 +19,8 @@ const SCENES = [
   ['🌙 Νύχτα', 'Σκοτεινό μωβ'],
   ['⏸ Διάλειμμα', 'Ζεστό λευκό χαμηλά'],
   ['👑 Φινάλε', 'Λάμπες χρυσές στο 100%, ταινίες γιορτινές'],
+  ['🎲 Σειρά παίκτριας', 'Στο ταμπλό, οι ταινίες παίρνουν το χρώμα της παίκτριας που έχει σειρά'],
+  ['📺 Samsung TV', 'Ανοίγει μόνη της μία φορά όταν ξεκινά η Ταινία (δεν κλείνει ποτέ αυτόματα)'],
   ['🛑 ΣΤΟΠ', 'Όλα ανάβουν σε δυνατό λευκό φως — πάντα, για ασφάλεια'],
 ];
 
@@ -124,7 +126,7 @@ export default function AdminLights() {
           <div className="mt-3 space-y-2">
             {st.devices.map((d) => (
               <div key={d.id} className="flex flex-col gap-2 rounded-xl bg-black/30 p-3 sm:flex-row sm:items-center">
-                <div className="min-w-0 flex-1"><b className="block truncate">{d.label}</b><span className="text-xs text-white/50">{d.caps.includes('colorControl') ? '🎨 χρώμα' : '⚪ χωρίς χρώμα'}{d.caps.includes('switchLevel') ? ' · ένταση' : ''}</span></div>
+                <div className="min-w-0 flex-1"><b className="block truncate">{d.label}</b><span className="text-xs text-white/50">{d.tv ? '📺 τηλεόραση · ' : ''}{d.caps.includes('colorControl') ? '🎨 χρώμα' : '⚪ χωρίς χρώμα'}{d.caps.includes('switchLevel') ? ' · ένταση' : ''}</span></div>
                 <select value={roles[d.id] || d.role} onChange={(e) => setRoles((r) => ({ ...r, [d.id]: e.target.value }))} className="rounded-xl bg-[#2C2C2E] px-3 py-2 text-sm">
                   {Object.entries(ROLE).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
                 </select>

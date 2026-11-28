@@ -19,7 +19,7 @@ import { BriefingTablet, PhaseGuideTablet, briefingPending } from '@/components/
 import { finalStandings, pointsOf } from '@/lib/modeRanking';
 
 // Tablet (game master) για τα ψηφιακά modes. Κάθε mode = λίστα από acts.
-export default function ModeGame({ state, updateState, onEnd, onQR, playerProfiles = [], playerProfilesReady = true }) {
+export default function ModeGame({ state, sessionCode = '', updateState, onEnd, onQR, playerProfiles = [], playerProfilesReady = true }) {
   const [, setContentReady] = useState(0);
   const [contentRev, setContentRev] = useState(0);
   const [showVip, setShowVip] = useState(false);
@@ -157,7 +157,7 @@ export default function ModeGame({ state, updateState, onEnd, onQR, playerProfil
       {act === 'beach' && <Panel title="Το mode αφαιρέθηκε" accent={theme.accent2}><p className="text-sm">Το Beach Bar Home Lockdown αφαιρέθηκε στην 7.5.0. Πάτα «Τέλος» για να κλείσει αυτή η παλιά παρτίδα.</p><button type="button" className="ui-btn ui-btn--primary" onClick={finishAll}>Τέλος</button></Panel>}
       {act === 'lounge' && <ActLounge ctx={ctx} state={state} onFinish={finishAll} />}
       {act === 'villa' && <ActVilla ctx={ctx} state={state} updateState={updateState} onFinish={finishAll} />}
-      {act === 'campaign' && <ActCampaign ctx={ctx} state={state} updateState={updateState} onFinish={finishAll} />}
+      {act === 'campaign' && <ActCampaign ctx={ctx} state={state} sessionCode={sessionCode} updateState={updateState} onFinish={finishAll} />}
     </ModeShell>
   );
 }

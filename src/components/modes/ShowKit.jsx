@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { WantedStars, ArtIcon, colorOf } from '@/components/modes/MovieGameUI';
 
 // 11.0.0 · Κομμάτια game show για την TV: podium διαγωνιζομένων, μαρκίζα με λαμπιόνια, κυλιόμενη μπάρα ειδήσεων.
@@ -9,6 +9,20 @@ const initial = (name = '') => (name.trim()[0] || '?').toUpperCase();
 // Σειρά από βάθρα. Η πρώτη στο κέντρο και ψηλότερα (σαν τηλεπαιχνίδι), οι υπόλοιπες εναλλάξ δεξιά/αριστερά.
 export function Podiums({ rank, players, u, highlight = null, compact = false }) {
   const n = rank.length;
+  // 12.0.0 · Ζωντανή κατάταξη: ποια ανέβηκε/έπεσε και πόσους πόντους πήρε (για 7″).
+  const prevRef = useRef(null);
+  const [moves, setMoves] = useState({});
+  const sig = rank.map((p) => `${p.id}:${p.score}`).join('|');
+  useEffect(() => {
+    const prev = prevRef.current;
+    const next = Object.fromEntries(rank.map((p, i) => [p.id, { i, score: p.score }]));
+    prevRef.current = next;
+    if (!prev) return;
+    const m = {};
+    rank.forEach((p, i) => { const o = prev[p.id]; if (o && (o.i !== i || o.score !== p.score)) m[p.id] = { d: o.i - i, delta: p.score - o.score, at: Date.now() }; });
+    if (Object.keys(m).length) setMoves((x) => ({ ...x, ...m }));
+  }, [sig]);
+  const now = Date.now();
   const centered = [];
   rank.forEach((p, i) => { if (i % 2) centered.push({ p, i }); else centered.unshift({ p, i }); }); // 1η στη μέση
   const base = compact || n > 6 ? 5 : 6;
@@ -19,7 +33,12 @@ export function Podiums({ rank, players, u, highlight = null, compact = false })
         const h = base - Math.min(i, 4) * 0.4;
         const pc = colorOf(players, p.id);
         return (
-          <div key={p.id} className={`show-podium ${lead ? 'is-lead' : ''}`} style={{ '--pc': pc, maxWidth: u(n > 6 ? 11 : 15) }}>
+          <div key={`${p.id}:${moves[p.id]?.at || 0}`} className={`show-podium ${lead ? 'is-lead' : ''} ${moves[p.id] && now - moves[p.id].at < 7000 ? (moves[p.id].d > 0 ? 'is-up' : moves[p.id].d < 0 ? 'is-down' : 'is-score') : ''}`} style={{ '--pc': pc, maxWidth: u(n > 6 ? 11 : 15) }}>
+            {moves[p.id] && now - moves[p.id].at < 7000 && (
+              <div className="show-move" style={{ fontSize: u(1.1), top: u(-3.2) }}>
+                {moves[p.id].d > 0 ? `▲${moves[p.id].d}` : moves[p.id].d < 0 ? `▼${-moves[p.id].d}` : ''}{moves[p.id].delta ? ` ${moves[p.id].delta > 0 ? '+' : ''}${moves[p.id].delta}` : ''}
+              </div>
+            )}
             <div className="relative flex items-center justify-center" style={{ marginBottom: u(-0.9), zIndex: 2 }}>
               <span className="gx-avatar" style={{ '--gx-c': pc, width: u(n > 6 ? 3.6 : 4.4), height: u(n > 6 ? 3.6 : 4.4), fontSize: u(n > 6 ? 1.6 : 2), borderWidth: 0, outline: highlight === p.id ? '4px solid #2de2ff' : 'none', outlineOffset: 4 }}>{initial(p.name)}</span>
               {lead && <span className="absolute" style={{ top: u(-2), fontSize: u(2) }} aria-hidden="true">👑</span>}

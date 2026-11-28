@@ -13,7 +13,7 @@ export function nightSession(sessions = []) {
   return open.sort((a, b) => time(b) - time(a))[0] || null;
 }
 
-export function computeReadiness({ sessions = [], media = null, backup, newRequests = null, pushDevices = null, connection = 'loading', now = Date.now() } = {}) {
+export function computeReadiness({ sessions = [], media = null, backup, newRequests = null, pushDevices = null, connection = 'loading', diskFree, phonesOnline = null, now = Date.now() } = {}) {
   const session = nightSession(sessions);
   const players = session?.state?.players || [];
   const mg = session?.state?.mg || {};
@@ -21,14 +21,14 @@ export function computeReadiness({ sessions = [], media = null, backup, newReque
   const add = (item) => items.push({ status: 'todo', ...item });
 
   add({
-    id: 'session', weight: 20, tab: 'show', fix: 'Άνοιγμα Live Show',
+    id: 'session', weight: 15, tab: 'studio', fix: 'Άνοιγμα Στούντιο',
     label: 'Παρτίδα της βραδιάς',
     status: session ? 'ok' : 'todo',
     detail: session ? `Κωδικός ${session.sessionCode || '—'}` : 'Δεν υπάρχει ανοιχτή παρτίδα. Ξεκίνα από το Tablet.',
   });
 
   add({
-    id: 'players', weight: 15, tab: 'players', fix: 'Παίκτριες',
+    id: 'players', weight: 10, tab: 'players', fix: 'Παίκτριες',
     label: 'Παίκτριες στην παρτίδα',
     status: !session ? 'todo' : players.length >= 2 ? 'ok' : 'todo',
     detail: !session ? 'Χρειάζεται πρώτα παρτίδα.' : players.length >= 2 ? `${players.length} παίκτριες` : `Μόνο ${players.length}. Χρειάζονται τουλάχιστον 2.`,
@@ -37,14 +37,14 @@ export function computeReadiness({ sessions = [], media = null, backup, newReque
   const needsConsent = !!mg.consentRequired;
   const confirmed = players.filter((p) => consentOf(mg, p.id).confirmed).length;
   add({
-    id: 'consent', weight: 15, tab: 'show', fix: 'Δες ποιες λείπουν',
+    id: 'consent', weight: 10, tab: 'show', fix: 'Δες ποιες λείπουν',
     label: 'Όρια & συναίνεση',
     status: !session ? 'todo' : !needsConsent || mg.consent?.done || allConfirmed(mg, players) ? 'ok' : 'todo',
     detail: !session ? 'Χρειάζεται πρώτα παρτίδα.' : !needsConsent ? 'Δεν ζητείται σε αυτή την παρτίδα.' : `${confirmed}/${players.length} επιβεβαίωσαν από το κινητό`,
   });
 
   add({
-    id: 'media', weight: 15, tab: 'media', fix: 'Χάρτης media',
+    id: 'media', weight: 10, tab: 'media', fix: 'Χάρτης media',
     label: 'Υποχρεωτικά media',
     status: !media ? 'unknown' : media.missingRequired === 0 ? 'ok' : 'todo',
     detail: !media ? 'Δεν ήταν δυνατός ο έλεγχος.' : media.missingRequired === 0 ? 'Όλα στη θέση τους' : `Λείπουν ${media.missingRequired}`,
@@ -55,6 +55,29 @@ export function computeReadiness({ sessions = [], media = null, backup, newReque
     label: 'Σβησμένα αρχεία',
     status: !media ? 'unknown' : media.broken === 0 ? 'ok' : 'todo',
     detail: !media ? 'Δεν ήταν δυνατός ο έλεγχος.' : media.broken === 0 ? 'Κανένα' : `${media.broken} θέσεις δείχνουν σε αρχείο που δεν υπάρχει`,
+  });
+
+  add({
+    id: 'recommended', weight: 5, tab: 'media', fix: 'Χάρτης media',
+    label: 'Προτεινόμενα media',
+    status: !media ? 'unknown' : (media.missingRecommended || 0) === 0 ? 'ok' : 'todo',
+    detail: !media ? 'Δεν ήταν δυνατός ο έλεγχος.' : (media.missingRecommended || 0) === 0 ? 'Όλα στη θέση τους' : `Λείπουν ${media.missingRecommended} (το παιχνίδι δουλεύει, αλλά με λιγότερες εικόνες)`,
+  });
+
+  if (session && players.length) {
+    add({
+      id: 'phones', weight: 10, tab: 'studio', fix: 'Στούντιο',
+      label: 'Κινητά συνδεδεμένα',
+      status: phonesOnline === null ? 'unknown' : phonesOnline >= players.length ? 'ok' : 'todo',
+      detail: phonesOnline === null ? 'Δεν ήταν δυνατός ο έλεγχος.' : `${phonesOnline}/${players.length} κινητά online${phonesOnline < players.length ? ' — όσες λείπουν: QR, όνομα, PIN' : ''}`,
+    });
+  }
+
+  add({
+    id: 'storage', weight: 5, tab: 'health', fix: 'Υγεία server',
+    label: 'Χώρος αποθήκευσης',
+    status: diskFree === undefined || diskFree === null ? 'unknown' : diskFree >= 300 * 1048576 ? 'ok' : 'todo',
+    detail: diskFree === undefined || diskFree === null ? 'Δεν ήταν δυνατός ο έλεγχος.' : `${Math.round(diskFree / 1048576)}MB ελεύθερα${diskFree < 300 * 1048576 ? ' — τα μεγάλα βίντεο μπορεί να μην ανεβαίνουν' : ''}`,
   });
 
   const backupAt = backup ? Number(backup.modified) || Date.parse(backup.modified) || 0 : 0;

@@ -267,3 +267,6 @@
 .studio-phone-grid { display: grid; gap: 10px; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); }
 .studio-phone-screen { border-radius: 16px; overflow: hidden; border: 2px solid #2C2C2E; background: #000; }
 .studio-dot { width: 8px; height: 8px; border-radius: 50%; background: #FF453A; display: inline-block; } .studio-dot.is-on { background: #30D158; }
+/* 12.0 · Πλαϊνό πάνελ του Στούντιο */
+.studio-drawer { grid-column: 1 / -1; background: #0f0f14; border: 1px solid rgba(232, 194, 107, .35); border-radius: 18px; padding: 10px; }
+.studio-drawer-body { max-height: 70vh; overflow: auto; border-radius: 14px; background: #000; padding: 8px; }

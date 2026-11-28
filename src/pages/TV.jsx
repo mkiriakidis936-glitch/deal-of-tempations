@@ -34,6 +34,11 @@ import IntroSequenceTV from '@/components/tv/IntroSequenceTV';
 import TVLaunchVideos from '@/components/tv/TVLaunchVideos';
 import TVShowVideos from '@/components/tv/TVShowVideos';
 import TVSoundscape from '@/components/tv/TVSoundscape';
+import TVAnnouncer from '@/components/tv/TVAnnouncer';
+import ShowModeHud, { TV_VIEW_PARAM } from '@/components/tv/ShowModeHud';
+import RehearsalWall from '@/components/tv/RehearsalWall';
+import { request } from '@/api/apiClient';
+import { isAudioUnlocked, onAudioUnlocked } from '@/lib/audioUnlock';
 import { currentAct } from '@/lib/campaignEngine';
 import { VideoPolicyProvider, isManualVideo } from '@/lib/videoPolicy';
 import TVProductionOutput from '@/components/tv/TVProductionOutput';
@@ -180,7 +185,18 @@ export default function TVScreen() {
     return () => { alive = false; unsub(); };
   }, [joinByCode]);
 
-  useAudioSync(state);
+  useAudioSync(TV_VIEW_PARAM === 'wall' ? null : state); // στα παράθυρα ο ήχος παίζει μόνο μέσα στο παράθυρο της TV
+
+  // 12.0.0 · Σήμα «η TV είναι ανοιχτή» για τον έλεγχο «Έτοιμοι για βραδιά;» (κάθε 15″, όχι σε προεπισκόπηση).
+  const tvCode = session?.sessionCode;
+  React.useEffect(() => {
+    if (!tvCode || IS_PREVIEW) return undefined;
+    const ping = () => request('POST', '/api/entities/tv-presence', { sessionCode: tvCode, sound: isAudioUnlocked(), w: window.innerWidth, h: window.innerHeight }).catch(() => {});
+    ping();
+    const t = setInterval(ping, 15000);
+    const unsub = onAudioUnlocked(ping);
+    return () => { clearInterval(t); unsub(); };
+  }, [tvCode]);
 
   React.useEffect(() => {
     const updateNetwork = () => setNetworkOnline(navigator.onLine);
@@ -243,9 +259,12 @@ export default function TVScreen() {
   // Αναμονή έναρξης: φωτογραφία της ενότητας «Προετοιμασία» (Classic) / «Alpha vs Beta» (Arrest Heist).
   const waitingArt = (isEngine ? modeArtUrl(state.mode, artSectionFor(state), state) : '') || PHOTO.tv || ART.heist5;
 
+  // 12.1.0 · Παράθυρα (πρόβα): TV + Tablet + κινητά σε μία οθόνη.
+  if (TV_VIEW_PARAM === 'wall') return <RehearsalWall session={session} state={state} />;
+
   return (
     <VideoPolicyProvider manual={manualVideo}>
-    <div className={`dot-tv-shell ui-tv min-h-screen text-foreground flex flex-col ${fullscreen ? 'dot-tv-fullscreen' : ''}`}>
+    <div className={`dot-tv-shell ui-tv show-stage min-h-screen text-foreground flex flex-col ${fullscreen ? 'dot-tv-fullscreen' : ''}`}>
       <ScreenWallpaper src={ART.wallpaperTv} />
       {!IS_PREVIEW && <SoundUnlock variant="screen" />}
       <div className="fixed inset-0 -z-10 pointer-events-none" style={{ opacity: engineArt ? 0.3 : 0.2 }}>
@@ -279,6 +298,8 @@ export default function TVScreen() {
         countdownSrc={IS_PREVIEW || manualVideo ? '' : FILM.countdownVideo}
         countdownStartedAt={state.countdownStartedAt}
       />
+      <ShowModeHud state={state} />
+      {state.mg?.cg && <TVAnnouncer cg={state.mg.cg} players={state.players || []} enabled={!!state.announcer} muted={IS_PREVIEW || !!state.stopActive || !!state.mg.stop} />}
       {state.mg?.cg && <TVSoundscape cg={state.mg.cg} continent={(() => { try { return currentAct(state.mg.cg).continent; } catch { return 'classic'; } })()} muted={IS_PREVIEW || !!state.stopActive || !!state.mg.stop || !!state.musicOff} />}
       <TVShowVideos disabled={IS_PREVIEW} cue={state.showCue} manual={manualVideo} mode={state.mode} />
       <GameIntroTV state={state} sessionCode={session.sessionCode} disabled={IS_PREVIEW || manualVideo} />

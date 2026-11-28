@@ -3,6 +3,8 @@ import * as E from '@/lib/campaignEngine';
 import { NAIL_COLORS, TOKEN_USES, WANTED_LEVELS, STATE_LABELS, VALUE_LABELS, STATUS_LABEL, BUYOUT_TOKENS, trialOf, cardOf } from '@/data/modes/campaignContent';
 import { useTick } from '@/lib/modeKit';
 import MovieShowMobile from '@/components/modes/MovieShowMobile';
+import BadgesMobile from '@/components/modes/BadgesMobile';
+import { playerBadges } from '@/lib/playerBadges';
 import { firstArt, actPhoneArt, contArt, trialArt, cardArt, nailArt } from '@/lib/movieArt';
 import { PlayerAvatar, ArtIcon, WantedStars, ContinentStrip, FlipCard, useDelta, DeltaBurst, colorOf } from '@/components/modes/MovieGameUI';
 
@@ -197,6 +199,11 @@ export default function CampaignMobile({ state, me, sendAction }) {
       </Card>
 
       {status === 'standby' && <Card tone="#14141C"><div className="text-lg font-bold">⏸ Η επόμενη πράξη δεν έχει ξεκινήσει ακόμη</div><div className="text-sm text-white/60">Κράτα το κινητό φορτισμένο — η ειδοποίηση έρχεται εδώ.</div></Card>}
+      {(() => {
+        const scoreOf = (id) => rank.find((p) => p.id === id)?.score || 0;
+        const mine = playerBadges(cg, players.filter((p) => !p.bot), { scoreOf })[me.id] || [];
+        return <BadgesMobile badges={mine} finale={status === 'finale'} card={{ name: me.name, position: myPos || '—', total: players.length, points: status === 'finale' ? E.finalScore(cg, me.id) : s.points, color: colorOf(players, me.id) }} />;
+      })()}
       {status === 'finale' && (
         <Card title="🎬 Η τελική σου κάρτα" tone="#2A2112">
           <div className="text-3xl font-black text-[#F7E3A8]">#{myPos} · {E.finalScore(cg, me.id)} πόντοι</div>

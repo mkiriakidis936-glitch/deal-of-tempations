@@ -32,6 +32,23 @@ export const CONTINENT_LIGHT = {
 
 export const MIN_CYCLE_MS = 6000;
 
+// 12.0.0 · Χρώμα παίκτριας στις LED ταινίες όταν έχει σειρά (ίδια σειρά με PLAYER_COLORS του MovieGameUI).
+export const PLAYER_HEX = ['#E8C26B', '#FF5A6E', '#C9B4FF', '#8FE3C6', '#64D2FF', '#FF9F6B', '#FF8FD1', '#7BE495', '#B9A0FF', '#FFD66B'];
+export function hexToLight(hex) {
+  const m = /^#?([0-9a-f]{6})$/i.exec(hex || '');
+  if (!m) return C.gold;
+  const n = parseInt(m[1], 16); const r = ((n >> 16) & 255) / 255; const g = ((n >> 8) & 255) / 255; const b = (n & 255) / 255;
+  const max = Math.max(r, g, b); const min = Math.min(r, g, b); const d = max - min;
+  let h = 0;
+  if (d) h = max === r ? ((g - b) / d) % 6 : max === g ? (b - r) / d + 2 : (r - g) / d + 4;
+  h = Math.round(((h * 60 + 360) % 360) / 3.6);
+  return { hue: h, saturation: 90 }; // τα παστέλ γίνονται έντονα, αλλιώς οι ταινίες βγαίνουν σχεδόν λευκές
+}
+const playerLight = (state, pid) => {
+  const i = (state.players || []).findIndex((p) => p.id === pid);
+  return i < 0 ? null : hexToLight(PLAYER_HEX[i % PLAYER_HEX.length]);
+};
+
 const light = (color, level, extra = {}) => ({ on: true, level, ...color, ...extra });
 const OFF = { on: false };
 
@@ -73,6 +90,13 @@ export function lightScene(state = {}, now = Date.now(), opts = {}) {
 
   // Νύχτα: πιο σκοτεινά.
   if (isNight(cg)) return { id: 'night', lamp: light(C.violet, 15), strip: light(pal.strip, 35) };
+  // Ταμπλό: οι ταινίες στο χρώμα της παίκτριας που έχει σειρά.
+  const b = cg.board;
+  if (b?.on && !b.pending && !b.allDone && Array.isArray(b.order) && b.order.length) {
+    const pid = b.order[((b.turn % b.order.length) + b.order.length) % b.order.length];
+    const pc = playerLight(state, pid);
+    if (pc) return { id: 'turn', lamp: light(pal.lamp, 50), strip: light(pc, 85), pid };
+  }
   return { id: 'act', lamp: light(pal.lamp, 50), strip: light(pal.strip, 75) };
 }
 

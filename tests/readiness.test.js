@@ -7,7 +7,9 @@ const players = [{ id: 'a', name: 'Α' }, { id: 'b', name: 'Β' }];
 const session = (extra = {}) => ({ id: 's1', sessionCode: 'ABCD', updated_date: '2026-11-28T19:00:00Z', state: { stage: 1, players, ...extra } });
 const allGood = {
   sessions: [session()],
-  media: { missingRequired: 0, broken: 0 },
+  media: { missingRequired: 0, missingRecommended: 0, broken: 0 },
+  diskFree: 5 * 1024 * 1048576,
+  phonesOnline: 2,
   backup: { modified: NOW - 3600000 },
   newRequests: 0,
   pushDevices: 3,
@@ -25,8 +27,8 @@ test('όλα έτοιμα → 100%', () => {
 test('χωρίς παρτίδα: πέφτουν παρτίδα, παίκτριες και συναίνεση', () => {
   const r = computeReadiness({ ...allGood, sessions: [] });
   assert.deepEqual(r.todo.map((i) => i.id).sort(), ['consent', 'players', 'session']);
-  assert.equal(r.score, 50);
-  assert.equal(r.items.find((i) => i.id === 'session').tab, 'show');
+  assert.equal(r.score, 61); // 55/90: χωρίς παρτίδα δεν μετρά ο έλεγχος «κινητά συνδεδεμένα»
+  assert.equal(r.items.find((i) => i.id === 'session').tab, 'studio');
 });
 
 test('συναίνεση που λείπει μετράει μόνο αν ζητείται', () => {
@@ -58,4 +60,13 @@ test('η παρτίδα της βραδιάς είναι η πιο πρόσφα�
 
 test('τα βάρη αθροίζουν 100', () => {
   assert.equal(computeReadiness(allGood).items.reduce((s, i) => s + i.weight, 0), 100);
+});
+
+test('12.0: λίγος χώρος και κινητά εκτός σύνδεσης ρίχνουν το ποσοστό και δείχνουν πού διορθώνονται', () => {
+  const r = computeReadiness({ ...allGood, diskFree: 100 * 1048576, phonesOnline: 1 });
+  const storage = r.items.find((i) => i.id === 'storage');
+  const phones = r.items.find((i) => i.id === 'phones');
+  assert.equal(storage.status, 'todo'); assert.equal(storage.tab, 'health');
+  assert.equal(phones.status, 'todo'); assert.equal(phones.tab, 'studio');
+  assert.equal(r.score, 85);
 });

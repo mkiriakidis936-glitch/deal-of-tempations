@@ -96,3 +96,20 @@ test('φώτα/server: μόνιμη σύνδεση — ανανέωση σε 401
   assert.equal(stored().auth.refreshToken, 'R2');
   assert.equal(stored().auth.accessToken, 'NEW');
 });
+
+test('φώτα/server: η Samsung TV ανοίγει μία φορά με την Ταινία, ποτέ δεν σβήνει', async (t) => {
+  t.mock.timers.enable({ apis: ['setTimeout', 'setInterval'] });
+  const TV = { items: [...DEVICES.items, { deviceId: 'TV1', label: 'Samsung QLED', components: [{ id: 'main', capabilities: [{ id: 'switch' }, { id: 'samsungvd.mediaInputSource' }] }] }] };
+  const { L, calls, clock } = rig({ responder: (url) => (url.endsWith('/v1/devices') ? { ok: true, status: 200, json: async () => TV } : null) });
+  await L.persist({ enabled: true, auth: { type: 'pat', token: 'w'.repeat(30), createdAt: clock.t } });
+  const devs = await L.discover();
+  assert.equal(devs.find((d) => d.id === 'TV1').role, 'tv');
+  const cg = startAct(initCampaign(players, { format: 'h48', now: clock.t - 60000 }), players, clock.t - 30000);
+  for (let i = 0; i < 3; i += 1) { L.onSession({ sessionCode: 'S', state: { mg: { cg } } }); await new Promise((r) => setImmediate(r)); t.mock.timers.tick(0); await new Promise((r) => setImmediate(r)); }
+  const tv = cmds(calls).filter((c) => c.url.includes('/TV1/'));
+  assert.equal(tv.length, 1);
+  assert.deepEqual(tv[0].body.commands.map((c) => c.command), ['on']);
+  await L.test(null, 'off'); clock.t += 10000; t.mock.timers.tick(10000); await new Promise((r) => setImmediate(r));
+  assert.equal(cmds(calls).filter((c) => c.url.includes('/TV1/')).length, 1); // «Σβήσε όλα» δεν σβήνει την TV
+  L.stop();
+});

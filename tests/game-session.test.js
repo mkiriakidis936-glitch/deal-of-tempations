@@ -498,3 +498,23 @@ test('Ενέργειες κινητού: κινητό με λάθος ρολόι
   assert.equal(isReplayedAction({}, { playerId: 'p1', type: 'cg_roll', at: phoneNow - 300 }, null), false);
   assert.equal(isReplayedAction({}, { playerId: 'p1', type: 'cg_roll', at: phoneNow - 60_000 }, phoneNow), true, 'ξεχασμένη σε ουρά 60″');
 });
+
+test('12.0 · Ψεύτικα κινητά: διαλέγουν την ίδια ενέργεια που θα έκανε ένα κινητό', async () => {
+  const E = await import('../src/lib/campaignEngine.js');
+  const B = await import('../src/lib/movieBoardEngine.js');
+  const G = await import('../src/lib/movieGamesEngine.js');
+  const { nextBotAction } = await import('../src/lib/movieBots.js');
+  const ps = [{ id: 'a', name: 'A' }, { id: 'b', name: 'B' }];
+  let cg = B.boardStart(E.startAct(E.initCampaign(ps, { format: 'quick', now: 1 }), ps), ps);
+  const t = B.turnPid(cg);
+  assert.deepEqual(nextBotAction({ players: ps, mg: { cg } }, ['a', 'b']), { playerId: t, type: 'cg_roll' });
+  cg = G.todStart(cg, 'a');
+  assert.equal(nextBotAction({ players: ps, mg: { cg } }, ['a']).type, 'cg_tod');
+  assert.equal(nextBotAction({ players: ps, stopActive: true, mg: { cg } }, ['a']), null, 'ΣΤΟΠ: τίποτα');
+});
+
+test('12.2 · Ιστορικό αλλαγών: ο server γνωρίζει ποιες ρυθμίσεις κρατά σε εκδόσεις', async () => {
+  const { VERSIONED_SETTING_KEYS, isAdminOnlySetting } = await import('../server/entities.js');
+  for (const k of ['media_overrides', 'site_content', 'modes_content', 'admin_form_questions']) assert.ok(VERSIONED_SETTING_KEYS.includes(k), k);
+  assert.equal(isAdminOnlySetting('AppSetting', { key: 'admin_setting_versions_media_overrides' }), true, 'οι εκδόσεις δεν διαβάζονται δημόσια');
+});

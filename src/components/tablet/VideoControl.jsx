@@ -60,6 +60,15 @@ export default function VideoControl({ state, updateState }) {
                 <input type="checkbox" role="switch" className="h-6 w-11 shrink-0 accent-[#E8C26B]" checked={!state.musicOff} onChange={(e) => updateState({ musicOff: !e.target.checked })} />
               </label>
             )}
+            {state?.mg?.cg && (
+              <label className="mt-3 flex cursor-pointer items-center justify-between gap-3 rounded-2xl bg-black/30 px-4 py-3">
+                <span className="min-w-0">
+                  <span className="block font-semibold">🎙️ Εκφωνητής</span>
+                  <span className="block text-xs text-white/55">Η TV λέει τις μεγάλες στιγμές (πράξη, Τροχός, Deal, φινάλε) με την ελληνική φωνή της συσκευής, αν έχει. Αλλιώς σιωπά.</span>
+                </span>
+                <input type="checkbox" role="switch" className="h-6 w-11 shrink-0 accent-[#E8C26B]" checked={!!state.announcer} onChange={(e) => updateState({ announcer: e.target.checked })} />
+              </label>
+            )}
             <button type="button" onClick={stop} className="mt-3 h-12 w-full rounded-full bg-[#FF453A] text-base font-bold">■ Σταμάτα ό,τι παίζει</button>
             {!count && <p className="mt-4 text-sm text-white/60">Δεν έχουν ανέβει βίντεο. Admin → Φωτογραφίες & βίντεο → Χάρτης.</p>}
             {available.map((g) => (

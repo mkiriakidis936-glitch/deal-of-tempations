@@ -43,8 +43,8 @@ export default function AdminNav({ groups, active, onChange }) {
 
 const PRIMARY_TABS = [
   { id: 'dashboard', label: 'Αρχική', icon: LayoutDashboard },
-  { id: 'show', label: 'Live', icon: Radio },
-  { id: 'modes', label: 'Κάρτες', icon: Layers },
+  { id: 'studio', label: 'Στούντιο', icon: Radio },
+  { id: 'modes', label: 'Περιεχόμενο', icon: Layers },
   { id: 'inbox', label: 'Αιτήσεις', icon: Inbox },
 ];
 

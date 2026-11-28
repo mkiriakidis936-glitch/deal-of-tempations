@@ -5,11 +5,11 @@ import { migrate, pool } from './db.js';
 import { attachUser, authRoutes, issueStreamTicket } from './auth.js';
 import { entityRoutes, closeAllStreams } from './entities.js';
 import { functionRoutes } from './functions.js';
-import { mediaRoutes, mediaStatic } from './media.js';
+import { mediaRoutes, mediaStatic, UPLOAD_DIR } from './media.js';
 import { brandingRoutes } from './branding.js';
 import { pushRoutes } from './push.js';
 import { visitRoutes } from './visits.js';
-import { backupRoutes, startAutoBackup } from './backup.js';
+import { backupRoutes, startAutoBackup, BACKUP_DIR } from './backup.js';
 import { cameraRoutes } from './camera.js';
 import { lightRoutes, lights } from './lights.js';
 import { onSessionChange } from './entities.js';
@@ -34,6 +34,29 @@ app.use(express.json({ limit: '2mb' }));
 app.use(attachUser);
 
 app.get('/api/health', (_req, res) => res.json({ ok: true }));
+
+// 12.0 · Υγεία server για το Admin (μόνο admin): έκδοση, χρόνος λειτουργίας, μνήμη, βάση, χώρος αποθήκευσης.
+app.get('/api/admin/health', async (req, res) => {
+  if (req.user?.role !== 'admin') return res.status(req.user ? 403 : 401).json({ error: 'Unauthorized' });
+  const out = { version: PACKAGE_VERSION, uptimeSec: Math.round(process.uptime()), node: process.version, memoryMB: Math.round(process.memoryUsage().rss / 1048576), now: Date.now() };
+  const t0 = Date.now();
+  try {
+    const { rows } = await pool.query("SELECT entity, count(*)::int AS n FROM records GROUP BY entity");
+    out.db = { ok: true, latencyMs: Date.now() - t0, records: Object.fromEntries(rows.map((r) => [r.entity, r.n])) };
+  } catch (e) { out.db = { ok: false, error: e.message }; }
+  const dirSize = async (dir) => {
+    try {
+      const names = await fs.promises.readdir(dir);
+      let size = 0; let files = 0;
+      for (const n of names) { if (n.startsWith('.')) continue; try { const st = await fs.promises.stat(path.join(dir, n)); if (st.isFile()) { size += st.size; files += 1; } } catch { /* αγνόησε */ } }
+      return { size, files };
+    } catch { return null; }
+  };
+  out.uploads = await dirSize(UPLOAD_DIR);
+  out.backups = await dirSize(BACKUP_DIR);
+  try { const st = await fs.promises.statfs(UPLOAD_DIR); out.disk = { free: st.bavail * st.bsize, total: st.blocks * st.bsize }; } catch { out.disk = null; }
+  res.set('Cache-Control', 'no-store').json(out);
+});
 
 const PACKAGE_VERSION = JSON.parse(fs.readFileSync(path.resolve(import.meta.dirname, '..', 'package.json'), 'utf8')).version;
 const startedAt = new Date().toISOString();

@@ -36,6 +36,13 @@ if (typeof document !== 'undefined') {
   document.addEventListener('keydown', onGesture, { capture: true });
 }
 
+// 12.0.0 · Ειδοποίηση μία φορά όταν ξεκλειδωθεί ο ήχος (για το σήμα της TV).
+export function onAudioUnlocked(fn) {
+  const once = (v) => { if (v) fn(); };
+  listeners.add(once);
+  return () => listeners.delete(once);
+}
+
 export function useAudioUnlocked() {
   const [value, setValue] = useState(unlocked);
   useEffect(() => {

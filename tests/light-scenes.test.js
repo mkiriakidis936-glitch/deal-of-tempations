@@ -53,3 +53,12 @@ test('φώτα: εντολές SmartThings ανά δυνατότητα συσκ�
   assert.deepEqual(commandsFor({ on: false }, all).map((c) => c.command), ['off']);
   assert.equal(commandsFor({ on: true, level: 0 }, all).find((c) => c.command === 'setLevel').arguments[0], 1);
 });
+
+test('φώτα: στο ταμπλό οι ταινίες παίρνουν το χρώμα της παίκτριας που έχει σειρά', () => {
+  const cg = { ...active(), board: { on: true, order: ['b', 'a'], turn: 0, pending: null, allDone: false } };
+  const s = lightScene({ players, mg: { cg } }, now);
+  assert.equal(s.id, 'turn'); assert.equal(s.pid, 'b');
+  assert.equal(s.strip.saturation, 90);
+  const s2 = lightScene({ players, mg: { cg: { ...cg, board: { ...cg.board, turn: 1 } } } }, now);
+  assert.notEqual(s2.strip.hue, s.strip.hue);
+});

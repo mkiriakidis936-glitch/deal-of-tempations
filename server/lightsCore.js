@@ -10,6 +10,7 @@ export const DEVICE_MIN_GAP_MS = 5000; // ≤ 12 εντολές/λεπτό αν�
 export const BACKOFF_MS = 30000; // μετά από 429
 export const PAT_TTL_MS = 24 * 3600 * 1000; // τα Personal Access Tokens λήγουν σε 24 ώρες
 const LIGHT_CAPS = ['switch', 'switchLevel', 'colorControl', 'colorTemperature'];
+const TV_CAPS = ['samsungvd.mediaInputSource', 'mediaInputSource', 'tvChannel', 'samsungvd.ambient', 'samsungvd.remoteControl', 'custom.launchapp'];
 
 export const defaultConfig = () => ({ enabled: false, calm: false, auth: null, devices: [], lastError: '', lastOkAt: 0 });
 
@@ -21,7 +22,7 @@ export function publicStatus(cfg, now = Date.now()) {
   if (a?.type === 'oauth') auth = { type: 'oauth', connected: !!a.refreshToken, clientId: a.clientId ? `${a.clientId.slice(0, 6)}…` : '', expiresAt: a.expiresAt || 0 };
   return {
     enabled: !!cfg.enabled, calm: !!cfg.calm, auth,
-    devices: (cfg.devices || []).map(({ id, label, role, caps, room }) => ({ id, label, role, caps, room })),
+    devices: (cfg.devices || []).map(({ id, label, role, caps, room, tv }) => ({ id, label, role, caps, room, tv: !!tv })),
     lastError: cfg.lastError || '', lastOkAt: cfg.lastOkAt || 0,
   };
 }
@@ -88,13 +89,16 @@ export function createLights({ load, save, fetchImpl = (...a) => fetch(...a), no
     const list = await api('/v1/devices');
     const prev = new Map(((await getCfg()).devices || []).map((d) => [d.id, d]));
     const devices = (list.items || []).map((d) => {
-      const caps = [...new Set((d.components || []).filter((c) => c.id === 'main').flatMap((c) => (c.capabilities || []).map((x) => x.id)))].filter((c) => LIGHT_CAPS.includes(c));
+      const raw = [...new Set((d.components || []).filter((c) => c.id === 'main').flatMap((c) => (c.capabilities || []).map((x) => x.id)))];
+      const caps = raw.filter((c) => LIGHT_CAPS.includes(c));
       if (!caps.includes('switch')) return null;
       const old = prev.get(d.deviceId);
-      // Μαντεύουμε ρόλο: «strip/ταινία/led» → ταινία, αλλιώς λάμπα αν έχει χρώμα/ένταση. Ο χρήστης τον αλλάζει.
       const name = `${d.label || d.name || ''}`;
-      const guess = /strip|ταιν|led|light ?strip|tape/i.test(name) ? 'strip' : (caps.includes('colorControl') || caps.includes('switchLevel') ? 'lamp' : 'off');
-      return { id: d.deviceId, label: name || d.deviceId, room: d.roomId || '', caps, role: old?.role || guess };
+      const lightLike = caps.includes('colorControl') || caps.includes('switchLevel');
+      const isTv = raw.some((c) => TV_CAPS.includes(c)) || d.ocf?.ocfDeviceType === 'oic.d.tv' || (!lightLike && /\b(tv|τηλεόραση)\b/i.test(name));
+      // Μαντεύουμε ρόλο: TV · «strip/ταινία/led» → ταινία · αλλιώς λάμπα αν έχει χρώμα/ένταση. Ο χρήστης τον αλλάζει.
+      const guess = isTv ? 'tv' : /strip|ταιν|led|light ?strip|tape/i.test(name) ? 'strip' : (caps.includes('colorControl') || caps.includes('switchLevel') ? 'lamp' : 'off');
+      return { id: d.deviceId, label: name || d.deviceId, room: d.roomId || '', caps, tv: isTv, role: old?.role || guess };
     }).filter(Boolean);
     await persist({ devices, lastError: '', lastOkAt: now() });
     return devices;
@@ -154,9 +158,19 @@ export function createLights({ load, save, fetchImpl = (...a) => fetch(...a), no
     if (scene) await apply(scene);
     return scene;
   }
+  const tvOnFor = new Set(); // συνεδρίες όπου ανοίξαμε ήδη την TV (μία φορά, ποτέ κλείσιμο)
+  async function tvOn(code) {
+    const c = await getCfg();
+    if (!c.enabled || !c.auth || tvOnFor.has(code)) return;
+    const tvs = (c.devices || []).filter((d) => d.role === 'tv');
+    if (!tvs.length) return;
+    tvOnFor.add(code);
+    for (const d of tvs) schedule(d, { on: true }, { force: true });
+  }
   function onSession(record) {
     if (!record?.state) return;
     driving = { code: record.sessionCode, state: record.state };
+    if (record.state.mg?.cg && record.state.lightsOn !== false) tvOn(record.sessionCode).catch(() => {});
     evaluate().catch(() => {});
     if (!tick) { tick = setInterval(() => evaluate().catch(() => {}), 1000); tick.unref?.(); } // για τις χρονικές μεταβάσεις (π.χ. τέλος περιστροφής Τροχού)
   }
@@ -167,7 +181,10 @@ export function createLights({ load, save, fetchImpl = (...a) => fetch(...a), no
       normal: { lamp: { on: true, level: 90, kelvin: 2700 }, strip: { on: true, level: 60, kelvin: 2700 } },
       off: { lamp: { on: false }, strip: { on: false } } }[sceneId] || null;
     const c = await getCfg();
-    for (const d of c.devices || []) if (!role || d.role === role || d.id === role) schedule(d, palette && (d.role === 'strip' ? palette.strip : palette.lamp), { force: true });
+    for (const d of c.devices || []) {
+      if (d.role === 'tv') { if (d.id === role && sceneId === 'test') schedule(d, { on: true }, { force: true }); continue; } // η TV δεν σβήνει/χρωματίζεται ποτέ
+      if (!role || d.role === role || d.id === role) schedule(d, palette && (d.role === 'strip' ? palette.strip : palette.lamp), { force: true });
+    }
   }
 
   function stop() { if (tick) clearInterval(tick); tick = null; for (const s of dev.values()) if (s.timer) clearTimeout(s.timer); dev.clear(); }

@@ -46,7 +46,8 @@
 :root:not(:has(#admin-root)) body { background: var(--show-ink); }
 
 /* ---------- Σκηνή στούντιο ---------- */
-.show-stage { position: relative; isolation: isolate; background: var(--show-stage); color: #fff; font-family: var(--show-font); overflow: hidden; }
+.show-stage { isolation: isolate; background: var(--show-stage); color: #fff; font-family: var(--show-font); overflow: hidden; }
+.show-stage:not(.absolute):not(.fixed):not(.sticky) { position: relative; } /* μην ακυρώνει absolute/fixed (κάρτα πράξης, hero, 2η οθόνη) */
 .show-stage::before { /* δέσμες προβολέων */
   content: ''; position: absolute; inset: -10% -10% 30%; z-index: -1; pointer-events: none;
   background:
@@ -288,3 +289,35 @@
 .dot-site [class*="bg-[#E8C26B]"]:not([class*="rounded-full"]) { background-color: #ffd23f !important; }
 .dot-site [class*="text-[#E8C26B]"] { color: #ffd23f !important; }
 .dot-site header, .dot-site nav { font-family: var(--show-font-display); }
+
+/* 12.0.0 · Ζωντανή κατάταξη: ετικέτα ▲/▼ και αναπήδηση βάθρου */
+.show-move { position: absolute; left: 50%; transform: translateX(-50%); z-index: 5; white-space: nowrap; padding: 0.15em 0.7em; border-radius: 999px; font-family: var(--show-font-display); font-weight: 900; font-style: italic; color: #1a0640; background: linear-gradient(180deg, #c8ffe0, #2cff8f); box-shadow: 0 0 18px rgba(44, 255, 143, 0.7); }
+.show-podium.is-down .show-move { background: linear-gradient(180deg, #ffb3c4, #ff2d55); color: #fff; box-shadow: 0 0 18px rgba(255, 45, 85, 0.7); }
+@keyframes show-climb { 0% { transform: translateY(40px); } 40% { transform: translateY(-26px); } 70% { transform: translateY(6px); } 100% { transform: translateY(0); } }
+@keyframes show-drop { 0% { transform: translateY(-20px); } 60% { transform: translateY(10px); } 100% { transform: translateY(0); } }
+@keyframes show-pop { 0% { transform: translateX(-50%) scale(0.3); opacity: 0; } 60% { transform: translateX(-50%) scale(1.2); opacity: 1; } 100% { transform: translateX(-50%) scale(1); } }
+@media (prefers-reduced-motion: no-preference) {
+  :root:not(#dt-m1):not(#dt-m2) .show-podium.is-up, :root:not(#dt-m1):not(#dt-m2) .show-podium.is-score { animation: show-climb 0.9s cubic-bezier(.3, 1.4, .5, 1) both !important; }
+  :root:not(#dt-m1):not(#dt-m2) .show-podium.is-down { animation: show-drop 0.7s ease-out both !important; }
+  :root:not(#dt-m1):not(#dt-m2) .show-move { animation: show-pop 0.6s cubic-bezier(.3, 1.5, .5, 1) both !important; }
+}
+
+/* ==========================================================================
+   12.0.0 · Game show σε ΟΛΕΣ τις TV (Classic, Heist, Pajama, Marathon, νέα modes)
+   ========================================================================== */
+.ui-tv.show-stage { background: var(--show-stage) !important; }
+.ui-tv .ui-card {
+  border: 0 !important; border-radius: 22px;
+  background: linear-gradient(180deg, rgba(58, 22, 150, 0.82) 0%, rgba(24, 9, 72, 0.9) 55%, rgba(12, 4, 40, 0.94) 100%) !important;
+  box-shadow: 0 0 0 2px rgba(120, 180, 255, 0.4), 0 0 0 5px rgba(20, 8, 60, 0.85), 0 0 26px rgba(45, 226, 255, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.26) !important;
+}
+.ui-tv .ui-card--gold { box-shadow: 0 0 0 2px rgba(255, 210, 63, 0.8), 0 0 0 5px rgba(50, 20, 4, 0.85), 0 0 30px rgba(255, 170, 0, 0.4) !important; background: linear-gradient(180deg, rgba(110, 50, 10, 0.85), rgba(40, 14, 4, 0.92)) !important; }
+.ui-tv .ui-card--danger { box-shadow: 0 0 0 2px rgba(255, 47, 179, 0.75), 0 0 0 5px rgba(40, 6, 40, 0.85), 0 0 30px rgba(255, 47, 179, 0.4) !important; background: linear-gradient(180deg, rgba(120, 14, 90, 0.85), rgba(40, 6, 50, 0.92)) !important; }
+.ui-tv .ui-tv-title, .ui-tv h1, .ui-tv h2 { font-family: var(--show-font-display) !important; font-style: italic; font-weight: 900 !important; text-transform: uppercase; }
+.ui-tv .ui-tv-title--xl {
+  background: linear-gradient(180deg, #ffffff 0%, #fff4b8 30%, #ffd23f 55%, #ff9a00 100%); -webkit-background-clip: text; background-clip: text; color: transparent !important;
+  filter: drop-shadow(0 0.04em 0 #a1270b) drop-shadow(0 0.08em 0 #5c0f2e) drop-shadow(0 0 0.4em rgba(255, 47, 179, 0.45));
+}
+.ui-tv .ui-tv-eyebrow { font-family: var(--show-font-display); font-style: italic; font-weight: 800; color: var(--show-cyan) !important; text-shadow: 0 0 12px rgba(45, 226, 255, 0.6); }
+.ui-tv .ui-tv-num, .ui-tv .font-mono.tabular-nums { font-family: var(--show-font-display) !important; color: #ffe066; text-shadow: 0 0 6px rgba(255, 210, 63, 0.9), 0 0 18px rgba(255, 140, 0, 0.6); }
+.ui-tv .bg-black:not(.fixed) { background-color: rgba(12, 4, 40, 0.88) !important; }

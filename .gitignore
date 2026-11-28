@@ -79,3 +79,7 @@ data-export/
 # local backups / uploads (στο Railway ζουν στο Volume)
 /backups
 /uploads
+
+# υπόλοιπα από εφαρμογή patch
+*.orig
+*.rej

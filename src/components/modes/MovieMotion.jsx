@@ -142,7 +142,7 @@ export function useBuzz(at, pattern, { fresh = 8000, off = false, delay = 0 } = 
     const wait = Math.max(0, at + delay - Date.now());
     const t = setTimeout(() => vibrate(pattern), wait);
     return () => clearTimeout(t);
-  }, [at]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [at]);
 }
 
 // Το ζάρι κυλά στο κινητό, μετά εμφανίζεται το τετράγωνο. Ίδια διάρκεια με την TV (2,4″).

@@ -5,7 +5,7 @@ import { request } from '@/api/apiClient';
 import { fetchOverrides } from '@/lib/media';
 import { listMedia } from '@/lib/media';
 import { buildMediaManifest, manifestSummary } from '@/lib/mediaManifest';
-import { computeReadiness } from '@/lib/readiness';
+import { computeReadiness, nightSession } from '@/lib/readiness';
 import { AdminReadiness } from '@/components/admin/AdminGameUI';
 
 const QUICK_LINKS = [
@@ -32,7 +32,8 @@ export default function AdminOverview({ sessions = [], loading = false, onNaviga
       request('GET', '/api/backup/list'),
       request('GET', '/api/push/status'),
       Promise.all([fetchOverrides(), listMedia().catch(() => null)]),
-    ]).then(([achievements, requests, vip, backup, push, media]) => {
+      request('GET', '/api/admin/health'),
+    ]).then(([achievements, requests, vip, backup, push, media, health]) => {
       if (!mounted) return;
       setExtra({
         achievements: achievements.status === 'fulfilled' ? (achievements.value.items || []).length : null,
@@ -42,6 +43,7 @@ export default function AdminOverview({ sessions = [], loading = false, onNaviga
         backup: backup.status === 'fulfilled' ? (backup.value.items || []).sort((a, b) => Number(b.modified) - Number(a.modified))[0] || null : undefined,
         pushDevices: push.status === 'fulfilled' ? (push.value.devices || []).length : null,
         media: media.status === 'fulfilled' ? manifestSummary(buildMediaManifest(media.value[0]?.value || {}, media.value[1])) : null,
+        diskFree: health.status === 'fulfilled' ? (health.value.disk ? health.value.disk.free : null) : undefined,
       });
     });
     return () => { mounted = false; };
@@ -53,7 +55,18 @@ export default function AdminOverview({ sessions = [], loading = false, onNaviga
     return { active, finished };
   }, [sessions]);
   const recent = sessions.slice(0, 5);
-  const readiness = useMemo(() => computeReadiness({ sessions, media: extra.media, backup: extra.backup, newRequests: extra.newRequests, pushDevices: extra.pushDevices, connection: extra.connection }), [sessions, extra]);
+  // Κινητά online για την παρτίδα της βραδιάς (ανανέωση κάθε 15″).
+  const [phonesOnline, setPhonesOnline] = useState(null);
+  const nightCode = nightSession(sessions)?.sessionCode || '';
+  useEffect(() => {
+    if (!nightCode) { setPhonesOnline(null); return undefined; }
+    let alive = true;
+    const load = () => request('GET', `/api/entities/player-presence/${encodeURIComponent(nightCode)}`).then(({ players = [] }) => { if (alive) setPhonesOnline(players.length); }).catch(() => { if (alive) setPhonesOnline(null); });
+    load();
+    const id = setInterval(load, 15000);
+    return () => { alive = false; clearInterval(id); };
+  }, [nightCode]);
+  const readiness = useMemo(() => computeReadiness({ sessions, media: extra.media, backup: extra.backup, newRequests: extra.newRequests, pushDevices: extra.pushDevices, connection: extra.connection, diskFree: extra.diskFree, phonesOnline }), [sessions, extra, phonesOnline]);
   const upcomingEvent = sessions.filter((session) => session.event?.scheduledAt && Date.parse(session.event.scheduledAt) >= Date.now()).sort((a, b) => Date.parse(a.event.scheduledAt) - Date.parse(b.event.scheduledAt))[0] || recent[0] || null;
   const playerCount = new Set(sessions.flatMap((session) => (session.state?.players || []).map((player) => player.id || player.name).filter(Boolean).map((value) => String(value).trim().toLowerCase()))).size;
   const dateLabel = (value) => {

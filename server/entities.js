@@ -608,8 +608,31 @@ export function isReplayedAction(state, action, clientNow = null) {
   const sentAt = Number(clientNow);
   return at <= seen || (Number.isFinite(sentAt) && sentAt > 0 && at < sentAt - PLAYER_ACTION_STALE_MS);
 }
+// 12.2 · Ρυθμίσεις με αυτόματο ιστορικό εκδόσεων (ίδια μορφή με src/lib/adminVersionHistory.js).
+export const VERSIONED_SETTING_KEYS = ['media_overrides', 'site_content', 'modes_content', 'admin_form_questions', 'admin_global_design', 'admin_custom_scenarios', 'achievement_definitions', 'custom_board_modes'];
+const VERSION_LIMIT = 30;
+const VERSION_COALESCE_MS = 2 * 60 * 1000; // πολλές αλλαγές μέσα σε 2′ (π.χ. ανέβασμα 200 αρχείων) = μία έκδοση
+export async function snapshotSettingBeforeChange(recordId, changedBy = 'Admin', now = Date.now()) {
+  const { rows } = await query("SELECT data FROM records WHERE id = $1 AND entity = 'AppSetting'", [recordId]);
+  const current = rows[0]?.data;
+  if (!current || !VERSIONED_SETTING_KEYS.includes(current.key) || current.value === undefined) return false;
+  const histKey = `admin_setting_versions_${current.key}`;
+  const { rows: hist } = await query("SELECT id, data FROM records WHERE entity = 'AppSetting' AND data->>'key' = $1 LIMIT 1", [histKey]);
+  const items = Array.isArray(hist[0]?.data?.value?.items) ? hist[0].data.value.items : [];
+  const last = items[0];
+  if (last && now - Date.parse(last.createdAt || 0) < VERSION_COALESCE_MS && last.auto) return false;
+  // Ίδιο περιεχόμενο με την τελευταία έκδοση (π.χ. η «Επαναφορά» την κράτησε ήδη) → όχι διπλή έκδοση.
+  if (last && JSON.stringify(last.value) === JSON.stringify(current.value)) return false;
+  const number = items.reduce((max, it) => Math.max(max, Number(it.number) || 0), items.length) + 1;
+  const snap = { id: `${now}-${crypto.randomBytes(3).toString('hex')}`, number, createdAt: new Date(now).toISOString(), changedBy: changedBy || 'Admin', note: 'Αυτόματα, πριν από αλλαγή', auto: true, value: current.value };
+  const value = { items: [snap, ...items].slice(0, VERSION_LIMIT) };
+  if (hist[0]) await query("UPDATE records SET data = jsonb_set(data, '{value}', $1::jsonb), updated_date = now() WHERE id = $2", [JSON.stringify(value), hist[0].id]);
+  else await query("INSERT INTO records (id, entity, data) VALUES ($1, 'AppSetting', $2)", [crypto.randomUUID(), JSON.stringify({ key: histKey, value })]);
+  return true;
+}
 const PLAYER_ACTION_HOLD_MS = 10_000; // πόσο «κρατά» μια αδιάβαστη ενέργεια κινητού πριν επιτραπεί να αντικατασταθεί
 const playerPresence = new Map(); // sessionCode -> Map<playerId, lastSeenAt>
+const tvPresence = new Map(); // 12.0.0 · sessionCode -> { seenAt, sound, w, h }
 const PLAYER_PRESENCE_TTL_MS = 45_000;
 // Τερματισμός server (π.χ. redeploy): λέμε σε όλες τις συσκευές να ξανασυνδεθούν και κλείνουμε τις ζωντανές συνδέσεις,
 // αλλιώς θα έμεναν «κολλημένες» σε έναν server που δεν παίρνει πια αλλαγές.
@@ -1494,6 +1517,26 @@ export function entityRoutes() {
     }
   });
 
+  // 12.0.0 · Σήμα από την TV (δημόσια σελίδα): «είμαι ανοιχτή» + αν ξεκλειδώθηκε ο ήχος. Μόνο για υπαρκτή συνεδρία.
+  r.post('/tv-presence', async (req, res) => {
+    const sessionCode = String(req.body?.sessionCode || '').trim().toUpperCase();
+    if (!/^[A-Z0-9_-]{3,40}$/.test(sessionCode)) return res.status(400).json({ error: 'Μη έγκυρη συνεδρία.' });
+    const last = tvPresence.get(sessionCode);
+    if (last && Date.now() - last.seenAt < 4000) return res.json({ success: true }); // όχι συχνότερα από 4″
+    try {
+      const { rows } = await query("SELECT 1 FROM records WHERE entity = 'GameSession' AND data->>'sessionCode' = $1 LIMIT 1", [sessionCode]);
+      if (!rows[0]) return res.status(404).json({ error: 'Δεν υπάρχει η συνεδρία.' });
+      tvPresence.set(sessionCode, { seenAt: Date.now(), sound: req.body?.sound === true, w: Math.min(10000, Number(req.body?.w) || 0), h: Math.min(10000, Number(req.body?.h) || 0) });
+      return res.json({ success: true });
+    } catch {
+      return res.status(500).json({ error: 'Σφάλμα.' });
+    }
+  });
+  r.get('/tv-presence/:sessionCode', requireAdmin, (req, res) => {
+    const t = tvPresence.get(String(req.params.sessionCode || '').trim().toUpperCase());
+    res.set('Cache-Control', 'no-store').json(t && Date.now() - t.seenAt < 60000 ? { online: true, ...t } : { online: false });
+  });
+
   r.get('/player-presence/:sessionCode', requireAdmin, (req, res) => {
     const sessionCode = String(req.params.sessionCode || '').trim().toUpperCase();
     const now = Date.now();
@@ -2062,6 +2105,10 @@ export function entityRoutes() {
         const { rows: duplicate } = await query("SELECT id FROM records WHERE entity = 'DotEvent' AND data->>'room_code' = $1 AND id <> $2 LIMIT 1", [next.room_code, req.params.id]);
         if (duplicate[0]) return res.status(409).json({ error: 'Ο κωδικός χώρου χρησιμοποιείται ήδη.' });
       }
+    }
+    // 12.2 · Ιστορικό αλλαγών: πριν αλλάξει μια σημαντική ρύθμιση, κρατιέται η προηγούμενη τιμή (αναίρεση από το Admin).
+    if (req.entity === 'AppSetting' && isAdmin(req) && req.body && 'value' in req.body) {
+      await snapshotSettingBeforeChange(req.params.id, req.user?.email).catch((error) => console.warn('[versions]', error.message));
     }
     const { rows } = await query(
       'UPDATE records SET data = data || $1::jsonb, updated_date = now() WHERE id = $2 AND entity = $3 RETURNING *',
