@@ -124,7 +124,9 @@ export function showScreen({ cg, act, nameOf, artFor, statsOf, now = Date.now(),
 
   // 0. Ζαριά στο ταμπλό: 3D ζάρι ~2.4″, μετά το τετράγωνο όπου έπεσε (σύνολο ~6″).
   const rl = cg.board?.on ? cg.board.roll : null;
-  if (rl && now - rl.at < DICE_MS + 3600) {
+  // Αν μετά τη ζαριά ξεκίνησε ήδη Τροχός/δοκιμασία/κάρτα, η σκηνή του ζαριού δίνει τη θέση της.
+  const newerScene = rl && ((cg.wheel && !cg.wheel.done && cg.wheel.at > rl.at) || (cg.trial && !cg.trial.done && cg.trial.at > rl.at) || (cg.card && cg.card.at > rl.at) || (cg.game && ((cg.tod?.at || 0) > rl.at)));
+  if (rl && !newerScene && now - rl.at < DICE_MS + 3600) {
     const name = nameOf(rl.pid);
     const landed = now - rl.at >= DICE_MS;
     const sq = squareOf(rl.to);

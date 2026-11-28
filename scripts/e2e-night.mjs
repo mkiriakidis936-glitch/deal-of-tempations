@@ -111,6 +111,8 @@ async function main() {
     try { return await api('PATCH', `/api/entities/GameSession/${session.id}`, { statePatch, sessionCode: code, playerId }, { auth: false, expect }); }
     finally { token = saved; }
   };
+  // Ό,τι κάνει το Tablet αφού διαβάσει μια ενέργεια κινητού: την καθαρίζει (ώστε να περάσει η επόμενη).
+  const tabletReads = () => api('PATCH', `/api/entities/GameSession/${session.id}`, { statePatch: { mg: { playerAction: null } } });
   const viewAs = async (playerId) => {
     const saved = token; token = '';
     try { return (await api('POST', '/api/entities/GameSession/filter', { query: { sessionCode: code, playerId } }, { auth: false })).items[0]; }
@@ -138,6 +140,11 @@ async function main() {
 
   await step('Ζάρι από το κινητό: έγκυρη ενέργεια γίνεται δεκτή, άκυρη απορρίπτεται', async () => {
     await asPlayer('p0', { mg: { playerAction: { playerId: 'p0', type: 'lounge_roll', at: Date.now() } } });
+    // Ουρά: όσο το Tablet δεν έχει διαβάσει τη ζαριά, ενέργεια άλλου κινητού ΔΕΝ τη σβήνει (503 → ξαναστέλνεται).
+    let busy = false;
+    try { await asPlayer('p1', { mg: { playerAction: { playerId: 'p1', type: 'lounge_roll', at: Date.now() } } }); } catch (error) { busy = /→ 503/.test(error.message); }
+    assert(busy, 'η ενέργεια δεύτερου κινητού έσβησε την αδιάβαστη πρώτη');
+    await tabletReads();
     let rejected = false;
     try { await asPlayer('p0', { mg: { playerAction: { playerId: 'p0', type: 'give_me_points', at: Date.now() } } }); } catch { rejected = true; }
     assert(rejected, 'δέχτηκε άκυρη ενέργεια');
@@ -166,6 +173,7 @@ async function main() {
 
   await step('Φινάλε: το κινητό στέλνει κωδικό', async () => {
     await asPlayer('p1', { mg: { playerAction: { playerId: 'p1', type: 'lounge_code', code: '4321', at: Date.now() } } });
+    await tabletReads();
     let rejected = false;
     try { await asPlayer('p1', { mg: { playerAction: { playerId: 'p1', type: 'lounge_code', code: '12a4', at: Date.now() } } }); } catch { rejected = true; }
     assert(rejected, 'δέχτηκε μη αριθμητικό κωδικό');

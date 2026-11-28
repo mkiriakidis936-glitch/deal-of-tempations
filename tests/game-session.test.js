@@ -435,7 +435,7 @@ test('Η Ταινία · Ταμπλό & Ζάρι: σειρά, αυτόματα �
   const B = await import('../src/lib/movieBoardEngine.js');
   const { BOARD_SQUARES } = await import('../src/data/modes/movieBoard.js');
   const ps = [{ id: 'a', name: 'A' }, { id: 'b', name: 'B' }];
-  let cg = B.boardStart(E.initCampaign(ps, { format: 'quick', now: 1 }), ps, { rng: () => 0.99 });
+  let cg = B.boardStart(E.startAct(E.initCampaign(ps, { format: 'quick', now: 1 }), ps), ps, { rng: () => 0.99 });
   const first = B.turnPid(cg); const second = cg.board.order.find((id) => id !== first);
   assert.equal(B.boardRoll(cg, second, 3).ok, false, 'μόνο όποια έχει σειρά');
   let r = B.boardRoll(cg, first, 1);                     // sq01 +2 πόντοι (αυτόματο)
@@ -467,4 +467,15 @@ test('Η Ταινία · Ταμπλό & Ζάρι: σειρά, αυτόματα �
   }
   assert.equal(cg.board.allDone, true);
   assert.ok(Object.values(cg.board.pos).every((v) => v === last));
+});
+
+test('Η Ταινία · Ταμπλό: το κλείσιμο πράξης σταματά το ζάρι, και ζαριά γίνεται δεκτή μόνο σε ενεργή πράξη', async () => {
+  const E = await import('../src/lib/campaignEngine.js');
+  const B = await import('../src/lib/movieBoardEngine.js');
+  const ps = [{ id: 'a', name: 'A' }, { id: 'b', name: 'B' }];
+  let cg = B.boardStart(E.startAct(E.initCampaign(ps, { format: 'h48', now: 1 }), ps), ps);
+  assert.equal(B.boardRoll({ ...cg, status: 'standby' }, B.turnPid(cg), 3).ok, false);
+  assert.equal(B.boardRoll(cg, B.turnPid(cg), 3).ok, true);
+  cg = E.closeAct(cg, ps);
+  assert.equal(B.boardOn(cg), false);
 });

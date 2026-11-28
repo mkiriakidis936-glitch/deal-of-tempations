@@ -49,7 +49,7 @@ function advance(board) {
 // Ζαριά. Επιστρέφει { cg, ok, square }. Μόνο η παίκτρια που έχει σειρά, και μόνο όταν δεν εκκρεμεί τετράγωνο.
 export function boardRoll(cg, pid, value, now = Date.now()) {
   const b = cg.board;
-  if (!b?.on || b.pending || b.allDone || pid !== turnPid(cg)) return { cg, ok: false, square: null };
+  if (!b?.on || b.pending || b.allDone || pid !== turnPid(cg) || (cg.status && cg.status !== 'active')) return { cg, ok: false, square: null };
   const v = Math.max(1, Math.min(6, Math.round(Number(value) || 1)));
   const from = b.pos[pid] || 0;
   const to = Math.min(lastIndex(), from + v);

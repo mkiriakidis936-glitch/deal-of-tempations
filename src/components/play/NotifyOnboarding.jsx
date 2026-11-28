@@ -9,7 +9,8 @@ export default function NotifyOnboarding({ sessionCode, playerId }) {
   const [msg, setMsg] = useState('');
 
   useEffect(() => {
-    if (!sessionCode || !playerId) { setState('hidden'); return; }
+    // Στην προεπισκόπηση του Admin (/play/preview) ποτέ: θα γραφόταν ειδοποιήσεις της παίκτριας στον browser του διαχειριστή.
+    if (!sessionCode || !playerId || (typeof window !== 'undefined' && window.location.pathname.startsWith('/play/preview'))) { setState('hidden'); return; }
     let done = false;
     try { done = localStorage.getItem(key) === '1' || sessionStorage.getItem(`${key}_later`) === '1'; } catch { /* χωρίς storage */ }
     if (done) { setState('hidden'); return; }

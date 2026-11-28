@@ -6,6 +6,9 @@ const MODE_LABELS = { deal_movie: 'Η ΤΑΙΝΙΑ · 5 ΗΠΕΙΡΟΙ',
   marathon: 'MARATHON',
   arrest_heist: 'ARREST HEIST',
   pajama: 'PAJAMA EXPERIENCE',
+  lockdown: 'PAJAMA LOCKDOWN 18+',
+  marathon_4h: 'PAJAMA HEIST & ARREST',
+  villa_takeover: 'VILLA TAKEOVER 48/72',
 };
 
 export default function TVExperienceLayer({ sessionCode, mode, playerCount, stage, online, fullscreen, onToggleFullscreen, event }) {

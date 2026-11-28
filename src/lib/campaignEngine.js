@@ -232,6 +232,8 @@ export function closeAct(cg, players = [], now = Date.now()) {
   const act = currentAct(out);
   // Δ. Υποχρεωτικό γεγονός μετά από κάθε ήπειρο: κλήρωση παίκτριας + Τροχός Ποινής πριν ανοίξει η επόμενη.
   const last = (out.act || 0) >= act.total - 1;
+  // Το ταμπλό της πράξης κλείνει μαζί της (κανείς δεν ρίχνει ζάρι στη μετάβαση/φινάλε).
+  if (out.board?.on) out = { ...out, board: { ...out.board, on: false, pending: null } };
   out = { ...out, conquered: { ...(out.conquered || {}), [out.act || 0]: { continent: act.continent, title: act.title, winner, at: now } }, trial: null, card: null, votes: null,
     mandatory: { pending: !last, pid: null, wheelId: null, itemId: null, at: now, drawnAt: null } };
   out = checkpoint(out, players, 'Κλείσιμο πράξης', now);

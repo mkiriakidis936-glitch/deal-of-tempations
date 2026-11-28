@@ -27,7 +27,7 @@ export default function MovieShowMobile({ cg, me, nameOf, sendAction }) {
 
   // 🎲 Ταμπλό & Ζάρι: η σειρά μου, η θέση μου, το τετράγωνο όπου έπεσα.
   const bd = cg.board;
-  if (bd?.on) {
+  if (bd?.on && (cg.status || 'active') === 'active') {
     const turn = turnPid(cg);
     const mine = turn === me.id;
     const pos = bd.pos?.[me.id] || 0;

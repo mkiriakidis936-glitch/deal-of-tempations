@@ -64,7 +64,8 @@ export function useMovieSounds(cg) {
   useEffect(() => {
     if (!cg) return;
     const p = prev.current;
-    const play = (name) => { try { tvSfx[name]?.(); } catch { /* χωρίς ήχο */ } };
+    const preview = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('preview') === '1';
+    const play = (name) => { if (preview) return; try { tvSfx[name]?.(); } catch { /* χωρίς ήχο */ } };
     if (p.status && cg.status !== p.status) play(cg.status === 'finale' ? 'crown' : cg.status === 'transition' ? 'news' : cg.status === 'standby' ? 'round' : 'drama');
     if (cg.actStartedAt && cg.actStartedAt !== p.actStartedAt && p.actStartedAt !== undefined) play('drama');
     if (cg.drawn?.at && cg.drawn.at !== p.drawnAt && p.drawnAt !== undefined) play('dice');

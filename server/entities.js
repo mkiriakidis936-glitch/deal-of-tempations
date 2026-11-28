@@ -596,6 +596,7 @@ function buildWhere(entity, q, params) {
 
 // ---------- realtime ----------
 const streams = new Map(); // entity -> Set<{ res, sessionCode, playerId, isPublic }>
+const PLAYER_ACTION_HOLD_MS = 10_000; // πόσο «κρατά» μια αδιάβαστη ενέργεια κινητού πριν επιτραπεί να αντικατασταθεί
 const playerPresence = new Map(); // sessionCode -> Map<playerId, lastSeenAt>
 const PLAYER_PRESENCE_TTL_MS = 45_000;
 // Τερματισμός server (π.χ. redeploy): λέμε σε όλες τις συσκευές να ξανασυνδεθούν και κλείνουμε τις ζωντανές συνδέσεις,
@@ -1961,6 +1962,16 @@ export function entityRoutes() {
             !validatePlayerPatch(current.state || {}, statePatch, playerId)) {
           await client.query('ROLLBACK');
           return res.status(403).json({ error: 'Player update is not permitted' });
+        }
+        // Μία ενέργεια κινητού τη φορά: αν η προηγούμενη δεν την έχει διαβάσει ακόμα το Tablet (< 10″),
+        // η νέα δεν τη σβήνει — παίρνει 503 και το κινητό την ξαναστέλνει μόνο του (ουρά επανάληψης).
+        const pendingAction = current.state?.mg?.playerAction;
+        const incomingAction = statePatch?.mg?.playerAction;
+        if (isObject(incomingAction) && isObject(pendingAction) && Number(pendingAction.at) > Date.now() - PLAYER_ACTION_HOLD_MS &&
+            !(pendingAction.playerId === incomingAction.playerId && pendingAction.at === incomingAction.at)) {
+          await client.query('ROLLBACK');
+          res.set('Retry-After', '2');
+          return res.status(503).json({ error: 'Η προηγούμενη ενέργεια δεν έχει διαβαστεί ακόμα — ξαναστέλνεται αυτόματα.', code: 'action_busy' });
         }
         const safePlayerPatch = { ...statePatch };
         if (Array.isArray(safePlayerPatch.players)) safePlayerPatch.players = safePlayerPatch.players.map((p) => (isObject(p) ? withoutKeys(p, ['hasPin']) : p));

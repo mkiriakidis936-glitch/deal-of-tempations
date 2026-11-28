@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { loadModesContent, subscribeModesContent } from '@/lib/modesContentStore';
 import ModeShell, { Panel, Btn } from '@/components/modes/ModeShell';
 import ActBoard from '@/components/modes/ActBoard';
@@ -37,6 +37,16 @@ export default function ModeGame({ state, updateState, onEnd, onQR, playerProfil
   const modeContext = useModeCtx(state, updateState);
   const ctx = { ...modeContext, playerProfiles, playerProfilesReady };
   const { mg, setMg, log } = ctx;
+  // Ουρά ενεργειών κινητών: ο server κρατά μία αδιάβαστη ενέργεια τη φορά. Ό,τι δεν χρησιμοποίησε
+  // κανένα act σε 2,5″ (π.χ. PASS από κοπέλα που δεν έχει σειρά) καθαρίζει, για να περάσει η επόμενη.
+  const latestMg = useRef(mg);
+  latestMg.current = mg;
+  useEffect(() => {
+    const at = mg.playerAction?.at;
+    if (!at) return undefined;
+    const id = setTimeout(() => { if (latestMg.current.playerAction?.at === at) setMg({ playerAction: null }); }, 2500);
+    return () => clearTimeout(id);
+  }, [mg.playerAction?.at, setMg]);
   const meta = modeMeta(state.mode);
   const configuredDurationMinutes = Number(state.gameDurationMinutes) || meta?.minutes || 0;
   useEffect(() => {
