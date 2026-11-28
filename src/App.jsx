@@ -15,6 +15,7 @@ const TVScreen = lazy(() => import('@/pages/TV'));
 const Play = lazy(() => import('@/pages/Play'));
 const Admin = lazy(() => import('@/pages/Admin'));
 const PlayPreview = lazy(() => import('@/pages/PlayPreview'));
+const CamPage = lazy(() => import('@/pages/CamPage'));
 const VIPInvitationPage = lazy(() => import('@/pages/VIPInvitationPage'));
 const Promo = lazy(() => import('@/pages/Promo'));
 const GiftUnlock = lazy(() => import('@/pages/GiftUnlock'));
@@ -45,7 +46,7 @@ const PublicVisitTracker = () => {
   useEffect(() => {
     const path = location.pathname;
     if (path.startsWith('/memories/') || path.startsWith('/play/')) return;
-    if (['/', '/tv', '/play', '/admin', '/av-setup', '/login', '/register', '/forgot-password', '/reset-password'].includes(path)) return;
+    if (['/', '/tv', '/play', '/cam', '/admin', '/av-setup', '/login', '/register', '/forgot-password', '/reset-password'].includes(path)) return;
     let trackedPath = path;
     if (path === '/site') {
       const event = new URLSearchParams(location.search).get('event');
@@ -76,6 +77,7 @@ const AuthenticatedApp = () => {
       <Route path="/tv" element={<TVScreen />} />
       <Route path="/play" element={<Play />} />
       <Route path="/play/preview" element={<RequireAdmin><PlayPreview /></RequireAdmin>} />
+      <Route path="/cam" element={<CamPage />} />
       <Route path="/admin" element={<RequireAdmin><Admin /></RequireAdmin>} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />

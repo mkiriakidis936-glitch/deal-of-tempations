@@ -36,6 +36,7 @@ const AdminDigitalInvitations = lazy(() => import('@/components/admin/AdminDigit
 const AdminProduction = lazy(() => import('@/components/admin/AdminProduction'));
 const AdminAVControlRoom = lazy(() => import('@/components/admin/AdminAVControlRoom'));
 const AdminLiveShow = lazy(() => import('@/components/admin/AdminLiveShow'));
+const AdminStudio = lazy(() => import('@/components/admin/AdminStudio'));
 import { createInitialState } from '@/lib/gameLogic';
 
 const NAV_GROUPS = [
@@ -51,6 +52,7 @@ const NAV_GROUPS = [
     id: 'show',
     label: 'Live Show',
     tabs: [
+      { id: 'studio', label: '🎬 Στούντιο', icon: Video },
       { id: 'show', label: 'Live Show', icon: Radio },
       { id: 'players', label: 'Παίκτριες & ρόλοι', icon: Users },
       { id: 'production', label: 'Παραγωγή & ροή', icon: Video },
@@ -371,6 +373,8 @@ export default function Admin() {
             onUpdate={handleUpdateSession}
           />
         );
+      case 'studio':
+        return <AdminStudio sessions={sessions} selectedSession={activeSession} onSelect={selectSession} onUpdate={handleUpdateSession} />;
       case 'show':
         return (
           <AdminLiveShow

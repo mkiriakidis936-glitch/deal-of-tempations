@@ -269,12 +269,12 @@ export default function TVScreen() {
       {!IS_PREVIEW && <TVCamera sessionCode={session.sessionCode} camera={state.camera} hidden={!!(state.stopActive || state.mg?.stop)} />}
       <TVLaunchVideos
         sessionCode={session.sessionCode}
-        welcomeSrc={FILM.welcomeVideo}
-        openingSrcs={[FILM.showOpenVideo, FILM.meetCastVideo]}
-        countdownSrc={FILM.countdownVideo}
+        welcomeSrc={IS_PREVIEW ? '' : FILM.welcomeVideo}
+        openingSrcs={IS_PREVIEW ? [] : [FILM.showOpenVideo, FILM.meetCastVideo]}
+        countdownSrc={IS_PREVIEW ? '' : FILM.countdownVideo}
         countdownStartedAt={state.countdownStartedAt}
       />
-      <TVShowVideos disabled={IS_PREVIEW} />
+      <TVShowVideos disabled={IS_PREVIEW} cue={state.showCue} />
       <GameIntroTV state={state} sessionCode={session.sessionCode} disabled={IS_PREVIEW} />
       <IntroSequenceTV state={state} />
       <NightTV state={state} />

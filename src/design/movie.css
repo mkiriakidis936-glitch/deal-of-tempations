@@ -241,3 +241,29 @@
 .gx-pawn-turn { display: inline-block; animation: gx-pawn 1.1s ease-in-out infinite; }
 @keyframes gx-pawn { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
 @media (prefers-reduced-motion: reduce) { .gx-pawn-turn { animation: none; } .gx-die { transition: none !important; } }
+
+/* ---------- 10.4.0 · Στούντιο (Admin) ---------- */
+.studio-root { background: #07070b; color: #F5F1E8; border-radius: 24px; padding: 12px; min-height: 80vh; }
+.studio-root:fullscreen { border-radius: 0; overflow: auto; }
+.studio-empty { display: grid; gap: 12px; place-content: center; text-align: center; }
+.studio-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 16px; background: #141419; font-size: 13px; }
+.studio-live { padding: 3px 10px; border-radius: 999px; background: #FF3B5C; font-weight: 900; letter-spacing: .08em; }
+.studio-live.is-stop { background: #8E8E93; }
+.studio-select { background: #1C1C1E; border-radius: 10px; padding: 4px 8px; }
+.studio-msg { margin-top: 8px; padding: 6px 10px; border-radius: 12px; background: rgba(232, 194, 107, .12); color: #F7E3A8; font-size: 13px; }
+.studio-grid { display: grid; gap: 12px; margin-top: 12px; grid-template-columns: minmax(0, 2.2fr) minmax(0, 1fr); grid-template-areas: "program cams" "phones side"; }
+@media (max-width: 1100px) { .studio-grid { grid-template-columns: 1fr; grid-template-areas: "program" "cams" "side" "phones"; } }
+.studio-program { grid-area: program; } .studio-cams { grid-area: cams; display: grid; gap: 10px; align-content: start; }
+.studio-side { grid-area: side; display: grid; gap: 10px; align-content: start; } .studio-phones { grid-area: phones; }
+.studio-title { font-size: 12px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; color: #E8C26B; margin-bottom: 6px; }
+.studio-panel { background: #141419; border: 1px solid rgba(255, 255, 255, .08); border-radius: 16px; padding: 10px; }
+.studio-screen { border-radius: 14px; overflow: hidden; border: 2px solid rgba(255, 59, 92, .6); background: #000; }
+.studio-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.studio-btn { min-height: 34px; padding: 0 12px; border-radius: 12px; background: #2C2C2E; color: #F5F1E8; font-size: 12px; font-weight: 700; border: 1px solid rgba(255, 255, 255, .1); }
+.studio-btn:disabled { opacity: .35; }
+.studio-btn.is-gold { background: #E8C26B; color: #1a1205; } .studio-btn.is-red { background: #FF3B5C; color: #fff; }
+.studio-cam { padding: 6px; border-radius: 14px; background: #141419; border: 2px solid transparent; }
+.studio-cam.is-air { border-color: #FF3B5C; box-shadow: 0 0 24px rgba(255, 59, 92, .45); }
+.studio-phone-grid { display: grid; gap: 10px; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); }
+.studio-phone-screen { border-radius: 16px; overflow: hidden; border: 2px solid #2C2C2E; background: #000; }
+.studio-dot { width: 8px; height: 8px; border-radius: 50%; background: #FF453A; display: inline-block; } .studio-dot.is-on { background: #30D158; }

@@ -25,7 +25,7 @@ function useFit(baseWidth) {
   return [ref, scale];
 }
 
-function Frame({ kind, icon: Icon, label, note, children }) {
+export function Frame({ kind, icon: Icon, label, note, children }) {
   return (
     <figure className={`adm-device adm-device--${kind}`}>
       <figcaption className="adm-device-cap">
@@ -38,7 +38,7 @@ function Frame({ kind, icon: Icon, label, note, children }) {
   );
 }
 
-function Scaled({ width, height, children, className = '' }) {
+export function Scaled({ width, height, children, className = '' }) {
   const [ref, scale] = useFit(width);
   return (
     <div ref={ref} className={`adm-device-screen ${className}`} style={{ aspectRatio: `${width} / ${height}` }}>
@@ -56,7 +56,7 @@ const scoreOf = (state, p) => {
   return n;
 };
 
-function TabletSummary({ state }) {
+export function TabletSummary({ state }) {
   useTick(true, 1000);
   const mg = state.mg || {};
   const players = state.players || [];

@@ -173,13 +173,19 @@ export function invalidateMediaList() {
   mediaListCachedAt = 0;
 }
 
+// Χώρος αποθήκευσης του server (used / free / total σε bytes), από την τελευταία λίστα της βιβλιοθήκης.
+let mediaStorage = null;
+export const getMediaStorage = () => mediaStorage;
+
 export async function listMedia({ force = false } = {}) {
   if (!force && mediaListCache && Date.now() - mediaListCachedAt < MEDIA_LIST_CACHE_MS) return mediaListCache;
   if (mediaListRequest) return mediaListRequest;
   const request = (async () => {
     const res = await fetch(`${API_URL}/api/media`, { headers: authHeaders() });
     if (!res.ok) throw new Error('Δεν φορτώθηκε η βιβλιοθήκη.');
-    const items = (await res.json()).items || [];
+    const body = await res.json();
+    const items = body.items || [];
+    mediaStorage = body.storage || null;
     mediaListCache = items;
     mediaListCachedAt = Date.now();
     return items;

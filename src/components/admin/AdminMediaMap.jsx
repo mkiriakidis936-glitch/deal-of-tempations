@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { appApi } from '@/api/apiClient';
-import { uploadMedia } from '@/lib/media';
+import { uploadMedia, getMediaStorage } from '@/lib/media';
 import { playSoundFile } from '@/lib/gameSounds';
 import { sfx, tvSfx } from '@/lib/modeKit';
 import { IMAGE_ACCEPT, VIDEO_ACCEPT, MEDIA_ACCEPT, mediaKindOf } from '@/lib/mediaKind';
@@ -268,6 +268,13 @@ export default function AdminMediaMap({ ov = {}, library = [], onSave, onRefresh
           <Tile label="✕ Λείπουν υποχρεωτικά" value={sum.missingRequired} tone={sum.missingRequired ? 'text-[#FF8A80]' : 'text-[#7BE495]'} />
           <Tile label="Λείπουν προτεινόμενα" value={sum.missingRecommended} tone={sum.missingRecommended ? 'text-[#F7E3A8]' : 'text-[#7BE495]'} />
           <Tile label="⚠ Σβήστηκαν" value={sum.broken} tone={sum.broken ? 'text-[#FFC266]' : 'text-[#7BE495]'} />
+          {(() => {
+            const st = getMediaStorage();
+            if (!st?.total) return null;
+            const mb = (b) => `${Math.round(b / 1048576)}MB`;
+            const low = st.free < 300 * 1048576;
+            return <Tile label={`💾 Ελεύθερος χώρος (αρχεία ${mb(st.used)})`} value={mb(st.free)} tone={low ? 'text-[#FF8A80]' : 'text-[#7BE495]'} />;
+          })()}
         </div>
         <div className="flex flex-wrap gap-2">
           <button type="button" disabled={disabled} onClick={() => autoLink(false)} className="h-10 rounded-full bg-[#E8C26B] px-4 text-sm font-bold text-black disabled:opacity-50">{busy === 'autolink' ? 'Σύνδεση…' : '🔗 Αυτόματη σύνδεση (κενές θέσεις)'}</button>

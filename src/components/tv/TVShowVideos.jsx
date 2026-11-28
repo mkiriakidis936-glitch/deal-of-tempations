@@ -19,7 +19,7 @@ export function playShowVideo(...ids) {
   window.dispatchEvent(new CustomEvent(EVENT, { detail: list }));
 }
 
-export default function TVShowVideos({ disabled = false }) {
+export default function TVShowVideos({ disabled = false, cue = null }) {
   const [queue, setQueue] = useState([]);
   const ref = useRef(null);
   useEffect(() => {
@@ -27,6 +27,11 @@ export default function TVShowVideos({ disabled = false }) {
     window.addEventListener(EVENT, on);
     return () => window.removeEventListener(EVENT, on);
   }, [disabled]);
+  // Εντολή από το Στούντιο (state.showCue): παίζει μία φορά, αν είναι πρόσφατη.
+  useEffect(() => {
+    if (!cue?.id || !cue.at || disabled || Date.now() - cue.at > 15000) return;
+    if (FILM[cue.id]) setQueue((q) => (q.length ? q : [cue.id]));
+  }, [cue?.at]); // eslint-disable-line react-hooks/exhaustive-deps
   const id = queue[0];
   const src = id ? FILM[id] : '';
   const next = () => setQueue((q) => q.slice(1));

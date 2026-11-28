@@ -123,6 +123,7 @@ export function mediaRoutes() {
       if (e.message === 'BAD_TYPE') return res.status(415).json({ error: `Το «${original}» δεν είναι έγκυρο αρχείο ${ext.slice(1).toUpperCase()} (ή περιέχει μη ασφαλές περιεχόμενο).` });
       if (e.message === 'TOO_BIG') return res.status(413).json({ error: `Το αρχείο ξεπερνά τα ${MAX_MB}MB.` });
       if (e.message === 'EMPTY') return res.status(400).json({ error: 'Κενό αρχείο.' });
+      if (e.code === 'ENOSPC' || e.code === 'EDQUOT') return res.status(507).json({ error: 'Ο χώρος αποθήκευσης του server γέμισε. Σβήσε παλιά αρχεία/αντίγραφα ή μεγάλωσε το Volume στο Railway.' });
       return res.status(400).json({ error: 'Η μεταφόρτωση διακόπηκε. Δοκίμασε ξανά.' });
     }
     res.json({ url: `/media/${name}`, name, size, kind });
@@ -136,7 +137,13 @@ export function mediaRoutes() {
       return { name: n, url: `/media/${n}`, size: st.size, kind: kindOf(n), modified: st.mtimeMs };
     }));
     items.sort((a, b) => b.modified - a.modified);
-    res.json({ items });
+    // Χώρος αποθήκευσης (για να φαίνεται στο Admin πριν γεμίσει).
+    let storage = null;
+    try {
+      const st = await fsp.statfs(UPLOAD_DIR);
+      storage = { used: items.reduce((sum, it) => sum + it.size, 0), free: st.bavail * st.bsize, total: st.blocks * st.bsize };
+    } catch { /* παλιό Node / μη διαθέσιμο */ }
+    res.json({ items, storage });
   });
 
   // DELETE /api/media?kind=image|video|all — μαζική διαγραφή, μόνο admin

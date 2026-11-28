@@ -41,6 +41,21 @@ test('κάμερα: μόνο ο admin ανοίγει/απαντά, η TV μόν�
     assert.equal(pending[0].viewerId, viewerId);
     assert.equal((await send('POST', '/answer', { camId, viewerId, sdp }, true)).status, 200);
     assert.equal((await (await send('GET', `/viewer/${viewerId}`)).json()).answer, sdp);
+    // Κινητό-κάμερα με εισιτήριο του Στούντιο: απαντά με το δικό της κλειδί, όχι με login.
+    assert.equal((await send('POST', '/ticket', {})).status, 401);
+    const { ticket } = await (await send('POST', '/ticket', {}, true)).json();
+    assert.equal((await send('POST', '/cam', { ticket: 'wrong' })).status, 403);
+    const cam2 = await (await send('POST', '/cam', { ticket, label: 'Σαλόνι' })).json();
+    assert.ok(cam2.camId && cam2.camKey);
+    const v2 = await (await send('POST', '/viewer', { camId: cam2.camId, sdp })).json();
+    assert.equal((await send('GET', `/pending?camId=${cam2.camId}&key=nope`)).status, 401);
+    assert.equal((await (await send('GET', `/pending?camId=${cam2.camId}&key=${cam2.camKey}`)).json()).pending[0].viewerId, v2.viewerId);
+    assert.equal((await send('POST', '/answer', { camId: cam2.camId, camKey: cam2.camKey, viewerId: v2.viewerId, sdp })).status, 200);
+    const list = await (await send('GET', '/cams', null, true)).json();
+    assert.deepEqual(list.cams.map((c) => c.label).sort(), ['Tablet', 'Σαλόνι'].sort());
+    // Όριο 4 κάμερες.
+    await send('POST', '/cam', { ticket }); await send('POST', '/cam', { ticket });
+    assert.equal((await send('POST', '/cam', { ticket })).status, 429);
     await send('DELETE', '', null, true);
     assert.equal((await send('POST', '/viewer', { camId, sdp })).status, 404);
   } finally {

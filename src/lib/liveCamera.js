@@ -33,9 +33,12 @@ export async function openCameraStream(facingMode = 'environment') {
   return navigator.mediaDevices.getUserMedia({ video: { ...(loadAv().camera ? { deviceId: { exact: loadAv().camera } } : { facingMode }), width: { ideal: 1280 }, height: { ideal: 720 }, frameRate: { ideal: 24, max: 30 } }, audio: false });
 }
 
-// ---------- Αποστολέας (Tablet / κινητό admin) ----------
-export async function startCameraSender({ sessionCode, stream, onViewers }) {
-  const { camId } = await call('POST', `/${code(sessionCode)}/start`, {}, true);
+// ---------- Αποστολέας (Tablet με login, ή κινητό-κάμερα με εισιτήριο QR του Στούντιο) ----------
+export async function startCameraSender({ sessionCode, stream, onViewers, ticket = '', label = '' }) {
+  const { camId, camKey } = ticket
+    ? await call('POST', `/${code(sessionCode)}/cam`, { ticket, label })
+    : await call('POST', `/${code(sessionCode)}/start`, { label }, true);
+  const admin = !ticket;
   const peers = new Map();
   let stopped = false;
 
@@ -50,13 +53,13 @@ export async function startCameraSender({ sessionCode, stream, onViewers }) {
     await pc.setRemoteDescription({ type: 'offer', sdp });
     await pc.setLocalDescription(await pc.createAnswer());
     await gathered(pc);
-    await call('POST', `/${code(sessionCode)}/answer`, { camId, viewerId, sdp: pc.localDescription.sdp }, true);
+    await call('POST', `/${code(sessionCode)}/answer`, { camId, camKey, viewerId, sdp: pc.localDescription.sdp }, admin);
   };
 
   (async () => {
     while (!stopped) {
       try {
-        const { pending } = await call('GET', `/${code(sessionCode)}/pending?camId=${camId}`, null, true);
+        const { pending } = await call('GET', `/${code(sessionCode)}/pending?camId=${camId}&key=${encodeURIComponent(camKey || '')}`, null, admin);
         for (const item of pending) if (!peers.has(item.viewerId)) await answer(item).catch(() => {});
       } catch (error) { if (error.status === 404) break; }
       await sleep(1500);
@@ -70,7 +73,7 @@ export async function startCameraSender({ sessionCode, stream, onViewers }) {
       peers.forEach((pc) => pc.close());
       peers.clear();
       stream.getTracks().forEach((track) => track.stop());
-      await call('DELETE', `/${code(sessionCode)}`, null, true).catch(() => {});
+      await call('DELETE', `/${code(sessionCode)}/cam/${camId}?key=${encodeURIComponent(camKey || '')}`, null, admin).catch(() => {});
     },
   };
 }
