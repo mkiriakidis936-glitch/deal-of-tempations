@@ -6,6 +6,7 @@ import * as LG from '@/data/modes/loungeContent';
 import * as VL from '@/data/modes/villaContent';
 import * as MV from '@/data/modes/campaignContent';
 import * as MG from '@/data/modes/movieGames';
+import * as MB from '@/data/modes/movieBoard';
 
 // Λίστες περιεχομένου των νέων modes που επεξεργάζονται από Admin → 🎮 Νέα Modes.
 // Οι αλλαγές αποθηκεύονται στο AppSetting (key modes_content) και εφαρμόζονται "επί τόπου" στις λίστες.
@@ -36,6 +37,7 @@ export const COLLECTIONS = [
   { id: 'movie_wheel1', group: '🎬 Deal of Temptation — Η Ταινία', label: '1ος Τροχός — Οι Ποινές στην Αρχή', arr: MG.WHEELS[0].items, fixedItems: true, blank: {}, fields: [T('title', 'Ποινή'), A('tv', 'Κείμενο TV'), A('mobile', 'Κείμενο κινητού'), N('secs', 'Χρονόμετρο (δευτ.)')] },
   { id: 'movie_wheel2', group: '🎬 Deal of Temptation — Η Ταινία', label: '2ος Τροχός — Οι Ποινές στη Συνέχεια', arr: MG.WHEELS[1].items, fixedItems: true, blank: {}, fields: [T('title', 'Ποινή'), A('tv', 'Κείμενο TV'), A('mobile', 'Κείμενο κινητού'), N('secs', 'Χρονόμετρο (δευτ.)')] },
   { id: 'movie_wheel3', group: '🎬 Deal of Temptation — Η Ταινία', label: '3ος Τροχός — Οι Ποινές (Πράξεις)', arr: MG.WHEELS[2].items, fixedItems: true, blank: {}, fields: [T('title', 'Ποινή'), A('tv', 'Κείμενο TV'), A('mobile', 'Κείμενο κινητού'), N('secs', 'Χρονόμετρο (δευτ.)')] },
+  { id: 'movie_board', group: '🎬 Deal of Temptation — Η Ταινία', label: 'Ταμπλό & Ζάρι — 18 τετράγωνα ηπείρου', arr: MB.BOARD_SQUARES, fixedItems: true, blank: {}, fields: [T('kind', 'Μηχανισμός (σταθερός)', { readOnly: true }), T('title', 'Τίτλος τετραγώνου'), A('tv', 'Κείμενο TV'), A('mobile', 'Κείμενο κινητού'), T('value', 'Τιμή (πόντοι / λεία / αριθμός Τροχού 1–3)')] },
   { id: 'movie_games', group: '🎬 Deal of Temptation — Η Ταινία', label: 'Τα 4 παιχνίδια', arr: MG.GAMES, fixedItems: true, blank: {}, fields: [T('icon', 'Εικονίδιο'), T('name', 'Όνομα'), A('text', 'Περιγραφή')] },
   { id: 'movie_dond_boxes', group: '🎬 Deal of Temptation — Η Ταινία', label: 'Deal or No Deal — 16 κουτιά', arr: MG.DOND_BOXES, fixedItems: true, blank: {}, fields: [T('label', 'Περιεχόμενο κουτιού'), N('value', 'Αξία (κατάταξη στον πίνακα)'), N('wheel', 'Τροχός ποινής (1–3, κενό = κανένας)')] },
   { id: 'movie_dond_offers', group: '🎬 Deal of Temptation — Η Ταινία', label: 'Deal or No Deal — έτοιμες προσφορές τραπεζίτη', arr: MG.DOND_OFFERS, strings: true },

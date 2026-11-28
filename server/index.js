@@ -6,6 +6,7 @@ import { attachUser, authRoutes, issueStreamTicket } from './auth.js';
 import { entityRoutes, closeAllStreams } from './entities.js';
 import { functionRoutes } from './functions.js';
 import { mediaRoutes, mediaStatic } from './media.js';
+import { brandingRoutes } from './branding.js';
 import { pushRoutes } from './push.js';
 import { visitRoutes } from './visits.js';
 import { backupRoutes, startAutoBackup } from './backup.js';
@@ -72,6 +73,8 @@ app.use('/api/push', pushRoutes());
 app.use('/api/visits', visitRoutes());
 app.use('/api/camera', cameraRoutes());
 app.use('/media', mediaStatic);
+// Εικονίδιο εφαρμογής, εκκίνηση iPhone, εικόνα κοινοποίησης: αν το Admin ανέβασε δική του, σερβίρεται πριν από τα ενσωματωμένα.
+app.use(brandingRoutes());
 app.use('/api', (_req, res) => res.status(404).json({ error: 'Not found' }));
 
 // Serve the built React app + SPA fallback (client-side routing: /tv, /play, /admin ...)

@@ -1,0 +1,267 @@
+/* ======================================================================
+   10.0.1 · ADMIN ΣΕ GAME UI
+   Μόνο εμφάνιση. Φορτώνεται μετά το admin-theme.css.
+   «Γυαλί» χωρίς backdrop-filter: στατικές διαβαθμίσεις + λεπτές χρυσές γραμμές,
+   ώστε να μένει ελαφρύ σε MacBook/iPhone (καμία κίνηση, κανένα blur).
+   ====================================================================== */
+:root:has(#admin-root) {
+  --gx-gold: #E8C26B;
+  --gx-gold-hi: #F7E3A8;
+  --gx-gold-soft: rgba(232, 194, 107, 0.14);
+  --gx-gold-line: rgba(232, 194, 107, 0.32);
+  --gx-glass: linear-gradient(180deg, rgba(255, 255, 255, 0.075) 0%, rgba(255, 255, 255, 0.02) 38%, rgba(255, 255, 255, 0.01) 100%);
+  --gx-surface: #121214;
+  --gx-surface-2: #1C1C1F;
+  --gx-surface-3: #26262A;
+  --gx-stroke: rgba(255, 255, 255, 0.09);
+  --gx-hi: inset 0 1px 0 rgba(255, 255, 255, 0.07);
+}
+
+/* Φόντο: μαύρο με χρυσή «σκηνή» επάνω (στατικό). */
+body #admin-root {
+  background-color: #000 !important;
+  background-image:
+    radial-gradient(1100px 420px at 50% -220px, rgba(232, 194, 107, 0.13), transparent 70%),
+    radial-gradient(800px 500px at 110% 110%, rgba(232, 194, 107, 0.05), transparent 70%) !important;
+}
+
+/* Κάρτες = γυάλινα πάνελ παιχνιδιού. */
+body #admin-root .comic-panel,
+body #admin-root .comic-panel-sm,
+body #admin-root .adm-card,
+body #admin-root .ui-card {
+  background: var(--gx-glass), var(--gx-surface) !important;
+  border: 1px solid var(--gx-stroke) !important;
+  box-shadow: var(--gx-hi), 0 18px 40px -30px rgba(0, 0, 0, 0.9) !important;
+  border-radius: 24px !important;
+}
+body #admin-root .comic-panel .comic-panel,
+body #admin-root .comic-panel .comic-panel-sm,
+body #admin-root .comic-panel .ui-card,
+body #admin-root .adm-card .adm-card {
+  background: var(--gx-surface-2) !important;
+  border: 1px solid rgba(255, 255, 255, 0.06) !important;
+  box-shadow: none !important;
+  border-radius: 16px !important;
+}
+body #admin-root .adm-tile,
+body #admin-root .adm-quick,
+body #admin-root .adm-metric {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.01)), var(--gx-surface-2) !important;
+  border: 1px solid rgba(255, 255, 255, 0.07) !important;
+  border-radius: 18px !important;
+}
+body #admin-root .adm-tile:hover,
+body #admin-root .adm-quick:hover { border-color: var(--gx-gold-line) !important; }
+
+/* Τίτλοι καρτών: μικρή χρυσή «λυχνία» μπροστά, όπως στα μενού παιχνιδιών. */
+body #admin-root .adm-card-title { display: flex; align-items: center; gap: 9px; }
+body #admin-root .adm-card-title::before {
+  content: ''; flex: none; width: 4px; height: 16px; border-radius: 4px;
+  background: linear-gradient(180deg, var(--gx-gold-hi), var(--gx-gold)) !important;
+}
+
+/* Hero = οθόνη τίτλου. */
+body #admin-root .adm-hero {
+  background:
+    radial-gradient(90% 140% at 100% 0%, rgba(232, 194, 107, 0.20), transparent 55%),
+    radial-gradient(60% 90% at 0% 100%, rgba(232, 194, 107, 0.06), transparent 60%),
+    var(--gx-glass), #0E0E10 !important;
+  border: 1px solid var(--gx-gold-line) !important;
+  box-shadow: var(--gx-hi), 0 30px 60px -40px rgba(232, 194, 107, 0.35) !important;
+  border-radius: 28px !important;
+}
+body #admin-root .adm-hero .adm-eyebrow {
+  padding: 5px 11px; border-radius: 999px; color: var(--gx-gold) !important;
+  background: var(--gx-gold-soft); border: 1px solid var(--gx-gold-line);
+}
+body #admin-root .adm-hero-title { color: #FFF6DE !important; }
+
+/* Μετρητές: αριθμοί σαν σκορ. */
+body #admin-root .adm-metric-bar {
+  display: block !important; position: absolute; left: 18px; right: 18px; top: 0; height: 2px; border-radius: 2px;
+  background: linear-gradient(90deg, transparent, var(--gx-gold), transparent) !important;
+}
+body #admin-root .adm-metric { position: relative; }
+body #admin-root .adm-metric-value { color: var(--gx-gold-hi) !important; font-weight: 800 !important; }
+body #admin-root .adm-icon {
+  background: radial-gradient(circle at 30% 25%, rgba(232, 194, 107, 0.22), rgba(232, 194, 107, 0.04) 70%), var(--gx-surface-3) !important;
+  border: 1px solid var(--gx-gold-line) !important; border-radius: 14px !important;
+}
+
+/* Κουμπιά = κάψουλες. Κύρια ενέργεια: χρυσή κάψουλα με ανάγλυφο. */
+body #admin-root .adm-pill,
+body #admin-root .adm-chip,
+body #admin-root .adm-btn,
+body #admin-root .comic-boom {
+  border-radius: 999px !important;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02)), var(--gx-surface-3) !important;
+  border: 1px solid rgba(255, 255, 255, 0.10) !important;
+  box-shadow: var(--gx-hi) !important;
+}
+body #admin-root .adm-pill:hover,
+body #admin-root .adm-chip:hover,
+body #admin-root .adm-btn:hover,
+body #admin-root .comic-boom:hover { border-color: var(--gx-gold-line) !important; }
+body #admin-root .adm-btn--primary,
+body #admin-root .comic-boom[class~="bg-primary"],
+body #admin-root .comic-boom[class*="tarot-parchment"],
+body #admin-root button.bg-primary {
+  color: #000 !important;
+  background: linear-gradient(180deg, #F7E3A8 0%, #E8C26B 55%, #CFA246 100%) !important;
+  border: 1px solid rgba(255, 236, 170, 0.75) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.55), 0 10px 24px -14px rgba(232, 194, 107, 0.8) !important;
+}
+body #admin-root .comic-boom[class*="tarot-crimson"],
+body #admin-root .comic-boom[class*="bg-red"],
+body #admin-root .comic-boom[class*="bg-destructive"] {
+  background: linear-gradient(180deg, #FF6A60, #FF453A) !important; color: #fff !important; border-color: rgba(255, 140, 130, 0.6) !important;
+}
+
+/* Πλοήγηση: ενεργό = χρυσή κάψουλα με «φωτάκι». */
+body #admin-root .adm-group-list {
+  background: var(--gx-glass), var(--gx-surface) !important;
+  border: 1px solid var(--gx-stroke); border-radius: 18px !important;
+}
+body #admin-root .adm-navitem[aria-current="page"] {
+  background: linear-gradient(90deg, rgba(232, 194, 107, 0.22), rgba(232, 194, 107, 0.06)) !important;
+}
+body #admin-root .adm-navitem[aria-current="page"]::after {
+  content: ''; position: absolute; left: 0; top: 9px; bottom: 9px; width: 3px; border-radius: 0 3px 3px 0; background: var(--gx-gold);
+}
+body #admin-root .adm-navitem[aria-current="page"] .adm-navlabel { color: var(--gx-gold-hi) !important; }
+body #admin-root .adm-ico { box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25), 0 4px 10px -6px rgba(0, 0, 0, 0.9); }
+
+body #admin-root .adm-mark {
+  background: linear-gradient(180deg, #F7E3A8, #E8C26B 55%, #C99B2E) !important; color: #000 !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.55), 0 8px 18px -10px rgba(232, 194, 107, 0.8) !important;
+}
+
+/* Μπάρα συνεδρίας & κάτω μπάρα κινητού: κάψουλες γυαλιού. */
+body #admin-root .adm-sessionbar {
+  background: var(--gx-glass), var(--gx-surface) !important; border: 1px solid var(--gx-stroke) !important; border-radius: 999px !important;
+}
+body #admin-root .adm-tabbar {
+  background: var(--gx-glass), #141416 !important; border: 1px solid var(--gx-stroke) !important; border-radius: 999px !important;
+  box-shadow: var(--gx-hi), 0 18px 40px -16px #000 !important;
+}
+body #admin-root .adm-tab[aria-selected="true"] { background: var(--gx-gold-soft) !important; }
+body #admin-root .adm-tab[aria-selected="true"] span { color: var(--gx-gold-hi) !important; }
+
+/* Πεδία & segmented controls. */
+body #admin-root input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]),
+body #admin-root select,
+body #admin-root textarea {
+  background-color: var(--gx-surface-2) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+body #admin-root [role="tablist"]:not(.adm-tabbar) [aria-selected="true"],
+body #admin-root [role="tablist"]:not(.adm-tabbar) [data-state="active"] {
+  background: var(--gx-gold-soft) !important; color: var(--gx-gold-hi) !important;
+}
+
+/* ---------- Avatars ---------- */
+body #admin-root .adm-avatar {
+  position: relative; flex: none; display: inline-grid; place-items: center; border-radius: 50%;
+  font-weight: 800; letter-spacing: -0.02em; line-height: 1; color: #111;
+  background: radial-gradient(circle at 32% 26%, color-mix(in srgb, var(--av) 55%, white), var(--av) 58%, color-mix(in srgb, var(--av) 70%, black));
+  box-shadow: 0 0 0 2px #000, 0 0 0 3.5px color-mix(in srgb, var(--av) 70%, transparent), inset 0 1px 0 rgba(255, 255, 255, 0.45);
+}
+body #admin-root .adm-avatar-dot {
+  position: absolute; right: -1px; bottom: -1px; width: 32%; height: 32%; min-width: 9px; min-height: 9px; border-radius: 50%;
+  background: #636366; box-shadow: 0 0 0 2px #000;
+}
+body #admin-root .adm-avatar-dot.is-on { background: #30D158; }
+
+/* ---------- «Έτοιμο για βραδιά» ---------- */
+body #admin-root .adm-ready {
+  border-color: color-mix(in srgb, var(--ready) 40%, transparent) !important;
+  background:
+    radial-gradient(70% 120% at 0% 0%, color-mix(in srgb, var(--ready) 16%, transparent), transparent 60%),
+    var(--gx-glass), var(--gx-surface) !important;
+}
+body #admin-root .adm-ready-head { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
+body #admin-root .adm-ring { flex: none; }
+body #admin-root .adm-ready-badge {
+  display: inline-flex; padding: 5px 11px; border-radius: 999px; font-size: 10.5px; font-weight: 800; letter-spacing: 0.14em;
+  color: var(--ready); background: color-mix(in srgb, var(--ready) 14%, transparent); border: 1px solid color-mix(in srgb, var(--ready) 45%, transparent);
+}
+body #admin-root .adm-ready-bar { margin-top: 12px; height: 8px; border-radius: 99px; background: rgba(255, 255, 255, 0.08); overflow: hidden; }
+body #admin-root .adm-ready-bar > span { display: block; height: 100%; border-radius: 99px; background: linear-gradient(90deg, color-mix(in srgb, var(--ready) 60%, black), var(--ready)); }
+body #admin-root .adm-ready-list { margin-top: 16px; display: grid; gap: 8px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); }
+body #admin-root .adm-ready-row {
+  display: flex; align-items: center; gap: 11px; min-width: 0; padding: 10px 12px; border-radius: 16px;
+  background: var(--gx-surface-2); border: 1px solid rgba(255, 255, 255, 0.06);
+}
+body #admin-root .adm-ready-row.is-todo { border-color: rgba(255, 159, 10, 0.35); }
+body #admin-root .adm-ready-icon {
+  flex: none; width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; font-size: 14px; font-weight: 900;
+  background: rgba(255, 255, 255, 0.08); color: rgba(255, 255, 255, 0.6);
+}
+body #admin-root .adm-ready-row.is-ok .adm-ready-icon { background: rgba(48, 209, 88, 0.18); color: #30D158; }
+body #admin-root .adm-ready-row.is-todo .adm-ready-icon { background: rgba(255, 159, 10, 0.18); color: #FF9F0A; }
+body #admin-root .adm-ready-weight { flex: none; font-size: 11px; font-weight: 700; color: rgba(235, 235, 245, 0.35); font-variant-numeric: tabular-nums; }
+body #admin-root .adm-ready-fix {
+  flex: none; height: 32px; min-height: 32px !important; padding: 0 12px; border-radius: 999px; font-size: 12px; font-weight: 700; white-space: nowrap !important;
+  color: #000; background: linear-gradient(180deg, #F7E3A8, #E8C26B 60%, #CFA246); border: 1px solid rgba(255, 236, 170, 0.75);
+}
+
+/* ---------- Τριπλή προεπισκόπηση ---------- */
+body #admin-root .adm-triple-grid {
+  margin-top: 14px; display: grid; gap: 14px; align-items: start;
+  grid-template-columns: minmax(0, 1fr);
+}
+@media (min-width: 900px) { body #admin-root .adm-triple-grid { grid-template-columns: minmax(0, 1.9fr) minmax(0, 1.25fr) minmax(0, 0.62fr); } }
+body #admin-root .adm-device { margin: 0; min-width: 0; }
+body #admin-root .adm-device-cap {
+  display: flex; align-items: center; gap: 6px; margin-bottom: 8px; font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+  color: rgba(235, 235, 245, 0.62);
+}
+body #admin-root .adm-device-cap svg { color: var(--gx-gold); }
+body #admin-root .adm-device-note { margin-left: auto; padding: 2px 8px; border-radius: 99px; letter-spacing: 0.06em; background: rgba(255, 255, 255, 0.07); color: rgba(235, 235, 245, 0.5); }
+body #admin-root .adm-device--tv .adm-device-note { background: rgba(255, 69, 58, 0.18); color: #FF6A60; }
+body #admin-root .adm-device-body { position: relative; }
+body #admin-root .adm-device-screen { position: relative; width: 100%; overflow: hidden; background: #000; }
+body #admin-root .adm-device-canvas { position: absolute; left: 0; top: 0; overflow: hidden; background: #000; }
+/* Κορνίζες συσκευών */
+body #admin-root .adm-device--tv .adm-device-body { padding: 7px; border-radius: 14px; background: linear-gradient(180deg, #2A2A2E, #111113); box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12), 0 20px 40px -26px #000; }
+body #admin-root .adm-device--tv .adm-device-screen { border-radius: 8px; }
+body #admin-root .adm-device--tablet .adm-device-body { padding: 12px; border-radius: 26px; background: linear-gradient(180deg, #2A2A2E, #141416); box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12), 0 20px 40px -26px #000; }
+body #admin-root .adm-device--tablet .adm-device-screen { border-radius: 14px; }
+body #admin-root .adm-device--phone .adm-device-body { padding: 7px; border-radius: 34px; background: linear-gradient(180deg, #2E2E33, #141416); box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14), 0 20px 40px -26px #000; }
+body #admin-root .adm-device--phone .adm-device-screen { border-radius: 27px; }
+body #admin-root .adm-device--phone .adm-device-body::before {
+  content: ''; position: absolute; z-index: 2; left: 50%; top: 14px; width: 30%; height: 9px; transform: translateX(-50%); border-radius: 99px; background: #000;
+}
+body #admin-root .adm-device-empty { display: grid; place-items: center; height: 100%; padding: 40px; text-align: center; font-size: 22px; color: rgba(235, 235, 245, 0.55); }
+body #admin-root .adm-triple-off {
+  margin-top: 14px; display: flex; align-items: center; gap: 10px; padding: 18px; border-radius: 18px;
+  background: var(--gx-surface-2); border: 1px dashed rgba(255, 255, 255, 0.12);
+}
+body #admin-root .adm-triple-off > span { display: grid; place-items: center; width: 38px; height: 38px; border-radius: 12px; background: var(--gx-surface-3); color: var(--gx-gold); }
+
+/* Επιλογή παίκτριας για το κινητό (segmented με avatars) */
+body #admin-root .adm-seg { display: flex; flex-wrap: wrap; gap: 4px; padding: 4px; border-radius: 999px; background: var(--gx-surface-2); border: 1px solid rgba(255, 255, 255, 0.07); }
+body #admin-root .adm-seg button {
+  display: inline-flex; align-items: center; gap: 7px; min-height: 34px !important; padding: 0 10px 0 5px; border-radius: 999px;
+  font-size: 12px; font-weight: 600; color: rgba(235, 235, 245, 0.7); white-space: nowrap !important;
+}
+body #admin-root .adm-seg button.is-on { background: var(--gx-gold-soft); color: var(--gx-gold-hi); box-shadow: inset 0 0 0 1px var(--gx-gold-line); }
+
+/* Tablet σύνοψη (σχεδιασμένη στα 1024×768 και μικραίνει) */
+body #admin-root .adm-tab-sim { width: 1024px; height: 768px; padding: 34px 38px; color: #F5F1E8; display: flex; flex-direction: column; gap: 18px;
+  background: radial-gradient(900px 380px at 50% -120px, rgba(232, 194, 107, 0.16), transparent 70%), #000; }
+body #admin-root .adm-tab-sim-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 18px; }
+body #admin-root .adm-tab-sim-eyebrow { font-size: 14px; font-weight: 800; letter-spacing: 0.18em; color: #E8C26B; }
+body #admin-root .adm-tab-sim-title { margin-top: 6px; font-size: 40px; font-weight: 800; letter-spacing: -0.03em; line-height: 1.05; }
+body #admin-root .adm-tab-sim-sub { margin-top: 6px; font-size: 18px; color: rgba(235, 235, 245, 0.6); }
+body #admin-root .adm-tab-sim-status { flex: none; padding: 12px 20px; border-radius: 999px; font-size: 20px; font-weight: 800; color: #000;
+  background: linear-gradient(180deg, #F7E3A8, #E8C26B 60%, #CFA246); }
+body #admin-root .adm-tab-sim-status.is-stop { background: #FF453A; color: #fff; }
+body #admin-root .adm-tab-sim-banner { padding: 14px 18px; border-radius: 18px; font-size: 18px; font-weight: 600; background: rgba(232, 194, 107, 0.12); border: 1px solid rgba(232, 194, 107, 0.35); }
+body #admin-root .adm-tab-sim-card { display: flex; align-items: center; gap: 16px; padding: 18px; border-radius: 22px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02)), #161618; border: 1px solid rgba(232, 194, 107, 0.35); }
+body #admin-root .adm-tab-sim-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; align-content: start; overflow: hidden; }
+body #admin-root .adm-tab-sim-player { display: flex; align-items: center; gap: 14px; padding: 14px 16px; border-radius: 20px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.015)), #141416; border: 1px solid rgba(255, 255, 255, 0.08); }
+body #admin-root .adm-tab-sim-score { font-size: 26px; font-weight: 800; color: #F7E3A8; font-variant-numeric: tabular-nums; }

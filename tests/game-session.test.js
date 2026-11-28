@@ -419,3 +419,52 @@ test('Η Ταινία: μετά την ΤΕΛΕΥΤΑΙΑ ήπειρο δεν α
   assert.equal(cg.status, 'finale');
   assert.equal(cg.mandatory.pending, false);
 });
+
+test('«Χωρίς PIN»: παίκτρια με pin null μπαίνει χωρίς κωδικό, με PIN χρειάζεται τον σωστό', async () => {
+  const { pinOk } = await import('../server/entities.js');
+  const off = { players: [{ id: 'a', name: 'Α', pin: null }] };
+  assert.equal(pinOk(off, 'a', undefined), true);
+  assert.equal(pinOk(off, 'a', '1234'), true);
+  const on = { players: [{ id: 'a', name: 'Α', pin: '4821' }] };
+  assert.equal(pinOk(on, 'a', ''), false);
+  assert.equal(pinOk(on, 'a', '4821'), true);
+});
+
+test('Η Ταινία · Ταμπλό & Ζάρι: σειρά, αυτόματα τετράγωνα, εκκρεμότητα, ξαναρίχνεις, χάνεις σειρά, τέλος', async () => {
+  const E = await import('../src/lib/campaignEngine.js');
+  const B = await import('../src/lib/movieBoardEngine.js');
+  const { BOARD_SQUARES } = await import('../src/data/modes/movieBoard.js');
+  const ps = [{ id: 'a', name: 'A' }, { id: 'b', name: 'B' }];
+  let cg = B.boardStart(E.initCampaign(ps, { format: 'quick', now: 1 }), ps, { rng: () => 0.99 });
+  const first = B.turnPid(cg); const second = cg.board.order.find((id) => id !== first);
+  assert.equal(B.boardRoll(cg, second, 3).ok, false, 'μόνο όποια έχει σειρά');
+  let r = B.boardRoll(cg, first, 1);                     // sq01 +2 πόντοι (αυτόματο)
+  cg = r.cg;
+  assert.equal(r.square.kind, 'points');
+  assert.equal(E.statsOf(cg, first).points, 2);
+  assert.equal(cg.board.pending, null);
+  assert.equal(B.turnPid(cg), second, 'αυτόματο τετράγωνο → επόμενη σειρά');
+  r = B.boardRoll(cg, second, 2); cg = r.cg;              // sq02 δοκιμασία (περιμένει το Tablet)
+  assert.equal(cg.board.pending.kind, 'trial');
+  assert.equal(B.boardRoll(cg, first, 1).ok, false, 'όσο εκκρεμεί τετράγωνο, κανείς δεν ρίχνει');
+  cg = B.boardResolve(cg);
+  assert.equal(B.turnPid(cg), first);
+  cg = B.boardRoll(cg, first, 8 - 1).cg;                  // 1 + 6 = sq07 (παιχνίδι) — τιμή κόβεται στο 6
+  assert.equal(cg.board.pos[first], 7);
+  cg = B.boardResolve(cg);
+  cg = B.boardRoll(cg, second, 6).cg;                     // 2 + 6 = sq08 ένταλμα (αυτόματο, +1 Wanted)
+  assert.equal(E.statsOf(cg, second).wanted, 1);
+  cg = B.boardRoll(cg, first, 2).cg;                      // 7 + 2 = sq09 ξαναρίχνεις
+  assert.equal(B.turnPid(cg), first, 'ξαναρίχνει η ίδια');
+  cg = B.boardRoll(cg, first, 5).cg;                      // 9 + 5 = sq14 χάνεις σειρά
+  assert.equal(B.turnPid(cg), second);
+  cg = B.boardRoll(cg, second, 6).cg; cg = B.boardResolve(cg); // 8 + 6 = sq14 → χάνει κι αυτή· resolve ασφαλές
+  const last = BOARD_SQUARES.length - 1;
+  for (let i = 0; i < 20 && !cg.board.allDone; i += 1) {
+    const p = B.turnPid(cg); if (!p) break;
+    const res = B.boardRoll(cg, p, 6); cg = res.cg;
+    if (cg.board.pending) cg = B.boardResolve(cg);
+  }
+  assert.equal(cg.board.allDone, true);
+  assert.ok(Object.values(cg.board.pos).every((v) => v === last));
+});

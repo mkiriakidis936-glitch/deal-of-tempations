@@ -5,6 +5,8 @@ import { request } from '@/api/apiClient';
 import { fetchOverrides } from '@/lib/media';
 import { listMedia } from '@/lib/media';
 import { buildMediaManifest, manifestSummary } from '@/lib/mediaManifest';
+import { computeReadiness } from '@/lib/readiness';
+import { AdminReadiness } from '@/components/admin/AdminGameUI';
 
 const QUICK_LINKS = [
   { id: 'modes', icon: '🎮', title: 'Λειτουργίες παιχνιδιού', detail: 'Διαχείριση λειτουργιών' },
@@ -20,7 +22,7 @@ function MetricCard({ icon, label, value, note, accent }) {
 }
 
 export default function AdminOverview({ sessions = [], loading = false, onNavigate = () => {} }) {
-  const [extra, setExtra] = useState({ achievements: null, connection: 'loading', newRequests: null, vipInvitations: null, backup: null, media: null, pushDevices: null });
+  const [extra, setExtra] = useState({ achievements: null, connection: 'loading', newRequests: null, vipInvitations: null, backup: undefined, media: null, pushDevices: null });
   useEffect(() => {
     let mounted = true;
     Promise.allSettled([
@@ -37,7 +39,7 @@ export default function AdminOverview({ sessions = [], loading = false, onNaviga
         connection: achievements.status === 'fulfilled' ? 'connected' : 'error',
         newRequests: requests.status === 'fulfilled' ? requests.value.reduce((sum, result, index) => sum + (result.items || []).filter((item) => index === 0 ? true : (item.approved !== true && item.approvalStatus !== 'rejected' && item.rejected !== true)).length, 0) : null,
         vipInvitations: vip.status === 'fulfilled' ? (vip.value.items || []).length : null,
-        backup: backup.status === 'fulfilled' ? (backup.value.items || []).sort((a, b) => Number(b.modified) - Number(a.modified))[0] || null : null,
+        backup: backup.status === 'fulfilled' ? (backup.value.items || []).sort((a, b) => Number(b.modified) - Number(a.modified))[0] || null : undefined,
         pushDevices: push.status === 'fulfilled' ? (push.value.devices || []).length : null,
         media: media.status === 'fulfilled' ? manifestSummary(buildMediaManifest(media.value[0]?.value || {}, media.value[1])) : null,
       });
@@ -51,6 +53,7 @@ export default function AdminOverview({ sessions = [], loading = false, onNaviga
     return { active, finished };
   }, [sessions]);
   const recent = sessions.slice(0, 5);
+  const readiness = useMemo(() => computeReadiness({ sessions, media: extra.media, backup: extra.backup, newRequests: extra.newRequests, pushDevices: extra.pushDevices, connection: extra.connection }), [sessions, extra]);
   const upcomingEvent = sessions.filter((session) => session.event?.scheduledAt && Date.parse(session.event.scheduledAt) >= Date.now()).sort((a, b) => Date.parse(a.event.scheduledAt) - Date.parse(b.event.scheduledAt))[0] || recent[0] || null;
   const playerCount = new Set(sessions.flatMap((session) => (session.state?.players || []).map((player) => player.id || player.name).filter(Boolean).map((value) => String(value).trim().toLowerCase()))).size;
   const dateLabel = (value) => {
@@ -72,6 +75,8 @@ export default function AdminOverview({ sessions = [], loading = false, onNaviga
         </div>
       </div>
     </section>
+
+    <AdminReadiness readiness={readiness} onNavigate={onNavigate} />
 
     <section className="adm-card space-y-3">
       <div><div className="adm-card-title">Τι να κάνω τώρα</div><p className="text-xs text-[#e5c76b]/70">Άμεσες εκκρεμότητες από τα αποθηκευμένα δεδομένα.</p></div>

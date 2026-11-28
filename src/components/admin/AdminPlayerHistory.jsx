@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { appApi, request } from '@/api/apiClient';
 import { modeDisplayName } from '@/data/gameConfig';
+import { AdminAvatar } from '@/components/admin/AdminGameUI';
 
 // Ιστορικό παικτριών: βραδιές, νίκες, αγαπημένο mode, τελευταία βραδιά και τα όρια της πιο πρόσφατης αίτησης.
 const keyOf = (name) => String(name || '').trim().toLocaleLowerCase('el-GR');
@@ -113,7 +114,7 @@ export default function AdminPlayerHistory() {
         {shown.map((r) => (
           <div key={r.name} className="border-b border-white/10 last:border-0">
             <button type="button" onClick={() => setOpen(open === r.name ? '' : r.name)} className="flex w-full items-center gap-3 px-4 py-3 text-left">
-              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#2C2C2E] font-bold">{r.name.charAt(0).toUpperCase()}</span>
+              <AdminAvatar name={r.name} size={40} />
               <span className="min-w-0 flex-1"><span className="block truncate font-semibold">{r.name}</span><span className="text-[13px] text-white/55">{r.nights} βραδιές · {r.wins} νίκες{r.fav ? ` · ❤️ ${modeDisplayName(r.fav)}` : ''}</span></span>
               <span className="text-white/40">{open === r.name ? '−' : '›'}</span>
             </button>

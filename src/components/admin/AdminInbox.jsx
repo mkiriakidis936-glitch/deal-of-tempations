@@ -4,6 +4,7 @@ import { appApi, request } from '@/api/apiClient';
 import ComicPanel from '@/components/comic/ComicPanel';
 import ComicButton from '@/components/comic/ComicButton';
 import { modeDisplayName } from '@/data/gameConfig';
+import { AdminAvatar } from '@/components/admin/AdminGameUI';
 
 const SOURCES = [
   ['PublicFormSubmission', 'Δημόσια φόρμα'],
@@ -124,7 +125,7 @@ export default function AdminInbox({ sessions = [] }) {
       const contact = item.contact || item.phone || item.email || '';
       return <ComicPanel key={item._entity + item.id} className="bg-card space-y-2">
         <div className="flex items-start justify-between gap-2">
-          <div className="min-w-0"><div className="font-heading text-lg">{nameFor(item)}</div><div className="text-[11px] text-primary">{labelFor(item._entity)} · {new Date(dateFor(item) || Date.now()).toLocaleString('el-GR')}</div></div>
+          <div className="flex min-w-0 items-center gap-3"><AdminAvatar name={nameFor(item)} size={40} /><div className="min-w-0"><div className="font-heading text-lg">{nameFor(item)}</div><div className="text-[11px] text-primary">{labelFor(item._entity)} · {new Date(dateFor(item) || Date.now()).toLocaleString('el-GR')}</div></div></div>
           {!item.readAt && <span className="rounded-full bg-primary/20 px-2 py-1 text-[10px] font-bold">Νέο</span>}
         </div>
         <div className="text-sm text-foreground/75 break-words">{[item.eventType, ...modesFor(item).map(modeName), item.sessionCode, contact].filter(Boolean).join(' · ')}</div>

@@ -155,7 +155,7 @@ function PlayInner() {
     return (
       <Page center>
         <div className="flex flex-col items-center gap-4">
-          <img src="/icons/icon-192.png" alt="" className="h-20 w-20 rounded-[22px]" />
+          <img src={ART.emblem || '/icons/icon-192.png'} alt="" className="h-20 w-20 rounded-[22px]" />
           <div className="ui-subtitle">Σύνδεση…</div>
         </div>
       </Page>
@@ -165,7 +165,7 @@ function PlayInner() {
   if ((!session || !state) && endedCode) {
     return (
       <Page center>
-        <div className="flex justify-center"><img src="/icons/icon-192.png" alt="" className="h-20 w-20 rounded-[22px]" /></div>
+        <div className="flex justify-center"><img src={ART.emblem || '/icons/icon-192.png'} alt="" className="h-20 w-20 rounded-[22px]" /></div>
         <Header eyebrow="Τέλος βραδιάς" title="Το παιχνίδι ολοκληρώθηκε" gold subtitle="Ευχαριστούμε που έπαιξες! Τα αποτελέσματα φαίνονται στην κεντρική οθόνη." />
         <Button variant="primary" block onClick={() => { setEndedCode(''); getActiveSessionCode().then((code) => { if (code && code !== endedCode) joinByCode(code); }); }}>Σύνδεση σε νέο παιχνίδι</Button>
       </Page>

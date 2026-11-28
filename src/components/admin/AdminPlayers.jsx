@@ -3,6 +3,7 @@ import { appApi, request } from '@/api/apiClient';
 import ComicPanel from '@/components/comic/ComicPanel';
 import ComicButton from '@/components/comic/ComicButton';
 import { HIDDEN_ROLES, FOOTWEAR_LEVELS, TOENAIL_PERKS, getPenaltyLadder } from '@/data/gameConfig';
+import { AdminAvatar } from '@/components/admin/AdminGameUI';
 
 export default function AdminPlayers({ sessions, selectedSession, onSelect, onUpdate }) {
   const [edits, setEdits] = useState({});
@@ -127,6 +128,7 @@ export default function AdminPlayers({ sessions, selectedSession, onSelect, onUp
           return (
             <ComicPanel key={p.id} className="bg-card">
               <div className="flex items-center gap-2 mb-3">
+                <AdminAvatar name={p.name} seed={p.id} size={38} online={!!(presence[p.id] && Date.now() - Number(presence[p.id]) <= 45000)} />
                 <div className="font-heading text-lg flex-1">{p.name}</div>
                 <span className={`text-[10px] font-bold px-2 py-1 rounded-full ${presence[p.id] && Date.now() - Number(presence[p.id]) <= 45000 ? 'bg-emerald-500/15 text-emerald-300' : 'bg-secondary text-foreground/45'}`}>{presence[p.id] && Date.now() - Number(presence[p.id]) <= 45000 ? '● Συνδεδεμένη' : '○ Εκτός σύνδεσης'}</span>
                 {mode === 'classic' && edit.isChief && <span className="bg-tarot-teal text-foreground text-xs px-2 py-0.5 rounded font-bold">🚔 Αστυνόμος</span>}

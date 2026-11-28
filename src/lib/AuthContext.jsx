@@ -26,21 +26,26 @@ export const AuthProvider = ({ children }) => {
     else { setIsLoadingAuth(false); setIsAuthenticated(false); setAuthChecked(true); }
   };
 
-  const checkUserAuth = async () => {
+  const checkUserAuth = async (attempt = 0) => {
+    setIsLoadingAuth(true);
     try {
-      setIsLoadingAuth(true);
       const currentUser = await appApi.auth.me();
       setUser(currentUser);
       setIsAuthenticated(true);
     } catch (error) {
-      // expired / invalid token: just behave as logged out
-      appApi.auth.setToken('');
+      const invalid = error?.status === 401 || error?.status === 403;
+      // Πτώση WiFi / επανεκκίνηση server: κρατάμε το token και ξαναδοκιμάζουμε (όχι νέο login μέσα στη βραδιά).
+      if (!invalid && attempt < 12 && getToken()) {
+        setTimeout(() => checkUserAuth(attempt + 1), 2500);
+        return;
+      }
+      // Μόνο όταν ο server λέει ρητά «άκυρο/ληγμένο» (ή μετά από ~30″ χωρίς server) σβήνουμε τη σύνδεση.
+      if (invalid) appApi.auth.setToken('');
       setUser(null);
       setIsAuthenticated(false);
-    } finally {
-      setIsLoadingAuth(false);
-      setAuthChecked(true);
     }
+    setIsLoadingAuth(false);
+    setAuthChecked(true);
   };
 
   const logout = (shouldRedirect = true) => {

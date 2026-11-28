@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { ART } from '@/data/brandArt';
 import { Page, Header, Card, Badge } from '@/design/ui';
 import { BriefingMobile, briefingPending } from '@/components/modes/ModeBriefing';
 
@@ -24,7 +25,7 @@ export default function WaitingRoom({ sessionCode, state }) {
 
   return (
     <Page center>
-      <div className="flex justify-center"><img src="/icons/icon-192.png" alt="" className="h-20 w-20 rounded-[22px]" /></div>
+      <div className="flex justify-center"><img src={ART.emblem || '/icons/icon-192.png'} alt="" className="h-20 w-20 rounded-[22px]" /></div>
       <Header eyebrow="Deal of Temptation" title={briefing ? 'Οι κανόνες της βραδιάς' : 'Αναμονή έναρξης'} subtitle="Η σύνδεση κρατιέται — μείνε σε αυτή τη σελίδα." right={<Badge tone="gold">{sessionCode}</Badge>} />
       {briefing ? <div className="text-white"><BriefingMobile state={state} /></div> : (
         <Card tone="gold">

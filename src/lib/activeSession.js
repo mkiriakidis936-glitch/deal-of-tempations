@@ -19,11 +19,20 @@ export async function setActiveSessionCode(code) {
   activeSessionWriteQueue = activeSessionWriteQueue
     .catch(() => {})
     .then(async () => {
-      const { items } = await appApi.entities.AppSetting.filter({ key: KEY }, { limit: 1 });
-      const current = items?.[0] || null;
-      if (current?.value === nextCode) return;
-      if (current?.id) await appApi.entities.AppSetting.update(current.id, { value: nextCode });
-      else await appApi.entities.AppSetting.create({ key: KEY, value: nextCode });
+      // Έως 3 προσπάθειες: αν αποτύχει η εγγραφή, τα κινητά χωρίς κωδικό θα πήγαιναν σε λάθος βραδιά.
+      for (let attempt = 0; ; attempt += 1) {
+        try {
+          const { items } = await appApi.entities.AppSetting.filter({ key: KEY }, { limit: 1 });
+          const current = items?.[0] || null;
+          if (current?.value === nextCode) return;
+          if (current?.id) await appApi.entities.AppSetting.update(current.id, { value: nextCode });
+          else await appApi.entities.AppSetting.create({ key: KEY, value: nextCode });
+          return;
+        } catch (error) {
+          if (attempt >= 2 || error?.status === 401 || error?.status === 403) throw error;
+          await new Promise((resolve) => setTimeout(resolve, 1500 * (attempt + 1)));
+        }
+      }
     })
     .catch((error) => {
       console.error('active_session write failed', error);

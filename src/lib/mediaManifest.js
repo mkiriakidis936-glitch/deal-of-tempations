@@ -37,7 +37,7 @@ export const STATUS_LABELS = {
 
 // Ακριβή σημεία εμφάνισης των σταθερών θέσεων (ελεγμένα στον κώδικα).
 const FIXED = {
-  emblem: { file: 'brand_emblem.png', need: 'required', surfaces: ['site', 'forms', 'memories'], where: 'Λογότυπο: πάνω μπάρα του Site, κεφαλίδα κάθε φόρμας, σελίδα αναμνήσεων.' },
+  emblem: { file: 'brand_emblem.png', need: 'required', surfaces: ['site', 'forms', 'memories', 'mobile', 'tv', 'admin'], where: 'Λογότυπο: Site, φόρμες, αναμνήσεις, κινητό (είσοδος & αναμονή), TV, Admin, σύνδεση. Τετράγωνο PNG.' },
   poster: { file: 'brand_poster.jpg', need: 'recommended', surfaces: ['site', 'forms', 'promo'], where: 'Εφεδρική εικόνα: όταν ένα mode δεν έχει δική του εικόνα (Site, φόρμες, Promo).' },
   group: { file: 'brand_group.jpg', need: 'recommended', surfaces: ['site'], where: 'Φόντο της τελευταίας ενότητας του Site («Η επόμενη βραδιά σε περιμένει»).' },
   heistNight: { file: 'brand_heist_night.jpg', need: 'optional', surfaces: ['site'], where: 'Εφεδρική εικόνα του Heist Night στο Site, όταν το Arrest & Heist δεν έχει δική του.' },

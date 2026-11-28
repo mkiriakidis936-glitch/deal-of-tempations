@@ -1,0 +1,28 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { BRANDING_GROUPS, BRANDING_PATHS, brandingMap, groupState } from '../src/lib/appBranding.js';
+
+test('εικονίδιο/εκκίνηση/κοινοποίηση: οι διευθύνσεις είναι ακριβώς αυτές του index.html και των manifests', async () => {
+  const fs = await import('node:fs');
+  const html = fs.readFileSync(new URL('../index.html', import.meta.url), 'utf8');
+  const used = new Set();
+  for (const m of ['manifest.webmanifest', 'manifest-play.webmanifest', 'manifest-public.webmanifest']) {
+    const icons = JSON.parse(fs.readFileSync(new URL(`../public/${m}`, import.meta.url), 'utf8')).icons || [];
+    for (const icon of icons) { used.add(icon.src); assert.ok(BRANDING_PATHS.includes(icon.src), `${m}: το ${icon.src} δεν αλλάζει από το Admin`); }
+  }
+  for (const p of BRANDING_PATHS) assert.ok(html.includes(p) || used.has(p), `δεν χρησιμοποιείται πουθενά: ${p}`);
+  for (const m of html.matchAll(/(?:href|content)="(?:__ORIGIN__)?(\/(?:icons|splash)\/[^"]+|\/og-image\.jpg)"/g)) assert.ok(BRANDING_PATHS.includes(m[1]), `index.html: το ${m[1]} δεν αλλάζει από το Admin`);
+  for (const p of BRANDING_PATHS) assert.ok(fs.existsSync(new URL(`../public${p}`, import.meta.url)), `δεν υπάρχει ενσωματωμένο ${p}`);
+});
+
+test('brandingMap δέχεται μόνο ανεβασμένα αρχεία /media/ για γνωστές διευθύνσεις', () => {
+  const map = brandingMap({
+    '/icons/icon-192.png': '/media/abc-1.png',
+    '/og-image.jpg': 'https://evil.example/x.jpg',
+    '/splash/iphone-15-pro.jpg': '/media/../../etc/passwd',
+    '/secret.txt': '/media/a.png',
+  });
+  assert.deepEqual(map, { '/icons/icon-192.png': '/media/abc-1.png' });
+  assert.equal(groupState(map, BRANDING_GROUPS[0]), 1);
+  assert.deepEqual(brandingMap(null), {});
+});

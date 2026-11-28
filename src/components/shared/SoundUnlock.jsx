@@ -1,4 +1,5 @@
 import React from 'react';
+import { ART } from '@/data/brandArt';
 import { unlockAudio, useAudioUnlocked } from '@/lib/audioUnlock';
 
 export default function SoundUnlock({ variant = 'pill' }) {
@@ -11,7 +12,7 @@ export default function SoundUnlock({ variant = 'pill' }) {
         onClick={unlockAudio}
         className="fixed inset-0 z-[300] flex flex-col items-center justify-center gap-4 bg-black/85 text-white"
       >
-        <img src="/icons/icon-192.png" alt="" className="h-20 w-20 rounded-3xl" />
+        <img src={ART.emblem || '/icons/icon-192.png'} alt="" className="h-20 w-20 rounded-3xl" />
         <span className="text-2xl font-semibold">Πάτα για να ενεργοποιηθεί ο ήχος</span>
         <span className="text-sm text-white/60">Χρειάζεται μία φορά σε κάθε άνοιγμα της οθόνης.</span>
       </button>

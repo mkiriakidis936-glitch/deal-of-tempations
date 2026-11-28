@@ -1,4 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { BOARD_SQUARES, BOARD_TEXT, SQUARE_KINDS, squareOf } from '@/data/modes/movieBoard';
+import { turnPid } from '@/lib/movieBoardEngine';
 import {
   wheelItem, WHEEL_LABEL, WHEEL_MOBILE, fillAll, CHAIR_TEXT, TOD_TEXT, DOND_TEXT, GUESS_TEXT, MANDATORY_STAGES,
   WARRANT_TEXT, WANTED_TEXT, MOST_WANTED_TEXT, ARREST_WHEEL_TEXT,
@@ -21,6 +23,40 @@ export default function MovieShowMobile({ cg, me, nameOf, sendAction }) {
   const idx = Object.keys(cg.conquered || {}).map(Number).sort((a, b) => b - a)[0];
   const continent = continentOf((cg.conquered || {})[idx]?.continent || 'classic').name;
   const f = (t, extra = {}) => fillAll(t, { name, continent, ...extra });
+  const [rolledAt, setRolledAt] = useState(0);
+
+  // 🎲 Ταμπλό & Ζάρι: η σειρά μου, η θέση μου, το τετράγωνο όπου έπεσα.
+  const bd = cg.board;
+  if (bd?.on) {
+    const turn = turnPid(cg);
+    const mine = turn === me.id;
+    const pos = bd.pos?.[me.id] || 0;
+    const myRoll = bd.roll && bd.roll.pid === me.id && now - bd.roll.at < 30000 ? bd.roll : null;
+    const sq = myRoll ? squareOf(myRoll.to) : null;
+    const canRoll = mine && !bd.pending && !bd.allDone && now - rolledAt > 5000; // 5″ κλείδωμα: όχι διπλό πάτημα
+    out.push(
+      <Box key="board" kicker={`🎲 ΤΑΜΠΛΟ · ΤΕΤΡΑΓΩΝΟ ${pos} / ${BOARD_SQUARES.length - 1}`} tone={mine && !bd.pending ? '#2A2112' : '#14141C'}>
+        {bd.allDone ? <p className="font-semibold">{BOARD_TEXT.allDone}</p> : mine && !bd.pending ? (
+          <>
+            <div className="mb-3 text-xl font-black text-[#F7E3A8]">{BOARD_TEXT.yourTurn}</div>
+            <button type="button" disabled={!canRoll} onClick={() => { setRolledAt(Date.now()); sendAction('cg_roll', {}); }}
+              className="mvg-btn flex h-24 w-full items-center justify-center gap-3 rounded-3xl text-2xl font-black text-black disabled:opacity-50"
+              style={{ background: 'linear-gradient(180deg,#FFF1C7,#E8C26B 55%,#C99B2E)' }}>
+              <span className="text-5xl" aria-hidden="true">🎲</span> ΡΙΞΕ
+            </button>
+          </>
+        ) : (
+          <p className="font-semibold text-white/80">{turn ? BOARD_TEXT.waitTurn(nameOf(turn)) : '—'}</p>
+        )}
+        {myRoll && sq && (
+          <div className="mt-3 rounded-2xl bg-black/40 p-3">
+            <div className="text-xs font-bold uppercase tracking-widest text-[#E8C26B]">Έφερες {myRoll.value} · {SQUARE_KINDS[sq.kind]?.icon} {sq.title}</div>
+            <div className="font-semibold">{f(sq.mobile)}</div>
+          </div>
+        )}
+      </Box>,
+    );
+  }
 
   const wl = cg.wheel;
   if (wl && !wl.done && wl.pid === me.id) {

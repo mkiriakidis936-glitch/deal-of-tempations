@@ -14,6 +14,7 @@ const Tablet = lazy(() => import('@/pages/Tablet'));
 const TVScreen = lazy(() => import('@/pages/TV'));
 const Play = lazy(() => import('@/pages/Play'));
 const Admin = lazy(() => import('@/pages/Admin'));
+const PlayPreview = lazy(() => import('@/pages/PlayPreview'));
 const VIPInvitationPage = lazy(() => import('@/pages/VIPInvitationPage'));
 const Promo = lazy(() => import('@/pages/Promo'));
 const GiftUnlock = lazy(() => import('@/pages/GiftUnlock'));
@@ -43,7 +44,7 @@ const PublicVisitTracker = () => {
   const location = useLocation();
   useEffect(() => {
     const path = location.pathname;
-    if (path.startsWith('/memories/')) return;
+    if (path.startsWith('/memories/') || path.startsWith('/play/')) return;
     if (['/', '/tv', '/play', '/admin', '/av-setup', '/login', '/register', '/forgot-password', '/reset-password'].includes(path)) return;
     let trackedPath = path;
     if (path === '/site') {
@@ -74,6 +75,7 @@ const AuthenticatedApp = () => {
       <Route path="/" element={<RequireAdmin><Tablet /></RequireAdmin>} />
       <Route path="/tv" element={<TVScreen />} />
       <Route path="/play" element={<Play />} />
+      <Route path="/play/preview" element={<RequireAdmin><PlayPreview /></RequireAdmin>} />
       <Route path="/admin" element={<RequireAdmin><Admin /></RequireAdmin>} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />

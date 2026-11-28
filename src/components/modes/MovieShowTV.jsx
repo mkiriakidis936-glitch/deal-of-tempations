@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { isVideoUrl } from '@/lib/mediaKind';
 import { continentOf, WANTED_LEVELS } from '@/data/modes/campaignContent';
 import { firstArt } from '@/lib/movieArt';
+import { DiceCube, DICE_MS } from '@/components/modes/MovieBoardTV';
+import { squareOf, SQUARE_KINDS, BOARD_TEXT } from '@/data/modes/movieBoard';
 import { PlayerAvatar, WantedStars, colorOf } from '@/components/modes/MovieGameUI';
 import {
   wheelOf, wheelItem, WHEEL_TV, WHEEL_LABEL, fillAll, CHAIR_TEXT, TOD_TEXT, DOND_TEXT, DOND_BOXES, GUESS_TEXT, BEERPONG,
@@ -119,6 +121,24 @@ export function showScreen({ cg, act, nameOf, artFor, statsOf, now = Date.now(),
   const col = (pid) => colorOf(players, pid);
   const continent = lastContinent(cg, act);
   const alt = Math.floor(now / 6000) % 2 === 1;
+
+  // 0. Ζαριά στο ταμπλό: 3D ζάρι ~2.4″, μετά το τετράγωνο όπου έπεσε (σύνολο ~6″).
+  const rl = cg.board?.on ? cg.board.roll : null;
+  if (rl && now - rl.at < DICE_MS + 3600) {
+    const name = nameOf(rl.pid);
+    const landed = now - rl.at >= DICE_MS;
+    const sq = squareOf(rl.to);
+    const k = SQUARE_KINDS[sq.kind] || {};
+    return (
+      <Stage art={art('wheel')} kicker={landed ? `${k.icon || '🎲'} ΤΕΤΡΑΓΩΝΟ ${rl.to} · ${k.label || ''}` : '🎲 ΖΑΡΙ'} tone={landed ? (k.color || '#E8C26B') : '#E8C26B'}
+        title={landed ? fillAll(sq.title, { name }) : BOARD_TEXT.tvTurn(name)} text={landed ? fillAll(sq.tv, { name }) : ''} player={name} color={col(rl.pid)}>
+        <div className="flex items-center justify-center" style={{ gap: u(3) }}>
+          <DiceCube value={rl.value} at={rl.at} />
+          {landed && <div className="mv-rise gx-gold font-black tabular-nums" style={{ fontSize: u(7) }}>{rl.value}</div>}
+        </div>
+      </Stage>
+    );
+  }
 
   // 1. Τροχός Ποινής
   const wl = cg.wheel;

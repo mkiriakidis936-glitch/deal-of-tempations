@@ -6,6 +6,7 @@ import { MODE_MEDIA, FILM } from '@/data/brandArt';
 import { useTick } from '@/lib/modeKit';
 import { isVideoUrl } from '@/lib/mediaKind';
 import { showScreen, warrantLines } from '@/components/modes/MovieShowTV';
+import { BoardTrack } from '@/components/modes/MovieBoardTV';
 import { firstArt, actTvArt, contArt, trialArt, cardArt, nailArt } from '@/lib/movieArt';
 import { MOVIE_CSS, ActTitleCard, useMovieSounds, CastScreen, EndCredits, montagePhotos } from '@/components/modes/MovieFX';
 import { ContinentBoard, EventTakeover, PlayerAvatar, WantedStars, ArtIcon, colorOf } from '@/components/modes/MovieGameUI';
@@ -239,7 +240,8 @@ export default function CampaignTV({ state }) {
                 🗳️ {votes.q} · {votes.open ? `Ψηφίστε στο κινητό · ${Object.values(votes.ballots || {}).filter(Boolean).length}/${players.length}` : `Αποτέλεσμα: ${tally.map(([k, n]) => `${names[k] || k} ${n}`).join(' · ') || '—'}`}
               </div>
             )}
-            {!drawn && !trial && !card && !votes && (
+            {!drawn && !trial && !card && !votes && cg.board?.on && <BoardTrack cg={cg} players={players} nameOf={nameOf} u={u} />}
+            {!drawn && !trial && !card && !votes && !cg.board?.on && (
               <div className="flex items-center" style={{ gap: u(1.2) }}>
                 <ArtIcon src={contArt('icon', act.continent)} fallback="🗺️" size={u(4)} />
                 <div>

@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { ART } from '@/data/brandArt';
 
 const MODE_LABELS = { deal_movie: 'Η ΤΑΙΝΙΑ · 5 ΗΠΕΙΡΟΙ',
   classic: 'CLASSIC DEAL',
@@ -32,7 +33,7 @@ export default function TVExperienceLayer({ sessionCode, mode, playerCount, stag
 
       <header className="dot-tv-hud" aria-label="Κατάσταση τηλεοπτικής οθόνης">
         <div className="dot-tv-brand">
-          <img className="dot-tv-brand-mark" src="/icons/icon-192.png" alt="" />
+          <img className="dot-tv-brand-mark" src={ART.emblem || '/icons/icon-192.png'} alt="" />
           <span>
             <strong>DEAL OF TEMPTATION</strong>
             <small>{modeLabel}</small>

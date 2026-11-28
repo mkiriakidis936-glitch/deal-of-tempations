@@ -4,6 +4,9 @@ import MissionPanel from '@/components/modes/MissionPanel';
 import WorldMap from '@/components/modes/WorldMap';
 import MovieGamesTablet, { MandatoryPanel } from '@/components/modes/MovieGamesTablet';
 import * as G from '@/lib/movieGamesEngine';
+import * as BD from '@/lib/movieBoardEngine';
+import MovieBoardTablet from '@/components/modes/MovieBoardTablet';
+import { squareOf } from '@/data/modes/movieBoard';
 import { firstArt, contArt, trialArt } from '@/lib/movieArt';
 import { PlayerAvatar, WantedStars, colorOf, onAirLabel } from '@/components/modes/MovieGameUI';
 import { blockedBy, textOf, consentOf } from '@/lib/consent';
@@ -22,6 +25,7 @@ const SCREENS = [
   { id: 5, icon: '👑', label: 'Σκορ, Καταζητούμενη & Μεγάλο Δώρο' },
   { id: 6, icon: '🗄️', label: 'Admin, Backup & Αρχείο' },
   { id: 7, icon: '🎮', label: 'Παιχνίδια, Τροχοί & Καρέκλα' },
+  { id: 8, icon: '🎲', label: 'Ταμπλό & Ζάρι' },
 ];
 const STATE_OPTIONS = {
   shoeL: ['on', 'off'], shoeR: ['on', 'off'], sockL: ['on', 'off', 'sleep'], sockR: ['on', 'off', 'sleep'], flipflops: ['no', 'on', 'tied'], outfit: ['normal', 'pajamas'],
@@ -96,6 +100,10 @@ export default function ActCampaign({ ctx, updateState, onFinish }) {
     } else if (a.type === 'cg_dond' && c.game === 'dond' && c.dond?.pid === pid && c.dond.status === 'offer') {
       c = G.dondDecide(c, a.value);
       log(a.value === 'deal' ? `🤝 ${nameOf(pid)}: DEAL` : `✋ ${nameOf(pid)}: NO DEAL`);
+    } else if (a.type === 'cg_roll' && BD.turnPid(c) === pid && !c.board?.pending) {
+      const v = BD.rollDie();
+      const res = BD.boardRoll(c, pid, v);
+      if (res.ok) { c = res.cg; log(`🎲 ${nameOf(pid)} έφερε ${v} → ${squareOf(res.cg.board.roll.to).title}`); sfx.click?.(); }
     } else if (a.type === 'cg_wheel_ok' && c.wheel?.pid === pid && !c.wheel.done) {
       c = G.confirmWheel(c);
     } else if (a.type === 'cg_buyout') {
@@ -167,10 +175,10 @@ export default function ActCampaign({ ctx, updateState, onFinish }) {
     const t = trialOf(p.startsWith('shoe') ? 'shoe' : 'sock');
     setMg({ cg: E.logLine({ ...E.applyDelta(res.cg, pid, t.win), trial: { id: t.id, pid, at: Date.now(), done: true, side: p, executors: [], until: null, secs: 0, outcome: 'win' }, card: null }, `${t.icon} ${nameOf(pid)}: ${STATE_LABELS[p]} βγήκε (${fmt(t.win)})`) });
   };
-  const sendCard = (id) => {
+  const sendCard = (id, pidOverride = '') => {
     const card = cardOf(id);
     if (!card) return;
-    let pid = pickTarget;
+    let pid = pidOverride || pickTarget;
     if (card.target === 'wanted') pid = E.wantedOne(cg, players) || rank[0]?.id || pid;
     let pid2 = '';
     if (card.pair) { const others = players.filter((p) => p.id !== pid); pid2 = others[Math.floor(Math.random() * others.length)]?.id || ''; }
@@ -257,7 +265,7 @@ export default function ActCampaign({ ctx, updateState, onFinish }) {
           </div>
           <MandatoryPanel ctx={ctx} cg={cg} up={up} players={players} allowed={allowed} />
           <div className="grid gap-2 sm:grid-cols-3">
-            <Btn color="bg-emerald-600" disabled={status === 'active' || status === 'finale' || G.mandatoryPending(cg)} onClick={() => { up((c) => E.startAct(c, players)); log(`▶ ΕΝΑΡΞΗ ΠΡΑΞΗΣ ${act.index + 1}`); }}>▶ ΕΝΑΡΞΗ ΠΡΑΞΗΣ</Btn>
+            <Btn color="bg-emerald-600" disabled={status === 'active' || status === 'finale' || G.mandatoryPending(cg)} onClick={() => { up((c) => { const o = E.startAct(c, players); return o.boardMode ? BD.boardStart(o, players) : o; }); log(`▶ ΕΝΑΡΞΗ ΠΡΑΞΗΣ ${act.index + 1}`); }}>▶ ΕΝΑΡΞΗ ΠΡΑΞΗΣ</Btn>
             <Btn color="bg-red-600" disabled={status !== 'active'} onClick={() => { if (window.confirm('Κλείσιμο πράξης: κλειδώνουν τα αποτελέσματα. Συνέχεια;')) up((c) => E.closeAct(c, players)); }}>■ ΚΛΕΙΣΙΜΟ ΠΡΑΞΗΣ</Btn>
             <Btn color="bg-amber-500" disabled={status === 'active' || !cg.lastClosed || act.index >= act.total - 1 || (cg.conquered || {})[act.index + 1] || G.mandatoryPending(cg)} onClick={() => up((c) => E.goNext(c))}>➡️ ΜΕΤΑΒΑΣΗ ΣΕ ΕΠΟΜΕΝΗ ΗΠΕΙΡΟ</Btn>
             <Btn onClick={() => up((c) => ({ ...c, status: 'transition', previously: { at: Date.now(), from: (c.conquered || {})[Math.max(0, act.index - 1)]?.continent || act.continent, to: act.continent } }))}>⏪ PREVIOUSLY ON → TV</Btn>
@@ -431,6 +439,7 @@ export default function ActCampaign({ ctx, updateState, onFinish }) {
       )}
 
       {screen === 7 && <MovieGamesTablet ctx={ctx} cg={cg} up={up} players={players} allowed={allowed} />}
+      {screen === 8 && <MovieBoardTablet ctx={ctx} cg={cg} up={up} players={players} allowed={allowed} startTrial={startTrial} sendCard={sendCard} setScreen={setScreen} />}
 
       {screen === 6 && (
         <Panel title="🗄️ Οθόνη 6 — Admin, Backup & Αρχείο Στατιστικών" accent="gold">

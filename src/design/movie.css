@@ -216,3 +216,28 @@
   .mvg-tv .gx-bob, .mvg-tv .gx-takeover-card, .mvg-tv .gx-takeover, .gx-burst, .gx-pop { animation: none; }
   .gx-burst { opacity: 0; }
 }
+
+/* ---------- 10.3.0 · Ταμπλό & Ζάρι ---------- */
+/* 3D ζάρι (TV) */
+.gx-die-stage { perspective: 900px; filter: drop-shadow(0 30px 40px rgba(0, 0, 0, 0.75)); }
+.gx-die { position: relative; transform-style: preserve-3d; }
+.gx-die-face {
+  position: absolute; inset: 0; display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(3, 1fr);
+  padding: 14%; gap: 6%; border-radius: 18%; backface-visibility: hidden;
+  background: radial-gradient(120% 120% at 30% 25%, #FFFDF5, #F3E6C4 55%, #D9C08A);
+  box-shadow: inset 0 0 0 3px rgba(201, 155, 46, 0.65), inset 0 -10px 22px rgba(120, 85, 20, 0.35);
+}
+.gx-die-face > span { border-radius: 50%; }
+.gx-die-face > .gx-pip { background: radial-gradient(circle at 35% 30%, #5a0f1c, #1a0207 70%); box-shadow: inset 0 2px 3px rgba(0, 0, 0, 0.6); }
+/* Ταμπλό (TV) */
+.gx-sq {
+  position: relative; border-radius: 16px; color: #F5F1E8;
+  background: rgba(20, 20, 26, 0.9); border: 1px solid rgba(255, 255, 255, 0.18); /* παλιές Smart TV χωρίς color-mix */
+  background: linear-gradient(160deg, color-mix(in srgb, var(--sq) 26%, transparent), rgba(10, 10, 14, 0.85));
+  border: 1px solid color-mix(in srgb, var(--sq) 55%, transparent);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14), 0 6px 0 rgba(0, 0, 0, 0.45);
+}
+.gx-sq.is-hot { box-shadow: 0 0 0 2px var(--sq), 0 0 34px rgba(232, 194, 107, 0.55), 0 6px 0 rgba(0, 0, 0, 0.45); box-shadow: 0 0 0 2px var(--sq), 0 0 34px color-mix(in srgb, var(--sq) 70%, transparent), 0 6px 0 rgba(0, 0, 0, 0.45); transform: translateY(-4px); }
+.gx-pawn-turn { display: inline-block; animation: gx-pawn 1.1s ease-in-out infinite; }
+@keyframes gx-pawn { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+@media (prefers-reduced-motion: reduce) { .gx-pawn-turn { animation: none; } .gx-die { transition: none !important; } }

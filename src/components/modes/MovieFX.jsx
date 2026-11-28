@@ -78,6 +78,7 @@ export function useMovieSounds(cg) {
     if (cg.announce?.at && cg.announce.at !== p.announceAt && p.announceAt !== undefined && cg.announce.kind !== 'arrestwheel') playShowVideo('stinger_wanted');
     if (cg.dond?.awardedAt && cg.dond.awardedAt !== p.awardAt && p.awardAt !== undefined && cg.dond.status === 'won') playShowVideo('stinger_immunity');
     if (cg.trial?.at && cg.trial.at !== p.trialAt && !cg.trial.done && p.trialAt !== undefined && cg.trial.id === 'hogtie') playShowVideo('stinger_arrest');
+    if (cg.board?.roll?.at && cg.board.roll.at !== p.rollAt && p.rollAt !== undefined) { play('dice'); setTimeout(() => play('round'), 2400); }
     if (cg.wheel?.at && cg.wheel.at !== p.wheelAt && p.wheelAt !== undefined) { play('dice'); setTimeout(() => play('alert'), 4600); }
     if (cg.announce?.at && cg.announce.at !== p.announceAt && p.announceAt !== undefined) play(cg.announce.kind === 'mostwanted' ? 'crown' : 'arrest');
     if (cg.mandatory?.at && cg.mandatory.at !== p.mandatoryAt && p.mandatoryAt !== undefined) play('news');
@@ -88,8 +89,8 @@ export function useMovieSounds(cg) {
     if (cg.chair?.at && cg.chair.at !== p.chairAt && p.chairAt !== undefined) play('arrest');
     prev.current = { status: cg.status, actStartedAt: cg.actStartedAt || null, drawnAt: cg.drawn?.at || null, trialAt: cg.trial?.at || null,
       wheelAt: cg.wheel?.at || null, announceAt: cg.announce?.at || null, mandatoryAt: cg.mandatory?.at || null, mDrawnAt: cg.mandatory?.drawnAt || null,
-      boxAt: cg.dond?.lastOpened?.at || null, offerAt: cg.dond?.offerAt || null, awardAt: cg.dond?.awardedAt || null, chairAt: cg.chair?.at || null };
-  }, [cg?.status, cg?.actStartedAt, cg?.drawn?.at, cg?.trial?.at, cg?.wheel?.at, cg?.announce?.at, cg?.mandatory?.at, cg?.mandatory?.drawnAt, cg?.dond?.lastOpened?.at, cg?.dond?.offerAt, cg?.dond?.awardedAt, cg?.chair?.at]);
+      boxAt: cg.dond?.lastOpened?.at || null, offerAt: cg.dond?.offerAt || null, awardAt: cg.dond?.awardedAt || null, chairAt: cg.chair?.at || null, rollAt: cg.board?.roll?.at || null };
+  }, [cg?.status, cg?.actStartedAt, cg?.drawn?.at, cg?.trial?.at, cg?.wheel?.at, cg?.announce?.at, cg?.mandatory?.at, cg?.mandatory?.drawnAt, cg?.dond?.lastOpened?.at, cg?.dond?.offerAt, cg?.dond?.awardedAt, cg?.chair?.at, cg?.board?.roll?.at]);
 }
 
 // «Πρωταγωνιστούν»: το καστ πριν από την πρώτη πράξη.

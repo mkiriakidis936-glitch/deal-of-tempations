@@ -1,6 +1,8 @@
 import React, { lazy, Suspense, useState, useEffect, useCallback, useRef } from 'react';
+import { ART } from '@/data/brandArt';
 import SectionErrorBoundary from '@/components/shared/SectionErrorBoundary';
 import './admin-theme.css';
+import './admin-game.css';
 import { useSearchParams } from 'react-router-dom';
 import { appApi, request } from '@/api/apiClient';
 import { getActiveSessionCode, setActiveSessionCode, subscribeActiveSession } from '@/lib/activeSession';
@@ -431,7 +433,7 @@ export default function Admin() {
         )}
 
         <header className="adm-header">
-          <img className="adm-mark" src="/icons/icon-192.png" alt="" aria-hidden="true" />
+          <img className="adm-mark" src={ART.emblem || '/icons/icon-192.png'} alt="" aria-hidden="true" />
           <div className="adm-titles">
             <h1 className="adm-title">{NAV_GROUPS.flatMap((group) => group.tabs).find((item) => item.id === tab)?.label || 'Κέντρο ελέγχου'}</h1>
             <div className="adm-subtitle">Deal of Temptation · Admin</div>

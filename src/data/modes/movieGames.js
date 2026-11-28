@@ -2,6 +2,8 @@
 // Τα κείμενα-διαταγές είναι ακριβώς όπως ορίστηκαν. [ΟΝΟΜΑ] αντικαθίσταται με το όνομα της παίκτριας.
 // Ασφάλεια: ο Τροχός κληρώνει μόνο ανάμεσα σε ποινές που επιτρέπουν τα όρια της παίκτριας· το ΣΤΟΠ ισχύει πάντα.
 
+// Ελληνικά κεφαλαία χωρίς τόνους (ΑΡΧΗ, όχι ΑΡΧΉ).
+export const upperGR = (s) => String(s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleUpperCase('el').normalize('NFC');
 export const fillName = (text, name) => String(text || '').replace(/\[ΟΝΟΜΑ(?: ΠΑΙΚΤΡΙΑΣ| ΚΟΠΕΛΑΣ)?\]/g, name || '—');
 
 // effect: τι γράφει αυτόματα στο μητρώο κατάστασης. secs: χρονόμετρο στην TV.
@@ -44,9 +46,9 @@ export const wheelOf = (id) => WHEELS.find((w) => w.id === Number(id)) || WHEELS
 export const wheelItem = (wheelId, itemId) => wheelOf(wheelId).items.find((i) => i.id === itemId) || null;
 
 export const WHEEL_TV = {
-  spin: (w, name) => ({ title: `Ο ΤΡΟΧΟΣ ΓΥΡΙΖΕΙ · ${w.name.toUpperCase()}: ${w.subtitle.toUpperCase()}`, text: `Ποινή για την ${name}.` }),
+  spin: (w, name) => ({ title: `Ο ΤΡΟΧΟΣ ΓΥΡΙΖΕΙ · ${upperGR(w.name)}: ${upperGR(w.subtitle)}`, text: `Ποινή για την ${name}.` }),
   result: (item, name) => ({ title: `ΔΙΑΤΑΓΗ ΠΟΙΝΗΣ · ${name}`, text: `Κληρώθηκε η ποινή: ${item.title}. Εκτέλεσε τη διαταγή αμέσως.` }),
-  itemTitle: (item) => `ΔΙΑΤΑΓΗ · ${item.title.toUpperCase()}`,
+  itemTitle: (item) => `ΔΙΑΤΑΓΗ · ${upperGR(item.title)}`,
 };
 export const WHEEL_MOBILE = {
   result: (item) => `Ο Τροχός σταμάτησε στην ποινή σου: ${item.title}. Εκτέλεσέ τη τώρα.`,

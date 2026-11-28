@@ -58,7 +58,8 @@ test('ειδοποιήσεις: κάθε σύνδεσμος ανοίγει υπ�
 
 test('εικονίδια: νέο λογότυπο DT για εφαρμογή, Site και TV', () => {
   assert.match(read('src/data/brandArt.js'), /emblem: '\/icons\/icon-512\.png'/);
-  assert.match(read('src/components/tv/TVExperienceLayer.jsx'), /icon-192\.png/);
+  // Το λογότυπο της TV περνά από τη θέση «Λογότυπο» (αλλάζει από το Admin· προεπιλογή το λογότυπο DT).
+  assert.match(read('src/components/tv/TVExperienceLayer.jsx'), /src=\{ART\.emblem \|\| '\/icons\/icon-192\.png'\}/);
   assert.ok(fs.existsSync(path.join(root, 'public/splash/iphone-17-pro.jpg')));
   assert.ok(fs.existsSync(path.join(root, 'public/manifest-play.webmanifest')));
 });

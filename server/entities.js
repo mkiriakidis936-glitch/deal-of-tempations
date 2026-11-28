@@ -332,7 +332,7 @@ export function validatePlayerPatch(current, patch, playerId) {
       'midnight_pass', 'lockdown_exit_code', 'morning_clue', 'morning_code',
       'lounge_code', 'lounge_mission_done', 'lounge_roll',
       'villa_code', 'villa_vote', 'villa_quiet', 'villa_response', 'villa_profile', 'villa_heist',
-      'cg_nail', 'cg_vote', 'cg_final', 'cg_risk', 'cg_token', 'cg_buyout', 'cg_tod', 'cg_dond_box', 'cg_dond', 'cg_wheel_ok',
+      'cg_nail', 'cg_vote', 'cg_final', 'cg_risk', 'cg_token', 'cg_buyout', 'cg_tod', 'cg_dond_box', 'cg_dond', 'cg_wheel_ok', 'cg_roll',
     ]);
     let validAction = Object.keys(next).length === 1 && isObject(action) &&
       action.playerId === playerId && actionTypes.has(action.type) && Number.isFinite(action.at);

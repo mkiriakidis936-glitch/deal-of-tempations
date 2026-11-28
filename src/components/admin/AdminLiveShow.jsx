@@ -1,9 +1,11 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Tablet, Tv, Smartphone, Square, Play, Copy } from 'lucide-react';
 import { appApi, request } from '@/api/apiClient';
 import ComicPanel from '@/components/comic/ComicPanel';
 import { publishProductionCue, stopProductionCue } from '@/lib/productionCue';
 import { useTick } from '@/lib/modeKit';
+import AdminTriplePreview from '@/components/admin/AdminTriplePreview';
+import { AdminAvatar } from '@/components/admin/AdminGameUI';
 
 const QUICK_CUES = [
   { kind: 'scene', label: 'Καλώς ήρθατε', title: 'Τίτλοι αρχής' },
@@ -36,36 +38,6 @@ function ShowClock({ state }) {
       <div className="font-mono text-3xl font-semibold tabular-nums sm:text-4xl">{clock(spent)}</div>
       <div className="text-[11px] text-foreground/55">{total ? `απομένουν ${clock(total - spent)}` : 'χρόνος εκπομπής'}</div>
     </div>
-  );
-}
-
-function TvPreview({ code }) {
-  const [on, setOn] = useState(false);
-  const [scale, setScale] = useState(0.4);
-  const box = useCallback((node) => {
-    if (!node) return;
-    const fit = () => setScale(node.clientWidth / 1280);
-    fit();
-    new ResizeObserver(fit).observe(node);
-  }, []);
-  return (
-    <ComicPanel className="bg-card space-y-2">
-      <div className="flex items-center justify-between gap-2">
-        <div className="font-heading text-lg">Πρόγραμμα · TV</div>
-        <button type="button" className="adm-pill" onClick={() => setOn((v) => !v)}>{on ? 'Απόκρυψη' : 'Προβολή'}</button>
-      </div>
-      <div ref={box} className="relative aspect-video w-full overflow-hidden rounded-xl border border-border bg-black">
-        {on ? (
-          <iframe
-            title="Προεπισκόπηση TV"
-            src={`/tv?code=${encodeURIComponent(code)}&preview=1`}
-            style={{ width: 1280, height: 720, transform: `scale(${scale})`, transformOrigin: 'top left', border: 0 }}
-          />
-        ) : (
-          <div className="flex h-full items-center justify-center text-xs text-foreground/50">Η προεπισκόπηση είναι κλειστή για εξοικονόμηση ενέργειας.</div>
-        )}
-      </div>
-    </ComicPanel>
   );
 }
 
@@ -189,9 +161,10 @@ export default function AdminLiveShow({ sessions = [], selectedSession, onSelect
 
       {message && <div role="status" className="rounded-lg border border-border bg-card px-3 py-2 text-sm">{message}</div>}
 
+      <AdminTriplePreview code={code} state={state} />
+
       <div className="grid gap-3 lg:grid-cols-[1.2fr_1fr]">
-        <TvPreview code={code} />
-        <ComicPanel className="bg-card space-y-3">
+        <ComicPanel className="bg-card space-y-3 lg:col-span-2">
           <div className="font-heading text-lg">Κεντρικός έλεγχος</div>
           <button
             type="button"
@@ -271,7 +244,8 @@ export default function AdminLiveShow({ sessions = [], selectedSession, onSelect
         <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
           {players.map((p) => (
             <div key={p.id} className="flex items-center gap-2 rounded-xl border border-border/50 px-3 py-2">
-              <span className={`h-2.5 w-2.5 rounded-full ${online.has(p.id) ? 'bg-emerald-400' : 'bg-foreground/25'}`} aria-label={online.has(p.id) ? 'Συνδεδεμένη' : 'Εκτός σύνδεσης'} />
+              <AdminAvatar name={p.name} seed={p.id} size={34} online={online.has(p.id)} />
+              <span className="sr-only">{online.has(p.id) ? 'Συνδεδεμένη' : 'Εκτός σύνδεσης'}</span>
               <span className="min-w-0 flex-1 truncate text-sm font-semibold">{p.name}</span>
               <span className="text-xs text-foreground/55">{p.score ?? p.points ?? ''}</span>
             </div>

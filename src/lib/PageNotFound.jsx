@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { ART } from '@/data/brandArt';
 import { useLocation } from 'react-router-dom';
 
 // Σελίδα 404 — καθαρή, iOS 27, με επιστροφή στο Site.
@@ -17,7 +18,7 @@ export default function PageNotFound() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-black p-6 text-center text-white">
       <div className="w-full max-w-sm space-y-6">
-        <img src="/icons/icon-192.png" alt="" className="mx-auto h-16 w-16 rounded-2xl" />
+        <img src={ART.emblem || '/icons/icon-192.png'} alt="" className="mx-auto h-16 w-16 rounded-2xl" />
         <div className="space-y-2">
           <div className="text-[13px] font-semibold uppercase tracking-[0.2em] text-[#E8C26B]">Σφάλμα 404</div>
           <h1 className="text-3xl font-bold tracking-tight">Η σελίδα δεν βρέθηκε</h1>

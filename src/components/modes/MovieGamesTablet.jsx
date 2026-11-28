@@ -15,7 +15,7 @@ import {
 const card = 'mvg-glass mvg-3d space-y-2 p-3';
 const pick = (list) => list[Math.floor(Math.random() * list.length)];
 
-function useWheelTools({ ctx, cg, up, allowed }) {
+export function useWheelTools({ ctx, cg, up, allowed }) {
   const { nameOf, log } = ctx;
   const profileOf = (pid) => ctx.players?.find((p) => p.id === pid)?.movieProfile;
   const allowedIds = (wheelId, pid) => wheelOf(wheelId).items.filter((i) => allowed(pid, { title: i.title, text: i.tv }) && G.profileAllows(profileOf(pid), i)).map((i) => i.id);

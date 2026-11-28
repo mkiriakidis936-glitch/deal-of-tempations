@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import AdminAppBranding from '@/components/admin/AdminAppBranding';
 import ReactMarkdown from 'react-markdown';
 import ComicPanel from '@/components/comic/ComicPanel';
 import AdminGlobalDesign from '@/components/admin/AdminGlobalDesign';
@@ -95,6 +96,7 @@ export default function AdminSettings() {
   return (
     <div className="space-y-3">
       <SoftwareUpdate />
+      <AdminAppBranding />
       <AdminVipCode />
       <AdminGlobalDesign />
       <ComicPanel className="bg-card space-y-4">

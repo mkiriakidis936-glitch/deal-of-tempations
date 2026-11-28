@@ -57,7 +57,7 @@ import LiveCameraControl from '@/components/tablet/LiveCameraControl';
 import ConnectionHealth from '@/components/tablet/ConnectionHealth';
 import ConnectionBanner from '@/components/shared/ConnectionBanner';
 import { useSyncTimerAutoFire } from '@/hooks/useSyncTimerAutoFire';
-import { calculateMostWanted, getWantedLevel } from '@/lib/gameLogic';
+import { assignPins, calculateMostWanted, getWantedLevel } from '@/lib/gameLogic';
 import { championOf } from '@/lib/modeRanking';
 import { canAssignVipActivity } from '@/lib/playerIntelligence';
 import { appApi, request } from '@/api/apiClient';
@@ -74,17 +74,29 @@ export default function Tablet() {
   }, [state?.stopActive, state?.mg?.stop]);
 
   // Sync με Admin & links: κωδικός στο URL ή η ενεργή συνεδρία του Admin ανοίγει πάντα εδώ.
+  const [activeSynced, setActiveSynced] = React.useState(false);
   React.useEffect(() => {
     const codeParam = new URLSearchParams(window.location.search).get('code');
     if (codeParam) {
-      joinByCode(codeParam.trim().toUpperCase());
+      Promise.resolve(joinByCode(codeParam.trim().toUpperCase())).finally(() => setActiveSynced(true));
       return undefined;
     }
     let alive = true;
-    getActiveSessionCode().then((code) => { if (alive && code) joinByCode(code); });
+    getActiveSessionCode()
+      .then((code) => (alive && code ? joinByCode(code) : null))
+      .catch(() => null)
+      .finally(() => { if (alive) setActiveSynced(true); });
     const unsub = subscribeActiveSession((code) => joinByCode(code));
     return () => { alive = false; unsub(); };
   }, [joinByCode]);
+
+  // Η βραδιά που δείχνει το Tablet είναι ΠΑΝΤΑ η «ενεργή» για τα κινητά και την TV.
+  // (Χωρίς αυτό: αν το Tablet άνοιγε βραδιά από τη μνήμη του ή η ενεργή είχε σβηστεί, τα κινητά πήγαιναν
+  // σε άλλη/ανύπαρκτη βραδιά και το Tablet έδειχνε «Δεν είναι συνδεδεμένη».)
+  React.useEffect(() => {
+    if (!activeSynced || !session?.sessionCode) return;
+    setActiveSessionCode(session.sessionCode);
+  }, [activeSynced, session?.sessionCode]);
 
   async function startNewSession(data) {
     const linkedEvent = data.dotEventId
@@ -486,9 +498,18 @@ export default function Tablet() {
     if (window.confirm('Νέο παιχνίδι; Η τρέχουσα συνεδρία θα αρχειοθετηθεί και θα διαγραφεί.')) archiveAndDelete();
   }
 
+  // Διακόπτης «Χωρίς PIN»: σβήνει τους PIN (pin: null) ή δίνει καινούργιους. Ο server ήδη δέχεται παίκτριες χωρίς PIN.
+  async function setPinsEnabled(enabled) {
+    const players = state?.players || [];
+    if (!players.length) return;
+    if (!enabled && !window.confirm('Χωρίς PIN: όποια σκανάρει το QR μπορεί να πατήσει οποιοδήποτε όνομα και να δει τις κρυφές αποστολές του. Να συνεχίσω;')) return;
+    await trackedUpdate({ players: enabled ? assignPins(players) : players.map((p) => ({ ...p, pin: null })) });
+  }
+
   function renderQR() {
     if (!showQR) return null;
     const pushOn = new Set(pushPlayers);
+    const pinsOn = (state?.players || []).some((p) => p.pin);
     return (
       <div className="fixed inset-0 z-[100] bg-background/70 flex items-center justify-center p-4" onClick={() => setShowQR(false)}>
         <div onClick={(e) => e.stopPropagation()} className="max-w-sm w-full">
@@ -502,6 +523,15 @@ export default function Tablet() {
                 </div>
               ))}
             </div>
+          )}
+          {(state?.players || []).length > 0 && (
+            <label className="mt-3 flex cursor-pointer items-center justify-between gap-3 rounded-2xl bg-[#1C1C1E] px-4 py-3 text-white">
+              <span className="min-w-0">
+                <span className="block text-[15px] font-semibold">Χωρίς PIN</span>
+                <span className="block text-[12px] text-white/55">{pinsOn ? 'Οι παίκτριες μπαίνουν με όνομα + PIN.' : 'Μπαίνουν μόνο με το όνομα. Τα μυστικά δεν είναι προστατευμένα.'}</span>
+              </span>
+              <input type="checkbox" role="switch" className="h-6 w-11 shrink-0 accent-[#E8C26B]" checked={!pinsOn} onChange={(e) => setPinsEnabled(!e.target.checked)} aria-label="Χωρίς PIN" />
+            </label>
           )}
           <ComicButton variant="red" size="md" onClick={() => setShowQR(false)} className="w-full mt-3">
             ✕ ΚΛΕΙΣΙΜΟ

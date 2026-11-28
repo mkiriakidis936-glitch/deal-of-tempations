@@ -208,7 +208,7 @@ export default function TVScreen() {
   if (loading) {
     return (
       <div className="ui-tv min-h-screen flex flex-col items-center justify-center gap-6" style={{ background: 'var(--ui-bg)' }}>
-        <img src="/icons/icon-192.png" alt="" className="h-28 w-28 rounded-[30px]" />
+        <img src={ART.emblem || '/icons/icon-192.png'} alt="" className="h-28 w-28 rounded-[30px]" />
         <div className="ui-tv-muted">Σύνδεση…</div>
       </div>
     );
