@@ -1,4 +1,5 @@
 import { squareAt as villaSquareAt } from '@/lib/villaEngine';
+import { BgVideo } from '@/lib/videoPolicy';
 import React from 'react';
 import { MODE_MEDIA, MEDIA_FOCAL_POINTS, SCENE_MEDIA } from '@/data/brandArt';
 import { isVideoUrl } from '@/lib/mediaKind';
@@ -92,6 +93,6 @@ export default function ModeArt({ state, modeId = state?.mode, sectionId = modeS
   const url = modeArtUrl(modeId, sectionId, state);
   if (!url) return null;
   const style = { objectPosition: MEDIA_FOCAL_POINTS[url] || '50% 50%' };
-  if (isVideoUrl(url)) return <video key={url} src={url} className={`w-full object-cover ${className}`} style={style} autoPlay muted loop playsInline />;
+  if (isVideoUrl(url)) return <BgVideo src={url} className={`w-full object-cover ${className}`} style={style} />;
   return <img key={url} src={url} alt={alt} decoding="async" onError={(e) => { e.currentTarget.style.display = 'none'; }} className={`w-full object-cover ${className}`} style={style} />;
 }

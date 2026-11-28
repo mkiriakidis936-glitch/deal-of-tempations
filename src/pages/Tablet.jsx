@@ -55,6 +55,8 @@ const NightDirectorHost = React.lazy(() => import('@/components/night/NightDirec
 import { Dock, DockItem } from '@/design/ui';
 import LiveCameraControl from '@/components/tablet/LiveCameraControl';
 import ConnectionHealth from '@/components/tablet/ConnectionHealth';
+import VideoControl from '@/components/tablet/VideoControl';
+import LightsControl from '@/components/tablet/LightsControl';
 import ConnectionBanner from '@/components/shared/ConnectionBanner';
 import { useSyncTimerAutoFire } from '@/hooks/useSyncTimerAutoFire';
 import { assignPins, calculateMostWanted, getWantedLevel } from '@/lib/gameLogic';
@@ -135,6 +137,7 @@ export default function Tablet() {
   const [intakeProfilesError, setIntakeProfilesError] = React.useState('');
   const [showSplash, setShowSplash] = React.useState(() => !sessionStorage.getItem('dotSplash'));
   const [overlay, setOverlay] = React.useState(null);
+  const [moreDock, setMoreDock] = React.useState(false);
   const endingRef = React.useRef(false);
 
   // Αναίρεση: κρατάμε τα 10 τελευταία snapshots του state.
@@ -404,15 +407,19 @@ export default function Tablet() {
   function renderProductionControls() {
     return (
       <>
+        {/* 10.5.0: μπροστά TV, Συνδέσεις, Βίντεο. 2η οθόνη, Κάμερα και Κέντρο ελέγχου στο «⋯ Περισσότερα». */}
         <DockItem order={0} fallbackClassName="fixed bottom-36 left-3 z-[65]">
           <a href={`/tv?code=${encodeURIComponent(session.sessionCode)}`} target="_blank" rel="noreferrer" className="ui-btn">📺 TV ↗</a>
-          <a href={`/tv?code=${encodeURIComponent(session.sessionCode)}&view=scores`} target="_blank" rel="noreferrer" className="ui-btn" title="Δεύτερη οθόνη: μεγάλη κατάταξη">🖥️ 2η οθόνη ↗</a>
+          {moreDock && <a href={`/tv?code=${encodeURIComponent(session.sessionCode)}&view=scores`} target="_blank" rel="noreferrer" className="ui-btn" title="Δεύτερη οθόνη: μεγάλη κατάταξη">🖥️ 2η οθόνη ↗</a>}
         </DockItem>
-        <LiveCameraControl sessionCode={session.sessionCode} camera={state?.camera} updateState={trackedUpdate} />
+        {(moreDock || state?.camera?.live) && <LiveCameraControl sessionCode={session.sessionCode} camera={state?.camera} updateState={trackedUpdate} />}
         <ConnectionHealth sessionCode={session.sessionCode} players={state?.players || []} />
+        <VideoControl state={displayState} updateState={trackedUpdate} />
+        <LightsControl state={displayState} updateState={trackedUpdate} sessionCode={session.sessionCode} />
         <ConnectionBanner />
         <DockItem order={5} fallbackClassName="fixed bottom-24 right-3 z-[65]">
-          <button type="button" onClick={() => setOverlay('controlroom')} className="ui-btn ui-btn--primary">🎛️ Κέντρο ελέγχου</button>
+          {moreDock && <button type="button" onClick={() => setOverlay('controlroom')} className="ui-btn ui-btn--primary">🎛️ Κέντρο ελέγχου</button>}
+          <button type="button" onClick={() => setMoreDock((v) => !v)} className="ui-btn" aria-expanded={moreDock}>{moreDock ? '✕ Λιγότερα' : '⋯ Περισσότερα'}</button>
         </DockItem>
         {overlay === 'controlroom' && (
           <ControlRoom

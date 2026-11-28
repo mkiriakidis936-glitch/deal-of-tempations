@@ -108,11 +108,11 @@ export function dondDecide(cg, value, now = Date.now()) {
   const final = closedOthers(d).length === 0;
   return { ...cg, dond: { ...d, status: final ? 'final' : 'open', round: d.round + 1, openedInRound: 0, offer: null, decision: 'nodeal', decidedAt: now } };
 }
-export function dondReveal(cg) {
+export function dondReveal(cg, now = Date.now()) {
   const d = cg.dond;
   if (!d || d.myBox == null) return cg;
   const mine = d.boxes.find((b) => b.no === d.myBox);
-  return { ...cg, dond: { ...d, boxes: d.boxes.map((b) => ({ ...b, open: true })), status: 'revealed', result: { kind: 'box', text: mine.label, win: mine.kind === 'big' } } };
+  return { ...cg, dond: { ...d, boxes: d.boxes.map((b) => ({ ...b, open: true })), status: 'revealed', revealedAt: now, result: { kind: 'box', text: mine.label, win: mine.kind === 'big' } } };
 }
 // Απονομή: η κοπέλα του επάθλου κερδίζει ελευθερία (λύνονται όλα, ασυλία από Τροχούς) + δώρο.
 export function dondAward(cg, win, now = Date.now()) {

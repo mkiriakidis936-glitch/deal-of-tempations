@@ -11,6 +11,8 @@ import { pushRoutes } from './push.js';
 import { visitRoutes } from './visits.js';
 import { backupRoutes, startAutoBackup } from './backup.js';
 import { cameraRoutes } from './camera.js';
+import { lightRoutes, lights } from './lights.js';
+import { onSessionChange } from './entities.js';
 import { releaseNotesFor } from './releaseNotes.js';
 
 const app = express();
@@ -72,6 +74,9 @@ app.use('/api/media', mediaRoutes());
 app.use('/api/push', pushRoutes());
 app.use('/api/visits', visitRoutes());
 app.use('/api/camera', cameraRoutes());
+app.use('/api/lights', lightRoutes());
+// 11.1.0 · Τα φώτα του σπιτιού ακούν κάθε αλλαγή του παιχνιδιού (μόνο ανάγνωση).
+onSessionChange((record) => lights.onSession(record));
 app.use('/media', mediaStatic);
 // Εικονίδιο εφαρμογής, εκκίνηση iPhone, εικόνα κοινοποίησης: αν το Admin ανέβασε δική του, σερβίρεται πριν από τα ενσωματωμένα.
 app.use(brandingRoutes());

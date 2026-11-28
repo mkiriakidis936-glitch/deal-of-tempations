@@ -29,6 +29,8 @@ export async function request(method, path, rawBody) {
     headers: {
       ...(body !== undefined ? { 'Content-Type': 'application/json' } : {}),
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      // Ώρα αποστολής με το ρολόι της συσκευής: ο server κρίνει «ξεχασμένες σε ουρά» ενέργειες χωρίς να εξαρτάται από λάθος ρολόι.
+      'X-Client-Now': String(Date.now()),
     },
     body: body !== undefined ? JSON.stringify(body) : undefined,
   });

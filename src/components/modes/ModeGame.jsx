@@ -140,11 +140,15 @@ export default function ModeGame({ state, updateState, onEnd, onQR, playerProfil
           ))}
         </div>
       )}
-      <div className="flex items-center justify-between gap-2 text-xs opacity-80">
-        <Btn onClick={() => setShowVip(true)}>🔐 VIP</Btn>
-        <span className="opacity-75">Χρόνος παιχνιδιού: {elapsedLabel} / {totalLabel}</span>
-      </div>
-      <PhaseGuideTablet state={state} />
+      {act !== 'campaign' && (
+        <>
+          <div className="flex items-center justify-between gap-2 text-xs opacity-80">
+            <Btn onClick={() => setShowVip(true)}>🔐 VIP</Btn>
+            <span className="opacity-75">Χρόνος παιχνιδιού: {elapsedLabel} / {totalLabel}</span>
+          </div>
+          <PhaseGuideTablet state={state} />
+        </>
+      )}
 
       {act === 'board' && <ActBoard ctx={ctx} onDone={nextAct} />}
       {act === 'midnight' && <ActMidnight ctx={ctx} onDone={nextAct} />}

@@ -34,3 +34,13 @@ test('Χάρτης media: κάθε όνομα αρχείου είναι λατι
     for (const m of text.matchAll(/filename: '([^']*)'/g)) if (m[1]) assert.match(m[1], /^[A-Za-z0-9_.-]+$/, `${f}: «${m[1]}»`);
   }
 });
+
+test('κίνηση παιχνιδιού: φορτώνεται τελευταία και σέβεται τη «Μείωση κίνησης»', async () => {
+  const fs = await import('node:fs');
+  const main = fs.readFileSync(new URL('../src/main.jsx', import.meta.url), 'utf8');
+  assert.ok(main.indexOf("game-motion.css") > main.indexOf("movie.css"), 'το game-motion.css πρέπει να φορτώνεται μετά το movie.css');
+  const css = fs.readFileSync(new URL('../src/design/game-motion.css', import.meta.url), 'utf8');
+  const motion = css.slice(css.indexOf('@media (prefers-reduced-motion: no-preference)'), css.indexOf('@media (prefers-reduced-motion: reduce)'));
+  assert.ok(motion.includes('gx-takeover-card') && motion.includes('mv-roll'));
+  assert.ok(!/backdrop-filter|filter:\s*blur/.test(css), 'χωρίς blur: μένει ελαφρύ');
+});

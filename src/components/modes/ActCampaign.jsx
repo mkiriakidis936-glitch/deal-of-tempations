@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { movieGuideStep } from '@/lib/movieGuide';
 import { Panel, Btn } from '@/components/modes/ModeShell';
 import MissionPanel from '@/components/modes/MissionPanel';
 import WorldMap from '@/components/modes/WorldMap';
@@ -17,15 +18,16 @@ import {
   STATE_LABELS, VALUE_LABELS, MOVIE_TV, MOVIE_SAFETY, continentOf, trialOf, cardOf,
 } from '@/data/modes/campaignContent';
 
+// 10.5.0: μπροστά μόνο ό,τι χρησιμοποιείται σε κάθε βραδιά· τα υπόλοιπα στο «⋯ Περισσότερα» (δεν σβήστηκε τίποτα).
 const SCREENS = [
-  { id: 1, icon: '🗺️', label: 'Χάρτης & Πράξεις' },
-  { id: 2, icon: '🎲', label: 'Κλήρωση, Νύχια & Παπούτσια/Κάλτσες' },
-  { id: 3, icon: '⛓️', label: 'Δράση, Χοροί & Δεσίματα' },
-  { id: 4, icon: '🌙', label: 'Βράδυ στον Ύπνο' },
-  { id: 5, icon: '👑', label: 'Σκορ, Καταζητούμενη & Μεγάλο Δώρο' },
-  { id: 6, icon: '🗄️', label: 'Admin, Backup & Αρχείο' },
-  { id: 7, icon: '🎮', label: 'Παιχνίδια, Τροχοί & Καρέκλα' },
   { id: 8, icon: '🎲', label: 'Ταμπλό & Ζάρι' },
+  { id: 1, icon: '🗺️', label: 'Πράξεις & ΣΤΟΠ' },
+  { id: 7, icon: '🎡', label: 'Τροχοί, Deal & Παιχνίδια' },
+  { id: 2, icon: '🎰', label: 'Κλήρωση & Νύχια' },
+  { id: 5, icon: '👑', label: 'Πόντοι & Κατάταξη' },
+  { id: 3, icon: '⛓️', label: 'Δράση, Χοροί & Δεσίματα', more: true },
+  { id: 4, icon: '🌙', label: 'Βράδυ στον Ύπνο', more: true },
+  { id: 6, icon: '🗄️', label: 'Admin, Backup & Αρχείο', more: true },
 ];
 const STATE_OPTIONS = {
   shoeL: ['on', 'off'], shoeR: ['on', 'off'], sockL: ['on', 'off', 'sleep'], sockR: ['on', 'off', 'sleep'], flipflops: ['no', 'on', 'tied'], outfit: ['normal', 'pajamas'],
@@ -38,7 +40,11 @@ const download = (name, text, type) => { const a = document.createElement('a'); 
 export default function ActCampaign({ ctx, updateState, onFinish }) {
   const { players, mg, setMg, log, nameOf, stopped } = ctx;
   const cg = mg.cg;
-  const [screen, setScreen] = useState(1);
+  const [screen, setScreen] = useState(() => (mg.cg?.boardMode ? 8 : 1));
+  const [moreTabs, setMoreTabs] = useState(false);
+  // 10.5.2 · Οδηγός πρώτης βραδιάς: ανοιχτός από προεπιλογή, θυμάται αν τον έκλεισες σε αυτό το Tablet.
+  const [guideOn, setGuideOn] = useState(() => { try { return localStorage.getItem('dot_movie_guide') !== 'off'; } catch { return true; } });
+  const toggleGuide = (on) => { setGuideOn(on); try { localStorage.setItem('dot_movie_guide', on ? 'on' : 'off'); } catch { /* χωρίς storage */ } };
   const [target, setTarget] = useState('');
   const [executors, setExecutors] = useState([]);
   const [previewCard, setPreviewCard] = useState('');
@@ -202,7 +208,9 @@ export default function ActCampaign({ ctx, updateState, onFinish }) {
   const Bar = (
     <div className="mvg-glass mvg-hud -mx-1 space-y-2">
       <div className="flex flex-wrap items-center gap-2 text-sm">
-        <span className="rounded-full bg-[#FF3B5C]/20 px-3 py-1 font-bold text-[#FF8A9C]">{STATUS_LABEL[status]}</span>
+        {/* 11.0.0 · Κονσόλα σκηνοθέτη */}
+        <span className="show-title text-[20px]">Κονσόλα</span>
+        <span className="show-lower text-[13px]"><span className="flex items-center gap-1.5"><span className="gx-live-dot" />{status === 'active' ? 'ON AIR' : STATUS_LABEL[status]}</span></span>
         <span className="font-semibold">Πράξη {String(act.index + 1).padStart(2, '0')} / {String(act.total).padStart(2, '0')} · {act.info.name}</span>
         {act.day && <span className="opacity-60">Ημέρα {act.day}</span>}
         {cg.actStartedAt && status === 'active' && <span className="tabular-nums opacity-70">⏱ {Math.floor((now - cg.actStartedAt) / 60000)}′</span>}
@@ -220,13 +228,14 @@ export default function ActCampaign({ ctx, updateState, onFinish }) {
           <div key={p.id} role="listitem" className="gx-strip-item" style={i === 0 ? { borderColor: 'rgba(232,194,107,.55)', background: 'rgba(232,194,107,.10)' } : undefined}>
             <PlayerAvatar name={p.name} color={colorOf(players, p.id)} size={30} />
             <span className="font-semibold">{i === 0 ? '👑 ' : ''}{p.name}</span>
-            <b className="gx-gold tabular-nums">{p.score}</b>
+            <b className="show-led tabular-nums">{p.score}</b>
             {p.stats.wanted > 0 && <WantedStars n={p.stats.wanted} size={11} />}
           </div>
         ))}
       </div>
       <div className="mvg-tabs" role="tablist">
-        {SCREENS.map((s) => <button key={s.id} type="button" role="tab" aria-selected={screen === s.id} onClick={() => setScreen(s.id)} className="mvg-tab">{s.icon} {s.id}. {s.label}</button>)}
+        {SCREENS.filter((s) => !s.more || moreTabs || screen === s.id).map((s) => <button key={s.id} type="button" role="tab" aria-selected={screen === s.id} onClick={() => setScreen(s.id)} className="mvg-tab">{s.icon} {s.label}</button>)}
+        <button type="button" onClick={() => setMoreTabs((v) => !v)} className="mvg-tab" aria-expanded={moreTabs}>{moreTabs ? '✕ Λιγότερα' : '⋯ Περισσότερα'}</button>
       </div>
     </div>
   );
@@ -248,12 +257,30 @@ export default function ActCampaign({ ctx, updateState, onFinish }) {
   return (
     <div className="mvg space-y-4">
       {firstArt('bg_tablet_console') && <div aria-hidden="true" className="mvg-bgimg" style={{ backgroundImage: `linear-gradient(180deg, rgba(5,5,8,.7), rgba(5,5,8,.94)), url("${firstArt('bg_tablet_console')}")` }} />}
-      <div className="mvg-marquee"><span>Deal of Temptation</span><b>Η ΤΑΙΝΙΑ</b><span>Κονσόλα σκηνοθεσίας</span></div>
       {Bar}
+      {guideOn ? (() => {
+        const g = movieGuideStep({ mg, players, stopped, nameOf });
+        return (
+          <div className="gx-guide show-panel--gold flex items-start gap-3 rounded-[22px] p-3" role="status" aria-live="polite">
+            <span className="text-3xl leading-none" aria-hidden="true">{g.icon}</span>
+            <div className="min-w-0 flex-1">
+              <div className="show-kicker text-[11px]">🧭 Τώρα</div>
+              <div className="show-title text-[22px]">{g.title}</div>
+              <div className="text-sm opacity-80">{g.text}</div>
+            </div>
+            <div className="flex shrink-0 flex-col gap-2">
+              {g.tab && g.tab !== screen && <Btn color="bg-amber-500" onClick={() => setScreen(g.tab)}>Πήγαινε εκεί →</Btn>}
+              <button type="button" className="text-xs opacity-60 underline" onClick={() => toggleGuide(false)}>Κρύψε τον οδηγό</button>
+            </div>
+          </div>
+        );
+      })() : (
+        <div className="text-right"><button type="button" className="text-xs opacity-60 underline" onClick={() => toggleGuide(true)}>🧭 Δείξε τον οδηγό</button></div>
+      )}
       <p className="rounded-xl bg-[#FF9F0A]/10 px-3 py-2 text-xs text-[#FFB340]">🛟 {MOVIE_SAFETY}</p>
 
       {screen === 1 && (
-        <Panel title="🗺️ Οθόνη 1 — Χάρτης των 5 ηπείρων & Πράξεις" accent="gold">
+        <Panel title="🗺️ Χάρτης των 5 ηπείρων & Πράξεις" accent="gold">
           <WorldMap active={status === 'active' || status === 'transition' ? act.continent : null} conquered={cg.conquered} names={names} className="aspect-[2/1] w-full rounded-2xl" />
           <div className="mvg-glass mvg-3d flex gap-3 p-3 text-sm">
             {contArt('card', act.continent) && <img src={contArt('card', act.continent)} alt="" className="w-28 shrink-0 rounded-2xl object-cover shadow-xl" style={{ aspectRatio: '4/5' }} />}
@@ -291,7 +318,7 @@ export default function ActCampaign({ ctx, updateState, onFinish }) {
       )}
 
       {screen === 2 && (
-        <Panel title="🎲 Οθόνη 2 — Κλήρωση, Νύχια & Παπούτσια / Κάλτσες (ένα-ένα)" accent="gold">
+        <Panel title="🎲 Κλήρωση, Νύχια & Παπούτσια / Κάλτσες (ένα-ένα)" accent="gold">
           <div className="flex flex-wrap gap-2">
             <Btn color="bg-amber-500" onClick={() => draw(players)}>🎲 ΚΛΗΡΩΣΗ ΠΑΙΚΤΡΙΑΣ</Btn>
             <Btn onClick={() => { up((c) => ({ ...E.logLine(c, '💅 Άνοιξε η δήλωση νυχιών'), nailsOpen: !c.nailsOpen, card: c.nailsOpen ? c.card : null })); }}>{cg.nailsOpen ? '🔒 Κλείσιμο δήλωσης νυχιών' : '💅 ΑΝΟΙΓΜΑ ΔΗΛΩΣΗΣ ΝΥΧΙΩΝ'}</Btn>
@@ -314,7 +341,7 @@ export default function ActCampaign({ ctx, updateState, onFinish }) {
       )}
 
       {screen === 3 && (
-        <Panel title="⛓️ Οθόνη 3 — Δράση, Χοροί & Δεσίματα" accent="gold">
+        <Panel title="⛓️ Δράση, Χοροί & Δεσίματα" accent="gold">
           <div className="flex flex-wrap gap-2">
             <Btn color="bg-amber-500" onClick={() => draw(players)}>🎲 Κλήρωση</Btn>
             <PlayerSelect value={pickTarget} onChange={setTarget} label="Στόχος" />
@@ -365,7 +392,7 @@ export default function ActCampaign({ ctx, updateState, onFinish }) {
       )}
 
       {screen === 4 && (
-        <Panel title="🌙 Οθόνη 4 — Βράδυ στον Ύπνο" accent="gold">
+        <Panel title="🌙 Βράδυ στον Ύπνο" accent="gold">
           <div className="flex flex-wrap gap-2">
             <Btn color="bg-violet-600" onClick={() => up((c) => E.logLine({ ...c, night: !E.isNight(c) }, E.isNight(c) ? '☀️ Τέλος νυχτερινής λειτουργίας' : '🌙 Νυχτερινή λειτουργία (σιωπηλή TV)'))}>{E.isNight(cg) ? '☀️ Κλείσιμο νύχτας / πρωινό recap' : '🌙 Νυχτερινή λειτουργία'}</Btn>
             <Btn onClick={() => up((c) => players.reduce((acc, p) => E.setState(acc, p.id, { outfit: 'pajamas' }), E.logLine(c, `👘 ${MOVIE_TV.pajamas.title}`)))}>👘 Πέρασμα στις πιτζάμες</Btn>
@@ -384,7 +411,7 @@ export default function ActCampaign({ ctx, updateState, onFinish }) {
       )}
 
       {screen === 5 && (
-        <Panel title="👑 Οθόνη 5 — Σκορ, Λεία, Tokens, Καταζητούμενη & Μεγάλο Δώρο" accent="gold">
+        <Panel title="👑 Σκορ, Λεία, Tokens, Καταζητούμενη & Μεγάλο Δώρο" accent="gold">
           <div className="overflow-x-auto"><table className="w-full text-left text-sm"><thead><tr className="text-xs opacity-60"><th>#</th><th>Παίκτρια</th><th>Σκορ</th><th>Πόντοι</th><th>Λεία</th><th>Tokens</th><th>Wanted</th><th>Ζώνες</th></tr></thead>
             <tbody>{rank.map((p, i) => {
               const s = p.stats;
@@ -442,7 +469,7 @@ export default function ActCampaign({ ctx, updateState, onFinish }) {
       {screen === 8 && <MovieBoardTablet ctx={ctx} cg={cg} up={up} players={players} allowed={allowed} startTrial={startTrial} sendCard={sendCard} setScreen={setScreen} />}
 
       {screen === 6 && (
-        <Panel title="🗄️ Οθόνη 6 — Admin, Backup & Αρχείο Στατιστικών" accent="gold">
+        <Panel title="🗄️ Admin, Backup & Αρχείο Στατιστικών" accent="gold">
           <div className="flex flex-wrap gap-2">
             <Btn onClick={() => { const { json } = E.exportCampaign(cg, players); download(`deal-tainia-${new Date().toISOString().slice(0, 10)}.json`, json, 'application/json'); }}>⬇ Εξαγωγή JSON</Btn>
             <Btn onClick={() => { const { csv } = E.exportCampaign(cg, players); download(`deal-tainia-${new Date().toISOString().slice(0, 10)}.csv`, csv, 'text/csv;charset=utf-8'); }}>⬇ Εξαγωγή CSV</Btn>

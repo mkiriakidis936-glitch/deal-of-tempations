@@ -1,8 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
+import { BgVideo } from '@/lib/videoPolicy';
 import { isVideoUrl } from '@/lib/mediaKind';
 import { continentOf, WANTED_LEVELS } from '@/data/modes/campaignContent';
 import { firstArt } from '@/lib/movieArt';
 import { DiceCube, DICE_MS } from '@/components/modes/MovieBoardTV';
+import { useWheelAngle, OpeningCase, DrawRoulette } from '@/components/modes/MovieMotion';
 import { squareOf, SQUARE_KINDS, BOARD_TEXT } from '@/data/modes/movieBoard';
 import { PlayerAvatar, WantedStars, colorOf } from '@/components/modes/MovieGameUI';
 import {
@@ -15,32 +17,33 @@ import {
 
 const u = (n) => `min(${n}vw, ${n * 1.75}vh)`;
 const SPIN_MS = 4500;
-const SEG_COLORS = ['#FF3B5C', '#1C1C1E', '#E8C26B', '#2C2C2E', '#FF9F0A', '#1C1C1E', '#BF5AF2', '#2C2C2E', '#64D2FF'];
+const DRAW_MS = 3800;
+// 11.0.0 · Χρώματα game show (μόνο εμφάνιση)
+const SEG_COLORS = ['#FF2FB3', '#2A0F78', '#FFD23F', '#2F5BFF', '#FF8A00', '#6B1CFF', '#2DE2FF', '#C4007F', '#2CFF8F'];
 
 function Art({ src }) {
   if (!src) return null;
   return isVideoUrl(src)
-    ? <video key={src} src={src} className="absolute inset-0 h-full w-full object-cover opacity-20" autoPlay muted loop playsInline />
+    ? <BgVideo src={src} className="absolute inset-0 h-full w-full object-cover opacity-20" />
     : <img key={src} src={src} alt="" onError={(e) => { e.currentTarget.style.display = 'none'; }} className="absolute inset-0 h-full w-full object-cover opacity-20" />;
 }
 
 function Stage({ art, kicker, title, text, children, tone = '#FF3B5C', player, color }) {
   return (
-    <div className="mvg-tv relative flex min-h-screen w-full flex-col items-center justify-center overflow-hidden bg-black text-center text-white" style={{ padding: `${u(3)} ${u(4)}`, background: `radial-gradient(90% 70% at 50% 0%, ${tone}33, #000 70%)` }}>
+    <div className="mvg-tv show-stage relative flex min-h-screen w-full flex-col items-center justify-center overflow-hidden text-center text-white" style={{ padding: `${u(5.5)} ${u(4)} ${u(3)}` }}>
       <Art src={art} />
-      <div className="mvg-floor" />
-      <div className="mvg-spot" />
-      <div className="pointer-events-none absolute inset-x-0 top-0 bg-black" style={{ height: '7vh' }} />
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-black" style={{ height: '7vh' }} />
-      <div className="gx-glass gx-capsule absolute left-1/2 z-10 -translate-x-1/2" style={{ top: '8.5vh', padding: `${u(0.45)} ${u(1.2)}`, fontSize: u(0.85), gap: u(0.8) }}>
-        <span className="flex items-center font-bold" style={{ gap: u(0.35) }}><span className="gx-live-dot" />LIVE</span>
-        <span className="gx-gold font-black" style={{ letterSpacing: '.14em' }}>DEAL OF TEMPTATION</span>
-        <span style={{ color: '#AEAEB2', letterSpacing: '.2em' }}>Η ΤΑΙΝΙΑ</span>
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0" style={{ background: `radial-gradient(70% 60% at 50% 35%, ${tone}40, transparent 70%)` }} />
+      <div className="absolute inset-x-0 top-0 z-10 flex items-center justify-between" style={{ padding: `${u(1.3)} ${u(2.2)}` }}>
+        <div className="text-left">
+          <div className="show-title" style={{ fontSize: u(1.4) }}>Deal of Temptation</div>
+          <div className="show-kicker" style={{ fontSize: u(0.7) }}>Η Ταινία · Live</div>
+        </div>
+        <span className="show-lower" style={{ fontSize: u(1.05) }}><span className="flex items-center" style={{ gap: u(0.4) }}><span className="gx-live-dot" />ON AIR</span></span>
       </div>
       <div className="relative flex w-full max-w-[1600px] flex-col items-center" style={{ gap: u(1.1) }}>
         {player && <div className="mv-rise"><PlayerAvatar name={player} color={color} size={u(7.5)} /></div>}
-        {kicker && <div className="mv-rise font-semibold uppercase tracking-[0.35em]" style={{ fontSize: u(1.15), color: tone }}>{kicker}</div>}
-        {title && <div className="mv-rise mvg-title3d font-black leading-tight" style={{ fontSize: u(3.2) }}>{title}</div>}
+        {kicker && <div className="mv-rise show-kicker" style={{ fontSize: u(1.15) }}>{kicker}</div>}
+        {title && <div className="mv-rise show-sign show-bulbs" style={{ '--bulb': u(0.75), padding: `${u(0.8)} ${u(2.6)}` }}><div className="show-title" style={{ fontSize: u(3.2) }}>{title}</div></div>}
         {text && <div className="mv-rise max-w-[85%] text-white/85" style={{ fontSize: u(1.6), animationDelay: '.2s' }}>{text}</div>}
         {children}
       </div>
@@ -53,19 +56,13 @@ function SpinningWheel({ wheel, w }) {
   const n = w.items.length;
   const seg = 360 / n;
   const target = 360 * 6 - (Math.max(0, wheel.index) + 0.5) * seg;
-  const late = Date.now() - wheel.at > SPIN_MS;
-  const [rot, setRot] = useState(late ? target : 0);
-  useEffect(() => {
-    if (late) { setRot(target); return undefined; }
-    const id = requestAnimationFrame(() => setRot(target));
-    return () => cancelAnimationFrame(id);
-  }, [wheel.at]);
+  const { angle: rot } = useWheelAngle(wheel.at, SPIN_MS, target);
   const R = 200;
   const pt = (deg, r = R) => [R + r * Math.sin((deg * Math.PI) / 180), R - r * Math.cos((deg * Math.PI) / 180)];
   return (
     <div className="mvg-float relative" style={{ width: 'min(26vw, 40vh)', height: 'min(26vw, 40vh)', filter: 'drop-shadow(0 30px 40px rgba(0,0,0,.8))' }}>
       <div className="absolute left-1/2 top-0 z-10 -translate-x-1/2" style={{ width: 0, height: 0, borderLeft: `${u(1.4)} solid transparent`, borderRight: `${u(1.4)} solid transparent`, borderTop: `${u(2.6)} solid #F7E3A8`, filter: 'drop-shadow(0 0 8px rgba(247,227,168,.8))' }} />
-      <svg viewBox="0 0 400 400" className="h-full w-full" style={{ transform: `rotate(${rot}deg)`, transition: late ? 'none' : `transform ${SPIN_MS}ms cubic-bezier(.17,.67,.12,1)` }}>
+      <svg viewBox="0 0 400 400" className="h-full w-full" style={{ transform: `rotate(${rot}deg)` }}>
         <defs>
           <radialGradient id="mvw-hub" cx="35%" cy="30%" r="80%"><stop offset="0%" stopColor="#FFF1C7" /><stop offset="55%" stopColor="#E8C26B" /><stop offset="100%" stopColor="#8A6420" /></radialGradient>
         </defs>
@@ -142,6 +139,20 @@ export function showScreen({ cg, act, nameOf, artFor, statsOf, now = Date.now(),
     );
   }
 
+  // 0β. Κλήρωση «ποια μπαίνει στη σκηνή»: ρουλέτα με τις παίκτριες (~3.8″), μετά το όνομα· σύνολο ~8″.
+  const dr = cg.drawn;
+  const afterDraw = dr && ((cg.wheel && !cg.wheel.done && cg.wheel.at > dr.at) || (cg.trial && !cg.trial.done && cg.trial.at > dr.at) || (cg.card && cg.card.at > dr.at) || (rl && rl.at > dr.at) || (cg.game && ((cg.tod?.at || cg.dond?.at || 0) > dr.at)));
+  if (dr?.pid && !afterDraw && now - dr.at < DRAW_MS + 4200) {
+    const name = nameOf(dr.pid);
+    const landed = now - dr.at >= DRAW_MS;
+    const nail = statsOf?.(cg, dr.pid)?.nail;
+    return (
+      <Stage art={art('mandatory')} kicker="🎰 ΚΛΗΡΩΣΗ" tone="#E8C26B" title={landed ? name : 'ΠΟΙΑ ΜΠΑΙΝΕΙ ΣΤΗ ΣΚΗΝΗ;'} text={landed ? (nail ? `💅 ${nail}` : 'Μπαίνει στη σκηνή!') : ''}>
+        <DrawRoulette players={players} winner={dr.pid} at={dr.at} ms={DRAW_MS} colorOf={col} u={u} />
+      </Stage>
+    );
+  }
+
   // 1. Τροχός Ποινής
   const wl = cg.wheel;
   if (wl && (!wl.done || (wl.reason === 'mandatory' && now - (wl.doneAt || 0) < 10000))) {
@@ -200,7 +211,9 @@ export function showScreen({ cg, act, nameOf, artFor, statsOf, now = Date.now(),
     const t = m.pid ? (alt ? MANDATORY_STAGES.drawn.tv2 : MANDATORY_STAGES.drawn.tv) : (alt ? MANDATORY_STAGES.closing.tv2 : MANDATORY_STAGES.closing.tv);
     return (
       <Stage art={art('mandatory')} kicker="⚠️ ΥΠΟΧΡΕΩΤΙΚΟ ΓΕΓΟΝΟΣ" title={fillAll(t.title, { name, continent })} text={fillAll(t.text, { name, continent })}>
-        {m.pid ? <div className="mv-rise flex items-center" style={{ gap: u(1.6) }}><PlayerAvatar name={name} color={col(m.pid)} size={u(8)} /><span className="gx-gold font-black" style={{ fontSize: u(6) }}>{name}</span></div> : <div className="mv-pulse font-black" style={{ fontSize: u(5) }}>🎲</div>}
+        {m.pid && m.drawnAt && now - m.drawnAt < DRAW_MS
+          ? <DrawRoulette players={players} winner={m.pid} at={m.drawnAt} ms={DRAW_MS} colorOf={col} u={u} />
+          : m.pid ? <div className="mv-rise flex items-center" style={{ gap: u(1.6) }}><PlayerAvatar name={name} color={col(m.pid)} size={u(8)} /><span className="gx-gold font-black" style={{ fontSize: u(6) }}>{name}</span></div> : <div className="mv-pulse font-black" style={{ fontSize: u(5) }}>🎲</div>}
       </Stage>
     );
   }
@@ -300,11 +313,15 @@ function DondTV({ d, nameOf, art, now, col = () => '#E8C26B' }) {
   if (d.status === 'lost') t = DOND_TEXT.tvEnd;
   const board = [...DOND_BOXES].sort((a, b) => a.value - b.value);
   const half = Math.ceil(board.length / 2);
+  // Το βαλιτσάκι που ανοίγει τώρα στο κέντρο: το τελευταίο που άνοιξε, ή στο τέλος το δικό της.
+  const mineBox = d.boxes.find((b) => b.no === d.myBox);
+  const opening = recent ? { ...recent, at: d.lastOpened.at }
+    : d.status === 'revealed' && mineBox && now - (d.revealedAt || 0) < 9000 ? { ...mineBox, at: d.revealedAt || now } : null;
   const Val = ({ b }) => (
     <div className={`truncate rounded-lg font-bold ${opened.has(b.value) ? 'bg-white/5 text-white/25 line-through' : b.kind === 'big' ? 'bg-[#E8C26B] text-black' : b.kind === 'trap' ? 'bg-[#3A0A12] text-[#FF8A9C]' : 'bg-[#2C2C2E]'}`} style={{ fontSize: u(0.95), padding: `${u(0.35)} ${u(0.6)}` }}>{b.label}</div>
   );
   return (
-    <div className="mvg-tv relative grid min-h-screen w-full grid-cols-[1fr_2.2fr_1fr] items-center overflow-hidden bg-black text-white" style={{ gap: u(1.6), padding: u(2.4), background: 'radial-gradient(90% 70% at 50% 0%, #3b2a0a, #000 70%)' }}>
+    <div className="mvg-tv relative grid min-h-screen w-full grid-cols-[1fr_2.2fr_1fr] items-center overflow-hidden show-stage text-white" style={{ gap: u(1.6), padding: u(2.4), background: 'radial-gradient(90% 70% at 50% 0%, #3b2a0a, #000 70%)' }}>
       <Art src={art} />
       <div className="mvg-floor" />
       <div className="relative flex flex-col" style={{ gap: u(0.4) }}>{board.slice(0, half).map((b) => <Val key={b.id} b={b} />)}</div>
@@ -313,7 +330,7 @@ function DondTV({ d, nameOf, art, now, col = () => '#E8C26B' }) {
         <div className="font-semibold uppercase tracking-[0.35em] text-[#E8C26B]" style={{ fontSize: u(1.1) }}>💼 4ο ΠΑΙΧΝΙΔΙ · {name} για την ελευθερία της {prize} + δώρο</div>
         <div className="mv-rise mvg-title3d font-black leading-tight" style={{ fontSize: u(2.8) }}>{fillAll(t.title, { name: prize })}</div>
         <div className="max-w-[90%] text-white/85" style={{ fontSize: u(1.4) }}>{fillAll(t.text, { name: prize })}</div>
-        {recent && <div className="mv-rise rounded-3xl font-black" style={{ fontSize: u(3), padding: `${u(0.6)} ${u(1.6)}`, background: recent.kind === 'trap' ? '#FF3B5C' : recent.kind === 'big' ? '#E8C26B' : '#2C2C2E', color: recent.kind === 'big' ? '#000' : '#fff' }}>Νο {recent.no}: {recent.label}</div>}
+        {opening && <OpeningCase key={`${opening.no}-${opening.at}`} no={opening.no} label={opening.label} kind={opening.kind} at={opening.at} size={u(20)} />}
         {d.status === 'offer' && <div className="mv-pulse rounded-3xl border-2 border-[#E8C26B] font-black text-[#F7E3A8]" style={{ fontSize: u(2.4), padding: `${u(0.8)} ${u(1.6)}` }}>☎️ {d.offer}<div className="text-white" style={{ fontSize: u(1.6) }}>DEAL ή NO DEAL;</div></div>}
         <div className="mvg-float grid w-full grid-cols-8" style={{ gap: u(0.6), marginTop: u(0.6) }}>
           {d.boxes.map((b) => (

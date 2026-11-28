@@ -596,6 +596,18 @@ function buildWhere(entity, q, params) {
 
 // ---------- realtime ----------
 const streams = new Map(); // entity -> Set<{ res, sessionCode, playerId, isPublic }>
+// Ενέργεια κινητού παλιότερη από αυτό (π.χ. έμεινε σε ουρά όσο το κινητό κοιμόταν) δεν εφαρμόζεται ποτέ.
+export const PLAYER_ACTION_STALE_MS = 25_000;
+// Ίδια ενέργεια (ίδια παίκτρια + ίδιο «at») ή παλιότερη από την τελευταία που δέχτηκε ο server → αγνοείται.
+// «Παλιά» κρίνεται με το ρολόι του ΙΔΙΟΥ κινητού (clientNow = ώρα αποστολής, header X-Client-Now), ώστε ένα κινητό
+// με λάθος ώρα να μη χάνει όλες τις ενέργειές του. Χωρίς clientNow, ελέγχεται μόνο η επανάληψη.
+export function isReplayedAction(state, action, clientNow = null) {
+  if (!isObject(action) || !action.playerId) return false;
+  const at = Number(action.at) || 0;
+  const seen = Number(state?.mg?.actionSeen?.[action.playerId]) || 0;
+  const sentAt = Number(clientNow);
+  return at <= seen || (Number.isFinite(sentAt) && sentAt > 0 && at < sentAt - PLAYER_ACTION_STALE_MS);
+}
 const PLAYER_ACTION_HOLD_MS = 10_000; // πόσο «κρατά» μια αδιάβαστη ενέργεια κινητού πριν επιτραπεί να αντικατασταθεί
 const playerPresence = new Map(); // sessionCode -> Map<playerId, lastSeenAt>
 const PLAYER_PRESENCE_TTL_MS = 45_000;
@@ -612,7 +624,14 @@ export function closeAllStreams() {
   return seen.size;
 }
 
+// 11.1.0 · Ακροατές αλλαγών συνεδρίας (φώτα σπιτιού). Μόνο ανάγνωση· ένα σφάλμα τους δεν επηρεάζει το παιχνίδι.
+const sessionListeners = new Set();
+export function onSessionChange(fn) { sessionListeners.add(fn); return () => sessionListeners.delete(fn); }
+
 function broadcast(entity, event) {
+  if (entity === 'GameSession' && event?.type !== 'delete' && event?.data?.state) {
+    for (const fn of sessionListeners) { try { fn(event.data); } catch { /* ποτέ δεν σταματά το παιχνίδι */ } }
+  }
   const set = streams.get(entity);
   if (!set) return;
   const sent = new Map();
@@ -1907,6 +1926,13 @@ export function entityRoutes() {
         if (isAdmin(req)) {
           if (isObject(statePatch)) {
             const mergedState = deepMerge(current.state || {}, statePatch, '', true);
+            // Το Tablet μπορεί να στείλει παλιό αντίγραφο του mg: η μνήμη «ποιες ενέργειες εφαρμόστηκαν» δεν γυρίζει ποτέ πίσω.
+            const seenBefore = current.state?.mg?.actionSeen;
+            if (isObject(seenBefore) && isObject(mergedState.mg)) {
+              const seen = { ...(isObject(mergedState.mg.actionSeen) ? mergedState.mg.actionSeen : {}) };
+              for (const [id, at] of Object.entries(seenBefore)) seen[id] = Math.max(Number(seen[id]) || 0, Number(at) || 0);
+              mergedState.mg = { ...mergedState.mg, actionSeen: seen };
+            }
             const { rows } = await client.query(
               "UPDATE records SET data = data || $1::jsonb, updated_date = now() WHERE id = $2 AND entity = $3 RETURNING *",
               [JSON.stringify({ state: mergedState }), req.params.id, req.entity],
@@ -1967,6 +1993,12 @@ export function entityRoutes() {
         // η νέα δεν τη σβήνει — παίρνει 503 και το κινητό την ξαναστέλνει μόνο του (ουρά επανάληψης).
         const pendingAction = current.state?.mg?.playerAction;
         const incomingAction = statePatch?.mg?.playerAction;
+        // Επανάληψη της ίδιας ενέργειας (ουρά επανασύνδεσης, διπλό αίτημα) ή πολύ παλιά: δεν ξαναεφαρμόζεται.
+        // Απαντάμε 200 με την τρέχουσα κατάσταση, ώστε το κινητό να τη βγάλει από την ουρά του.
+        if (isObject(incomingAction) && isReplayedAction(current.state || {}, incomingAction, Number(req.headers['x-client-now']) || null)) {
+          await client.query('ROLLBACK');
+          return res.json(sanitizePublicSession(current, playerId));
+        }
         if (isObject(incomingAction) && isObject(pendingAction) && Number(pendingAction.at) > Date.now() - PLAYER_ACTION_HOLD_MS &&
             !(pendingAction.playerId === incomingAction.playerId && pendingAction.at === incomingAction.at)) {
           await client.query('ROLLBACK');
@@ -1981,6 +2013,10 @@ export function entityRoutes() {
           delete safePlayerPatch.pajama.sabotages;
         }
         const mergedState = deepMerge(current.state || {}, safePlayerPatch);
+        // Ο server (όχι το κινητό) σημειώνει ποια ενέργεια δέχτηκε, ώστε να μην εφαρμοστεί δεύτερη φορά.
+        if (isObject(incomingAction)) {
+          mergedState.mg = { ...(mergedState.mg || {}), actionSeen: { ...(mergedState.mg?.actionSeen || {}), [playerId]: Number(incomingAction.at) || Date.now() } };
+        }
         const { rows } = await client.query(
           "UPDATE records SET data = data || $1::jsonb, updated_date = now() WHERE id = $2 AND entity = $3 RETURNING *",
           [JSON.stringify({ state: mergedState }), req.params.id, req.entity],

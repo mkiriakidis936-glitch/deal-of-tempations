@@ -58,7 +58,7 @@ export function WheelStatus({ ctx, cg, up }) {
   );
 }
 
-// Δ. Υποχρεωτικό γεγονός μετά από κάθε ήπειρο (Οθόνη 1).
+// Δ. Υποχρεωτικό γεγονός μετά από κάθε ήπειρο («Πράξεις & ΣΤΟΠ»).
 export function MandatoryPanel({ ctx, cg, up, players, allowed }) {
   const [manual, setManual] = useState('');
   const { spin } = useWheelTools({ ctx, cg, up, allowed });
@@ -93,7 +93,7 @@ export function MandatoryPanel({ ctx, cg, up, players, allowed }) {
   );
 }
 
-// Οθόνη 7 — Παιχνίδια & Τροχοί.
+// Παιχνίδια & Τροχοί.
 export default function MovieGamesTablet({ ctx, cg, up, players, allowed }) {
   useTick(cg.game === 'guess' && !cg.guess?.result, 1000);
   const { nameOf, log } = ctx;
@@ -150,7 +150,7 @@ export default function MovieGamesTablet({ ctx, cg, up, players, allowed }) {
   };
 
   return (
-    <Panel title="🎮 Οθόνη 7 — Παιχνίδια, Τροχοί & Καρέκλα Ανάκρισης" accent="gold">
+    <Panel title="🎮 Παιχνίδια, Τροχοί & Καρέκλα Ανάκρισης" accent="gold">
       <WheelStatus ctx={ctx} cg={cg} up={up} />
 
       <div className={card}>

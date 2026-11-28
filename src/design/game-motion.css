@@ -1,0 +1,78 @@
+/* ======================================================================
+   10.5.0 · ΚΙΝΗΣΗ ΣΤΟ ΠΑΙΧΝΙΔΙ
+   Το «iOS flat layer» του app.css σβήνει ΟΛΑ τα animations (*{animation:none!important}).
+   Εδώ ξαναδίνουμε κίνηση ΜΟΝΟ στα στοιχεία του παιχνιδιού (TV, κινητό, Tablet της Ταινίας κ.λπ.).
+   Μόνο transform/opacity (ελαφρύ για GPU), κανένα blur. Φορτώνεται τελευταίο.
+   Όποιος έχει «Μείωση κίνησης» στη συσκευή του δεν βλέπει τίποτα από αυτά.
+   Το «:root:not(#dt-m1):not(#dt-m2)» μπροστά δίνει μεγαλύτερη ειδικότητα από τους κανόνες «χωρίς κίνηση»
+   του app.css και του ui.css (εκείνοι κλείνουν όλα τα άλλα animations σε Tablet/κινητά, όπως πριν).
+   ====================================================================== */
+@media (prefers-reduced-motion: no-preference) {
+  /* --- Ταινία: σκηνή TV --- */
+  :root:not(#dt-m1):not(#dt-m2) .mvg-tv .mvg-float { animation: mvg-float 9s ease-in-out infinite !important; }
+  :root:not(#dt-m1):not(#dt-m2) .mvg-tv .mvg-sheen::after { animation: mvg-sheen 6s ease-in-out infinite !important; }
+  :root:not(#dt-m1):not(#dt-m2) .mvg-tv .mvg-spot { animation: mvg-spot 12s ease-in-out infinite alternate !important; }
+  :root:not(#dt-m1):not(#dt-m2) .mvg-tv .gx-bob { animation: gx-bob 2.6s ease-in-out infinite !important; }
+  :root:not(#dt-m1):not(#dt-m2) .mvg-tv .gx-takeover { animation: gx-xfade 5s ease both !important; }
+  :root:not(#dt-m1):not(#dt-m2) .mvg-tv .gx-takeover-card { animation: gx-in .6s cubic-bezier(.3, 1.4, .5, 1) both !important; }
+  :root:not(#dt-m1):not(#dt-m2) .gx-live-dot { animation: gx-live 1.4s ease-in-out infinite !important; }
+
+  /* --- Πόντοι που «πετάγονται», κουμπιά, κάρτες που γυρίζουν, πιόνια στον χάρτη --- */
+  :root:not(#dt-m1):not(#dt-m2) .gx-burst { animation: gx-rise 1.6s ease-out forwards !important; }
+  :root:not(#dt-m1):not(#dt-m2) .gx-pop { animation: gx-pop .45s cubic-bezier(.3, 1.4, .5, 1) both !important; }
+  :root:not(#dt-m1):not(#dt-m2) .gx-press { transition: transform .18s cubic-bezier(.3, 1.6, .5, 1) !important; }
+  :root:not(#dt-m1):not(#dt-m2) .gx-tile { transition: transform .7s cubic-bezier(.3, 1.4, .5, 1), box-shadow .7s, filter .7s !important; }
+  :root:not(#dt-m1):not(#dt-m2) .gx-flip-inner { transition: transform .6s cubic-bezier(.3, 1.25, .5, 1) !important; }
+  :root:not(#dt-m1):not(#dt-m2) .gx-pawn-move { transition: transform .9s cubic-bezier(.3, 1.3, .5, 1), left .9s cubic-bezier(.3, 1.3, .5, 1), top .9s cubic-bezier(.3, 1.3, .5, 1) !important; }
+
+  /* --- Σινεμά: κάρτα πράξης, letterbox, τίτλοι τέλους, Ken Burns (MovieFX) --- */
+  :root:not(#dt-m1):not(#dt-m2) .mv-bar { animation: mv-bars .9s cubic-bezier(.32, .72, 0, 1) forwards !important; }
+  :root:not(#dt-m1):not(#dt-m2) .mv-card { animation: mv-fade 7s ease forwards !important; }
+  :root:not(#dt-m1):not(#dt-m2) .mv-rise { animation: mv-rise 1.1s cubic-bezier(.32, .72, 0, 1) both !important; }
+  :root:not(#dt-m1):not(#dt-m2) .mv-line { animation: mv-line 1.2s cubic-bezier(.32, .72, 0, 1) both !important; }
+  :root:not(#dt-m1):not(#dt-m2) .mv-roll { animation: mv-roll 70s linear infinite !important; }
+  :root:not(#dt-m1):not(#dt-m2) .mv-kb { animation: mv-kenburns 9s ease-out both !important; }
+  :root:not(#dt-m1):not(#dt-m2) .mv-pulse { animation: mv-pulse 1.4s ease-in-out infinite !important; }
+
+  /* --- Κοινά της εκπομπής (ui.css) --- */
+  :root:not(#dt-m1):not(#dt-m2) .dot-phase-in { animation: dot-phase-in 500ms ease-out both !important; }
+  :root:not(#dt-m1):not(#dt-m2) .dot-crown-in { animation: dot-crown-in 900ms cubic-bezier(.22, 1, .36, 1) both !important; }
+  :root:not(#dt-m1):not(#dt-m2) .dot-kenburns { animation: dot-kenburns 14s ease-out both !important; }
+  :root:not(#dt-m1):not(#dt-m2) .dot-shine { animation: dot-shine 3.6s ease-in-out infinite !important; }
+
+  /* --- ΝΕΑ: αστέρια wanted που ανάβουν ένα-ένα --- */
+  :root:not(#dt-m1):not(#dt-m2) .gx-star { animation: gx-star .5s cubic-bezier(.3, 1.6, .5, 1) both !important; }
+  /* --- Ταμπλό: το πιόνι που έχει σειρά αναπηδά --- */
+  :root:not(#dt-m1):not(#dt-m2) .gx-pawn-turn { animation: gx-pawn 1.1s ease-in-out infinite !important; }
+  /* --- ΝΕΑ: τα πιόνια «πέφτουν» στη νέα ήπειρο όταν αλλάζει πράξη --- */
+  :root:not(#dt-m1):not(#dt-m2) .gx-drop { animation: gx-drop .8s cubic-bezier(.3, 1.5, .5, 1) both !important; }
+  /* --- ΝΕΑ: κλήρωση «ρουλέτα» --- */
+  :root:not(#dt-m1):not(#dt-m2) .gx-roulette-spin { animation: gx-flick .07s linear infinite !important; }
+  :root:not(#dt-m1):not(#dt-m2) .gx-roulette-land { animation: gx-land .6s cubic-bezier(.3, 1.6, .5, 1) both !important; }
+  /* --- ΝΕΑ: κομφετί στο φινάλε --- */
+  :root:not(#dt-m1):not(#dt-m2) .gx-confetti i { animation: gx-fall var(--d, 5s) linear var(--w, 0s) infinite !important; }
+  /* --- ΝΕΑ: χρυσή λάμψη που περνά από το όνομα της νικήτριας --- */
+  :root:not(#dt-m1):not(#dt-m2) .gx-winner-glow { animation: gx-winner 2.8s ease-in-out infinite !important; }
+}
+
+/* Μείωση κίνησης ή χωρίς animation: τα στοιχεία μένουν στην τελική τους θέση. */
+@media (prefers-reduced-motion: reduce) {
+  :root:not(#dt-m1):not(#dt-m2) .mv-bar { height: 11vh; }
+  :root:not(#dt-m1):not(#dt-m2) .gx-confetti { display: none; }
+}
+
+@keyframes gx-drop { 0% { transform: translateY(-120%) scale(.6); opacity: 0; } 60% { transform: translateY(8%) scale(1.08); opacity: 1; } 100% { transform: none; } }
+@keyframes gx-live { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: .45; transform: scale(.82); } }
+@keyframes gx-star { 0% { transform: scale(.2) rotate(-40deg); opacity: 0; } 70% { transform: scale(1.35) rotate(8deg); opacity: 1; } 100% { transform: scale(1) rotate(0); } }
+@keyframes gx-flick { 0% { transform: translateY(-8%); opacity: .55; } 50% { transform: translateY(0); opacity: 1; } 100% { transform: translateY(8%); opacity: .55; } }
+@keyframes gx-land { 0% { transform: scale(1.5); filter: brightness(2); } 60% { transform: scale(.94); } 100% { transform: scale(1); filter: none; } }
+@keyframes gx-fall {
+  0% { transform: translate3d(0, -10vh, 0) rotate(0deg); opacity: 0; }
+  8% { opacity: 1; }
+  100% { transform: translate3d(var(--x, 0px), 110vh, 0) rotate(var(--r, 540deg)); opacity: .9; }
+}
+@keyframes gx-winner { 0%, 100% { text-shadow: 0 0 18px rgba(232, 194, 107, .35); } 50% { text-shadow: 0 0 46px rgba(247, 227, 168, .95), 0 0 90px rgba(232, 194, 107, .5); } }
+
+.gx-confetti { position: absolute; inset: 0; overflow: hidden; pointer-events: none; z-index: 5; }
+.gx-confetti i { position: absolute; top: 0; display: block; width: var(--s, 10px); height: calc(var(--s, 10px) * .45); border-radius: 2px; background: var(--c, #E8C26B); opacity: 0; will-change: transform; }
+.gx-roulette { display: inline-block; min-width: 4ch; }

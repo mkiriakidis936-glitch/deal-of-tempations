@@ -3,6 +3,8 @@ import ReactDOM from 'react-dom/client'
 import '@/app.css'
 import '@/design/ui.css'
 import '@/design/movie.css'
+import '@/design/game-motion.css'
+import '@/design/show.css'
 import '@/lib/push' // πιάνει νωρίς το «Εγκατάσταση εφαρμογής» του browser
 import { loadMedia, subscribeMediaRefresh } from '@/lib/media'
 import { loadCustomModes } from '@/lib/customModes'

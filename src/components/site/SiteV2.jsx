@@ -41,7 +41,7 @@ function Reveal({ as: Tag = 'div', className = '', delay = 0, children, ...rest 
 }
 
 const Kicker = ({ children, className = '' }) => (
-  <div className={`inline-flex items-center gap-2 rounded-full border border-[#E8C26B]/30 bg-[#E8C26B]/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-[#F7E3A8] ${className}`}>{children}</div>
+  <div className={`show-lower text-[13px] uppercase tracking-[0.16em] ${className}`}><span>{children}</span></div>
 );
 
 const SectionTitle = ({ kicker, title, text, center = false }) => (
@@ -75,7 +75,7 @@ export function SiteTopBar({ isHome, onHome, onBook }) {
     ? [['#experiences', 'Εμπειρίες'], ['#how', 'Πώς λειτουργεί'], ['#gallery', 'Γκαλερί'], ['#faq', 'Απορίες']]
     : [['#story', 'Το παιχνίδι'], ['#flow', 'Ροή'], ['#gallery', 'Γκαλερί'], ['#faq', 'Απορίες']];
   return (
-    <header className={`fixed inset-x-0 top-0 z-50 transition-all duration-300 ${scrolled ? 'border-b border-white/10 bg-black/70 backdrop-blur-xl' : 'bg-gradient-to-b from-black/70 to-transparent'}`} style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}>
+    <header className={`fixed inset-x-0 top-0 z-50 transition-all duration-300 ${scrolled ? 'border-b border-[#6b1cff]/40 bg-[#12073a]/85 backdrop-blur-xl' : 'bg-gradient-to-b from-[#12073a]/80 to-transparent'}`} style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}>
       <nav className="mx-auto flex h-16 max-w-7xl items-center gap-4 px-4 sm:h-20 sm:px-6" aria-label="Κύρια πλοήγηση">
         <a href="/site" onClick={(e) => { e.preventDefault(); onHome(); }} className="mr-auto flex items-center gap-2.5">
           <img src={ART.emblem} alt="" className="h-9 w-9 rounded-full ring-1 ring-[#E8C26B]/40" />
@@ -96,8 +96,10 @@ export function SiteHeroV2({ overline, titleLines = [], tagline, image, slot, fa
     <section id="top" className="relative flex min-h-[100svh] items-end overflow-hidden">
       <div className="absolute inset-0">
         <MediaSpot src={image} slot={slot} eager alt="" className="dot-kenburns h-full w-full object-cover" fallback={<div className="h-full w-full bg-[radial-gradient(ellipse_at_top,#3a2a10,#000_70%)]" />} />
-        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/55 to-black/10" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_20%_100%,rgba(232,194,107,0.22),transparent_55%)]" />
+        {/* 11.0.0 · Σκηνή game show πάνω στη φωτογραφία: μωβ τόνος, προβολείς, πάτωμα LED */}
+        <div className="absolute inset-0" style={{ background: 'linear-gradient(0deg, #070320 0%, rgba(18,7,58,.72) 45%, rgba(42,15,120,.25) 100%)' }} />
+        <div className="show-stage absolute inset-0" style={{ background: 'transparent' }} aria-hidden="true" />
+        <div className="absolute inset-0" style={{ background: 'radial-gradient(50% 50% at 15% 100%, rgba(255,47,179,.35), transparent 70%), radial-gradient(40% 50% at 90% 10%, rgba(45,226,255,.25), transparent 70%)' }} />
       </div>
       <div className="relative mx-auto w-full max-w-7xl px-4 pb-14 pt-32 sm:px-6 sm:pb-20">
         <Reveal><Kicker>{overline}</Kicker></Reveal>
@@ -123,9 +125,9 @@ export function SiteHeroV2({ overline, titleLines = [], tagline, image, slot, fa
 export function Marquee({ words }) {
   const row = [...words, ...words];
   return (
-    <div className="relative overflow-hidden border-y border-white/10 bg-[#0b0906] py-4" aria-hidden="true">
-      <div className="dot-marquee flex w-max gap-10 whitespace-nowrap font-display text-xl tracking-wide text-white/70 sm:text-2xl">
-        {row.map((word, i) => <span key={i} className="flex items-center gap-10">{word}<span className="text-[#E8C26B]">✦</span></span>)}
+    <div className="show-ticker relative overflow-hidden py-4" aria-hidden="true">
+      <div className="dot-marquee flex w-max gap-10 whitespace-nowrap font-display text-xl tracking-wide text-white sm:text-2xl">
+        {row.map((word, i) => <span key={i} className="flex items-center gap-10">{word}<span className="text-[#ffd23f]">★</span></span>)}
       </div>
     </div>
   );

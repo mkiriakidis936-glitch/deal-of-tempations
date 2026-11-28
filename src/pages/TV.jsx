@@ -33,6 +33,9 @@ import SessionQRCode from '@/components/shared/SessionQRCode';
 import IntroSequenceTV from '@/components/tv/IntroSequenceTV';
 import TVLaunchVideos from '@/components/tv/TVLaunchVideos';
 import TVShowVideos from '@/components/tv/TVShowVideos';
+import TVSoundscape from '@/components/tv/TVSoundscape';
+import { currentAct } from '@/lib/campaignEngine';
+import { VideoPolicyProvider, isManualVideo } from '@/lib/videoPolicy';
 import TVProductionOutput from '@/components/tv/TVProductionOutput';
 import TutorialTV from '@/components/tv/TutorialTV';
 import GameDurationClock from '@/components/shared/GameDurationClock';
@@ -225,6 +228,7 @@ export default function TVScreen() {
 
   const mostWanted = calculateMostWanted(state.players);
   const wantedLevel = mostWanted ? getWantedLevel(mostWanted) : 0;
+  const manualVideo = isManualVideo(state);
   const currentEvent = state.history?.[0];
   const isMarathon = state.mode === 'marathon';
   const isArrestHeist = state.mode === 'arrest_heist';
@@ -240,6 +244,7 @@ export default function TVScreen() {
   const waitingArt = (isEngine ? modeArtUrl(state.mode, artSectionFor(state), state) : '') || PHOTO.tv || ART.heist5;
 
   return (
+    <VideoPolicyProvider manual={manualVideo}>
     <div className={`dot-tv-shell ui-tv min-h-screen text-foreground flex flex-col ${fullscreen ? 'dot-tv-fullscreen' : ''}`}>
       <ScreenWallpaper src={ART.wallpaperTv} />
       {!IS_PREVIEW && <SoundUnlock variant="screen" />}
@@ -269,13 +274,14 @@ export default function TVScreen() {
       {!IS_PREVIEW && <TVCamera sessionCode={session.sessionCode} camera={state.camera} hidden={!!(state.stopActive || state.mg?.stop)} />}
       <TVLaunchVideos
         sessionCode={session.sessionCode}
-        welcomeSrc={IS_PREVIEW ? '' : FILM.welcomeVideo}
-        openingSrcs={IS_PREVIEW ? [] : [FILM.showOpenVideo, FILM.meetCastVideo]}
-        countdownSrc={IS_PREVIEW ? '' : FILM.countdownVideo}
+        welcomeSrc={IS_PREVIEW || manualVideo ? '' : FILM.welcomeVideo}
+        openingSrcs={IS_PREVIEW || manualVideo ? [] : [FILM.showOpenVideo, FILM.meetCastVideo]}
+        countdownSrc={IS_PREVIEW || manualVideo ? '' : FILM.countdownVideo}
         countdownStartedAt={state.countdownStartedAt}
       />
-      <TVShowVideos disabled={IS_PREVIEW} cue={state.showCue} />
-      <GameIntroTV state={state} sessionCode={session.sessionCode} disabled={IS_PREVIEW} />
+      {state.mg?.cg && <TVSoundscape cg={state.mg.cg} continent={(() => { try { return currentAct(state.mg.cg).continent; } catch { return 'classic'; } })()} muted={IS_PREVIEW || !!state.stopActive || !!state.mg.stop || !!state.musicOff} />}
+      <TVShowVideos disabled={IS_PREVIEW} cue={state.showCue} manual={manualVideo} mode={state.mode} />
+      <GameIntroTV state={state} sessionCode={session.sessionCode} disabled={IS_PREVIEW || manualVideo} />
       <IntroSequenceTV state={state} />
       <NightTV state={state} />
       <WantedStrobePanic wantedLevel={wantedLevel} playerName={mostWanted?.name} />
@@ -362,5 +368,6 @@ export default function TVScreen() {
 
       {state.mode !== 'marathon_4h' && <TVTicker items={formattedHistory.slice(0, 4)} />}
     </div>
+    </VideoPolicyProvider>
   );
 }

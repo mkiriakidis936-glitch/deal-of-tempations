@@ -8,7 +8,7 @@ import { appApi, request } from '@/api/apiClient';
 import { getActiveSessionCode, setActiveSessionCode, subscribeActiveSession } from '@/lib/activeSession';
 import {
   LayoutDashboard, Inbox, Ticket, BarChart3, Radio, AudioLines, Video, Users, Layers,
-  Images, Globe, Mail, FileText, Link2, History, HardDrive, Settings, Bell, Search, RefreshCw, BookOpen, FlaskConical, Instagram } from 'lucide-react';
+  Images, Globe, Mail, FileText, Link2, History, HardDrive, Settings, Bell, Search, RefreshCw, BookOpen, FlaskConical, Instagram, Lightbulb } from 'lucide-react';
 import AdminNav, { AdminTabBar } from '@/components/admin/AdminNav';
 import AdminSessionBar from '@/components/admin/AdminSessionBar';
 const AdminContentHub = lazy(() => import('@/components/admin/AdminContentHub'));
@@ -35,6 +35,7 @@ const AdminVisits = lazy(() => import('@/components/admin/AdminVisits'));
 const AdminDigitalInvitations = lazy(() => import('@/components/admin/AdminDigitalInvitations'));
 const AdminProduction = lazy(() => import('@/components/admin/AdminProduction'));
 const AdminAVControlRoom = lazy(() => import('@/components/admin/AdminAVControlRoom'));
+const AdminLights = lazy(() => import('@/components/admin/AdminLights'));
 const AdminLiveShow = lazy(() => import('@/components/admin/AdminLiveShow'));
 const AdminStudio = lazy(() => import('@/components/admin/AdminStudio'));
 import { createInitialState } from '@/lib/gameLogic';
@@ -57,6 +58,7 @@ const NAV_GROUPS = [
       { id: 'players', label: 'Παίκτριες & ρόλοι', icon: Users },
       { id: 'production', label: 'Παραγωγή & ροή', icon: Video },
       { id: 'av', label: 'Ήχος & εικόνα TV', icon: AudioLines },
+      { id: 'lights', label: 'Φώτα & Samsung TV', icon: Lightbulb },
     ],
   },
   {
@@ -316,6 +318,8 @@ export default function Admin() {
             <AdminAVControlRoom />
           </div>
         );
+      case 'lights':
+        return <AdminLights />;
       case 'website':
         return <AdminSite />;
       case 'media':

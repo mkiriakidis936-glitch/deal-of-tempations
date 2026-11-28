@@ -479,3 +479,22 @@ test('Η Ταινία · Ταμπλό: το κλείσιμο πράξης στα
   cg = E.closeAct(cg, ps);
   assert.equal(B.boardOn(cg), false);
 });
+
+test('ενέργειες κινητού: η ίδια ζαριά δεν εφαρμόζεται δεύτερη φορά, ούτε μια παλιά από ουρά', async () => {
+  const { isReplayedAction, PLAYER_ACTION_STALE_MS } = await import('../server/entities.js');
+  const now = 1_000_000_000;
+  const state = { mg: { actionSeen: { p1: now - 1000 } } };
+  assert.equal(isReplayedAction(state, { playerId: 'p1', type: 'cg_roll', at: now - 1000 }, now), true, 'ίδιο at = επανάληψη');
+  assert.equal(isReplayedAction(state, { playerId: 'p1', type: 'cg_roll', at: now - 5000 }, now), true, 'παλιότερο από το τελευταίο');
+  assert.equal(isReplayedAction(state, { playerId: 'p1', type: 'cg_roll', at: now - 200 }, now), false, 'νέα ζαριά περνά');
+  assert.equal(isReplayedAction({}, { playerId: 'p2', type: 'cg_roll', at: now - PLAYER_ACTION_STALE_MS - 1 }, now), true, 'ξεχασμένη σε ουρά');
+  assert.equal(isReplayedAction({}, { playerId: 'p2', type: 'cg_roll', at: now - 100 }, now), false);
+});
+
+test('Ενέργειες κινητού: κινητό με λάθος ρολόι δεν χάνει ενέργειες (ο έλεγχος «παλιάς» γίνεται με το δικό του ρολόι)', async () => {
+  const { isReplayedAction } = await import('../server/entities.js');
+  const phoneNow = Date.now() - 3 * 60 * 1000; // ρολόι κινητού 3′ πίσω
+  assert.equal(isReplayedAction({}, { playerId: 'p1', type: 'cg_roll', at: phoneNow - 300 }, phoneNow), false);
+  assert.equal(isReplayedAction({}, { playerId: 'p1', type: 'cg_roll', at: phoneNow - 300 }, null), false);
+  assert.equal(isReplayedAction({}, { playerId: 'p1', type: 'cg_roll', at: phoneNow - 60_000 }, phoneNow), true, 'ξεχασμένη σε ουρά 60″');
+});

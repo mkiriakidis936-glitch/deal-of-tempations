@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { BgVideo } from '@/lib/videoPolicy';
 import { MODE_MEDIA } from '@/data/brandArt';
 import { CONTINENTS, continentOf } from '@/data/modes/campaignContent';
 import { tvSfx } from '@/lib/modeKit';
@@ -42,17 +43,18 @@ export function ActTitleCard({ act, opening = false, bg = '' }) {
   const u = (n) => `min(${n}vw, ${n * 1.75}vh)`;
   const video = /\.(mp4|m4v|webm|mov)(\?|$)/i.test(bg);
   return (
-    <div className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center bg-black/80" role="status">
+    <div className="show-stage pointer-events-none absolute inset-0 z-20 flex items-center justify-center" role="status">
       {bg && (video
-        ? <video src={bg} className="absolute inset-0 h-full w-full object-cover opacity-60" autoPlay muted playsInline />
-        : <img src={bg} alt="" className="mv-kb absolute inset-0 h-full w-full object-cover opacity-45" onError={(e) => { e.currentTarget.style.display = 'none'; }} />)}
-      <Letterbox />
-      <div className="mv-card text-center text-white">
-        {opening && <div className="mv-rise font-semibold uppercase tracking-[0.5em] text-white/70" style={{ fontSize: u(1.2) }}>Deal of Temptation παρουσιάζει</div>}
-        <div className="mv-rise font-semibold uppercase tracking-[0.45em] text-[#FF6B85]" style={{ fontSize: u(1.3), marginTop: u(1), animationDelay: '.3s' }}>Πράξη {two(act.index + 1)} · {act.info.name}</div>
-        <div className="mv-line mx-auto bg-[#E8C26B]" style={{ height: 2, width: u(18), margin: `${u(1.2)} auto`, animationDelay: '.6s' }} />
-        <div className="mv-rise font-black leading-none" style={{ fontSize: u(6.2), animationDelay: '.8s' }}>{act.title}</div>
-        {act.when && <div className="mv-rise text-white/60" style={{ fontSize: u(1.3), marginTop: u(1.2), animationDelay: '1.2s' }}>Ημέρα {act.day} · {act.when}</div>}
+        ? <BgVideo src={bg} loop={false} className="absolute inset-0 h-full w-full object-cover opacity-40" />
+        : <img src={bg} alt="" className="mv-kb absolute inset-0 h-full w-full object-cover opacity-30" onError={(e) => { e.currentTarget.style.display = 'none'; }} />)}
+      <div aria-hidden="true" className="absolute inset-0" style={{ background: 'radial-gradient(60% 55% at 50% 50%, rgba(107,28,255,.35), rgba(7,3,32,.85) 80%)' }} />
+      <div className="mv-card relative flex flex-col items-center text-center text-white">
+        {opening && <div className="mv-rise show-kicker" style={{ fontSize: u(1.2) }}>Deal of Temptation παρουσιάζει</div>}
+        <div className="mv-rise show-lower" style={{ fontSize: u(1.6), marginTop: u(1), animationDelay: '.3s' }}><span>Πράξη {two(act.index + 1)} · {act.info.name}</span></div>
+        <div className="mv-rise show-sign show-bulbs" style={{ '--bulb': u(1), padding: `${u(1.2)} ${u(3.6)}`, marginTop: u(1.8), animationDelay: '.8s' }}>
+          <div className="show-title" style={{ fontSize: u(6.2) }}>{act.title}</div>
+        </div>
+        {act.when && <div className="mv-rise show-kicker" style={{ fontSize: u(1.3), marginTop: u(1.6), animationDelay: '1.2s' }}>Ημέρα {act.day} · {act.when}</div>}
       </div>
     </div>
   );
@@ -98,12 +100,10 @@ export function useMovieSounds(cg) {
 export function CastScreen({ players = [], cg, statsOf }) {
   const u = (n) => `min(${n}vw, ${n * 1.75}vh)`;
   return (
-    <div className="relative flex min-h-screen w-full flex-col items-center justify-center overflow-hidden bg-black px-[5vw] text-white">
-      <Letterbox />
-      <div className="mv-rise font-semibold uppercase tracking-[0.5em] text-white/60" style={{ fontSize: u(1.2) }}>Deal of Temptation παρουσιάζει</div>
-      <div className="mv-rise font-black" style={{ fontSize: u(5.5), animationDelay: '.3s' }}>Η ΤΑΙΝΙΑ</div>
-      <div className="mv-line bg-[#E8C26B]" style={{ height: 2, width: u(16), margin: `${u(1.2)} 0`, animationDelay: '.6s' }} />
-      <div className="mv-rise font-semibold uppercase tracking-[0.35em] text-[#E8C26B]" style={{ fontSize: u(1.2), animationDelay: '.8s' }}>Πρωταγωνιστούν</div>
+    <div className="show-stage relative flex min-h-screen w-full flex-col items-center justify-center overflow-hidden px-[5vw] text-white">
+      <div className="mv-rise show-kicker" style={{ fontSize: u(1.2) }}>Deal of Temptation παρουσιάζει</div>
+      <div className="mv-rise show-sign show-bulbs" style={{ '--bulb': u(0.9), padding: `${u(0.9)} ${u(3.2)}`, marginTop: u(1), animationDelay: '.3s' }}><div className="show-title" style={{ fontSize: u(5) }}>Η Ταινία</div></div>
+      <div className="mv-rise show-lower" style={{ fontSize: u(1.4), marginTop: u(1.6), animationDelay: '.8s' }}><span>Οι διαγωνιζόμενες</span></div>
       <div className="grid w-full max-w-[1500px] grid-cols-2 sm:grid-cols-3 lg:grid-cols-4" style={{ gap: u(1.2), marginTop: u(1.6) }}>
         {players.map((p, i) => {
           const nail = statsOf(cg, p.id).nail;
@@ -140,9 +140,9 @@ export function EndCredits({ cg, players = [], rank = [], acts = [], nameOf, pho
   const winner = rank[0];
   const Line = ({ a, b }) => <div className="flex justify-between" style={{ gap: u(2), fontSize: u(1.45), padding: `${u(0.25)} 0` }}><span className="text-white/55">{a}</span><span className="font-semibold">{b}</span></div>;
   return (
-    <div className="relative min-h-screen w-full overflow-hidden bg-black text-white">
+    <div className="show-stage relative min-h-screen w-full overflow-hidden text-white">
       {photos[i] && <img key={photos[i]} src={photos[i]} alt="" onError={(e) => { e.currentTarget.style.display = 'none'; }} className="mv-kb absolute inset-0 h-full w-full object-cover" style={{ opacity: 0.32 }} />}
-      <div className="absolute inset-0 bg-gradient-to-r from-black via-black/70 to-black/30" />
+      <div className="absolute inset-0" style={{ background: 'linear-gradient(90deg, rgba(7,3,32,.95), rgba(18,7,58,.75), rgba(18,7,58,.3))' }} />
       <Letterbox />
       <div className="relative mx-auto h-screen max-w-[900px] overflow-hidden">
         <div className="mv-roll text-center" style={{ paddingTop: u(4) }}>

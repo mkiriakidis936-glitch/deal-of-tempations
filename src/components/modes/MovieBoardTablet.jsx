@@ -69,21 +69,21 @@ export default function MovieBoardTablet({ ctx, cg, up, players, allowed, startT
       return <Btn color="bg-red-600" onClick={() => spin(w.id, pid, 'board')}>🎡 Γύρνα {w.name}: {w.subtitle}</Btn>;
     }
     if (sq.kind === 'game') {
-      return <Btn color="bg-amber-500" onClick={() => { up((c) => G.todStart(c, pid)); log(`🎭 Θάρρος ή Αλήθεια: ${nameOf(pid)}`); setScreen(7); }}>🎭 Ξεκίνα Θάρρος ή Αλήθεια → Οθόνη 7</Btn>;
+      return <Btn color="bg-amber-500" onClick={() => { up((c) => G.todStart(c, pid)); log(`🎭 Θάρρος ή Αλήθεια: ${nameOf(pid)}`); setScreen(7); }}>🎭 Ξεκίνα Θάρρος ή Αλήθεια → «Τροχοί, Deal & Παιχνίδια»</Btn>;
     }
     if (sq.kind === 'chair') {
       const blocked = players.find((p) => p.id === pid)?.movieProfile?.chairOk === false || !allowed(pid, { title: 'Καρέκλα Ανάκρισης δέσιμο', text: 'δέσιμο χέρια πόδια' });
       if (blocked) return <p className="text-sm opacity-70">Η Καρέκλα είναι εκτός ορίων της — πάτα «Επόμενη σειρά» (PASS).</p>;
-      return <Btn color="bg-red-600" onClick={() => { up((c) => G.todStart(G.chairIn(c, pid), pid)); log(`🪑 ${nameOf(pid)} στην Καρέκλα`); setScreen(7); }}>🪑 Στην Καρέκλα + Θάρρος ή Αλήθεια → Οθόνη 7</Btn>;
+      return <Btn color="bg-red-600" onClick={() => { up((c) => G.todStart(G.chairIn(c, pid), pid)); log(`🪑 ${nameOf(pid)} στην Καρέκλα`); setScreen(7); }}>🪑 Στην Καρέκλα + Θάρρος ή Αλήθεια → «Τροχοί, Deal & Παιχνίδια»</Btn>;
     }
     if (sq.kind === 'mission') {
-      return <Btn color="bg-amber-500" onClick={() => setScreen(1)}>📲 Στείλε μυστική αποστολή (Οθόνη 1)</Btn>;
+      return <Btn color="bg-amber-500" onClick={() => setScreen(1)}>📲 Στείλε μυστική αποστολή («Πράξεις & ΣΤΟΠ»)</Btn>;
     }
     return null;
   };
 
   return (
-    <Panel title="🎲 Οθόνη 8 — Ταμπλό & Ζάρι" accent="gold">
+    <Panel title="🎲 Ταμπλό & Ζάρι" accent="gold">
       <p className="text-sm opacity-75">Οι παίκτριες ρίχνουν το ζάρι από το κινητό τους, με τη σειρά. Το πιόνι προχωρά στην TV και το τετράγωνο λέει τι ακολουθεί. Τα αυτόματα τετράγωνα (πόντοι, λεία, ένταλμα, ασφαλές, ξαναρίχνεις, χάνεις σειρά, τέλος) γίνονται μόνα τους.</p>
       <div className="flex flex-wrap items-center gap-2">
         <label className="flex items-center gap-2 rounded-full bg-white/10 px-3 py-2 text-sm font-semibold">
@@ -97,7 +97,7 @@ export default function MovieBoardTablet({ ctx, cg, up, players, allowed, startT
       {on && b.allDone && (
         <div className="mvg-glass space-y-2 p-3">
           <div className="font-bold">👑 Όλες τερμάτισαν την ήπειρο.</div>
-          <Btn color="bg-red-600" onClick={() => setScreen(1)}>■ Πήγαινε να κλείσεις την πράξη (Οθόνη 1)</Btn>
+          <Btn color="bg-red-600" onClick={() => setScreen(1)}>■ Πήγαινε να κλείσεις την πράξη («Πράξεις & ΣΤΟΠ»)</Btn>
         </div>
       )}
 

@@ -6,6 +6,8 @@ import {
   WARRANT_TEXT, WANTED_TEXT, MOST_WANTED_TEXT, ARREST_WHEEL_TEXT,
 } from '@/data/modes/movieGames';
 import { continentOf } from '@/data/modes/campaignContent';
+import { MobileDice, useBuzz } from '@/components/modes/MovieMotion';
+import { FlipCard } from '@/components/modes/MovieGameUI';
 
 // Η ΤΑΙΝΙΑ · κινητό: προσωπικές διαταγές του show (Τροχός, παιχνίδια, κλήρωση, εντάλματα). Χωρίς animations.
 const Box = ({ kicker, children, tone = '#3A0A12' }) => (
@@ -16,7 +18,7 @@ const Box = ({ kicker, children, tone = '#3A0A12' }) => (
 );
 const big = 'mvg-btn h-14 rounded-2xl text-base font-black';
 
-export default function MovieShowMobile({ cg, me, nameOf, sendAction }) {
+export default function MovieShowMobile({ cg, me, nameOf, sendAction, stopped = false }) {
   const now = Date.now();
   const out = [];
   const name = nameOf(me.id);
@@ -24,6 +26,12 @@ export default function MovieShowMobile({ cg, me, nameOf, sendAction }) {
   const continent = continentOf((cg.conquered || {})[idx]?.continent || 'classic').name;
   const f = (t, extra = {}) => fillAll(t, { name, continent, ...extra });
   const [rolledAt, setRolledAt] = useState(0);
+  // 10.5.2 · Δονήσεις (πάντα στην ίδια σειρά, όχι μέσα σε if): σειρά μου, Τροχός για μένα.
+  const myTurnAt = cg.board?.on && turnPid(cg) === me.id && !cg.board.pending ? (cg.board.roll?.at || cg.board.at || 1) : 0;
+  useBuzz(myTurnAt, [40, 60, 40], { off: stopped, fresh: 60000 });
+  const myWheelAt = cg.wheel && !cg.wheel.done && cg.wheel.pid === me.id ? cg.wheel.at : 0;
+  useBuzz(myWheelAt, [30, 50, 30, 50, 30], { off: stopped });
+  useBuzz(myWheelAt, [120, 60, 120], { off: stopped, delay: 4500, fresh: 12000 });
 
   // 🎲 Ταμπλό & Ζάρι: η σειρά μου, η θέση μου, το τετράγωνο όπου έπεσα.
   const bd = cg.board;
@@ -38,21 +46,23 @@ export default function MovieShowMobile({ cg, me, nameOf, sendAction }) {
       <Box key="board" kicker={`🎲 ΤΑΜΠΛΟ · ΤΕΤΡΑΓΩΝΟ ${pos} / ${BOARD_SQUARES.length - 1}`} tone={mine && !bd.pending ? '#2A2112' : '#14141C'}>
         {bd.allDone ? <p className="font-semibold">{BOARD_TEXT.allDone}</p> : mine && !bd.pending ? (
           <>
-            <div className="mb-3 text-xl font-black text-[#F7E3A8]">{BOARD_TEXT.yourTurn}</div>
-            <button type="button" disabled={!canRoll} onClick={() => { setRolledAt(Date.now()); sendAction('cg_roll', {}); }}
-              className="mvg-btn flex h-24 w-full items-center justify-center gap-3 rounded-3xl text-2xl font-black text-black disabled:opacity-50"
-              style={{ background: 'linear-gradient(180deg,#FFF1C7,#E8C26B 55%,#C99B2E)' }}>
-              <span className="text-5xl" aria-hidden="true">🎲</span> ΡΙΞΕ
-            </button>
+            <div className="show-title mb-1 text-center text-[26px]">{BOARD_TEXT.yourTurn}</div>
+            {/* 11.0.0 · Buzzer game show */}
+            <div className="flex justify-center py-4">
+              <button type="button" disabled={!canRoll} onClick={() => { setRolledAt(Date.now()); sendAction('cg_roll', {}); }}
+                className="show-buzzer flex w-[58%] max-w-[220px] flex-col items-center justify-center text-[30px]">
+                <span className="text-[52px] leading-none" aria-hidden="true">🎲</span>ΡΙΞΕ
+              </button>
+            </div>
           </>
         ) : (
           <p className="font-semibold text-white/80">{turn ? BOARD_TEXT.waitTurn(nameOf(turn)) : '—'}</p>
         )}
         {myRoll && sq && (
-          <div className="mt-3 rounded-2xl bg-black/40 p-3">
+          <MobileDice key={myRoll.at} roll={myRoll} off={stopped}>
             <div className="text-xs font-bold uppercase tracking-widest text-[#E8C26B]">Έφερες {myRoll.value} · {SQUARE_KINDS[sq.kind]?.icon} {sq.title}</div>
             <div className="font-semibold">{f(sq.mobile)}</div>
-          </div>
+          </MobileDice>
         )}
       </Box>,
     );
@@ -66,9 +76,11 @@ export default function MovieShowMobile({ cg, me, nameOf, sendAction }) {
       <Box key="wheel" kicker={`🎡 ${WHEEL_LABEL[wl.id]}`}>
         {spinning ? <div className="text-lg font-bold">{wl.reason === 'mandatory' ? f(MANDATORY_STAGES.spin.mobile) : wl.reason === 'arrest' ? ARREST_WHEEL_TEXT.mobile : 'Ο Τροχός γυρίζει για σένα — κοίτα την TV.'}</div> : item ? (
           <>
-            <div className="text-2xl font-black text-[#F7E3A8]">{item.title}</div>
-            <p className="mt-1 text-white/85">{f(item.mobile)}</p>
-            <p className="mt-1 text-sm text-white/60">{wl.reason === 'mandatory' ? MANDATORY_STAGES.spin.mobileResult(item.title) : WHEEL_MOBILE.result(item)}</p>
+            {/* 10.5.2 · Η κάρτα της ποινής γυρίζει (μόνη της σε 1,2″ ή με πάτημα) */}
+            <FlipCard id={`${wl.at}`} auto={now - wl.at > 9000 ? 1 : 1200}
+              front={<div className="show-sign show-bulbs flex min-h-[130px] flex-col items-center justify-center text-center" style={{ '--bulb': '10px', background: 'linear-gradient(160deg,#ff2fb3,#6b1cff 60%,#2a0f78)' }}><div className="text-5xl" aria-hidden="true">❓</div><div className="show-title mt-1 text-[22px]">Η κάρτα σου · πάτα</div></div>}
+              back={<div className="show-panel--gold flex min-h-[130px] flex-col items-center justify-center rounded-[22px] p-4 text-center"><div className="show-title text-[26px]">{item.title}</div><p className="mt-1 text-white/85">{f(item.mobile)}</p></div>} />
+            <p className="mt-2 text-sm text-white/60">{wl.reason === 'mandatory' ? MANDATORY_STAGES.spin.mobileResult(item.title) : WHEEL_MOBILE.result(item)}</p>
             {wl.until && <div className="mt-2 text-5xl font-black tabular-nums text-[#E8C26B]">{Math.max(0, Math.ceil((wl.until - now) / 1000))}″</div>}
             {wl.confirmed ? <p className="mt-2 text-sm text-[#7BE495]">✓ {WHEEL_MOBILE.active}</p> : <button type="button" className={`${big} mt-3 w-full bg-[#30D158] text-black`} onClick={() => sendAction('cg_wheel_ok', {})}>✓ ΕΠΙΒΕΒΑΙΩΝΩ ΤΗΝ ΠΟΙΝΗ</button>}
           </>

@@ -43,42 +43,47 @@ export default function CampaignMobile({ state, me, sendAction }) {
     <div className="mvg space-y-3 text-white">
       {(() => {
         const bg = E.isNight(cg) && status === 'active' ? firstArt('bg_phone_night') : status === 'active' ? (actPhoneArt(act) || contArt('phone', act.continent)) : firstArt('bg_phone_waiting') || contArt('phone', act.continent);
-        return bg ? <div aria-hidden="true" className="mvg-bgimg" style={{ backgroundImage: `linear-gradient(180deg, rgba(5,5,8,.55), rgba(5,5,8,.92) 55%), url("${bg}")` }} /> : null;
+        return bg ? <div aria-hidden="true" className="mvg-bgimg" style={{ backgroundImage: `linear-gradient(180deg, rgba(18,7,58,.55), rgba(7,3,32,.94) 55%), url("${bg}")` }} /> : null;
       })()}
-      <MovieShowMobile cg={cg} me={me} nameOf={nameOf} sendAction={sendAction} />
+      <MovieShowMobile cg={cg} me={me} nameOf={nameOf} sendAction={sendAction} stopped={!!mg.stop || !!state.stopActive} />
 
-      <header className="gx-glass p-3.5">
-        <div className="flex items-center gap-3">
-          <PlayerAvatar name={me.name} color={colorOf(players, me.id)} size={50} />
+      <header className="gx-glass overflow-hidden p-0">
+        {/* 11.0.0 · Κάρτα διαγωνιζόμενης: πινακίδα ονόματος, σκορ LED, θέση */}
+        <div className="show-podium-plate flex w-full items-center gap-3 px-3.5 py-2.5 text-left" style={{ '--pc': colorOf(players, me.id), width: '100%', borderRadius: 0 }}>
+          <PlayerAvatar name={me.name} color="#fff" size={44} />
           <div className="min-w-0 flex-1">
-            <div className="truncate text-[19px] font-bold">{me.name}</div>
-            <div className="truncate text-[12px] text-white/55">{STATUS_LABEL[status]} · Πράξη {act.index + 1}/{act.total} · {act.info.name}</div>
+            <div className="truncate text-[21px] leading-tight">{me.name}</div>
+            <div className="truncate text-[11px] font-bold tracking-[0.14em] text-white/75">{STATUS_LABEL[status]} · Πράξη {act.index + 1}/{act.total} · {act.info.name}</div>
           </div>
           <div className="text-right">
-            <div className="text-[11px] text-white/55">Θέση</div>
-            <div className="gx-gold text-[28px] font-black leading-none tabular-nums">#{myPos || '—'}</div>
+            <div className="text-[10px] tracking-[0.2em] text-white/75">ΘΕΣΗ</div>
+            <div className="show-title text-[34px]">#{myPos || '—'}</div>
           </div>
         </div>
-        <div className="mt-3 grid grid-cols-2 gap-2">
-          <div className="gx-stat relative" style={{ background: 'rgba(232,194,107,.10)', border: '1px solid rgba(232,194,107,.35)' }}>
-            <ArtIcon id="icon_crown" fallback="🏆" size={30} />
-            <div><b className="gx-gold mvg-num">{s.points}</b><small>πόντοι</small></div>
+        <div className="flex items-center justify-center gap-3 px-3.5 pt-3">
+          <div className="show-led-window relative flex-1 flex-col py-1.5">
+            <span className="show-led text-[44px] leading-none">{s.points}</span>
+            <span className="text-[10px] font-bold tracking-[0.3em] text-white/55">ΠΟΝΤΟΙ</span>
             <DeltaBurst delta={pointsDelta} />
           </div>
-          <div className="gx-stat" style={{ background: 'rgba(255,255,255,.05)', border: '1px solid rgba(255,255,255,.08)' }}>
-            <ArtIcon id="icon_loot" fallback="💰" size={30} />
+        </div>
+        <div className="px-3.5 pb-3.5">
+        <div className="mt-3 grid grid-cols-3 gap-2">
+          <div className="gx-stat" style={{ background: 'rgba(255,255,255,.06)', border: '1px solid rgba(140,120,255,.35)' }}>
+            <ArtIcon id="icon_loot" fallback="💰" size={28} />
             <div><b>{s.loot}</b><small>λεία</small></div>
           </div>
-          <div className="gx-stat" style={{ background: 'rgba(255,255,255,.05)', border: '1px solid rgba(255,255,255,.08)' }}>
-            <ArtIcon id="icon_token" fallback="🪙" size={28} />
+          <div className="gx-stat" style={{ background: 'rgba(255,255,255,.06)', border: '1px solid rgba(140,120,255,.35)' }}>
+            <ArtIcon id="icon_token" fallback="🪙" size={26} />
             <div><b>{s.tokens}</b><small>tokens</small></div>
           </div>
-          <div className="gx-stat" style={{ background: s.wanted ? 'rgba(255,69,58,.10)' : 'rgba(255,255,255,.05)', border: `1px solid ${s.wanted ? 'rgba(255,69,58,.4)' : 'rgba(255,255,255,.08)'}` }}>
-            <div className="min-w-0"><WantedStars n={s.wanted} size={15} /><small>wanted {s.wanted}/5</small></div>
+          <div className="gx-stat" style={{ background: s.wanted ? 'rgba(255,45,85,.16)' : 'rgba(255,255,255,.06)', border: `1px solid ${s.wanted ? 'rgba(255,45,85,.55)' : 'rgba(140,120,255,.35)'}` }}>
+            <div className="min-w-0"><WantedStars n={s.wanted} size={12} /><small>wanted {s.wanted}/5</small></div>
           </div>
         </div>
         <div className="mt-3"><ContinentStrip cg={cg} active={status === 'active' || status === 'transition' ? act.continent : null} /></div>
         {s.wanted > 0 && <div className="mt-2 text-sm text-[#FF8A9C]">🎯 {WANTED_LEVELS[s.wanted].label}: {WANTED_LEVELS[s.wanted].text}</div>}
+        </div>
       </header>
 
       {changed && status !== 'finale' && (
@@ -90,7 +95,7 @@ export default function CampaignMobile({ state, me, sendAction }) {
       {drawnMe && (
         <div className="gx-glass gx-pop flex items-center gap-3 p-4" style={{ border: '1.5px solid rgba(232,194,107,.7)', boxShadow: '0 0 40px rgba(232,194,107,.35)' }}>
           <span className="text-4xl" aria-hidden="true">🎲</span>
-          <div><div className="gx-gold text-2xl font-black">Κληρώθηκες!</div><div className="text-sm text-white/80">Μπαίνεις στη σκηνή · κοίτα την TV.</div></div>
+          <div><div className="show-title text-[30px]">Κληρώθηκες!</div><div className="text-sm text-white/80">Μπαίνεις στη σκηνή · κοίτα την TV.</div></div>
         </div>
       )}
 
@@ -102,7 +107,7 @@ export default function CampaignMobile({ state, me, sendAction }) {
               {trialArt(cg.trial.id) && <img src={trialArt(cg.trial.id)} alt="" className="absolute inset-0 h-full w-full rounded-[30px] object-cover" style={{ filter: 'brightness(.45)' }} />}
               <div className="relative flex min-h-[300px] flex-col items-center justify-center gap-2 p-5 text-center">
                 <span className="text-6xl" aria-hidden="true">{trial.icon}</span>
-                <div className="gx-gold text-[40px] font-black leading-none">ΣΕΙΡΑ ΣΟΥ</div>
+                <div className="show-title text-[44px]">ΣΕΙΡΑ ΣΟΥ</div>
                 <div className="text-sm text-white/80">{trial.title} · άγγιξε την κάρτα</div>
                 {cg.trial.until && <div className="text-3xl font-black tabular-nums text-[#E8C26B]">{left}″</div>}
               </div>

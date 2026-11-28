@@ -80,8 +80,8 @@ export function WantedStars({ n = 0, max = 5, size = 16 }) {
   return (
     <span className="inline-flex items-center" style={{ gap: part(size, 0.15) }} role="img" aria-label={`Wanted ${n} από ${max}`}>
       {Array.from({ length: max }, (_, k) => (icon
-        ? <img key={k} src={icon} alt="" aria-hidden="true" className="gx-icon" style={{ width: size, height: size, opacity: k < n ? 1 : 0.18, filter: k < n ? undefined : 'grayscale(1)' }} />
-        : <span key={k} aria-hidden="true" style={{ fontSize: size, lineHeight: 1, color: k < n ? '#FF6B85' : 'rgba(255,255,255,.18)' }}>★</span>))}
+        ? <img key={`${n}-${k}`} src={icon} alt="" aria-hidden="true" className={`gx-icon ${k < n ? 'gx-star' : ''}`} style={{ width: size, height: size, opacity: k < n ? 1 : 0.18, filter: k < n ? undefined : 'grayscale(1)', animationDelay: `${k * 110}ms` }} />
+        : <span key={`${n}-${k}`} aria-hidden="true" className={k < n ? 'gx-star inline-block' : ''} style={{ fontSize: size, lineHeight: 1, color: k < n ? '#FF6B85' : 'rgba(255,255,255,.18)', animationDelay: `${k * 110}ms` }}>★</span>))}
     </span>
   );
 }
@@ -139,7 +139,7 @@ export function ContinentBoard({ cg, players = [], active, night = false, u }) {
                   <div className="gx-upright gx-pawns">
                     {players.map((p, i) => (
                       <span key={p.id} className="gx-bob" style={{ animationDelay: `${(i % 5) * 0.22}s` }}>
-                        <PlayerAvatar name={p.name} color={colorOf(players, p.id)} size={pawn} />
+                        <span className="gx-drop inline-block" style={{ animationDelay: `${i * 0.12}s` }}><PlayerAvatar name={p.name} color={colorOf(players, p.id)} size={pawn} /></span>
                       </span>
                     ))}
                   </div>
@@ -160,8 +160,41 @@ export function ContinentBoard({ cg, players = [], active, night = false, u }) {
   );
 }
 
+// ---------- TV: κλήρωση «ρουλέτα» (μόνο εμφάνιση· το αποτέλεσμα είναι ήδη γνωστό) ----------
+// Τα ονόματα γυρίζουν όλο και πιο αργά για ~1.8″ και σταματούν στη νικήτρια της κλήρωσης.
+const SPIN_MS = 1800;
+export function Roulette({ names = [], winner, at }) {
+  const started = useRef(at || Date.now());
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    if (Date.now() - started.current >= SPIN_MS || names.length < 2) return undefined;
+    const id = setInterval(() => { const t = Date.now(); setNow(t); if (t - started.current >= SPIN_MS) clearInterval(id); }, 60);
+    return () => clearInterval(id);
+  }, [names.length]);
+  const elapsed = now - started.current;
+  if (names.length < 2 || elapsed >= SPIN_MS) return <span className="gx-roulette gx-gold gx-roulette-land">{winner}</span>;
+  const p = elapsed / SPIN_MS;
+  const steps = Math.floor(26 * (1 - (1 - p) * (1 - p)));
+  const pool = names.filter((n) => n !== winner);
+  return <span className="gx-roulette gx-gold gx-roulette-spin" aria-hidden="true">{pool[steps % pool.length] || winner}</span>;
+}
+
+// ---------- Κομφετί (μόνο CSS, σταθερό σχέδιο, ελαφρύ) ----------
+const CONFETTI_COLORS = ['#F7E3A8', '#E8C26B', '#FF6FB5', '#FFFFFF', '#C99A34', '#8FE3C6'];
+export function Confetti({ count = 80 }) {
+  const pieces = React.useMemo(() => {
+    let seed = 17;
+    const r = () => ((seed = (seed * 1664525 + 1013904223) >>> 0) / 4294967296);
+    return Array.from({ length: count }, (_, i) => ({
+      left: `${(r() * 100).toFixed(2)}%`, '--c': CONFETTI_COLORS[i % CONFETTI_COLORS.length], '--s': `${6 + Math.round(r() * 8)}px`,
+      '--d': `${(4 + r() * 4).toFixed(2)}s`, '--w': `${(-r() * 8).toFixed(2)}s`, '--x': `${Math.round((r() - 0.5) * 220)}px`, '--r': `${Math.round(360 + r() * 720)}deg`,
+    }));
+  }, [count]);
+  return <div className="gx-confetti" aria-hidden="true">{pieces.map((style, i) => <i key={i} style={style} />)}</div>;
+}
+
 // ---------- TV: μεγάλη κάρτα γεγονότος (5″) ----------
-export function EventTakeover({ kicker, title, text, img, player, color, danger = false, u }) {
+export function EventTakeover({ kicker, title, text, img, player, color, danger = false, u, roulette = null, at }) {
   const accent = danger ? '#FF453A' : '#E8C26B';
   return (
     <div className="gx-takeover" role="status" aria-live="polite">
@@ -179,7 +212,7 @@ export function EventTakeover({ kicker, title, text, img, player, color, danger 
         <div style={{ padding: `${u(4.2)} ${u(2.6)} ${u(2.2)}` }}>
           {kicker && <div className="font-semibold uppercase" style={{ fontSize: u(1), letterSpacing: '.24em', color: '#AEAEB2' }}>{kicker}</div>}
           <div className="gx-takeover-title" style={{ fontSize: u(3.6), marginTop: u(0.4), color: danger ? '#FF6961' : undefined, textShadow: danger ? '0 0 30px rgba(255,69,58,.55)' : undefined }}>
-            <span className={danger ? '' : 'gx-gold'}>{title}</span>
+            <span className={danger ? '' : 'gx-gold'}>{roulette ? <Roulette names={roulette} winner={title} at={at} /> : title}</span>
           </div>
           {text && <div style={{ fontSize: u(1.4), color: '#D1D1D6', marginTop: u(0.8), lineHeight: 1.35 }}>{text}</div>}
         </div>
