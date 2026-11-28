@@ -26,3 +26,11 @@ test('brandingMap δέχεται μόνο ανεβασμένα αρχεία /med
   assert.equal(groupState(map, BRANDING_GROUPS[0]), 1);
   assert.deepEqual(brandingMap(null), {});
 });
+
+test('Χάρτης media: κάθε όνομα αρχείου είναι λατινικό (αλλιώς η «Αυτόματη σύνδεση» δεν το βρίσκει)', async () => {
+  const fs = await import('node:fs');
+  for (const f of ['src/data/modes/modeRegistry.js', 'src/data/mediaSlots.js']) {
+    const text = fs.readFileSync(new URL(`../${f}`, import.meta.url), 'utf8');
+    for (const m of text.matchAll(/filename: '([^']*)'/g)) if (m[1]) assert.match(m[1], /^[A-Za-z0-9_.-]+$/, `${f}: «${m[1]}»`);
+  }
+});
